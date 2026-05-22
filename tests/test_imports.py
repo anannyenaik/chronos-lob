@@ -30,3 +30,131 @@ def test_key_subpackages_import() -> None:
 
 def test_cli_module_imports() -> None:
     assert importlib.import_module("chronoslob.cli")
+
+
+def test_schema_modules_import() -> None:
+    schemas = importlib.import_module("chronoslob.data.schemas")
+    events = importlib.import_module("chronoslob.book.events")
+
+    for name in (
+        "OrderBookLevel",
+        "OrderBookSnapshot",
+        "BookEvent",
+        "FeatureRow",
+        "LabelRow",
+        "DataQualityIssue",
+        "Side",
+        "EventType",
+    ):
+        assert hasattr(schemas, name), f"chronoslob.data.schemas is missing {name}"
+
+    for name in (
+        "sort_levels_for_side",
+        "validate_book_side_order",
+        "has_duplicate_prices",
+        "top_of_book",
+    ):
+        assert hasattr(events, name), f"chronoslob.book.events is missing {name}"
+
+
+def test_fi2010_modules_import() -> None:
+    fi2010 = importlib.import_module("chronoslob.data.fi2010")
+    validation = importlib.import_module("chronoslob.data.validation")
+
+    for name in (
+        "FI2010Config",
+        "FI2010Dataset",
+        "load_fi2010",
+        "infer_fi2010_columns",
+        "build_snapshot_from_row",
+    ):
+        assert hasattr(fi2010, name), f"chronoslob.data.fi2010 is missing {name}"
+
+    for name in (
+        "DataValidationResult",
+        "DataValidationError",
+        "validate_numeric_frame",
+        "validate_fi2010_dataset",
+    ):
+        assert hasattr(validation, name), (
+            f"chronoslob.data.validation is missing {name}"
+        )
+
+
+def test_feature_modules_import() -> None:
+    microprice = importlib.import_module("chronoslob.features.microprice")
+    imbalance = importlib.import_module("chronoslob.features.imbalance")
+    order_flow = importlib.import_module("chronoslob.features.order_flow")
+    volatility = importlib.import_module("chronoslob.features.volatility")
+    regimes = importlib.import_module("chronoslob.features.regimes")
+    pipeline = importlib.import_module("chronoslob.features.pipeline")
+    features = importlib.import_module("chronoslob.features")
+
+    for name in (
+        "compute_mid_price",
+        "compute_spread",
+        "compute_relative_spread",
+        "compute_microprice",
+        "compute_snapshot_price_features",
+    ):
+        assert hasattr(microprice, name), (
+            f"chronoslob.features.microprice is missing {name}"
+        )
+
+    for name in (
+        "compute_depth",
+        "compute_depth_imbalance",
+        "compute_queue_imbalance",
+        "compute_level_imbalances",
+        "compute_depth_slope",
+        "compute_liquidity_concentration",
+    ):
+        assert hasattr(imbalance, name), (
+            f"chronoslob.features.imbalance is missing {name}"
+        )
+
+    for name in (
+        "compute_order_flow_imbalance_from_snapshots",
+        "compute_order_flow_imbalance_series",
+        "compute_trade_imbalance_from_events",
+    ):
+        assert hasattr(order_flow, name), (
+            f"chronoslob.features.order_flow is missing {name}"
+        )
+
+    for name in (
+        "compute_log_returns",
+        "compute_realised_volatility",
+        "compute_rolling_realised_volatility",
+        "compute_event_intensity",
+        "compute_rolling_event_intensity",
+    ):
+        assert hasattr(volatility, name), (
+            f"chronoslob.features.volatility is missing {name}"
+        )
+
+    for name in (
+        "RegimeThresholds",
+        "classify_spread_regime",
+        "classify_volatility_regime",
+        "classify_liquidity_regime",
+        "classify_imbalance_regime",
+        "compute_regime_thresholds_from_frame",
+    ):
+        assert hasattr(regimes, name), (
+            f"chronoslob.features.regimes is missing {name}"
+        )
+
+    for name in (
+        "FeaturePipelineConfig",
+        "build_features_from_snapshot",
+        "build_feature_frame_from_snapshots",
+        "build_feature_frame_from_fi2010",
+        "validate_feature_frame",
+    ):
+        assert hasattr(pipeline, name), (
+            f"chronoslob.features.pipeline is missing {name}"
+        )
+        assert hasattr(features, name), (
+            f"chronoslob.features is missing re-exported {name}"
+        )

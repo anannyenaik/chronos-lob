@@ -1,0 +1,47 @@
+# FI-2010 local benchmark loader configuration.
+#
+# Notes for contributors:
+#   * Users must obtain a copy of the FI-2010 benchmark themselves and place
+#     it under a local path (typically `data/raw/`). Raw data is ignored by
+#     git and is never committed to this repository.
+#   * Different public mirrors of FI-2010 ship slightly different layouts
+#     (CSV, plain text, train/test pre-split or single combined files). When
+#     using a non-default mirror, override `feature_columns`, `label_columns`,
+#     the bid/ask prefixes or `has_header` to match the local file.
+#   * This file is a documentation example only. The path below points to a
+#     gitignored location that does not exist by default.
+
+path: data/raw/fi2010/example.csv
+symbol: FI2010
+venue: benchmark
+delimiter: ","
+has_header: true
+normalised: true
+price_level_count: 10
+
+# Set to false to raise instead of silently skipping snapshot conversion
+# when the configured bid/ask columns are absent. Keep this true while
+# working with normalised benchmark mirrors that omit explicit prices.
+allow_missing_lob_columns: true
+
+# Default LOB column conventions. Quantity aliases bid_size_i / ask_size_i
+# are accepted at load time when these defaults are used.
+bid_price_prefix: "bid_price_"
+bid_quantity_prefix: "bid_quantity_"
+ask_price_prefix: "ask_price_"
+ask_quantity_prefix: "ask_quantity_"
+
+# Optional columns. The canonical FI-2010 matrix carries neither an
+# explicit timestamp nor a split column; some preprocessed mirrors do.
+# timestamp_column: timestamp
+# split_column: split
+
+# Optional explicit column lists. When omitted, the loader infers feature
+# columns from the numeric columns of the file, excluding split and
+# timestamp columns. Provide label_columns to mark forecast targets so they
+# are kept out of the feature view.
+# feature_columns: []
+# label_columns:
+#   - label_10
+#   - label_50
+#   - label_100

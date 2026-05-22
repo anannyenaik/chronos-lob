@@ -17,7 +17,7 @@ states scope and limitations, no fake results are present.
 
 Tests expected: Import tests, seeding tests, path utility tests.
 
-## Phase 1: Core schemas and utilities
+## Phase 1: Core schemas and utilities (completed)
 
 Goal: Define typed schemas for events, snapshots, trades, quotes, instruments and
 time handling.
@@ -31,7 +31,14 @@ documented, invalid records fail loudly.
 Tests expected: Schema validation tests, timestamp ordering tests, serialisation
 round-trip tests.
 
-## Phase 2: FI-2010 benchmark loader
+Status: `chronoslob.data.schemas` defines `OrderBookLevel`, `OrderBookSnapshot`,
+`BookEvent`, `FeatureRow`, `LabelRow`, `DataQualityIssue`, the `Side` and
+`EventType` enums and helpers `ensure_utc_datetime`, `is_finite_number` and
+`validate_metadata`. `chronoslob.book.events` provides `sort_levels_for_side`,
+`validate_book_side_order`, `has_duplicate_prices` and `top_of_book`. Validation
+and helper tests live in `tests/test_schemas.py` and `tests/test_events.py`.
+
+## Phase 2: FI-2010 benchmark loader (completed)
 
 Goal: Add a loader for FI-2010 benchmark files without changing labels or splits
 implicitly.
@@ -44,7 +51,20 @@ documents assumptions.
 Tests expected: Fixture-based loading tests, missing-file tests, malformed-input
 tests.
 
-## Phase 3: Microstructure feature engine
+Status: `chronoslob.data.fi2010` provides `FI2010Config`, `FI2010Dataset`,
+`load_fi2010`, `infer_fi2010_columns` and `build_snapshot_from_row` for reading
+local FI-2010-style matrices, with synthetic-timestamp marking on snapshot
+conversion. `chronoslob.data.validation` provides `DataValidationResult`,
+`validate_numeric_frame` and `validate_fi2010_dataset` and is invoked
+automatically by `load_fi2010`. An example config lives in
+`configs/data/fi2010.yaml`, a synthetic fixture in
+`tests/fixtures/fi2010/tiny_fi2010_like.csv` and the data-quality checks are
+documented in `reports/data_quality.md`. A `python -m chronoslob.cli
+inspect-fi2010 --path ...` command exposes the loader as a read-only inspection
+utility. No FI-2010 data is downloaded or committed and no benchmark
+performance is claimed.
+
+## Phase 3: Microstructure feature engine (completed)
 
 Goal: Implement leakage-safe features using only information available at or before
 timestamp `t`.
@@ -56,6 +76,24 @@ and transforms are explicit.
 
 Tests expected: Feature-value tests on small fixtures, no-look-ahead tests, edge-case
 window tests.
+
+Status: `chronoslob.features` ships `microprice`, `imbalance`, `order_flow`,
+`volatility`, `regimes` and `pipeline` modules. Single-snapshot features
+include mid-price, spread, relative spread, microprice, per-depth bid/ask
+depths, depth imbalance, queue imbalance, depth slope and liquidity
+concentration. Sequence-level features include a simple top-of-book order
+flow imbalance, rolling realised volatility on log returns of the mid-price
+and rolling event intensity over a trailing window. `FeaturePipelineConfig`
+and `build_feature_frame_from_snapshots`/`build_feature_frame_from_fi2010`
+assemble pandas frames whose `synthetic_time` metadata gates time-window
+features and whose label columns are never propagated as features.
+`validate_feature_frame` checks for missing required columns, non-numeric
+features, infinities, NaNs and label-like column names. A
+`python -m chronoslob.cli inspect-features-fi2010 --path ...` command
+exposes the pipeline as a read-only inspection utility. Documentation lives
+in `reports/feature_engine.md` and an example configuration in
+`configs/experiments/feature_audit_fi2010.yaml`. No labels, models,
+backtests or trading claims are introduced.
 
 ## Phase 4: Label generation and leakage tests
 

@@ -32,23 +32,41 @@ ChronosLOB is designed to support careful experiments around:
 
 This scaffold does not claim:
 
-- implemented data loaders;
 - trained models;
 - benchmark results;
+- replication of any published FI-2010 outcome;
 - trading performance;
 - deployable execution logic;
 - profitability or investment usefulness.
+
+A local FI-2010 loader exists, but it neither downloads benchmark data nor
+produces any forecast metrics. Users must obtain and supply the benchmark
+locally.
 
 Prediction and trading are treated as separate problems. Benchmark accuracy is not
 assumed to be tradable alpha.
 
 ## Current Status
 
-**Scaffold only.**
+**Scaffold, canonical schemas, a local FI-2010 loader and a leakage-safe
+microstructure feature engine.**
 
-The repository currently contains project rules, package structure, utility modules,
-configuration conventions, documentation and tests. Model implementation, data
-loading, feature engineering, labels and backtesting are planned future phases.
+Phases 0 (scaffold), 1 (core schemas), 2 (FI-2010 local loader) and 3
+(microstructure feature engine) are complete. The repository contains project
+rules, package structure, utility modules, configuration conventions,
+documentation and tests, and defines canonical schemas for market events, order
+book snapshots, feature rows, label rows and data-quality findings in
+`chronoslob.data.schemas` with supporting helpers in `chronoslob.book.events`.
+`chronoslob.data.fi2010` adds a configurable, local-file loader for FI-2010-style
+benchmark matrices and `chronoslob.data.validation` provides the corresponding
+data-quality checks. `chronoslob.features` implements a past-only microstructure
+feature engine — mid-price, spread, microprice, depth/queue imbalance, order-flow
+imbalance, rolling realised volatility, event intensity and rule-based regime
+flags — together with a `FeaturePipelineConfig` that assembles `FeatureRow`
+objects and pandas feature frames without ever including label columns. Users
+must supply benchmark data locally: no FI-2010 data is downloaded or bundled,
+and no benchmark performance is claimed. Labels and backtesting remain planned
+future phases.
 
 ## Planned Architecture
 
@@ -103,7 +121,18 @@ python -m pip install -e ".[dev]"
 python -c "import chronoslob; print(chronoslob.__version__)"
 python -m chronoslob.cli version
 python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+python -m chronoslob.cli inspect-features-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
 ```
+
+The `inspect-fi2010` command is read-only: it loads a local FI-2010-style file,
+runs the validator and prints a short summary. It does not download, train or
+write anything. A configurable example sits at `configs/data/fi2010.yaml`.
+The `inspect-features-fi2010` command additionally builds the microstructure
+feature frame, validates it and prints row/feature counts plus a sample of
+feature column names — it is also read-only. See
+`reports/feature_engine.md` for the documented feature definitions and
+`configs/experiments/feature_audit_fi2010.yaml` for a worked configuration.
 
 With `make` available:
 

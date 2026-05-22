@@ -1,0 +1,46 @@
+# Feature audit configuration for the FI-2010 benchmark loader.
+#
+# This config documents the parameters used by `python -m chronoslob.cli
+# inspect-features-fi2010 --path ...` and by the
+# `chronoslob.features.pipeline.FeaturePipelineConfig` used in tests.
+#
+# The pipeline does NOT train any model and does NOT include label
+# columns in the resulting feature frame. It is intended for read-only
+# inspection of the FI-2010 fixture or a user-provided mirror.
+#
+# Important caveats:
+#   * The canonical FI-2010 matrix carries no real timestamp column;
+#     the loader emits synthetic timestamps in that case and the
+#     feature pipeline refuses to compute time-window features against
+#     synthetic timestamps unless `allow_synthetic_timestamps_for_time_features`
+#     is explicitly set to true.
+#   * FI-2010 prices are typically pre-normalised. Treat absolute
+#     spread / depth / volatility numbers as structural diagnostics
+#     rather than as real exchange figures.
+
+source:
+  loader: fi2010
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  timestamp_column: timestamp
+  split_column: split
+  price_level_count: 2
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+
+pipeline:
+  depths: [1, 2]
+  include_price_features: true
+  include_imbalance_features: true
+  include_order_flow: true
+  include_volatility: true
+  include_regime_features: true
+  volatility_window: 20
+  event_intensity_window_seconds: 60.0
+  # The tiny fixture has real timestamps, but mirrors of the canonical
+  # FI-2010 matrix do not. Leave this false when running against the
+  # canonical mirror; flip to true only when the source file actually
+  # carries real timestamps.
+  allow_synthetic_timestamps_for_time_features: false
+  allow_partial_features: true
