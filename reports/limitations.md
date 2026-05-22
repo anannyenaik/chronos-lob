@@ -1,8 +1,9 @@
 # Limitations
 
-This repository currently contains only scaffold code. No data loader, feature
-engine, label generator, model, training loop or execution-aware simulator has been
-implemented yet.
+This repository currently contains scaffold code, canonical schemas, a local
+FI-2010-style loader, a microstructure feature engine, a future-window label
+engine and leakage-control utilities. No model, training loop, baseline,
+backtest or execution-aware simulator has been implemented yet.
 
 No model results exist yet. No trading performance is claimed.
 

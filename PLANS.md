@@ -95,7 +95,7 @@ in `reports/feature_engine.md` and an example configuration in
 `configs/experiments/feature_audit_fi2010.yaml`. No labels, models,
 backtests or trading claims are introduced.
 
-## Phase 4: Label generation and leakage tests
+## Phase 4: Label generation and leakage tests (completed)
 
 Goal: Implement future-looking labels while guaranteeing labels cannot enter feature
 inputs.
@@ -107,6 +107,21 @@ documented.
 
 Tests expected: Horizon alignment tests, leakage guard tests, boundary-condition
 tests.
+
+Status: `chronoslob.labels` now provides future mid-price return, direction,
+return-quantile, future realised-volatility, spread-widening, passive-fill proxy
+and adverse-selection proxy labels. `LabelPipelineConfig`,
+`build_label_rows_from_snapshots`, `build_label_frame_from_snapshots` and
+`build_label_frame_from_fi2010` assemble `LabelRow` objects and pandas label
+frames while keeping features and labels separate. Existing FI-2010 configured
+labels are preserved as benchmark labels with
+`label_source = "fi2010_existing_labels"` rather than being presented as
+ChronosLOB-generated labels. `chronoslob.labels.leakage` provides explicit
+feature/label separation, temporal horizon and no-look-ahead checks.
+Documentation lives in `reports/label_engine.md` and
+`reports/leakage_controls.md`, with an example audit configuration in
+`configs/experiments/label_audit_fi2010.yaml`. No models, baselines, backtests
+or result artefacts are introduced.
 
 ## Phase 5: Temporal splitters and experiment registry
 

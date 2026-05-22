@@ -48,15 +48,16 @@ assumed to be tradable alpha.
 
 ## Current Status
 
-**Scaffold, canonical schemas, a local FI-2010 loader and a leakage-safe
-microstructure feature engine.**
+**Scaffold, canonical schemas, a local FI-2010 loader, a leakage-safe
+microstructure feature engine and a future-window label engine.**
 
 Phases 0 (scaffold), 1 (core schemas), 2 (FI-2010 local loader) and 3
-(microstructure feature engine) are complete. The repository contains project
-rules, package structure, utility modules, configuration conventions,
-documentation and tests, and defines canonical schemas for market events, order
-book snapshots, feature rows, label rows and data-quality findings in
-`chronoslob.data.schemas` with supporting helpers in `chronoslob.book.events`.
+(microstructure feature engine) are complete, and Phase 4 (label generation and
+leakage checks) is implemented. The repository contains project rules, package
+structure, utility modules, configuration conventions, documentation and tests,
+and defines canonical schemas for market events, order book snapshots, feature
+rows, label rows and data-quality findings in `chronoslob.data.schemas` with
+supporting helpers in `chronoslob.book.events`.
 `chronoslob.data.fi2010` adds a configurable, local-file loader for FI-2010-style
 benchmark matrices and `chronoslob.data.validation` provides the corresponding
 data-quality checks. `chronoslob.features` implements a past-only microstructure
@@ -65,8 +66,11 @@ imbalance, rolling realised volatility, event intensity and rule-based regime
 flags — together with a `FeaturePipelineConfig` that assembles `FeatureRow`
 objects and pandas feature frames without ever including label columns. Users
 must supply benchmark data locally: no FI-2010 data is downloaded or bundled,
-and no benchmark performance is claimed. Labels and backtesting remain planned
-future phases.
+and no benchmark performance is claimed. `chronoslob.labels` now implements
+future return, direction, return-quantile, volatility, spread-widening, passive
+fill proxy and adverse-selection proxy labels, plus explicit no-look-ahead
+checks. Models, training loops and execution backtests remain planned future
+phases.
 
 ## Planned Architecture
 
@@ -123,6 +127,7 @@ python -m chronoslob.cli version
 python -m chronoslob.cli doctor
 python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
 python -m chronoslob.cli inspect-features-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+python -m chronoslob.cli inspect-labels-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
 ```
 
 The `inspect-fi2010` command is read-only: it loads a local FI-2010-style file,
@@ -133,6 +138,10 @@ feature frame, validates it and prints row/feature counts plus a sample of
 feature column names — it is also read-only. See
 `reports/feature_engine.md` for the documented feature definitions and
 `configs/experiments/feature_audit_fi2010.yaml` for a worked configuration.
+The `inspect-labels-fi2010` command extracts configured FI-2010 benchmark labels
+or generates ChronosLOB labels from snapshots, validates the label frame and
+prints a short read-only summary. See `reports/label_engine.md`,
+`reports/leakage_controls.md` and `configs/experiments/label_audit_fi2010.yaml`.
 
 With `make` available:
 
@@ -151,8 +160,9 @@ pytest
 pytest --cov=chronoslob
 ```
 
-Initial tests cover package imports, deterministic seeding and path utilities. Future
-modules should add behaviour-focused tests and explicit leakage checks.
+Tests cover package imports, deterministic seeding, path utilities, schemas,
+FI-2010 loading, feature generation, label generation and explicit leakage
+checks. Future modules should keep adding behaviour-focused tests.
 
 ## Roadmap
 
@@ -164,7 +174,7 @@ Near-term phases:
 2. Core schemas and utilities.
 3. FI-2010 benchmark loader.
 4. Microstructure feature engine.
-5. Label generation and leakage tests.
+5. Temporal splitters and experiment registry.
 
 Later phases will add temporal splitters, baselines, PyTorch datasets,
 self-supervised transformers, calibration, abstention and execution-aware research
@@ -173,8 +183,8 @@ simulation.
 ## Limitations
 
 See `reports/limitations.md` for the current limitations statement. In short, this
-repository currently contains scaffold code only, no model results exist yet and no
-trading performance is claimed.
+repository currently contains data, feature and label infrastructure only. No
+model results exist yet and no trading performance is claimed.
 
 ## CV Positioning
 

@@ -158,3 +158,73 @@ def test_feature_modules_import() -> None:
         assert hasattr(features, name), (
             f"chronoslob.features is missing re-exported {name}"
         )
+
+
+def test_label_modules_import() -> None:
+    midprice = importlib.import_module("chronoslob.labels.midprice")
+    volatility = importlib.import_module("chronoslob.labels.volatility")
+    spread = importlib.import_module("chronoslob.labels.spread")
+    fill_probability = importlib.import_module("chronoslob.labels.fill_probability")
+    adverse_selection = importlib.import_module("chronoslob.labels.adverse_selection")
+    leakage = importlib.import_module("chronoslob.labels.leakage")
+    pipeline = importlib.import_module("chronoslob.labels.pipeline")
+    labels = importlib.import_module("chronoslob.labels")
+
+    for name in (
+        "compute_future_return",
+        "compute_future_returns",
+        "classify_direction",
+        "compute_direction_labels",
+        "compute_return_quantile_labels",
+    ):
+        assert hasattr(midprice, name), f"chronoslob.labels.midprice is missing {name}"
+
+    for name in (
+        "compute_future_realised_volatility",
+        "compute_future_volatility_series",
+        "classify_volatility_labels",
+    ):
+        assert hasattr(volatility, name), (
+            f"chronoslob.labels.volatility is missing {name}"
+        )
+
+    for name in (
+        "compute_future_spread_change",
+        "compute_spread_widening_label",
+        "compute_spread_widening_labels",
+    ):
+        assert hasattr(spread, name), f"chronoslob.labels.spread is missing {name}"
+
+    for name in ("compute_passive_fill_proxy", "compute_passive_fill_proxy_series"):
+        assert hasattr(fill_probability, name), (
+            f"chronoslob.labels.fill_probability is missing {name}"
+        )
+
+    for name in (
+        "compute_adverse_selection_after_fill_proxy",
+        "compute_adverse_selection_proxy_series",
+    ):
+        assert hasattr(adverse_selection, name), (
+            f"chronoslob.labels.adverse_selection is missing {name}"
+        )
+
+    for name in (
+        "LeakageCheckResult",
+        "assert_feature_label_separation",
+        "assert_temporal_label_alignment",
+        "assert_no_future_feature_timestamps",
+        "validate_no_lookahead",
+    ):
+        assert hasattr(leakage, name), f"chronoslob.labels.leakage is missing {name}"
+
+    for name in (
+        "LabelPipelineConfig",
+        "build_label_rows_from_snapshots",
+        "build_label_frame_from_snapshots",
+        "build_label_frame_from_fi2010",
+        "validate_label_frame",
+    ):
+        assert hasattr(pipeline, name), f"chronoslob.labels.pipeline is missing {name}"
+        assert hasattr(labels, name), (
+            f"chronoslob.labels is missing re-exported {name}"
+        )

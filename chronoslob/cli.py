@@ -201,13 +201,82 @@ def _inspect_features_fi2010_impl(
     return 0
 
 
+def _inspect_labels_fi2010_impl(
+    path: Path,
+    *,
+    timestamp_column: str | None = "timestamp",
+    split_column: str | None = "split",
+    label_columns: list[str] | None = None,
+    price_level_count: int = 2,
+    prefer_existing_labels: bool = True,
+) -> int:
+    """Load an FI-2010 file, build or extract labels and print a summary."""
+    from chronoslob.data.fi2010 import FI2010Config, load_fi2010
+    from chronoslob.labels.pipeline import (
+        build_label_frame_from_fi2010,
+        validate_label_frame,
+    )
+
+    resolved_labels = (
+        list(label_columns)
+        if label_columns is not None
+        else ["label_10", "label_50", "label_100"]
+    )
+    try:
+        config = FI2010Config(
+            path=path,
+            timestamp_column=timestamp_column,
+            split_column=split_column,
+            label_columns=resolved_labels,
+            price_level_count=price_level_count,
+        )
+        dataset = load_fi2010(config)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError) as exc:
+        print(f"Failed to load FI-2010 file: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        frame = build_label_frame_from_fi2010(
+            dataset,
+            prefer_existing_labels=prefer_existing_labels,
+        )
+    except (ValueError, TypeError) as exc:
+        print(f"Failed to build label frame: {exc}", file=sys.stderr)
+        return 1
+
+    non_label_columns = {
+        "timestamp",
+        "symbol",
+        "horizon_start",
+        "horizon_end",
+        "split",
+        "label_source",
+    }
+    label_cols = [column for column in frame.columns if column not in non_label_columns]
+    validation = validate_label_frame(frame)
+
+    print("ChronosLOB FI-2010 label inspection")
+    print(f"  path:                {path}")
+    print(f"  rows:                {len(frame)}")
+    print(f"  label columns:       {len(label_cols)}")
+    print(f"  validation ok:       {validation.ok}")
+    print(f"  validation errors:   {validation.error_count}")
+    print(f"  validation warnings: {validation.warning_count}")
+    print(f"  sample columns:      {label_cols[:10]}")
+    return 0
+
+
 def _fallback_main(argv: Sequence[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
 
     if not args or args[0] in {"-h", "--help"}:
         print(
             "Usage: python -m chronoslob.cli "
-            "[version|doctor|inspect-fi2010|inspect-features-fi2010] [...]"
+            "[version|doctor|inspect-fi2010|inspect-features-fi2010|"
+            "inspect-labels-fi2010] [...]"
         )
         return 0
 
@@ -292,6 +361,46 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
                 parsed.allow_synthetic_time
             ),
         )
+    if command == "inspect-labels-fi2010":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-labels-fi2010",
+            description=(
+                "Load an FI-2010 file, build or extract labels and print "
+                "a short summary."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--timestamp-column", default="timestamp")
+        parser.add_argument("--split-column", default="split")
+        parser.add_argument("--price-level-count", type=int, default=2)
+        parser.add_argument(
+            "--no-timestamp-column",
+            action="store_true",
+            help="Treat the file as having no timestamp column.",
+        )
+        parser.add_argument(
+            "--no-split-column",
+            action="store_true",
+            help="Treat the file as having no split column.",
+        )
+        parser.add_argument(
+            "--generate-labels",
+            action="store_true",
+            help=(
+                "Generate ChronosLOB labels from snapshots instead of "
+                "preferring configured FI-2010 benchmark labels."
+            ),
+        )
+        parsed = parser.parse_args(args[1:])
+        return _inspect_labels_fi2010_impl(
+            path=parsed.path,
+            timestamp_column=(
+                None if parsed.no_timestamp_column else parsed.timestamp_column
+            ),
+            split_column=None if parsed.no_split_column else parsed.split_column,
+            price_level_count=parsed.price_level_count,
+            prefer_existing_labels=not parsed.generate_labels,
+        )
 
     print(f"Unknown command: {command}", file=sys.stderr)
     return 2
@@ -375,6 +484,14 @@ if typer is not None:
             "synthetic. Off by default."
         ),
     )
+    _INSPECT_LABELS_GENERATE_OPTION = typer.Option(
+        False,
+        "--generate-labels",
+        help=(
+            "Generate ChronosLOB labels from snapshots instead of "
+            "preferring configured FI-2010 benchmark labels."
+        ),
+    )
 
     def inspect_features_fi2010(
         path: Path = _INSPECT_PATH_OPTION,
@@ -394,6 +511,28 @@ if typer is not None:
             split_column=None if no_split_column else split_column,
             price_level_count=price_level_count,
             allow_synthetic_timestamps_for_time_features=allow_synthetic_time,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_labels_fi2010(
+        path: Path = _INSPECT_PATH_OPTION,
+        timestamp_column: str = _INSPECT_TIMESTAMP_OPTION,
+        split_column: str = _INSPECT_SPLIT_OPTION,
+        price_level_count: int = _INSPECT_LEVEL_COUNT_OPTION,
+        no_timestamp_column: bool = _INSPECT_NO_TIMESTAMP_OPTION,
+        no_split_column: bool = _INSPECT_NO_SPLIT_OPTION,
+        generate_labels: bool = _INSPECT_LABELS_GENERATE_OPTION,
+    ) -> None:
+        """Build or extract FI-2010 labels and summarise."""
+        exit_code = _inspect_labels_fi2010_impl(
+            path=path,
+            timestamp_column=(
+                None if no_timestamp_column else timestamp_column
+            ),
+            split_column=None if no_split_column else split_column,
+            price_level_count=price_level_count,
+            prefer_existing_labels=not generate_labels,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -438,12 +577,33 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_labels_fi2010(
+        path: Path,
+        timestamp_column: str = "timestamp",
+        split_column: str = "split",
+        price_level_count: int = 2,
+        no_timestamp_column: bool = False,
+        no_split_column: bool = False,
+        generate_labels: bool = False,
+    ) -> None:
+        """Build or extract FI-2010 labels and summarise."""
+        exit_code = _inspect_labels_fi2010_impl(
+            path=path,
+            timestamp_column=None if no_timestamp_column else timestamp_column,
+            split_column=None if no_split_column else split_column,
+            price_level_count=price_level_count,
+            prefer_existing_labels=not generate_labels,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
     app.command()(doctor)
     app.command("inspect-fi2010")(inspect_fi2010)
     app.command("inspect-features-fi2010")(inspect_features_fi2010)
+    app.command("inspect-labels-fi2010")(inspect_labels_fi2010)
 else:
 
     def app() -> int:
