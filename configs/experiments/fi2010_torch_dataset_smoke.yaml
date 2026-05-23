@@ -1,0 +1,52 @@
+# Synthetic FI-2010-style PyTorch sequence-dataset smoke configuration.
+#
+# This config drives the sequence-window data layer against the tiny
+# synthetic fixture committed under tests/fixtures. It is for pipeline
+# testing only and does NOT report benchmark performance. No model
+# architecture, training loop or backtest is defined here. No metrics are
+# emitted.
+
+run:
+  name: synthetic-fi2010-torch-dataset-smoke
+  phase: phase-7a
+  seed: 42
+
+dataset:
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+  target_column: label_10
+  synthetic_fixture: true
+  benchmark_result: false
+
+sequence:
+  lookback: 2
+  stride: 1
+  drop_incomplete: true
+  require_contiguous_indices: true
+
+split:
+  type: temporal
+  train_fraction: 0.5
+  validation_fraction: 0.34
+  test_fraction: 0.16
+  purge: false
+  embargo: 0
+
+loader:
+  batch_size: 4
+  shuffle: false
+  drop_last: false
+  num_workers: 0
+  pin_memory: false
+
+preprocessing:
+  standardise_features: train_only
+
+notes: |
+  This synthetic fixture is too small for the training split to observe
+  every label class. The CLI smoke command therefore uses a full-frame
+  class mapping for demonstration purposes only. Real experiments must
+  use a train-only class mapping. No metrics are written.

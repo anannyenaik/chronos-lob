@@ -1,0 +1,30 @@
+# ChronosLOB classical baseline model configurations.
+#
+# These are honest supervised baselines for short-horizon market-state
+# forecasting. They should be compared before deep models are introduced.
+# This file contains configuration only; it does not contain results.
+
+models:
+  - name: majority_class
+    model_type: majority_class
+    task_type: classification
+    random_state: 42
+
+  - name: logistic_regression
+    model_type: logistic_regression
+    task_type: classification
+    random_state: 42
+    hyperparameters:
+      max_iter: 1000
+
+  - name: ridge_classifier
+    model_type: ridge_classifier
+    task_type: classification
+    random_state: 42
+
+  - name: random_forest
+    model_type: random_forest
+    task_type: classification
+    random_state: 42
+    hyperparameters:
+      n_estimators: 20

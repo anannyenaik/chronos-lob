@@ -1,0 +1,27 @@
+# ChronosLOB DeepLOB-style CNN-LSTM baseline configuration.
+#
+# This file documents the configurable hyperparameters of the
+# DeepLOB-style supervised neural baseline. It is not an exact
+# reproduction of the original DeepLOB paper — see
+# reports/deeplob_baseline.md for the caveat and intended future work.
+# This file contains configuration only; it does not contain results.
+
+model:
+  # input_features is determined by the resolved feature columns at
+  # runtime and overrides this value when the experiment runner instantiates
+  # the model. The placeholder below documents the expected shape.
+  input_features: null
+  # n_classes is determined by the train-only class mapping at runtime.
+  n_classes: null
+  conv_channels: 16
+  conv_kernel_size: 3
+  lstm_hidden_size: 32
+  lstm_layers: 1
+  dropout: 0.1
+  use_batch_norm: true
+
+notes:
+  variant: "deeplob-style supervised CNN-LSTM baseline"
+  exact_paper_reproduction: false
+  cpu_smoke_friendly: true
+  saves_checkpoints: false

@@ -1,0 +1,51 @@
+# FI-2010-style split audit configuration for Phase 5 infrastructure.
+#
+# This config is for validating feature/label alignment and temporal split
+# construction before modelling. It intentionally contains no model, training
+# loop, backtest or performance target.
+
+run:
+  name: fi2010-split-audit
+  phase: phase-5
+  seed: 42
+  output_root: runs
+
+data:
+  description: Local FI-2010-style file supplied by the user or test fixture.
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  path_is_placeholder: true
+  timestamp_column: timestamp
+  split_column: split
+  price_level_count: 2
+
+labels:
+  horizon_columns:
+    timestamp: timestamp
+    horizon_end: horizon_end
+  notes: Generated ChronosLOB labels must expose horizon_start and horizon_end.
+
+temporal_split:
+  train_fraction: 0.7
+  validation_fraction: 0.15
+  test_fraction: 0.15
+  min_train_size: 1
+  min_validation_size: 1
+  min_test_size: 0
+
+walk_forward:
+  train_window: 1000
+  validation_window: 250
+  test_window: 250
+  step_size: 250
+  expanding_train: true
+
+purged_embargo:
+  purge: true
+  embargo: 50
+  embargo_unit: rows
+  purge_against: validation_test
+
+train_only_fitting:
+  return_quantile_bins:
+    quantiles: [0.3333333333, 0.6666666667]
+    fit_partition: train

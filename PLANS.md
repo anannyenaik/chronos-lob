@@ -123,7 +123,7 @@ Documentation lives in `reports/label_engine.md` and
 `configs/experiments/label_audit_fi2010.yaml`. No models, baselines, backtests
 or result artefacts are introduced.
 
-## Phase 5: Temporal splitters and experiment registry
+## Phase 5: Temporal splitters and experiment registry (completed)
 
 Goal: Add temporal train/validation/test splitters and a registry for reproducible
 experiment artefacts.
@@ -136,7 +136,21 @@ metadata is persisted.
 
 Tests expected: Split ordering tests, no-overlap tests, registry metadata tests.
 
-## Phase 6: Classical baselines
+Status: `chronoslob.training` now provides contiguous temporal
+train/validation/test splitting, expanding and rolling walk-forward folds,
+purged and embargoed training-index filtering for overlapping future label
+horizons, timestamp-to-row horizon mapping and a `TrainOnlyQuantileBinner` for
+train-only return quantile fitting. `chronoslob.training.experiment`,
+`config` and `artifacts` provide a lightweight metadata registry that captures
+run name, phase, UTC creation time, seed, git commit when available, config
+path, input paths and output path. The CLI exposes `inspect-split` and
+metadata-only `init-run` commands. Documentation lives in
+`reports/validation_protocol.md` and `reports/experiment_registry.md`, with an
+example config in `configs/experiments/fi2010_split_audit.yaml`. No models,
+baselines, training loops, backtests, fake metrics or result artefacts are
+introduced.
+
+## Phase 6: Classical baselines (completed)
 
 Goal: Implement simple, reproducible forecasting baselines before deep learning.
 
@@ -148,6 +162,20 @@ metrics.
 
 Tests expected: Fit/predict tests, deterministic baseline tests, config validation
 tests.
+
+Status: `chronoslob.models` now provides train-only preprocessing helpers,
+feature/target matrix containers, strict feature/label alignment and classical
+baseline wrappers for majority class, logistic regression, ridge classifier,
+elastic-net logistic regression, random forest and gradient boosting.
+`chronoslob.training.metrics`, `evaluate` and `baseline_experiment` provide
+classification metrics, confusion matrices, temporal baseline execution,
+train-fitted standardisation and optional Phase 5 registry output. The CLI
+exposes `inspect-baselines` and synthetic-fixture `run-baseline-smoke`; the smoke
+command is explicitly labelled as non-benchmark output and writes nothing unless
+requested. Documentation lives in `reports/baselines.md`, model defaults in
+`configs/models/baselines.yaml` and the synthetic smoke config in
+`configs/experiments/fi2010_baseline_smoke.yaml`. No deep learning models,
+backtests, fake benchmark metrics or committed run outputs are introduced.
 
 ## Phase 7: PyTorch datasets and DeepLOB-style baseline
 
@@ -162,7 +190,55 @@ leakage-safe and baseline training is configurable.
 Tests expected: Dataset slicing tests, shape tests, deterministic small-training
 smoke tests.
 
-## Phase 8: Binance local order book reconstruction
+### Phase 7A: PyTorch sequence data layer (completed)
+
+Status: `chronoslob.training` now provides past-only sequence-window indexing
+(`SequenceWindowConfig`, `SequenceSampleIndex`, `build_sequence_indices`),
+a PyTorch `SequenceDataset` that aligns feature/label frames and emits
+`[lookback, n_features]` windows with scalar long targets, a
+`TorchSequenceStandardiser` for explicit train-only feature scaling,
+fixed-length and variable-length collation helpers
+(`collate_fixed_length_batch`, `collate_variable_length_batch`,
+`pad_variable_length_sequences`), a `DataLoaderConfig` with safe
+non-shuffling defaults and a `build_dataloaders_for_split` factory that
+keeps windows inside their partitions and reuses the train class mapping
+for validation and test. PyTorch is declared as an optional `[torch]`
+dependency in `pyproject.toml`. The CLI exposes
+`inspect-torch-dataset` against the bundled synthetic fixture and writes
+nothing. Documentation lives in `reports/torch_data_layer.md` and the
+smoke configuration in
+`configs/experiments/fi2010_torch_dataset_smoke.yaml`. No neural network
+architectures, training loops, checkpoints, backtests or fake benchmark
+metrics are introduced.
+
+### Phase 7B: DeepLOB-style CNN-LSTM supervised baseline (completed)
+
+Status: `chronoslob.models.deeplob` ships a compact DeepLOB-style
+supervised CNN-LSTM (`DeepLOBConfig`, `DeepLOBModel`,
+`create_deeplob_model`) that accepts `[batch, lookback, n_features]`
+tensors and emits `[batch, n_classes]` logits.
+`chronoslob.training.torch_training` ships generic torch classification
+utilities (`TorchTrainingConfig`, `TorchEpochResult`,
+`set_torch_deterministic`, `train_one_epoch`,
+`evaluate_torch_classifier`, `fit_torch_classifier`) that reuse the
+existing classification metrics layer.
+`chronoslob.training.torch_experiment` provides
+`DeepLOBExperimentConfig`, `run_deeplob_experiment` and
+`run_deeplob_smoke_from_fi2010_fixture`; the experiment runner aligns
+feature and label frames, validates leakage, builds a temporal split,
+fits train-only mean/std on training rows only and reuses the existing
+sequence dataloaders. The CLI exposes `inspect-deeplob` and
+`run-deeplob-smoke` against the bundled synthetic fixture and writes
+nothing. Documentation lives in `reports/deeplob_baseline.md`, model
+defaults in `configs/models/deeplob.yaml` and the synthetic smoke
+configuration in `configs/experiments/fi2010_deeplob_smoke.yaml`. The
+phase ships forward/backward/gradient tests, training-loop tests and
+experiment runner tests; the supervised neural baseline writes no
+model checkpoints. No transformers, self-supervised learning,
+backtests, fake benchmark metrics or committed run outputs are
+introduced.
+
+## Phase 8: Binance local order book reconstruction (completed)
 
 Goal: Reconstruct local order book state from public exchange messages for
 engineering demonstrations.
@@ -175,7 +251,22 @@ sources, sequence gaps fail loudly.
 
 Tests expected: Replay tests, gap-detection tests, snapshot/delta consistency tests.
 
-## Phase 9: Event log storage and deterministic replay
+Status: `chronoslob.data.binance` provides offline Binance-style snapshot and
+diff-depth schemas, local JSON/JSONL loaders and conversion to the canonical
+`OrderBookSnapshot` schema. `chronoslob.book.local_order_book` manages a
+deterministic in-memory book with sorted bid/ask views, zero-quantity deletion,
+depth trimming and crossed-book checks. `chronoslob.book.reconstruction` applies
+snapshot-plus-diff replay in supplied order, skips stale events, detects update-id
+gaps and records crossed-book issues. `chronoslob.book.replay` loads local files
+only and returns in-memory reconstruction results without writing outputs. The
+CLI exposes `inspect-binance-replay` for local fixtures, and
+`configs/data/binance_replay.yaml` plus `reports/order_book_reconstruction.md`
+document the offline-only scope. The bundled Binance-style fixtures are
+synthetic; no live ingestion, REST/WebSocket clients, downloads, API keys, models,
+backtests, PnL or fake benchmark results are introduced. Phase 8 was marked
+complete after `python -m pytest` passed with 525 tests.
+
+## Phase 9: Event log storage and deterministic replay (completed)
 
 Goal: Store event logs in an auditable format and replay them deterministically.
 
@@ -184,6 +275,23 @@ Files likely to be touched: `chronoslob/data/`, `chronoslob/book/`, `tests/`.
 Acceptance criteria: Stored logs preserve ordering, metadata and source assumptions.
 
 Tests expected: Round-trip storage tests, deterministic replay tests, ordering tests.
+
+Status: `chronoslob.data.event_store` now defines the canonical local JSONL
+event-log wrapper for `BookEvent` and `OrderBookSnapshot` records, including
+schema versioning, deterministic serialisation, streaming reads, filtering and
+explicit sorting. `chronoslob.data.manifests` builds SHA-256 reproducibility
+manifests with record counts, symbols, timestamp ranges and sequence-id ranges.
+`chronoslob.book.event_replay` extracts explicit snapshots from event logs,
+builds past-only feature frames, optionally builds future-horizon label frames,
+runs available no-look-ahead checks and writes Phase 8 Binance reconstruction
+snapshots as canonical event logs. The CLI exposes read-only
+`inspect-event-log` and `event-log-to-features` commands. Documentation lives in
+`reports/event_log_storage.md` and `reports/replay_to_features.md`, with
+configuration examples in `configs/data/event_log.yaml` and
+`configs/experiments/event_log_feature_audit.yaml`. The bundled event-log
+fixtures are synthetic. Generic `BookEvent` book reconstruction, tokenisation,
+transformers, self-supervised training, execution backtests, PnL and fake results
+are not introduced.
 
 ## Phase 10: Transformer tokenisation
 

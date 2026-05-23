@@ -1,0 +1,33 @@
+# Offline Binance-style order book reconstruction.
+#
+# IMPORTANT
+#   * This configuration describes an **offline replay only**.
+#   * No API keys, secrets or remote URLs are configured anywhere in this
+#     repository.
+#   * No network calls (REST or WebSocket) are made by the reconstruction
+#     code. Replay reads local JSON/JSONL files only.
+#   * Real Binance data must NOT be committed to this repository. The
+#     bundled fixtures under tests/fixtures/binance/ are synthetic and are
+#     clearly marked as such.
+#   * The default paths below point at the synthetic fixtures so the
+#     command is runnable out of the box for development.
+
+# Path to a local JSON depth snapshot (Binance REST shape).
+snapshot_path: tests/fixtures/binance/synthetic_snapshot.json
+
+# Path to a local JSONL file of Binance-style depth diff events.
+updates_path: tests/fixtures/binance/synthetic_diff_updates.jsonl
+
+# Optional symbol override. When null the symbol from the snapshot is used.
+symbol: TESTUSDT
+
+# Optional maximum depth per side. Null keeps every level.
+max_depth: null
+
+# Reconstruction stops at the first detected update-id gap when true.
+stop_on_gap: true
+
+# When false a crossed book is treated as an error and recorded as a
+# reconstruction issue. Set to true only for experimentation against
+# fixtures that intentionally cross the book.
+allow_crossed: false

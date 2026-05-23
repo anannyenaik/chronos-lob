@@ -1,0 +1,49 @@
+# Synthetic event-log replay audit.
+#
+# This configuration documents a reproducible inspection path. It is not a
+# model-training config and contains no benchmark results.
+
+experiment:
+  name: "synthetic-event-log-feature-audit"
+  phase: "phase-9"
+  seed: 42
+
+event_log:
+  path: "tests/fixtures/event_logs/synthetic_snapshots.jsonl"
+  schema_version: "1.0"
+  sort_records: false
+  symbol: "TESTUSDT"
+
+features:
+  depths: [1, 5, 10]
+  include_price_features: true
+  include_imbalance_features: true
+  include_order_flow: true
+  include_volatility: true
+  include_regime_features: true
+  volatility_window: 20
+  event_intensity_window_seconds: 60.0
+  allow_synthetic_timestamps_for_time_features: false
+  allow_partial_features: true
+
+labels:
+  horizons: [1, 2]
+  return_threshold: 0.0
+  log_returns: true
+  include_direction: true
+  include_return: true
+  include_return_quantiles: true
+  include_volatility: true
+  include_spread_widening: false
+  include_fill_probability: true
+  include_adverse_selection: true
+  fill_horizon: 1
+  adverse_evaluation_horizon: 2
+  missing: "drop"
+
+model: null
+results: null
+
+notes:
+  - "Synthetic fixture only; not real exchange data."
+  - "No transformer, self-supervised objective, model training, backtest or PnL output."

@@ -48,6 +48,9 @@ dev = [
   "pre-commit>=3.6",
   "ipykernel>=6.29"
 ]
+torch = [
+  "torch>=2.0"
+]
 
 [project.scripts]
 chronoslob = "chronoslob.cli:app"
@@ -87,5 +90,5 @@ no_implicit_optional = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["pandas"]
+module = ["pandas", "sklearn.*", "torch", "torch.*"]
 ignore_missing_imports = true

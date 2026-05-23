@@ -32,7 +32,6 @@ ChronosLOB is designed to support careful experiments around:
 
 This scaffold does not claim:
 
-- trained models;
 - benchmark results;
 - replication of any published FI-2010 outcome;
 - trading performance;
@@ -49,11 +48,24 @@ assumed to be tradable alpha.
 ## Current Status
 
 **Scaffold, canonical schemas, a local FI-2010 loader, a leakage-safe
-microstructure feature engine and a future-window label engine.**
+microstructure feature engine, a future-window label engine, safe validation
+infrastructure, classical baseline experiment utilities, a PyTorch
+sequence-window data layer and a DeepLOB-style supervised CNN-LSTM
+baseline, plus offline Binance-style order book reconstruction and
+deterministic fixture replay, canonical event-log storage and
+replay-to-feature integration.**
 
-Phases 0 (scaffold), 1 (core schemas), 2 (FI-2010 local loader) and 3
-(microstructure feature engine) are complete, and Phase 4 (label generation and
-leakage checks) is implemented. The repository contains project rules, package
+Phases 0 (scaffold), 1 (core schemas), 2 (FI-2010 local loader), 3
+(microstructure feature engine), 4 (label generation and leakage checks), 5
+(temporal splitters and experiment registry skeleton), 6 (classical baseline
+interfaces, train-only preprocessing and metrics), 7A (PyTorch
+sequence-window data layer) and 7B (DeepLOB-style supervised CNN-LSTM
+baseline and minimal neural training smoke loop), and 8 (offline
+Binance-style local order book reconstruction), and 9 (event-log storage
+and deterministic replay-to-feature integration) are implemented. No
+benchmark performance is claimed; transformer and self-supervised work
+remain planned future phases. The
+repository contains project rules, package
 structure, utility modules, configuration conventions, documentation and tests,
 and defines canonical schemas for market events, order book snapshots, feature
 rows, label rows and data-quality findings in `chronoslob.data.schemas` with
@@ -69,8 +81,40 @@ must supply benchmark data locally: no FI-2010 data is downloaded or bundled,
 and no benchmark performance is claimed. `chronoslob.labels` now implements
 future return, direction, return-quantile, volatility, spread-widening, passive
 fill proxy and adverse-selection proxy labels, plus explicit no-look-ahead
-checks. Models, training loops and execution backtests remain planned future
-phases.
+checks. `chronoslob.training` adds temporal train/validation/test splitters,
+walk-forward folds, purged and embargoed validation helpers for overlapping label
+horizons, a train-only quantile binner and a metadata-only experiment registry
+skeleton. `chronoslob.models` and `chronoslob.training` also provide
+majority-class, logistic-regression, ridge-classifier, elastic-net logistic,
+random-forest and gradient-boosting baseline interfaces, train-only
+standardisation, classification metrics and a smoke-tested baseline experiment
+runner. `chronoslob.training` adds a PyTorch sequence-window data layer
+(`SequenceDataset`, `SequenceWindowConfig`, train-only
+`TorchSequenceStandardiser`, fixed- and variable-length collation helpers and
+a `build_dataloaders_for_split` factory with safe non-shuffling defaults).
+`chronoslob.models.deeplob` and `chronoslob.training.torch_training` plus
+`chronoslob.training.torch_experiment` now provide a DeepLOB-style
+supervised CNN-LSTM baseline, generic torch classification training
+utilities and a DeepLOB smoke experiment runner that exercises the full
+data layer end-to-end with deterministic CPU tests. The supervised neural
+baseline writes no model checkpoints. `chronoslob.data.binance`,
+`chronoslob.book.local_order_book`, `chronoslob.book.reconstruction` and
+`chronoslob.book.replay` provide offline Binance-style snapshot and
+diff-depth parsing, deterministic local replay, update-id gap detection,
+stale-event skipping and crossed-book surfacing against synthetic fixtures
+only. The CLI exposes a read-only `inspect-binance-replay` command for local
+JSON/JSONL files. No live Binance connectivity, WebSockets, REST clients,
+downloads, API keys or hidden network calls are implemented. No FI-2010
+benchmark performance is reported by the repository.
+`chronoslob.data.event_store` and `chronoslob.data.manifests` now provide
+canonical local JSONL storage for `BookEvent` and `OrderBookSnapshot` records,
+schema-preserving read/write helpers and SHA-256 manifests. `chronoslob.book`
+adds event-log replay helpers that extract explicit snapshots, build past-only
+feature frames, optionally build future-horizon label frames and run available
+no-look-ahead checks. The CLI exposes read-only `inspect-event-log` and
+`event-log-to-features` commands against local files. Generic event-level book
+reconstruction, transformers, self-supervised representation learning and
+execution backtests remain planned future phases.
 
 ## Planned Architecture
 
@@ -82,7 +126,8 @@ forecasting, validation and reporting:
 - `chronoslob.features`: leakage-safe microstructure feature generation.
 - `chronoslob.labels`: future-return and market-state labels with leakage tests.
 - `chronoslob.models`: model definitions and representation learners.
-- `chronoslob.training`: training loops, evaluation and experiment execution.
+- `chronoslob.training`: temporal splitters, validation helpers and experiment
+  metadata before future training loops.
 - `chronoslob.backtest`: simplified execution-aware research simulations.
 - `chronoslob.analysis`: calibration, diagnostics and result export helpers.
 - `chronoslob.utils`: shared utilities for seeding, logging and paths.
@@ -128,6 +173,16 @@ python -m chronoslob.cli doctor
 python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
 python -m chronoslob.cli inspect-features-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
 python -m chronoslob.cli inspect-labels-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+python -m chronoslob.cli inspect-split --rows 100
+python -m chronoslob.cli init-run --name split-audit --phase phase-5 --seed 42 --root runs
+python -m chronoslob.cli inspect-baselines
+python -m chronoslob.cli run-baseline-smoke --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+python -m chronoslob.cli inspect-torch-dataset --path tests/fixtures/fi2010/tiny_fi2010_like.csv --lookback 2
+python -m chronoslob.cli inspect-deeplob
+python -m chronoslob.cli run-deeplob-smoke --path tests/fixtures/fi2010/tiny_fi2010_like.csv --lookback 2 --epochs 1
+python -m chronoslob.cli inspect-binance-replay --snapshot tests/fixtures/binance/synthetic_snapshot.json --updates tests/fixtures/binance/synthetic_diff_updates.jsonl
+python -m chronoslob.cli inspect-event-log --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
+python -m chronoslob.cli event-log-to-features --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
 ```
 
 The `inspect-fi2010` command is read-only: it loads a local FI-2010-style file,
@@ -142,6 +197,42 @@ The `inspect-labels-fi2010` command extracts configured FI-2010 benchmark labels
 or generates ChronosLOB labels from snapshots, validates the label frame and
 prints a short read-only summary. See `reports/label_engine.md`,
 `reports/leakage_controls.md` and `configs/experiments/label_audit_fi2010.yaml`.
+The `inspect-split` command prints default temporal split counts without reading
+data. The `init-run` command creates only a run directory and `metadata.json`;
+it does not create metrics, checkpoints or model outputs. See
+`reports/validation_protocol.md`, `reports/experiment_registry.md` and
+`configs/experiments/fi2010_split_audit.yaml`.
+The `inspect-baselines` command lists supported classical baseline model types
+without training. The `run-baseline-smoke` command runs a tiny synthetic-fixture
+pipeline check and prints validation metrics with an explicit warning that the
+output is not benchmark performance. It writes nothing unless `--write-outputs`
+is passed, in which case outputs go under the gitignored `runs/` tree. See
+`reports/baselines.md`, `configs/models/baselines.yaml` and
+`configs/experiments/fi2010_baseline_smoke.yaml`.
+The `inspect-torch-dataset` command builds a tiny PyTorch sequence
+`DataLoader` from the synthetic fixture and prints sample counts, batch
+shapes and the train-only class mapping. It is also explicitly labelled as
+non-benchmark and writes nothing. See `reports/torch_data_layer.md` and
+`configs/experiments/fi2010_torch_dataset_smoke.yaml`. PyTorch is an
+optional dependency installed via `pip install -e ".[torch]"`.
+The `inspect-deeplob` command prints the DeepLOB-style model defaults
+without training. The `run-deeplob-smoke` command runs a tiny synthetic
+fixture DeepLOB-style supervised smoke experiment and prints the
+parameter count, training history and validation metrics. It writes
+nothing, never saves model checkpoints and is explicitly labelled as
+non-benchmark performance. See `reports/deeplob_baseline.md`,
+`configs/models/deeplob.yaml` and
+`configs/experiments/fi2010_deeplob_smoke.yaml`.
+The `inspect-binance-replay` command reconstructs a local Binance-style book
+from synthetic/local snapshot and diff files, prints update-id and issue counts
+and writes nothing. The `inspect-event-log` command validates a canonical
+event-log JSONL file and prints manifest-style counts, symbols, timestamp range,
+sequence range and a SHA-256 prefix. The `event-log-to-features` command
+replays explicit snapshots from a canonical event log into the existing
+past-only feature pipeline, validates the frame and writes nothing. See
+`reports/order_book_reconstruction.md`, `reports/event_log_storage.md`,
+`reports/replay_to_features.md`, `configs/data/event_log.yaml` and
+`configs/experiments/event_log_feature_audit.yaml`.
 
 With `make` available:
 
@@ -161,30 +252,44 @@ pytest --cov=chronoslob
 ```
 
 Tests cover package imports, deterministic seeding, path utilities, schemas,
-FI-2010 loading, feature generation, label generation and explicit leakage
-checks. Future modules should keep adding behaviour-focused tests.
+FI-2010 loading, feature generation, label generation, explicit leakage checks,
+temporal splitters, purged/embargoed validation, train-only fitting and
+experiment metadata and classical baseline evaluation. Future modules should
+keep adding behaviour-focused tests.
 
 ## Roadmap
 
 The high-level build plan is tracked in `PLANS.md`.
 
-Near-term phases:
+Completed phases:
 
-1. Repository scaffold and research design.
-2. Core schemas and utilities.
-3. FI-2010 benchmark loader.
-4. Microstructure feature engine.
+0. Repository scaffold and research design.
+1. Core schemas and utilities.
+2. FI-2010 benchmark loader.
+3. Microstructure feature engine.
+4. Label generation and leakage checks.
 5. Temporal splitters and experiment registry.
+6. Classical baseline interfaces, train-only preprocessing and metrics.
+7A. PyTorch sequence-window data layer (datasets, batching, dataloaders).
+7B. DeepLOB-style supervised CNN-LSTM baseline and minimal neural
+   training smoke loop with train-only standardisation.
+8. Offline Binance-style local order book reconstruction.
+9. Canonical event-log storage and deterministic replay-to-feature integration.
 
-Later phases will add temporal splitters, baselines, PyTorch datasets,
-self-supervised transformers, calibration, abstention and execution-aware research
-simulation.
+Later phases will add event tokenisation, self-supervised transformers, calibration,
+abstention and execution-aware research simulation. No benchmark
+performance is claimed by the DeepLOB-style baseline; it is a
+reproducible supervised neural baseline, not a production trading model.
 
 ## Limitations
 
 See `reports/limitations.md` for the current limitations statement. In short, this
-repository currently contains data, feature and label infrastructure only. No
-model results exist yet and no trading performance is claimed.
+repository currently contains data, feature, label, split, baseline, supervised
+sequence-model, offline reconstruction and event-log replay infrastructure. No
+transformer, self-supervised training objective, execution backtest or trading
+performance claim exists. Classical and DeepLOB-style utilities can produce
+metrics only when a user runs an experiment, and synthetic smoke outputs are not
+FI-2010 benchmark results.
 
 ## CV Positioning
 

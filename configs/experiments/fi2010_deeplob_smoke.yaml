@@ -1,0 +1,60 @@
+# Synthetic FI-2010-style DeepLOB smoke configuration.
+#
+# This config uses the tiny synthetic fixture committed under
+# tests/fixtures. It is for pipeline testing only and is not real
+# FI-2010 benchmark performance. No metrics are included here.
+# No model checkpoints are committed by this phase.
+
+run:
+  name: synthetic-fi2010-deeplob-smoke
+  phase: phase-7b
+  seed: 42
+
+dataset:
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+  target_column: label_10
+  synthetic_fixture: true
+  benchmark_result: false
+  cpu_only_smoke: true
+
+# The synthetic fixture is too small for the standard 70/15/15 split, so
+# the smoke configuration falls back to a 50/50 train/validation split
+# with no test partition. This is intentional and is documented in
+# reports/deeplob_baseline.md.
+split:
+  type: temporal
+  train_fraction: 0.5
+  validation_fraction: 0.5
+  test_fraction: 0.0
+  purge: false
+  embargo: 0
+
+preprocessing:
+  standardise: true
+
+sequence:
+  lookback: 2
+  batch_size: 4
+
+model:
+  conv_channels: 16
+  conv_kernel_size: 3
+  lstm_hidden_size: 32
+  lstm_layers: 1
+  dropout: 0.1
+  use_batch_norm: true
+
+training:
+  epochs: 1
+  learning_rate: 1.0e-3
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  device: cpu
+  seed: 42
+
+write_outputs: false
+write_checkpoints: false

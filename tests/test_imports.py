@@ -81,6 +81,85 @@ def test_fi2010_modules_import() -> None:
         )
 
 
+def test_binance_reconstruction_modules_import() -> None:
+    binance = importlib.import_module("chronoslob.data.binance")
+    event_store = importlib.import_module("chronoslob.data.event_store")
+    manifests = importlib.import_module("chronoslob.data.manifests")
+    event_replay = importlib.import_module("chronoslob.book.event_replay")
+    local_order_book = importlib.import_module("chronoslob.book.local_order_book")
+    reconstruction = importlib.import_module("chronoslob.book.reconstruction")
+    replay = importlib.import_module("chronoslob.book.replay")
+
+    for name in (
+        "BinanceDepthLevel",
+        "BinanceDepthSnapshot",
+        "BinanceDiffDepthEvent",
+        "parse_binance_snapshot",
+        "parse_binance_diff_event",
+        "load_binance_snapshot_json",
+        "load_binance_diff_events_jsonl",
+        "to_order_book_snapshot",
+    ):
+        assert hasattr(binance, name), f"chronoslob.data.binance is missing {name}"
+
+    for name in ("LocalOrderBookConfig", "LocalOrderBook"):
+        assert hasattr(local_order_book, name), (
+            f"chronoslob.book.local_order_book is missing {name}"
+        )
+
+    for name in (
+        "ReconstructionStatus",
+        "ReconstructionIssue",
+        "ReconstructionResult",
+        "should_apply_first_diff",
+        "is_stale_event",
+        "has_update_gap",
+        "reconstruct_order_book",
+    ):
+        assert hasattr(reconstruction, name), (
+            f"chronoslob.book.reconstruction is missing {name}"
+        )
+
+    for name in ("ReplayConfig", "replay_binance_jsonl", "summarise_replay_result"):
+        assert hasattr(replay, name), f"chronoslob.book.replay is missing {name}"
+
+    for name in (
+        "EventLogRecord",
+        "EventLogRecordType",
+        "serialise_book_event",
+        "serialise_order_book_snapshot",
+        "deserialise_event_log_record",
+        "write_event_log_jsonl",
+        "read_event_log_jsonl",
+        "iter_event_log_jsonl",
+        "filter_event_log_records",
+        "sort_event_log_records",
+    ):
+        assert hasattr(event_store, name), (
+            f"chronoslob.data.event_store is missing {name}"
+        )
+
+    for name in (
+        "EventLogManifest",
+        "sha256_file",
+        "create_event_log_manifest",
+        "write_manifest",
+        "read_manifest",
+    ):
+        assert hasattr(manifests, name), f"chronoslob.data.manifests is missing {name}"
+
+    for name in (
+        "snapshots_from_event_log_records",
+        "replay_event_log_to_feature_frame",
+        "replay_event_log_to_label_frame",
+        "replay_event_log_to_feature_label_frames",
+        "write_binance_reconstruction_to_event_log",
+    ):
+        assert hasattr(event_replay, name), (
+            f"chronoslob.book.event_replay is missing {name}"
+        )
+
+
 def test_feature_modules_import() -> None:
     microprice = importlib.import_module("chronoslob.features.microprice")
     imbalance = importlib.import_module("chronoslob.features.imbalance")
@@ -228,3 +307,190 @@ def test_label_modules_import() -> None:
         assert hasattr(labels, name), (
             f"chronoslob.labels is missing re-exported {name}"
         )
+
+
+def test_training_modules_import() -> None:
+    splitters = importlib.import_module("chronoslob.training.splitters")
+    experiment = importlib.import_module("chronoslob.training.experiment")
+    config = importlib.import_module("chronoslob.training.config")
+    artifacts = importlib.import_module("chronoslob.training.artifacts")
+    metrics = importlib.import_module("chronoslob.training.metrics")
+    evaluate = importlib.import_module("chronoslob.training.evaluate")
+    baseline_experiment = importlib.import_module(
+        "chronoslob.training.baseline_experiment"
+    )
+    datasets = importlib.import_module("chronoslob.training.datasets")
+    batching = importlib.import_module("chronoslob.training.batching")
+    dataloaders = importlib.import_module("chronoslob.training.dataloaders")
+    torch_training = importlib.import_module("chronoslob.training.torch_training")
+    torch_experiment = importlib.import_module("chronoslob.training.torch_experiment")
+    training = importlib.import_module("chronoslob.training")
+
+    for name in (
+        "SplitIndices",
+        "TemporalSplitConfig",
+        "WalkForwardSplitConfig",
+        "PurgedEmbargoConfig",
+        "TrainOnlyQuantileBinner",
+        "temporal_train_validation_test_split",
+        "walk_forward_splits",
+        "apply_purge_and_embargo",
+        "label_horizon_end_indices_from_rows",
+        "make_label_horizon_end_indices_from_frame",
+    ):
+        assert hasattr(splitters, name), (
+            f"chronoslob.training.splitters is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "ExperimentMetadata",
+        "create_experiment_metadata",
+        "get_git_commit",
+        "initialise_experiment_run",
+    ):
+        assert hasattr(experiment, name), (
+            f"chronoslob.training.experiment is missing {name}"
+        )
+
+    for name in ("load_yaml_config", "resolve_config_path"):
+        assert hasattr(config, name), f"chronoslob.training.config is missing {name}"
+
+    for name in ("safe_run_name", "create_run_directory", "write_json"):
+        assert hasattr(artifacts, name), (
+            f"chronoslob.training.artifacts is missing {name}"
+        )
+
+    for name in (
+        "ClassificationMetrics",
+        "compute_classification_metrics",
+        "confusion_matrix_as_dict",
+    ):
+        assert hasattr(metrics, name), f"chronoslob.training.metrics is missing {name}"
+
+    assert hasattr(evaluate, "evaluate_classifier")
+
+    for name in (
+        "BaselineExperimentConfig",
+        "BaselineSplitConfig",
+        "BaselinePreprocessingConfig",
+        "create_default_baseline_configs",
+        "run_baseline_experiment",
+    ):
+        assert hasattr(baseline_experiment, name), (
+            f"chronoslob.training.baseline_experiment is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "SequenceDataset",
+        "SequenceSampleIndex",
+        "SequenceWindowConfig",
+        "TorchSequenceStandardiser",
+        "build_sequence_indices",
+        "encode_target_values",
+        "infer_torch_feature_columns",
+        "torch_is_available",
+    ):
+        assert hasattr(datasets, name), (
+            f"chronoslob.training.datasets is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "collate_fixed_length_batch",
+        "collate_variable_length_batch",
+        "pad_variable_length_sequences",
+    ):
+        assert hasattr(batching, name), (
+            f"chronoslob.training.batching is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "DataLoaderConfig",
+        "build_dataloaders_for_split",
+        "create_sequence_dataloader",
+    ):
+        assert hasattr(dataloaders, name), (
+            f"chronoslob.training.dataloaders is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "TorchEpochResult",
+        "TorchTrainingConfig",
+        "evaluate_torch_classifier",
+        "fit_torch_classifier",
+        "set_torch_deterministic",
+        "train_one_epoch",
+    ):
+        assert hasattr(torch_training, name), (
+            f"chronoslob.training.torch_training is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
+        "DeepLOBExperimentConfig",
+        "run_deeplob_experiment",
+        "run_deeplob_smoke_from_fi2010_fixture",
+    ):
+        assert hasattr(torch_experiment, name), (
+            f"chronoslob.training.torch_experiment is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+
+def test_model_baseline_modules_import() -> None:
+    baselines = importlib.import_module("chronoslob.models.baselines")
+    preprocessing = importlib.import_module("chronoslob.models.preprocessing")
+    deeplob = importlib.import_module("chronoslob.models.deeplob")
+    models = importlib.import_module("chronoslob.models")
+
+    for name in (
+        "BaselineModelConfig",
+        "BaseBaselineModel",
+        "MajorityClassBaseline",
+        "SklearnBaselineModel",
+        "create_baseline_model",
+    ):
+        assert hasattr(baselines, name), f"chronoslob.models.baselines is missing {name}"
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    for name in (
+        "FeatureMatrix",
+        "TargetVector",
+        "TrainOnlyStandardScaler",
+        "select_feature_columns",
+        "build_feature_matrix",
+        "build_target_vector",
+        "align_feature_label_frames",
+    ):
+        assert hasattr(preprocessing, name), (
+            f"chronoslob.models.preprocessing is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    for name in (
+        "DeepLOBConfig",
+        "DeepLOBModel",
+        "create_deeplob_model",
+    ):
+        assert hasattr(deeplob, name), (
+            f"chronoslob.models.deeplob is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"

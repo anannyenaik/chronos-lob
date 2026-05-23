@@ -1,0 +1,53 @@
+# Synthetic FI-2010-style baseline smoke configuration.
+#
+# This config uses the tiny synthetic fixture committed under tests/fixtures.
+# It is for pipeline testing only and is not real FI-2010 benchmark performance.
+# No metrics are included here.
+
+run:
+  name: synthetic-fi2010-baseline-smoke
+  phase: phase-6
+  seed: 42
+
+dataset:
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+  target_column: label_10
+  synthetic_fixture: true
+  benchmark_result: false
+
+split:
+  type: temporal
+  train_fraction: 0.7
+  validation_fraction: 0.15
+  test_fraction: 0.15
+  purge: false
+  embargo: 0
+
+preprocessing:
+  standardise: true
+
+models:
+  - name: majority_class
+    model_type: majority_class
+    task_type: classification
+    random_state: 42
+
+  - name: logistic_regression
+    model_type: logistic_regression
+    task_type: classification
+    random_state: 42
+    hyperparameters:
+      max_iter: 1000
+
+  - name: random_forest
+    model_type: random_forest
+    task_type: classification
+    random_state: 42
+    hyperparameters:
+      n_estimators: 20
+
+write_outputs: false

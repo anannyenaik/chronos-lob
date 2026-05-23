@@ -75,6 +75,107 @@ def _doctor_impl() -> None:
     Console().print(table)
 
 
+def _is_synthetic_fixture_path(path: Path) -> bool:
+    parts = {part.lower() for part in path.parts}
+    return "tests" in parts and "fixtures" in parts
+
+
+def _print_synthetic_fixture_warning(path: Path) -> None:
+    if _is_synthetic_fixture_path(path):
+        print(
+            "WARNING: event log path is a synthetic fixture; "
+            "outputs are not real market data."
+        )
+
+
+def _inspect_event_log_impl(path: Path) -> int:
+    """Inspect a local canonical event log without writing outputs."""
+    from chronoslob.data.manifests import create_event_log_manifest
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        manifest = create_event_log_manifest(path)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"Failed to inspect event log: {exc}", file=sys.stderr)
+        return 1
+
+    symbols = ", ".join(manifest.symbols) if manifest.symbols else "none"
+    start = (
+        manifest.start_timestamp.isoformat()
+        if manifest.start_timestamp is not None
+        else "n/a"
+    )
+    end = (
+        manifest.end_timestamp.isoformat()
+        if manifest.end_timestamp is not None
+        else "n/a"
+    )
+    seq_range = (
+        f"{manifest.min_sequence_id}..{manifest.max_sequence_id}"
+        if manifest.min_sequence_id is not None
+        and manifest.max_sequence_id is not None
+        else "n/a"
+    )
+
+    print("ChronosLOB event log inspection")
+    print(f"  path:             {path}")
+    print(f"  records:          {manifest.n_records}")
+    print(f"  book events:      {manifest.n_book_events}")
+    print(f"  snapshots:        {manifest.n_snapshots}")
+    print(f"  symbols:          {symbols}")
+    print(f"  timestamp range:  {start} to {end}")
+    print(f"  sequence range:   {seq_range}")
+    print(f"  sha256 prefix:    {manifest.sha256[:12]}")
+    print("  outputs:          not written")
+    print("  network calls:    none performed")
+    return 0
+
+
+def _event_log_to_features_impl(path: Path) -> int:
+    """Build replay-derived features from a local event log without writing."""
+    from chronoslob.book.event_replay import replay_event_log_to_feature_frame
+    from chronoslob.data.event_store import read_event_log_jsonl
+    from chronoslob.features.pipeline import validate_feature_frame
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        records = read_event_log_jsonl(path)
+        frame = replay_event_log_to_feature_frame(records)
+        validation = validate_feature_frame(frame)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"Failed to replay event log to features: {exc}", file=sys.stderr)
+        return 1
+
+    feature_columns = [
+        column
+        for column in frame.columns
+        if column not in {"timestamp", "symbol", "split"}
+    ]
+
+    print("ChronosLOB event-log-to-features inspection")
+    print(f"  path:                {path}")
+    print(f"  rows:                {len(frame)}")
+    print(f"  feature columns:     {len(feature_columns)}")
+    print(f"  synthetic_time:      {frame.attrs.get('synthetic_time', False)}")
+    print(
+        f"  skipped time feats:  {frame.attrs.get('skipped_time_features', False)}"
+    )
+    print(f"  validation ok:       {validation.ok}")
+    print(f"  validation errors:   {validation.error_count}")
+    print(f"  validation warnings: {validation.warning_count}")
+    print("  outputs:             not written")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _inspect_fi2010_impl(
     path: Path,
     *,
@@ -269,14 +370,499 @@ def _inspect_labels_fi2010_impl(
     return 0
 
 
+def _inspect_split_impl(rows: int) -> int:
+    """Build a default temporal split and print partition counts."""
+    from chronoslob.training.splitters import temporal_train_validation_test_split
+
+    try:
+        split = temporal_train_validation_test_split(rows)
+    except (TypeError, ValueError) as exc:
+        print(f"Failed to build split: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB temporal split inspection")
+    print(f"  rows:        {rows}")
+    print(f"  train:       {split.n_train}")
+    print(f"  validation:  {split.n_validation}")
+    print(f"  test:        {split.n_test}")
+    return 0
+
+
+def _init_run_impl(
+    *,
+    name: str,
+    phase: str,
+    seed: int,
+    root: Path,
+    config_path: Path | None = None,
+    notes: str | None = None,
+) -> int:
+    """Initialise a metadata-only experiment run directory."""
+    from chronoslob.training.experiment import initialise_experiment_run
+
+    try:
+        metadata, run_path = initialise_experiment_run(
+            root=root,
+            run_name=name,
+            phase=phase,
+            seed=seed,
+            config_path=config_path,
+            notes=notes,
+        )
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"Failed to initialise run: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB experiment run initialised")
+    print(f"  run id:       {metadata.run_id}")
+    print(f"  run name:     {metadata.run_name}")
+    print(f"  phase:        {metadata.phase}")
+    print(f"  seed:         {metadata.seed}")
+    print(f"  output path:  {run_path}")
+    print("  metrics:      none")
+    return 0
+
+
+def _inspect_baselines_impl() -> int:
+    """Print supported classical baseline model types without training."""
+    from chronoslob.models.baselines import SUPPORTED_BASELINE_MODEL_TYPES
+
+    print("ChronosLOB supported classical baselines")
+    for model_type in SUPPORTED_BASELINE_MODEL_TYPES:
+        print(f"  - {model_type}")
+    print("No training was run.")
+    return 0
+
+
+def _run_baseline_smoke_impl(
+    path: Path,
+    *,
+    write_outputs: bool = False,
+    output_root: Path = Path("runs"),
+) -> int:
+    """Run a tiny synthetic-fixture baseline smoke experiment."""
+    from chronoslob.data.fi2010 import FI2010Config, load_fi2010
+    from chronoslob.features.pipeline import (
+        FeaturePipelineConfig,
+        build_feature_frame_from_fi2010,
+    )
+    from chronoslob.labels.pipeline import build_label_frame_from_fi2010
+    from chronoslob.training.baseline_experiment import (
+        BaselineExperimentConfig,
+        create_default_baseline_configs,
+        run_baseline_experiment,
+    )
+
+    label_columns = ["label_10", "label_50", "label_100"]
+    try:
+        dataset = load_fi2010(
+            FI2010Config(
+                path=path,
+                timestamp_column="timestamp",
+                split_column="split",
+                label_columns=label_columns,
+                price_level_count=2,
+            )
+        )
+        feature_frame = build_feature_frame_from_fi2010(
+            dataset,
+            FeaturePipelineConfig(
+                include_order_flow=False,
+                include_volatility=False,
+            ),
+        )
+        labels = build_label_frame_from_fi2010(
+            dataset,
+            prefer_existing_labels=True,
+        )
+        label_frame = labels.loc[:, ["timestamp", "symbol", "label_10"]]
+        config = BaselineExperimentConfig(
+            run_name="synthetic-fi2010-baseline-smoke",
+            seed=42,
+            target_column="label_10",
+            models=create_default_baseline_configs(seed=42),
+        )
+        result = run_baseline_experiment(
+            feature_frame,
+            label_frame,
+            config,
+            output_root=output_root,
+            write_outputs=write_outputs,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError, OSError) as exc:
+        print(f"Baseline smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("Synthetic fixture smoke test only; not benchmark performance.")
+    print(f"  path:          {path}")
+    print(f"  target:        {result['target_column']}")
+    print(f"  train rows:    {result['split_sizes']['train']}")
+    print(f"  validation:    {result['split_sizes']['validation']}")
+    print(f"  test rows:     {result['split_sizes']['test']}")
+    print("  validation metrics:")
+    for model_result in result["models"]:
+        metrics = model_result["validation"]["metrics"]
+        print(
+            "    "
+            f"{model_result['name']}: "
+            f"accuracy={metrics['accuracy']:.6f}, "
+            f"macro_f1={metrics['macro_f1']:.6f}"
+        )
+    if write_outputs:
+        print(f"  output path:   {result['output_path']}")
+    else:
+        print("  outputs:       not written")
+    return 0
+
+
+def _inspect_torch_dataset_impl(
+    path: Path,
+    *,
+    lookback: int = 2,
+    batch_size: int = 4,
+    target_column: str = "label_10",
+    timestamp_column: str | None = "timestamp",
+    split_column: str | None = "split",
+    price_level_count: int = 2,
+    train_fraction: float = 0.5,
+    validation_fraction: float = 0.34,
+    test_fraction: float = 0.16,
+) -> int:
+    """Build a tiny sequence DataLoader from an FI-2010 fixture and summarise.
+
+    The command is read-only: it does not train, write checkpoints or
+    persist any outputs. It is intended only for smoke-testing the
+    sequence data layer on the bundled synthetic fixture.
+    """
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.data.fi2010 import FI2010Config, load_fi2010
+    from chronoslob.features.pipeline import (
+        FeaturePipelineConfig,
+        build_feature_frame_from_fi2010,
+    )
+    from chronoslob.labels.pipeline import build_label_frame_from_fi2010
+    from chronoslob.training.dataloaders import (
+        DataLoaderConfig,
+        build_dataloaders_for_split,
+    )
+    from chronoslob.training.datasets import SequenceWindowConfig
+    from chronoslob.training.splitters import (
+        TemporalSplitConfig,
+        temporal_train_validation_test_split,
+    )
+
+    label_columns = ["label_10", "label_50", "label_100"]
+    try:
+        dataset = load_fi2010(
+            FI2010Config(
+                path=path,
+                timestamp_column=timestamp_column,
+                split_column=split_column,
+                label_columns=label_columns,
+                price_level_count=price_level_count,
+            )
+        )
+        feature_frame = build_feature_frame_from_fi2010(
+            dataset,
+            FeaturePipelineConfig(
+                include_order_flow=False,
+                include_volatility=False,
+            ),
+        )
+        labels = build_label_frame_from_fi2010(
+            dataset,
+            prefer_existing_labels=True,
+        )
+        if target_column not in labels.columns:
+            print(
+                f"target column {target_column!r} is missing from label frame",
+                file=sys.stderr,
+            )
+            return 1
+        label_frame = labels.loc[:, ["timestamp", "symbol", target_column]]
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError) as exc:
+        print(f"Failed to prepare frames: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        from chronoslob.models.preprocessing import align_feature_label_frames
+        from chronoslob.training.datasets import encode_target_values
+
+        aligned = align_feature_label_frames(feature_frame, label_frame)
+        split = temporal_train_validation_test_split(
+            len(aligned),
+            TemporalSplitConfig(
+                train_fraction=train_fraction,
+                validation_fraction=validation_fraction,
+                test_fraction=test_fraction,
+                min_train_size=1,
+                min_validation_size=1,
+                min_test_size=0,
+            ),
+        )
+        sequence_config = SequenceWindowConfig(
+            lookback=lookback,
+            target_column=target_column,
+        )
+        loader_config = DataLoaderConfig(batch_size=batch_size, shuffle=False)
+        # Synthetic fixtures are too small for train to see every class; build the
+        # full-frame class mapping so the smoke command demonstrates the data
+        # layer end to end. Real experiments should rely on train-only fitting.
+        _, full_mapping = encode_target_values(aligned.loc[:, target_column].tolist())
+        loaders = build_dataloaders_for_split(
+            feature_frame,
+            label_frame,
+            split,
+            sequence_config,
+            loader_config,
+            class_to_index=full_mapping,
+        )
+    except (ValueError, TypeError, IndexError) as exc:
+        print(f"Failed to build sequence loaders: {exc}", file=sys.stderr)
+        return 1
+
+    train_loader = loaders["train"]
+    first_batch = next(iter(train_loader))
+    train_dataset = train_loader.dataset
+
+    print("Synthetic fixture smoke test only; not benchmark performance.")
+    print(f"  path:             {path}")
+    print(f"  target column:    {target_column}")
+    print(f"  lookback:         {lookback}")
+    print(f"  batch size:       {batch_size}")
+    print(f"  train samples:    {len(train_dataset)}")
+    print(f"  validation:       {len(loaders['validation'].dataset)}")
+    if "test" in loaders:
+        print(f"  test samples:     {len(loaders['test'].dataset)}")
+    else:
+        print("  test samples:     0 (no test windows fit)")
+    print(f"  feature count:    {train_dataset.n_features}")
+    print(f"  batch x shape:    {tuple(first_batch['x'].shape)}")
+    print(f"  batch y shape:    {tuple(first_batch['y'].shape)}")
+    print(f"  class mapping:    {train_dataset.class_to_index}")
+    return 0
+
+
+def _inspect_deeplob_impl() -> int:
+    """Print the DeepLOB-style model defaults without training."""
+    try:
+        from chronoslob.models.deeplob import DeepLOBConfig
+    except ImportError as exc:
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    defaults = DeepLOBConfig(input_features=10, n_classes=3)
+    print("ChronosLOB DeepLOB-style baseline")
+    print("  DeepLOB-style supervised CNN-LSTM, not an exact paper reproduction.")
+    print("  Defaults (sample input_features=10, n_classes=3):")
+    print(f"    conv_channels:     {defaults.conv_channels}")
+    print(f"    conv_kernel_size:  {defaults.conv_kernel_size}")
+    print(f"    lstm_hidden_size:  {defaults.lstm_hidden_size}")
+    print(f"    lstm_layers:       {defaults.lstm_layers}")
+    print(f"    dropout:           {defaults.dropout}")
+    print(f"    use_batch_norm:    {defaults.use_batch_norm}")
+    print("  No training was run.")
+    return 0
+
+
+def _run_deeplob_smoke_impl(
+    path: Path,
+    *,
+    lookback: int = 2,
+    epochs: int = 1,
+    batch_size: int = 4,
+    seed: int = 42,
+    write_outputs: bool = False,
+    output_root: Path = Path("runs"),
+) -> int:
+    """Run a tiny synthetic-fixture DeepLOB smoke experiment."""
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.training.torch_experiment import (
+        run_deeplob_smoke_from_fi2010_fixture,
+    )
+
+    try:
+        result = run_deeplob_smoke_from_fi2010_fixture(
+            path=path,
+            lookback=lookback,
+            seed=seed,
+            epochs=epochs,
+            batch_size=batch_size,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError, RuntimeError) as exc:
+        print(f"DeepLOB smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    if write_outputs:
+        # Smoke command intentionally does not write outputs; only the
+        # explicit DeepLOB experiment runner supports writing artefacts.
+        # Surface the request as a clear notice rather than silently
+        # ignoring it.
+        print(
+            "Note: --write-outputs is not honoured by the smoke command; "
+            "use run_deeplob_experiment with write_outputs=True instead.",
+        )
+        _ = output_root  # explicit no-op so linters do not flag the argument
+
+    print(result["notes"])
+    print(f"  path:                   {path}")
+    print(f"  target:                 {result['target_column']}")
+    print(f"  lookback:               {result['lookback']}")
+    print(f"  feature count:          {result['feature_count']}")
+    print(f"  train samples:          {result['sample_counts']['train']}")
+    print(f"  validation samples:     {result['sample_counts']['validation']}")
+    print(f"  model parameter count:  {result['model_parameter_count']}")
+    if result["training_history"]:
+        last_history = result["training_history"][-1]
+        train_loss = last_history.get("train_loss")
+        if train_loss is not None:
+            print(f"  final train loss:       {train_loss:.6f}")
+        validation_loss = last_history.get("validation_loss")
+        if validation_loss is not None:
+            print(f"  final validation loss:  {validation_loss:.6f}")
+    if result["final_validation_metrics"] is not None:
+        accuracy = result["final_validation_metrics"]["metrics"]["accuracy"]
+        macro_f1 = result["final_validation_metrics"]["metrics"]["macro_f1"]
+        print(f"  validation accuracy:    {accuracy:.6f}")
+        print(f"  validation macro F1:    {macro_f1:.6f}")
+    else:
+        print("  validation metrics:     not available")
+    print("  outputs:                not written (smoke command)")
+    print("  checkpoints:            not written")
+    return 0
+
+
+def _inspect_binance_replay_impl(
+    snapshot_path: Path,
+    updates_path: Path,
+    *,
+    symbol: str | None = None,
+    max_depth: int | None = None,
+    stop_on_gap: bool = True,
+    allow_crossed: bool = False,
+) -> int:
+    """Replay a local Binance-style snapshot and diff fixture.
+
+    The command is intentionally read-only. It loads files from disk only,
+    runs the reconstruction and prints a short summary. It writes no
+    outputs and makes no network calls.
+    """
+    from chronoslob.book.replay import (
+        ReplayConfig,
+        replay_binance_jsonl,
+        summarise_replay_result,
+    )
+    from chronoslob.data.schemas import Side
+
+    snapshot_path = Path(snapshot_path)
+    updates_path = Path(updates_path)
+
+    fixture_marker = Path("tests") / "fixtures"
+    fixture_marker_str = str(fixture_marker)
+    is_fixture = any(
+        fixture_marker_str in str(path)
+        for path in (snapshot_path, updates_path)
+    )
+    if is_fixture:
+        print(
+            "WARNING: replay is running against a synthetic fixture; "
+            "outputs are not real market data."
+        )
+
+    config = ReplayConfig(
+        snapshot_path=snapshot_path,
+        updates_path=updates_path,
+        symbol=symbol,
+        max_depth=max_depth,
+        stop_on_gap=stop_on_gap,
+        allow_crossed=allow_crossed,
+    )
+    result = replay_binance_jsonl(config)
+    summary = summarise_replay_result(result)
+
+    print("ChronosLOB inspect-binance-replay (offline only)")
+    print(f"  snapshot path:    {snapshot_path}")
+    print(f"  updates path:     {updates_path}")
+    print(f"  ok:               {summary['ok']}")
+    print(f"  n_snapshots:      {summary['n_snapshots']}")
+    print(f"  final_update_id:  {summary['final_update_id']}")
+    print(f"  issue_count:      {summary['issue_count']}")
+    print(f"  gap_count:        {summary['gap_count']}")
+    print(f"  crossed_count:    {summary['crossed_count']}")
+
+    if result.snapshots:
+        final_snapshot = result.snapshots[-1]
+        best_bid = final_snapshot.best_bid
+        best_ask = final_snapshot.best_ask
+        bid_str = (
+            f"{best_bid.price}@{best_bid.quantity}" if best_bid is not None else "n/a"
+        )
+        ask_str = (
+            f"{best_ask.price}@{best_ask.quantity}" if best_ask is not None else "n/a"
+        )
+        print(f"  best bid:         {bid_str}")
+        print(f"  best ask:         {ask_str}")
+        bid_levels = len(final_snapshot.bids)
+        ask_levels = len(final_snapshot.asks)
+        print(f"  depth counts:     bids={bid_levels}, asks={ask_levels}")
+        # Reference Side to keep the import meaningful even when no levels.
+        _ = Side.BID
+    else:
+        print("  best bid:         not available (no snapshots emitted)")
+        print("  best ask:         not available (no snapshots emitted)")
+
+    print("  outputs:          not written (read-only command)")
+    print("  network calls:    none performed")
+
+    return 0 if result.ok else 1
+
+
 def _fallback_main(argv: Sequence[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
 
     if not args or args[0] in {"-h", "--help"}:
         print(
             "Usage: python -m chronoslob.cli "
-            "[version|doctor|inspect-fi2010|inspect-features-fi2010|"
-            "inspect-labels-fi2010] [...]"
+            "[version|doctor|inspect-event-log|event-log-to-features|"
+            "inspect-fi2010|inspect-features-fi2010|inspect-labels-fi2010|"
+            "inspect-split|init-run|inspect-baselines|run-baseline-smoke|"
+            "inspect-torch-dataset|inspect-deeplob|run-deeplob-smoke|"
+            "inspect-binance-replay] [...]"
         )
         return 0
 
@@ -287,6 +873,25 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
     if command == "doctor":
         _doctor_impl()
         return 0
+    if command == "inspect-event-log":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-event-log",
+            description="Inspect a local canonical event-log JSONL file.",
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_event_log_impl(parsed.path)
+    if command == "event-log-to-features":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob event-log-to-features",
+            description=(
+                "Replay a local canonical event-log JSONL file into "
+                "microstructure features and print a read-only summary."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _event_log_to_features_impl(parsed.path)
     if command == "inspect-fi2010":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-fi2010",
@@ -401,6 +1006,155 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             price_level_count=parsed.price_level_count,
             prefer_existing_labels=not parsed.generate_labels,
         )
+    if command == "inspect-split":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-split",
+            description="Build a default temporal split and print partition counts.",
+        )
+        parser.add_argument("--rows", type=int, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_split_impl(parsed.rows)
+    if command == "init-run":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob init-run",
+            description="Create a metadata-only experiment run directory.",
+        )
+        parser.add_argument("--name", required=True)
+        parser.add_argument("--phase", required=True)
+        parser.add_argument("--seed", type=int, required=True)
+        parser.add_argument("--root", type=Path, required=True)
+        parser.add_argument("--config-path", type=Path, default=None)
+        parser.add_argument("--notes", default=None)
+        parsed = parser.parse_args(args[1:])
+        return _init_run_impl(
+            name=parsed.name,
+            phase=parsed.phase,
+            seed=parsed.seed,
+            root=parsed.root,
+            config_path=parsed.config_path,
+            notes=parsed.notes,
+        )
+    if command == "inspect-baselines":
+        return _inspect_baselines_impl()
+    if command == "run-baseline-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-baseline-smoke",
+            description=(
+                "Run a synthetic FI-2010 fixture baseline smoke test. "
+                "This is not benchmark performance."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--write-outputs", action="store_true")
+        parser.add_argument("--output-root", type=Path, default=Path("runs"))
+        parsed = parser.parse_args(args[1:])
+        return _run_baseline_smoke_impl(
+            path=parsed.path,
+            write_outputs=parsed.write_outputs,
+            output_root=parsed.output_root,
+        )
+    if command == "inspect-torch-dataset":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-torch-dataset",
+            description=(
+                "Build a tiny sequence DataLoader from a local FI-2010 file "
+                "and print a summary. Not benchmark performance."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--lookback", type=int, default=2)
+        parser.add_argument("--batch-size", type=int, default=4)
+        parser.add_argument("--target-column", default="label_10")
+        parser.add_argument("--timestamp-column", default="timestamp")
+        parser.add_argument("--split-column", default="split")
+        parser.add_argument("--price-level-count", type=int, default=2)
+        parser.add_argument("--train-fraction", type=float, default=0.5)
+        parser.add_argument("--validation-fraction", type=float, default=0.34)
+        parser.add_argument("--test-fraction", type=float, default=0.16)
+        parser.add_argument(
+            "--no-timestamp-column",
+            action="store_true",
+            help="Treat the file as having no timestamp column.",
+        )
+        parser.add_argument(
+            "--no-split-column",
+            action="store_true",
+            help="Treat the file as having no split column.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _inspect_torch_dataset_impl(
+            path=parsed.path,
+            lookback=parsed.lookback,
+            batch_size=parsed.batch_size,
+            target_column=parsed.target_column,
+            timestamp_column=(
+                None if parsed.no_timestamp_column else parsed.timestamp_column
+            ),
+            split_column=None if parsed.no_split_column else parsed.split_column,
+            price_level_count=parsed.price_level_count,
+            train_fraction=parsed.train_fraction,
+            validation_fraction=parsed.validation_fraction,
+            test_fraction=parsed.test_fraction,
+        )
+    if command == "inspect-deeplob":
+        return _inspect_deeplob_impl()
+    if command == "run-deeplob-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-deeplob-smoke",
+            description=(
+                "Run a synthetic-fixture DeepLOB-style supervised smoke "
+                "experiment. This is not benchmark performance."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--lookback", type=int, default=2)
+        parser.add_argument("--epochs", type=int, default=1)
+        parser.add_argument("--batch-size", type=int, default=4)
+        parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--write-outputs", action="store_true")
+        parser.add_argument("--output-root", type=Path, default=Path("runs"))
+        parsed = parser.parse_args(args[1:])
+        return _run_deeplob_smoke_impl(
+            path=parsed.path,
+            lookback=parsed.lookback,
+            epochs=parsed.epochs,
+            batch_size=parsed.batch_size,
+            seed=parsed.seed,
+            write_outputs=parsed.write_outputs,
+            output_root=parsed.output_root,
+        )
+
+    if command == "inspect-binance-replay":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-binance-replay",
+            description=(
+                "Reconstruct a local Binance-style order book from a "
+                "snapshot and diff JSONL fixture. Offline only."
+            ),
+        )
+        parser.add_argument("--snapshot", type=Path, required=True)
+        parser.add_argument("--updates", type=Path, required=True)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--max-depth", type=int, default=None)
+        parser.add_argument(
+            "--no-stop-on-gap",
+            action="store_true",
+            help="Continue reconstruction after a gap is detected.",
+        )
+        parser.add_argument(
+            "--allow-crossed",
+            action="store_true",
+            help="Permit crossed books instead of treating them as errors.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _inspect_binance_replay_impl(
+            snapshot_path=parsed.snapshot,
+            updates_path=parsed.updates,
+            symbol=parsed.symbol,
+            max_depth=parsed.max_depth,
+            stop_on_gap=not parsed.no_stop_on_gap,
+            allow_crossed=parsed.allow_crossed,
+        )
 
     print(f"Unknown command: {command}", file=sys.stderr)
     return 2
@@ -430,6 +1184,11 @@ if typer is not None:
         "--path",
         help="Path to the local FI-2010-style file.",
     )
+    _EVENT_LOG_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local canonical event-log JSONL file.",
+    )
     _INSPECT_TIMESTAMP_OPTION = typer.Option(
         "timestamp",
         "--timestamp-column",
@@ -455,6 +1214,22 @@ if typer is not None:
         "--no-split-column",
         help="Treat the file as having no split column.",
     )
+
+    def inspect_event_log(
+        path: Path = _EVENT_LOG_PATH_OPTION,
+    ) -> None:
+        """Inspect a local canonical event-log JSONL file."""
+        exit_code = _inspect_event_log_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def event_log_to_features(
+        path: Path = _EVENT_LOG_PATH_OPTION,
+    ) -> None:
+        """Replay a local event log into feature rows and summarise."""
+        exit_code = _event_log_to_features_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
 
     def inspect_fi2010(
         path: Path = _INSPECT_PATH_OPTION,
@@ -491,6 +1266,56 @@ if typer is not None:
             "Generate ChronosLOB labels from snapshots instead of "
             "preferring configured FI-2010 benchmark labels."
         ),
+    )
+    _INSPECT_SPLIT_ROWS_OPTION = typer.Option(
+        ...,
+        "--rows",
+        help="Number of ordered rows to split.",
+    )
+    _INIT_RUN_NAME_OPTION = typer.Option(
+        ...,
+        "--name",
+        help="Readable run name.",
+    )
+    _INIT_RUN_PHASE_OPTION = typer.Option(
+        ...,
+        "--phase",
+        help="Project phase identifier.",
+    )
+    _INIT_RUN_SEED_OPTION = typer.Option(
+        ...,
+        "--seed",
+        help="Deterministic run seed.",
+    )
+    _INIT_RUN_ROOT_OPTION = typer.Option(
+        ...,
+        "--root",
+        help="Root directory for runs.",
+    )
+    _INIT_RUN_CONFIG_PATH_OPTION = typer.Option(
+        None,
+        "--config-path",
+        help="Optional local config to copy into the run directory.",
+    )
+    _INIT_RUN_NOTES_OPTION = typer.Option(
+        None,
+        "--notes",
+        help="Optional short run notes.",
+    )
+    _BASELINE_SMOKE_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the bundled synthetic FI-2010-style fixture.",
+    )
+    _BASELINE_SMOKE_WRITE_OUTPUTS_OPTION = typer.Option(
+        False,
+        "--write-outputs",
+        help="Write run metadata and metrics under the output root.",
+    )
+    _BASELINE_SMOKE_OUTPUT_ROOT_OPTION = typer.Option(
+        Path("runs"),
+        "--output-root",
+        help="Output root used only when --write-outputs is passed.",
     )
 
     def inspect_features_fi2010(
@@ -537,7 +1362,253 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_split(
+        rows: int = _INSPECT_SPLIT_ROWS_OPTION,
+    ) -> None:
+        """Build a default temporal split and print partition counts."""
+        exit_code = _inspect_split_impl(rows)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def init_run(
+        name: str = _INIT_RUN_NAME_OPTION,
+        phase: str = _INIT_RUN_PHASE_OPTION,
+        seed: int = _INIT_RUN_SEED_OPTION,
+        root: Path = _INIT_RUN_ROOT_OPTION,
+        config_path: Path | None = _INIT_RUN_CONFIG_PATH_OPTION,
+        notes: str | None = _INIT_RUN_NOTES_OPTION,
+    ) -> None:
+        """Create a metadata-only experiment run directory."""
+        exit_code = _init_run_impl(
+            name=name,
+            phase=phase,
+            seed=seed,
+            root=root,
+            config_path=config_path,
+            notes=notes,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_baselines() -> None:
+        """Print supported classical baseline model types."""
+        exit_code = _inspect_baselines_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_baseline_smoke(
+        path: Path = _BASELINE_SMOKE_PATH_OPTION,
+        write_outputs: bool = _BASELINE_SMOKE_WRITE_OUTPUTS_OPTION,
+        output_root: Path = _BASELINE_SMOKE_OUTPUT_ROOT_OPTION,
+    ) -> None:
+        """Run a synthetic fixture baseline smoke test."""
+        exit_code = _run_baseline_smoke_impl(
+            path=path,
+            write_outputs=write_outputs,
+            output_root=output_root,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _TORCH_DATASET_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local FI-2010-style file.",
+    )
+    _TORCH_DATASET_LOOKBACK_OPTION = typer.Option(
+        2,
+        "--lookback",
+        help="Number of past rows per sequence window.",
+    )
+    _TORCH_DATASET_BATCH_SIZE_OPTION = typer.Option(
+        4,
+        "--batch-size",
+        help="Batch size for the smoke DataLoader.",
+    )
+    _TORCH_DATASET_TARGET_OPTION = typer.Option(
+        "label_10",
+        "--target-column",
+        help="Label column to use as the supervised target.",
+    )
+    _TORCH_DATASET_TRAIN_FRACTION_OPTION = typer.Option(
+        0.5,
+        "--train-fraction",
+        help="Train fraction for the temporal split.",
+    )
+    _TORCH_DATASET_VALIDATION_FRACTION_OPTION = typer.Option(
+        0.34,
+        "--validation-fraction",
+        help="Validation fraction for the temporal split.",
+    )
+    _TORCH_DATASET_TEST_FRACTION_OPTION = typer.Option(
+        0.16,
+        "--test-fraction",
+        help="Test fraction for the temporal split.",
+    )
+
+    def inspect_torch_dataset(
+        path: Path = _TORCH_DATASET_PATH_OPTION,
+        lookback: int = _TORCH_DATASET_LOOKBACK_OPTION,
+        batch_size: int = _TORCH_DATASET_BATCH_SIZE_OPTION,
+        target_column: str = _TORCH_DATASET_TARGET_OPTION,
+        timestamp_column: str = _INSPECT_TIMESTAMP_OPTION,
+        split_column: str = _INSPECT_SPLIT_OPTION,
+        price_level_count: int = _INSPECT_LEVEL_COUNT_OPTION,
+        no_timestamp_column: bool = _INSPECT_NO_TIMESTAMP_OPTION,
+        no_split_column: bool = _INSPECT_NO_SPLIT_OPTION,
+        train_fraction: float = _TORCH_DATASET_TRAIN_FRACTION_OPTION,
+        validation_fraction: float = _TORCH_DATASET_VALIDATION_FRACTION_OPTION,
+        test_fraction: float = _TORCH_DATASET_TEST_FRACTION_OPTION,
+    ) -> None:
+        """Build a tiny sequence DataLoader from an FI-2010 file and summarise."""
+        exit_code = _inspect_torch_dataset_impl(
+            path=path,
+            lookback=lookback,
+            batch_size=batch_size,
+            target_column=target_column,
+            timestamp_column=(
+                None if no_timestamp_column else timestamp_column
+            ),
+            split_column=None if no_split_column else split_column,
+            price_level_count=price_level_count,
+            train_fraction=train_fraction,
+            validation_fraction=validation_fraction,
+            test_fraction=test_fraction,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _DEEPLOB_SMOKE_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local FI-2010-style fixture file.",
+    )
+    _DEEPLOB_SMOKE_LOOKBACK_OPTION = typer.Option(
+        2,
+        "--lookback",
+        help="Number of past rows per sequence window.",
+    )
+    _DEEPLOB_SMOKE_EPOCHS_OPTION = typer.Option(
+        1,
+        "--epochs",
+        help="Number of training epochs for the smoke run.",
+    )
+    _DEEPLOB_SMOKE_BATCH_OPTION = typer.Option(
+        4,
+        "--batch-size",
+        help="Batch size for the smoke DataLoader.",
+    )
+    _DEEPLOB_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for the smoke run.",
+    )
+    _DEEPLOB_SMOKE_WRITE_OUTPUTS_OPTION = typer.Option(
+        False,
+        "--write-outputs",
+        help=(
+            "The smoke command never writes outputs; this flag is accepted "
+            "for symmetry with run-baseline-smoke but only prints a notice."
+        ),
+    )
+    _DEEPLOB_SMOKE_OUTPUT_ROOT_OPTION = typer.Option(
+        Path("runs"),
+        "--output-root",
+        help="Reserved for future use; ignored by the smoke command.",
+    )
+
+    def inspect_deeplob() -> None:
+        """Print DeepLOB-style baseline defaults without training."""
+        exit_code = _inspect_deeplob_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_deeplob_smoke(
+        path: Path = _DEEPLOB_SMOKE_PATH_OPTION,
+        lookback: int = _DEEPLOB_SMOKE_LOOKBACK_OPTION,
+        epochs: int = _DEEPLOB_SMOKE_EPOCHS_OPTION,
+        batch_size: int = _DEEPLOB_SMOKE_BATCH_OPTION,
+        seed: int = _DEEPLOB_SMOKE_SEED_OPTION,
+        write_outputs: bool = _DEEPLOB_SMOKE_WRITE_OUTPUTS_OPTION,
+        output_root: Path = _DEEPLOB_SMOKE_OUTPUT_ROOT_OPTION,
+    ) -> None:
+        """Run a synthetic fixture DeepLOB-style supervised smoke experiment."""
+        exit_code = _run_deeplob_smoke_impl(
+            path=path,
+            lookback=lookback,
+            epochs=epochs,
+            batch_size=batch_size,
+            seed=seed,
+            write_outputs=write_outputs,
+            output_root=output_root,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _BINANCE_SNAPSHOT_OPTION = typer.Option(
+        ...,
+        "--snapshot",
+        help="Path to the local Binance-style snapshot JSON file.",
+    )
+    _BINANCE_UPDATES_OPTION = typer.Option(
+        ...,
+        "--updates",
+        help="Path to the local Binance-style diff JSONL file.",
+    )
+    _BINANCE_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Optional symbol override when the snapshot does not carry one.",
+    )
+    _BINANCE_MAX_DEPTH_OPTION = typer.Option(
+        None,
+        "--max-depth",
+        help="Optional maximum depth per side to keep during replay.",
+    )
+    _BINANCE_STOP_ON_GAP_OPTION = typer.Option(
+        True,
+        "--stop-on-gap/--no-stop-on-gap",
+        help="Stop reconstruction when an update-id gap is detected.",
+    )
+    _BINANCE_ALLOW_CROSSED_OPTION = typer.Option(
+        False,
+        "--allow-crossed",
+        help="Permit crossed books instead of treating them as errors.",
+    )
+
+    def inspect_binance_replay(
+        snapshot: Path = _BINANCE_SNAPSHOT_OPTION,
+        updates: Path = _BINANCE_UPDATES_OPTION,
+        symbol: str | None = _BINANCE_SYMBOL_OPTION,
+        max_depth: int | None = _BINANCE_MAX_DEPTH_OPTION,
+        stop_on_gap: bool = _BINANCE_STOP_ON_GAP_OPTION,
+        allow_crossed: bool = _BINANCE_ALLOW_CROSSED_OPTION,
+    ) -> None:
+        """Reconstruct a local Binance-style book from a snapshot and diff JSONL."""
+        exit_code = _inspect_binance_replay_impl(
+            snapshot_path=snapshot,
+            updates_path=updates,
+            symbol=symbol,
+            max_depth=max_depth,
+            stop_on_gap=stop_on_gap,
+            allow_crossed=allow_crossed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 else:
+
+    def inspect_event_log(path: Path) -> None:
+        """Inspect a local canonical event-log JSONL file."""
+        exit_code = _inspect_event_log_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def event_log_to_features(path: Path) -> None:
+        """Replay a local event log into feature rows and summarise."""
+        exit_code = _event_log_to_features_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
 
     def inspect_fi2010(
         path: Path,
@@ -597,13 +1668,147 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_split(rows: int) -> None:
+        """Build a default temporal split and print partition counts."""
+        exit_code = _inspect_split_impl(rows)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def init_run(
+        name: str,
+        phase: str,
+        seed: int,
+        root: Path,
+        config_path: Path | None = None,
+        notes: str | None = None,
+    ) -> None:
+        """Create a metadata-only experiment run directory."""
+        exit_code = _init_run_impl(
+            name=name,
+            phase=phase,
+            seed=seed,
+            root=root,
+            config_path=config_path,
+            notes=notes,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_baselines() -> None:
+        """Print supported classical baseline model types."""
+        exit_code = _inspect_baselines_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_baseline_smoke(
+        path: Path,
+        write_outputs: bool = False,
+        output_root: Path = Path("runs"),
+    ) -> None:
+        """Run a synthetic fixture baseline smoke test."""
+        exit_code = _run_baseline_smoke_impl(
+            path=path,
+            write_outputs=write_outputs,
+            output_root=output_root,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_torch_dataset(
+        path: Path,
+        lookback: int = 2,
+        batch_size: int = 4,
+        target_column: str = "label_10",
+        timestamp_column: str = "timestamp",
+        split_column: str = "split",
+        price_level_count: int = 2,
+        no_timestamp_column: bool = False,
+        no_split_column: bool = False,
+        train_fraction: float = 0.5,
+        validation_fraction: float = 0.34,
+        test_fraction: float = 0.16,
+    ) -> None:
+        """Build a tiny sequence DataLoader from an FI-2010 file and summarise."""
+        exit_code = _inspect_torch_dataset_impl(
+            path=path,
+            lookback=lookback,
+            batch_size=batch_size,
+            target_column=target_column,
+            timestamp_column=None if no_timestamp_column else timestamp_column,
+            split_column=None if no_split_column else split_column,
+            price_level_count=price_level_count,
+            train_fraction=train_fraction,
+            validation_fraction=validation_fraction,
+            test_fraction=test_fraction,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_deeplob() -> None:
+        """Print DeepLOB-style baseline defaults without training."""
+        exit_code = _inspect_deeplob_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_deeplob_smoke(
+        path: Path,
+        lookback: int = 2,
+        epochs: int = 1,
+        batch_size: int = 4,
+        seed: int = 42,
+        write_outputs: bool = False,
+        output_root: Path = Path("runs"),
+    ) -> None:
+        """Run a synthetic fixture DeepLOB-style supervised smoke experiment."""
+        exit_code = _run_deeplob_smoke_impl(
+            path=path,
+            lookback=lookback,
+            epochs=epochs,
+            batch_size=batch_size,
+            seed=seed,
+            write_outputs=write_outputs,
+            output_root=output_root,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_binance_replay(
+        snapshot: Path,
+        updates: Path,
+        symbol: str | None = None,
+        max_depth: int | None = None,
+        stop_on_gap: bool = True,
+        allow_crossed: bool = False,
+    ) -> None:
+        """Reconstruct a local Binance-style book from a snapshot and diff JSONL."""
+        exit_code = _inspect_binance_replay_impl(
+            snapshot_path=snapshot,
+            updates_path=updates,
+            symbol=symbol,
+            max_depth=max_depth,
+            stop_on_gap=stop_on_gap,
+            allow_crossed=allow_crossed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
     app.command()(doctor)
+    app.command("inspect-event-log")(inspect_event_log)
+    app.command("event-log-to-features")(event_log_to_features)
     app.command("inspect-fi2010")(inspect_fi2010)
     app.command("inspect-features-fi2010")(inspect_features_fi2010)
     app.command("inspect-labels-fi2010")(inspect_labels_fi2010)
+    app.command("inspect-split")(inspect_split)
+    app.command("init-run")(init_run)
+    app.command("inspect-baselines")(inspect_baselines)
+    app.command("run-baseline-smoke")(run_baseline_smoke)
+    app.command("inspect-torch-dataset")(inspect_torch_dataset)
+    app.command("inspect-deeplob")(inspect_deeplob)
+    app.command("run-deeplob-smoke")(run_deeplob_smoke)
+    app.command("inspect-binance-replay")(inspect_binance_replay)
 else:
 
     def app() -> int:

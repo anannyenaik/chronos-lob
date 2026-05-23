@@ -1,11 +1,42 @@
 """Data adapters, schemas and validation utilities."""
 
+from chronoslob.data.binance import (
+    BinanceDepthLevel,
+    BinanceDepthSnapshot,
+    BinanceDiffDepthEvent,
+    load_binance_diff_events_jsonl,
+    load_binance_snapshot_json,
+    parse_binance_diff_event,
+    parse_binance_snapshot,
+    to_order_book_snapshot,
+)
+from chronoslob.data.event_store import (
+    DEFAULT_EVENT_LOG_SCHEMA_VERSION,
+    EventLogObject,
+    EventLogRecord,
+    EventLogRecordType,
+    deserialise_event_log_record,
+    filter_event_log_records,
+    iter_event_log_jsonl,
+    read_event_log_jsonl,
+    serialise_book_event,
+    serialise_order_book_snapshot,
+    sort_event_log_records,
+    write_event_log_jsonl,
+)
 from chronoslob.data.fi2010 import (
     FI2010Config,
     FI2010Dataset,
     build_snapshot_from_row,
     infer_fi2010_columns,
     load_fi2010,
+)
+from chronoslob.data.manifests import (
+    EventLogManifest,
+    create_event_log_manifest,
+    read_manifest,
+    sha256_file,
+    write_manifest,
 )
 from chronoslob.data.schemas import (
     BookEvent,
@@ -32,10 +63,18 @@ from chronoslob.data.validation import (
 )
 
 __all__ = [
+    "DEFAULT_EVENT_LOG_SCHEMA_VERSION",
+    "BinanceDepthLevel",
+    "BinanceDepthSnapshot",
+    "BinanceDiffDepthEvent",
     "BookEvent",
     "DataQualityIssue",
     "DataValidationError",
     "DataValidationResult",
+    "EventLogManifest",
+    "EventLogObject",
+    "EventLogRecord",
+    "EventLogRecordType",
     "EventType",
     "FI2010Config",
     "FI2010Dataset",
@@ -49,11 +88,28 @@ __all__ = [
     "OrderBookSnapshot",
     "Side",
     "build_snapshot_from_row",
+    "create_event_log_manifest",
+    "deserialise_event_log_record",
     "ensure_utc_datetime",
+    "filter_event_log_records",
     "infer_fi2010_columns",
     "is_finite_number",
+    "iter_event_log_jsonl",
+    "load_binance_diff_events_jsonl",
+    "load_binance_snapshot_json",
     "load_fi2010",
+    "parse_binance_diff_event",
+    "parse_binance_snapshot",
+    "read_event_log_jsonl",
+    "read_manifest",
+    "serialise_book_event",
+    "serialise_order_book_snapshot",
+    "sha256_file",
+    "sort_event_log_records",
+    "to_order_book_snapshot",
     "validate_fi2010_dataset",
     "validate_metadata",
     "validate_numeric_frame",
+    "write_event_log_jsonl",
+    "write_manifest",
 ]
