@@ -1,7 +1,7 @@
 # Contributing
 
-ChronosLOB is maintained as a research-engineering project. Contributions should
-keep the codebase reproducible, leakage-aware and honest about its limitations.
+ChronosLOB is a research-engineering project. Contributions should keep
+the codebase reproducible, leakage-aware and honest about its scope.
 
 ## Local Setup
 
@@ -37,50 +37,43 @@ python -m ruff check .
 python -m mypy chronoslob
 ```
 
-## Coding Standards
+## Coding Style
 
-- Prefer explicit names and small, reviewable modules.
-- Use type hints where practical.
-- Use `pathlib.Path` for filesystem paths.
-- Avoid runtime side effects at import time.
-- Avoid hidden network calls.
-- Keep dependency additions conservative and justified.
-- Keep core logic in the package rather than notebooks.
+- Prefer small, reviewable modules with explicit names.
+- Use type hints throughout and `pathlib.Path` for filesystem paths.
+- Avoid import-time side effects and hidden network calls.
+- Keep dependencies conservative; justify any new addition.
+- Keep core logic in the package, not in notebooks.
+
+## Tests
+
+- Add tests for new modules and bug fixes.
+- Prefer deterministic checks; seed any randomness explicitly.
+- Add leakage tests for feature, label, split or dataset logic.
+- Do not use random splits for financial time-series experiments.
 
 ## Data Policy
 
-- Do not commit real exchange data, licensed data, private data, credentials,
-  API keys or personal paths.
+- Do not commit real exchange data, licensed data, credentials, API
+  keys or personal paths.
 - Keep committed fixtures synthetic, small and clearly labelled.
-- Document any future data assumptions, preprocessing steps and provenance.
-- Fit transforms only on the training partition unless a test documents another
-  leakage-safe design.
+- Document data provenance, preprocessing and any leakage-safe design
+  choices.
+- Fit transforms on the training partition only.
 
-## Test Expectations
+## Documentation
 
-- Add tests for new modules and bug fixes.
-- Prefer deterministic tests over stochastic checks.
-- Add leakage tests for feature, label, split or dataset logic.
-- Do not use random splits for financial time-series experiments unless the
-  fixture explicitly requires it.
-- Do not hide data-pipeline failures.
-
-## Claims And Results
-
-- Do not add fake results, invented metrics, manually fabricated plots or
-  placeholder performance tables.
-- Do not present synthetic smoke outputs as market evidence.
-- Do not claim investment usefulness, production readiness or live execution
-  capability.
-- Any future result claim must trace to a reproducible config, data source,
-  seed, code version and stored output artefact.
+- Keep public documentation concise and technical.
+- Distinguish implemented functionality from planned work.
+- Any reported metric must trace to a config, data source, seed, code
+  version and stored output artefact.
 
 ## Pull Request Checklist
 
 - The validation commands above pass locally.
 - New behaviour has focused tests.
-- Documentation distinguishes implemented functionality from future work.
-- Synthetic outputs and limitations remain clearly labelled.
-- No secrets, private data, large generated files or notebook outputs are added.
-- Forecast quality, calibration quality and execution-aware validation remain
-  reported as separate evidence types.
+- Documentation reflects the new scope.
+- No secrets, real venue data, large generated files or notebook
+  outputs are added.
+- Predictive, calibration and execution-aware validation evidence
+  remain reported as separate streams.

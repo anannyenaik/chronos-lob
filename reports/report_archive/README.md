@@ -1,12 +1,8 @@
-# Report Evidence Archive
+# Technical Evidence Archive
 
-This directory is a reference archive for writing the ChronosLOB technical report manually. It is not the final report.
+Generated archive of repository inventories, release history, current CLI captures and Mermaid diagrams. Used as a reproducibility reference.
 
-The archive contains repository inventories, release history, current CLI smoke outputs, config and test cross-references, limitations, claim-safety checks and Mermaid diagram sources.
-
-Synthetic fixture outputs are labelled synthetic. They are useful for checking local plumbing, but they are not market evidence, benchmark evidence, execution evidence or proof of signal quality.
-
-Real benchmark results must be generated separately from documented data, configs, temporal splits, seeds, code versions and output artefacts before the final report makes result claims.
+Commands captured against bundled synthetic fixtures are labelled accordingly. See `../../docs/SAFETY_AND_LIMITATIONS.md` for the full scope statement.
 
 Rebuild with:
 

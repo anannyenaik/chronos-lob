@@ -15,8 +15,6 @@ EXPECTED_REPORTS = (
     "reports/execution_aware_validation.md",
     "reports/transfer_regime_ablation_analysis.md",
     "reports/calibration_uncertainty.md",
-    "reports/report_archive_build.md",
-    "reports/public_release_readiness.md",
 )
 
 

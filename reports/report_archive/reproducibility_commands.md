@@ -1,6 +1,6 @@
 # Reproducibility Commands
 
-These Python commands are canonical because `make` may be unavailable on Windows. Run them from the repository root.
+Canonical Python commands. Run them from the repository root.
 
 ## Install
 
@@ -22,14 +22,14 @@ python -m ruff check .
 python -m mypy chronoslob
 ```
 
-## Build The Report Evidence Archive
+## Rebuild The Evidence Archive
 
 ```bash
 python -m chronoslob.cli build-report-archive
 python -m chronoslob.cli inspect-report-archive
 ```
 
-## Lightweight CLI Smoke Commands
+## Lightweight CLI Commands
 
 ```bash
 python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
@@ -44,9 +44,3 @@ python -m chronoslob.cli inspect-calibration
 python -m chronoslob.cli inspect-execution-validation
 python -m chronoslob.cli inspect-analysis
 ```
-
-## Warning Caveats
-
-- Synthetic fixture outputs are not market evidence.
-- Torch and scikit-learn may emit upstream warnings in tests; record exact warnings rather than hiding them.
-- Real benchmark reporting requires separately generated artefacts.

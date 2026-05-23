@@ -18,6 +18,7 @@ from chronoslob.utils.paths import project_root
 __all__ = [
     "DEFAULT_FORBIDDEN_CLAIM_PHRASES",
     "DEFAULT_LARGE_FILE_THRESHOLD_BYTES",
+    "DEFAULT_MAX_NON_CODE_LINE_LENGTH",
     "DEFAULT_PUBLIC_RELEASE_REQUIRED_FILES",
     "DEFAULT_REQUIRED_PATHS",
     "AuditIssue",
@@ -25,6 +26,7 @@ __all__ = [
     "AuditStatus",
     "PathInventory",
     "ProjectAuditResult",
+    "check_markdown_formatting",
     "check_no_forbidden_claims",
     "check_no_large_generated_files",
     "check_public_release_readme",
@@ -202,8 +204,6 @@ DEFAULT_REQUIRED_PATHS: tuple[str, ...] = (
     "docs/REPRODUCIBILITY.md",
     "docs/SAFETY_AND_LIMITATIONS.md",
     "reports/limitations.md",
-    "reports/full_audit_ci_hardening.md",
-    "reports/public_release_readiness.md",
     "tests",
 )
 
@@ -218,16 +218,14 @@ DEFAULT_PUBLIC_RELEASE_REQUIRED_FILES: tuple[str, ...] = (
     "docs/PROJECT_STATUS.md",
     "docs/REPRODUCIBILITY.md",
     "docs/SAFETY_AND_LIMITATIONS.md",
-    "docs/REPORT_EVIDENCE_INDEX.md",
-    "docs/GITHUB_POLISH_CHECKLIST.md",
+    "docs/EXPERIMENT_EVIDENCE_INDEX.md",
     "reports/README.md",
     "reports/limitations.md",
-    "reports/public_release_readiness.md",
     "reports/report_archive/README.md",
-    "reports/technical_report/README.md",
 )
 
 DEFAULT_LARGE_FILE_THRESHOLD_BYTES = 1_000_000
+DEFAULT_MAX_NON_CODE_LINE_LENGTH = 220
 
 _TEXT_SUFFIXES = {
     ".csv",
@@ -307,7 +305,6 @@ _README_REQUIRED_LINK_TARGETS = (
     "docs/CLI_REFERENCE.md",
     "docs/PROJECT_STATUS.md",
     "docs/SAFETY_AND_LIMITATIONS.md",
-    "docs/REPORT_EVIDENCE_INDEX.md",
     "ROADMAP.md",
 )
 _README_LOCAL_LINK_PATTERN = re.compile(
@@ -699,14 +696,12 @@ def check_public_release_readme(root: str | Path | None = None) -> AuditResult:
     required_snippets = (
         "# ChronosLOB",
         (
-            "ChronosLOB is a research platform for leakage-safe limit order book "
+            "ChronosLOB is a research platform for limit order book "
             "representation learning, market-state forecasting, calibration and "
             "execution-aware validation."
         ),
         "not financial advice",
         "not live trading infrastructure",
-        "no deployment or trading-use claims",
-        "Synthetic fixture outputs are plumbing checks only.",
     )
     normalised_text = " ".join(text.split())
     for snippet in required_snippets:
@@ -807,6 +802,75 @@ def check_public_release_wording(
     )
 
 
+def _iter_public_markdown_files(root: Path) -> list[Path]:
+    files: list[Path] = []
+    for path in _iter_repository_files(root):
+        if path.suffix.lower() != ".md":
+            continue
+        relative = _relative_to_root(root, path)
+        if "tests" in relative.parts:
+            continue
+        if relative.parts[:2] == ("reports", "report_archive"):
+            continue
+        files.append(path)
+    return sorted(files)
+
+
+def _is_line_exempt_from_length_check(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped:
+        return True
+    if stripped.startswith(("|", "http://", "https://")):
+        return True
+    return bool(
+        stripped.startswith("- [")
+        and ("](http://" in stripped or "](https://" in stripped)
+    )
+
+
+def check_markdown_formatting(
+    root: str | Path | None = None,
+    *,
+    max_line_length: int = DEFAULT_MAX_NON_CODE_LINE_LENGTH,
+) -> AuditResult:
+    """Flag public Markdown files with extremely long non-code prose lines."""
+    resolved_root = _resolve_root(root)
+    files = _iter_public_markdown_files(resolved_root)
+    issues: list[AuditIssue] = []
+    for file_path in files:
+        text = _read_text(file_path)
+        if text is None:
+            continue
+        in_code_block = False
+        for line_index, line in enumerate(text.splitlines(), start=1):
+            if line.lstrip().startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            if in_code_block:
+                continue
+            if _is_line_exempt_from_length_check(line):
+                continue
+            if len(line) > max_line_length:
+                issues.append(
+                    AuditIssue(
+                        check_name="markdown_formatting",
+                        status=AuditStatus.FAIL,
+                        message=(
+                            "Public Markdown line exceeds the "
+                            f"{max_line_length}-character readability threshold."
+                        ),
+                        path=_relative_to_root(resolved_root, file_path),
+                        line_number=line_index,
+                    )
+                )
+    return AuditResult(
+        name="markdown_formatting",
+        status=_status_from_issues(issues),
+        issues=tuple(issues),
+        details={"max_line_length": max_line_length, "files_scanned": len(files)},
+    )
+
+
 def run_public_release_audit(root: str | Path | None = None) -> ProjectAuditResult:
     """Run public-release checks and return a structured result."""
     resolved_root = _resolve_root(root)
@@ -822,6 +886,7 @@ def run_public_release_audit(root: str | Path | None = None) -> ProjectAuditResu
         check_public_release_structure(resolved_root),
         check_public_release_wording(resolved_root),
         check_no_forbidden_claims(resolved_root),
+        check_markdown_formatting(resolved_root),
     )
     return ProjectAuditResult(root=resolved_root, inventory=inventory, results=results)
 
@@ -856,5 +921,6 @@ def run_project_audit(
         check_public_release_readme(resolved_root),
         check_public_release_structure(resolved_root),
         check_public_release_wording(resolved_root),
+        check_markdown_formatting(resolved_root),
     )
     return ProjectAuditResult(root=resolved_root, inventory=inventory, results=results)

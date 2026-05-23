@@ -31,6 +31,7 @@ EXCLUDED_DIRS = {
 LOCAL_LINK_PATTERN = re.compile(
     r"\[[^\]]+\]\((?!https?:|mailto:|#)(?P<target>[^)#]+)(?:#[^)]+)?\)"
 )
+MAX_NON_CODE_LINE_LENGTH = 220
 
 
 def _words(*parts: str) -> str:
@@ -106,6 +107,22 @@ def _iter_public_text_files(root: Path) -> list[Path]:
     return sorted(files)
 
 
+def _iter_public_markdown_files(root: Path) -> list[Path]:
+    files: list[Path] = []
+    for path in root.rglob("*.md"):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(root)
+        if any(part in EXCLUDED_DIRS for part in relative.parts):
+            continue
+        if "tests" in relative.parts:
+            continue
+        if relative.parts[:2] == ("reports", "report_archive"):
+            continue
+        files.append(path)
+    return sorted(files)
+
+
 def test_internal_maintenance_files_are_not_published() -> None:
     root = project_root()
 
@@ -137,7 +154,7 @@ def test_readme_is_polished_and_links_are_valid() -> None:
     normalised = " ".join(lowered.split())
 
     assert text.startswith("# ChronosLOB")
-    assert "research platform for leakage-safe limit order book" in normalised
+    assert "research platform for limit order book" in normalised
     assert "not financial advice" in normalised
     assert "not live trading infrastructure" in normalised
     assert _words("alpha", "validation") not in normalised
@@ -152,27 +169,49 @@ def test_roadmap_and_contributing_are_human_facing() -> None:
     roadmap = (root / "ROADMAP.md").read_text(encoding="utf-8")
     contributing = (root / "CONTRIBUTING.md").read_text(encoding="utf-8")
 
-    assert "Completed Components" in roadmap
-    assert "Future Work" in roadmap
+    assert "## Completed" in roadmap
+    assert "## In Progress and Next" in roadmap
+    assert "## Out of Scope" in roadmap
     assert "Validation Commands" in contributing
     assert "Pull Request Checklist" in contributing
 
 
-def test_docs_and_archive_preserve_synthetic_and_limitation_caveats() -> None:
+def test_public_safety_and_limitations_remains_canonical() -> None:
     root = project_root()
-    readme = (root / "README.md").read_text(encoding="utf-8").lower()
+    safety = (root / "docs" / "SAFETY_AND_LIMITATIONS.md").read_text(
+        encoding="utf-8",
+    ).lower()
     limitations = (root / "reports" / "limitations.md").read_text(
-        encoding="utf-8"
+        encoding="utf-8",
     ).lower()
     archive_readme = (
         root / "reports" / "report_archive" / "README.md"
     ).read_text(encoding="utf-8").lower()
-    safety = (root / "docs" / "SAFETY_AND_LIMITATIONS.md").read_text(
-        encoding="utf-8"
-    ).lower()
 
-    assert "synthetic fixture outputs are plumbing checks only" in readme
-    assert "synthetic" in archive_readme
-    assert "not market evidence" in archive_readme
     assert "limitations" in safety
+    assert "market impact" in safety
     assert "market impact" in limitations
+    assert "evidence archive" in archive_readme
+
+
+def test_public_markdown_files_do_not_collapse_into_single_long_lines() -> None:
+    root = project_root()
+    offenders: list[str] = []
+    for path in _iter_public_markdown_files(root):
+        text = path.read_text(encoding="utf-8")
+        in_code_block = False
+        for line_index, line in enumerate(text.splitlines(), start=1):
+            if line.lstrip().startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            if in_code_block:
+                continue
+            stripped = line.strip()
+            if not stripped or stripped.startswith("|"):
+                continue
+            if stripped.startswith("http://") or stripped.startswith("https://"):
+                continue
+            if len(line) > MAX_NON_CODE_LINE_LENGTH:
+                offenders.append(f"{path.relative_to(root)}:{line_index}: {len(line)} chars")
+
+    assert offenders == []

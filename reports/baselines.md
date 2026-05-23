@@ -56,10 +56,9 @@ The `run-baseline-smoke` CLI command uses the tiny synthetic FI-2010-style fixtu
 under `tests/fixtures`. It is a pipeline smoke test only. Its output must not be
 reported as FI-2010 benchmark performance.
 
-No benchmark tables, fake results, model checkpoints or run artefacts are
-committed by this phase. Metrics are only written when a command is explicitly run
-with output writing enabled, and those outputs belong under the gitignored
-`runs/` tree.
+No benchmark tables, model checkpoints or run artefacts are committed by this
+module. Metrics are only written when a command is explicitly run with output
+writing enabled, and those outputs belong under the gitignored `runs/` tree.
 
 ## Later Work
 

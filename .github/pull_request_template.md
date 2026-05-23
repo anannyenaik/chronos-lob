@@ -2,9 +2,9 @@
 
 - 
 
-## Research And Leakage Checklist
+## Research and Leakage Checklist
 
-- [ ] No invented results, placeholder metrics or fake plots.
+- [ ] Reported metrics trace to a config, data source, seed and stored output.
 - [ ] No labels leak into features, splits, normalisation or model inputs.
 - [ ] Financial time-series splits are temporal unless this is an explicit test fixture.
 - [ ] Data assumptions are documented.

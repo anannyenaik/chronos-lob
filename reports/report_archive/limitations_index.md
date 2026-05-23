@@ -1,13 +1,13 @@
 # Limitations Index
 
-Use this index to keep report claims aligned with implemented evidence and documented caveats.
+Pointer index to the canonical scope and limitation documents.
 
 ## Primary References
 
-- `../limitations.md`: current limitations statement.
-- `../../docs/SAFETY_AND_LIMITATIONS.md`: public safety boundaries.
-- `../../docs/REPRODUCIBILITY.md`: validation and smoke-command caveats.
-- `../../docs/PROJECT_STATUS.md`: implemented versus not implemented scope.
+- `../limitations.md`: technical caveats for extending the platform.
+- `../../docs/SAFETY_AND_LIMITATIONS.md`: canonical scope statement.
+- `../../docs/REPRODUCIBILITY.md`: validation and reproducibility path.
+- `../../docs/PROJECT_STATUS.md`: implemented and current limitations.
 
 ## Implementation Reports With Limitation Context
 
@@ -21,12 +21,12 @@ Use this index to keep report claims aligned with implemented evidence and docum
 - `../transfer_regime_ablation_analysis.md`
 - `../full_audit_ci_hardening.md`
 
-## Caveats To Preserve
+## Core Caveats
 
 - Public data may have coverage, preprocessing and timestamp limitations.
-- Synthetic fixtures are plumbing checks only.
-- Crypto-style reconstruction examples should not be overclaimed as equity market evidence.
+- Synthetic fixtures exercise code paths only.
+- Crypto-style reconstruction examples should not be treated as equity-market evidence.
 - Execution-aware validation is a simplified research simulation.
 - Queue position, partial fills, latency realism and venue rules remain explicit assumptions.
 - No production market impact model is implemented.
-- Real result claims require reproducible experiment artefacts.
+- Reported metrics must trace to versioned configs, data, seeds and stored outputs.

@@ -1,6 +1,6 @@
 # Test Inventory
 
-This inventory summarises pytest files by inferred area. It deliberately does not include test source contents.
+Pytest files grouped by inferred area. Test source contents are not included here.
 
 ## analysis
 

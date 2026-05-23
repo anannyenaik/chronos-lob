@@ -1,6 +1,6 @@
 # Module Inventory
 
-Public modules are grouped by package area to support architecture and implementation references in the final technical report.
+Public modules grouped by package area.
 
 ## `data`
 

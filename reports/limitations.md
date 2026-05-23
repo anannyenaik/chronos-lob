@@ -1,79 +1,63 @@
 # Limitations
 
-ChronosLOB is a research-engineering project for market microstructure
-modelling, leakage-safe forecasting and execution-aware validation. It is not
-financial advice, not a live trading system and not a production execution
-platform.
+ChronosLOB is research software for limit order book modelling,
+leakage-safe forecasting and execution-aware validation. The full
+scope statement is in
+[docs/SAFETY_AND_LIMITATIONS.md](../docs/SAFETY_AND_LIMITATIONS.md);
+this note adds the technical caveats that are most relevant when
+extending the platform.
 
-No real model result, FI-2010 benchmark result, live venue result or execution
-performance claim is committed to this repository. Smoke outputs are synthetic
-plumbing checks only.
+## Public Data
 
-## Public Data Limitations
+Public limit order book data can support reproducible research but may
+have restricted coverage, simplified message semantics, survivorship
+effects, preprocessing choices, missing venue context or unclear
+timestamp conventions. Any experiment should document its exact data
+source, preprocessing steps and label construction.
 
-Public limit order book data can support reproducible research, but it may have
-restricted coverage, simplified message semantics, survivorship effects,
-preprocessing choices, missing venue context or unclear timestamp conventions.
-Users must document the exact data source, preprocessing assumptions and label
-construction used by any future experiment.
+## Synthetic Fixtures
 
-## Synthetic Fixture Caveat
+Files under `tests/fixtures/` are synthetic. They exist to exercise
+loaders, schemas, replay, features, labels, models, calibration,
+execution-aware validation and analysis code paths.
 
-The fixtures under `tests/fixtures/` are synthetic. They exist to exercise
-loaders, schemas, replay, features, labels, models, calibration, execution
-validation and analysis plumbing. They are not real market data and must not be
-reported as benchmark evidence, market evidence or execution evidence.
+## FI-2010
 
-## FI-2010 Caveat
+The FI-2010-style loader reads local user-provided files only. The
+repository does not download or bundle FI-2010 data. Different mirrors
+and preprocessing conventions can change feature layouts, labels and
+splits, so any experiment must record the exact mirror in use.
 
-The FI-2010-style loader reads local user-provided files only. The repository
-does not download or bundle FI-2010 data and does not claim replication of any
-published benchmark result. Different mirrors and preprocessing conventions may
-change feature layouts, labels and splits.
-
-## Binance And Crypto Caveat
+## Binance and Crypto
 
 Offline Binance-style reconstruction utilities are local engineering
-demonstrations against supplied files. The bundled Binance-style fixtures are
-synthetic. Crypto market microstructure should not be overclaimed as directly
-equivalent to equity-market behaviour.
+demonstrations against supplied files. Bundled Binance-style fixtures
+are synthetic. Crypto market microstructure is not directly equivalent
+to equity-market behaviour.
 
 ## Forecasting Versus Tradability
 
-Forecast accuracy, macro-F1, MCC, NLL, Brier score, calibration error and
-confidence-filtering diagnostics do not automatically imply cost-adjusted signal
-quality. Prediction quality, uncertainty quality and execution-aware validation
-must remain separate in reports.
+Forecast accuracy, macro-F1, MCC, NLL, Brier score, calibration error
+and confidence-filtering diagnostics do not in themselves characterise
+cost-aware signal quality. Predictive, calibration and execution-aware
+validation evidence remain separate streams.
 
 ## Simplified Execution Validation
 
-The execution-aware validation layer is deterministic research-simulation
-infrastructure. It supports aggressive, passive and hybrid modes, fees, spread
-costs, row-step latency, turnover, confidence-threshold sweeps, passive fill
-proxies, adverse-selection labels and simple risk constraints.
+The execution-aware validation layer is a deterministic research
+simulation. It supports aggressive, passive and hybrid modes, fees,
+spread costs, row-step latency, turnover, confidence-threshold sweeps,
+passive fill proxies, adverse-selection labels and simple risk
+constraints.
 
-It does not implement live trading, broker or exchange integration,
-venue-specific queue priority, production partial-fill realism, a production
-queue model, portfolio optimisation or a market impact model. Any future
-execution report must state these assumptions explicitly.
+It is not a live trading system, does not integrate with brokers or
+exchanges, and does not implement venue-specific queue priority,
+production-grade partial fills, a production queue model, portfolio
+optimisation or a market impact model.
 
-## Modelling Limitations
-
-Classical baselines, DeepLOB-style supervised plumbing, transformer architecture,
-self-supervised objectives and multi-task fine-tuning infrastructure are
-implemented, but no real benchmark performance is reported. Smoke losses and
-accuracies from synthetic fixtures validate code paths only.
-
-## Robustness Analysis Limitations
+## Robustness Analysis
 
 Transfer, regime, ablation and sensitivity utilities organise supplied
-experiment records. They do not generate evidence by themselves. Real robustness
-analysis requires real upstream experiment records produced from documented
-configs, seeds, data versions and code versions.
-
-## Report Archive Limitations
-
-The report evidence archive is an index and smoke-output bundle for manual
-technical report writing. It is not the final report and does not create
-performance evidence. Synthetic command captures in the archive remain synthetic
-plumbing checks only.
+experiment records. They do not produce evidence on their own; real
+analysis requires upstream experiment records from documented configs,
+seeds, data versions and code commits.

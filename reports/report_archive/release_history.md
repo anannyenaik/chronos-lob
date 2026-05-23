@@ -1,6 +1,6 @@
 # Release History
 
-This history summarises implementation milestones for report writing. It does not imply that benchmark experiments or final report results have been produced.
+Summary of implementation milestones in this repository.
 
 | Milestone | Implemented scope |
 |---|---|

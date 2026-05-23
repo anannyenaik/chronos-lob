@@ -1,13 +1,13 @@
-# CLI Smoke Outputs
+# CLI Outputs
 
-These outputs were captured locally for report-writing reference. Synthetic fixture commands are labelled synthetic and are not market evidence, benchmark evidence or execution evidence.
+Local CLI captures included for reproducibility review. Commands run against bundled synthetic fixtures are labelled accordingly; see [../../docs/SAFETY_AND_LIMITATIONS.md] for what synthetic outputs do and do not represent.
 
-- Optional smoke-training commands included: `False`
+- Optional training-style commands included: `False`
 - Commands captured: `13`
 
 ## 1. Environment and package smoke check.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `False`
 - Exit code: `0`
 - Timed out: `False`
@@ -44,7 +44,7 @@ Stderr:
 
 ## 2. Local repository audit summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `False`
 - Exit code: `0`
 - Timed out: `False`
@@ -61,7 +61,7 @@ Stdout:
 ChronosLOB project audit
   root:                         C:\Users\Lenovo\Programming\ChronosLOB\chronos-lob
   configs:                      25
-  reports:                      35
+  reports:                      31
   tests:                        74
   CLI commands:                 32
   required paths status:        pass
@@ -71,6 +71,7 @@ ChronosLOB project audit
   public README status:         pass
   public docs status:           pass
   public wording issue count:   0
+  markdown formatting status:   pass
   issues:                       none
   network calls:                none performed
   outputs:                      not written
@@ -85,7 +86,7 @@ Stderr:
 
 ## 3. FI-2010-style loader inspection on a synthetic fixture.
 
-- Synthetic fixture or synthetic smoke: `True`
+- Uses synthetic fixture: `True`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -120,7 +121,7 @@ Stderr:
 
 ## 4. Feature-pipeline inspection on a synthetic FI-2010-style fixture.
 
-- Synthetic fixture or synthetic smoke: `True`
+- Uses synthetic fixture: `True`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -154,7 +155,7 @@ Stderr:
 
 ## 5. Label-pipeline inspection on a synthetic FI-2010-style fixture.
 
-- Synthetic fixture or synthetic smoke: `True`
+- Uses synthetic fixture: `True`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -186,7 +187,7 @@ Stderr:
 
 ## 6. Canonical event-log inspection on a synthetic fixture.
 
-- Synthetic fixture or synthetic smoke: `True`
+- Uses synthetic fixture: `True`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -222,7 +223,7 @@ Stderr:
 
 ## 7. Event-token inspection on a synthetic event-log fixture.
 
-- Synthetic fixture or synthetic smoke: `True`
+- Uses synthetic fixture: `True`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -271,7 +272,7 @@ Stderr:
 
 ## 8. Transformer architecture support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -323,7 +324,7 @@ Stderr:
 
 ## 9. Self-supervised objective support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -372,7 +373,7 @@ Stderr:
 
 ## 10. Multi-task fine-tuning support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -419,7 +420,7 @@ Stderr:
 
 ## 11. Calibration and uncertainty support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -458,7 +459,7 @@ Stderr:
 
 ## 12. Execution-aware validation support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`
@@ -506,7 +507,7 @@ Stderr:
 
 ## 13. Transfer, regime, ablation and sensitivity support summary.
 
-- Synthetic fixture or synthetic smoke: `False`
+- Uses synthetic fixture: `False`
 - Optional command: `True`
 - Exit code: `0`
 - Timed out: `False`

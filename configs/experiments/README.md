@@ -1,17 +1,17 @@
 # Experiment Configs
 
-Experiment configuration files combine data, features, labels, splitters, models,
-metrics, seeds and output paths.
+Experiment configuration files combine data, features, labels, splitters,
+models, metrics, seeds and output paths.
 
-Every future experiment should be reproducible from a config in this directory or a
-tracked derivative of one. Financial data experiments should use temporal splits by
-default and must document label horizons and leakage controls.
+Every experiment should be reproducible from a config in this directory or a
+tracked derivative of one. Financial data experiments use temporal splits by
+default and document label horizons and leakage controls.
 
-Current examples cover feature audits, label audits, split validation, classical
-baselines, torch datasets, DeepLOB-style supervised smoke, event tokenisation,
-transformer smoke, self-supervised smoke, multi-task smoke, calibration smoke,
-execution-validation smoke, robustness-analysis smoke, full audit hardening and
-report archive generation. None of these smoke configs claim benchmark
-performance or market evidence.
+Current examples cover feature audits, label audits, split validation,
+classical baselines, torch datasets, DeepLOB-style supervised checks, event
+tokenisation, transformer, self-supervised and multi-task smoke
+configurations, calibration, execution-validation, robustness-analysis and the
+evidence-archive build.
 
-Do not create config files for fake or manually invented results.
+Reported metrics must trace to a config, data source, seed, code commit and
+stored output.

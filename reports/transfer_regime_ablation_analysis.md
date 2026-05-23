@@ -188,19 +188,16 @@ regime breakdowns, ablation tables and sensitivity curves without any
 new modelling code. The same layer will support the final report's
 robustness section.
 
-## Limitations and next steps
+## Limitations and Next Steps
 
-- Synthetic smoke records are not evidence.
+- Synthetic test records exercise the code paths and are not evidence.
 - Regime thresholds are explicit by default; data-derived boundaries
   require an explicit `fit_regime_boundaries` call with training or
   calibration data only.
 - Sensitivity comparisons assume the analyst has already produced the
   underlying sweep results elsewhere.
-- There is no combined magic score. The analysis layer reports
-  per-metric summaries only.
-- No new model architectures, live data ingestion, broker integration,
-  notebook outputs, dashboards or fake benchmark tables are added.
-
-CI, full audit and reproducibility checks surround the execution-validation and
-robustness-analysis infrastructure. No live execution, profitability claim or
-investment-usefulness claim is introduced by this analysis layer.
+- The analysis layer reports per-metric summaries only; there is no
+  combined single-score output.
+- See [docs/SAFETY_AND_LIMITATIONS.md](../docs/SAFETY_AND_LIMITATIONS.md)
+  for the scope statement covering live trading, broker integration and
+  market impact.

@@ -37,7 +37,6 @@ checks:
   public_release_wording: true
 
 notes:
-  - "Synthetic fixtures and smoke outputs are plumbing checks only."
-  - "This audit does not create benchmark evidence, execution evidence or model results."
-  - "No live trading, broker integration, venue API client or hidden network call is configured."
-  - "The CI installs the optional torch extra because existing tests cover torch-backed modules."
+  - "Synthetic fixtures exercise code paths only."
+  - "This audit performs local repository checks and does not contact external services."
+  - "CI installs the optional torch extra because existing tests cover torch-backed modules."

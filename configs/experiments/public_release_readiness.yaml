@@ -1,5 +1,5 @@
 # ChronosLOB public release-readiness audit configuration.
-# This is a local documentation and repository hygiene audit only.
+# Local documentation and repository hygiene audit only.
 
 experiment_type: public_release_readiness
 audit_root: "."
@@ -33,10 +33,9 @@ required_files:
   - docs/PROJECT_STATUS.md
   - docs/REPRODUCIBILITY.md
   - docs/SAFETY_AND_LIMITATIONS.md
-  - docs/REPORT_EVIDENCE_INDEX.md
-  - reports/public_release_readiness.md
+  - docs/EXPERIMENT_EVIDENCE_INDEX.md
+  - reports/README.md
   - reports/report_archive/README.md
-  - reports/technical_report/README.md
 
 excluded_directories:
   - .git
@@ -51,4 +50,3 @@ excluded_directories:
 notes:
   - "Synthetic fixtures must remain clearly labelled."
   - "The audit does not write files or contact external services."
-  - "The final technical report is intentionally not included yet."

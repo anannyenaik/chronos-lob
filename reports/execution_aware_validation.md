@@ -79,9 +79,8 @@ liquidity, exchange-specific matching, partial fills or market impact.
 The implementation is deterministic simulation infrastructure. It does not
 download data, place orders, connect to brokers or exchanges, model production
 latency, estimate market impact, reconstruct queue position or verify venue
-rules. Synthetic smoke outputs are plumbing checks and must not be reported as
-benchmark results, signal evidence, risk-adjusted performance evidence,
-profitability evidence or live execution performance.
+rules. See [docs/SAFETY_AND_LIMITATIONS.md](../docs/SAFETY_AND_LIMITATIONS.md)
+for the scope statement.
 
 ## Future Work
 

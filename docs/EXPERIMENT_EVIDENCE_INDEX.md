@@ -1,0 +1,123 @@
+# Experiment Evidence Index
+
+This index maps research themes to the modules, configs, tests and CLI
+commands that implement them. It is a navigation aid for anyone reading
+or reproducing the platform.
+
+## Data and Order Book
+
+- Modules: `chronoslob/data/`, `chronoslob/book/`
+- Configs: `configs/data/*.yaml`
+- Tests: `tests/test_fi2010_loader.py`, `tests/test_binance_schemas.py`,
+  `tests/test_event_store.py`, `tests/test_event_replay.py`
+- CLI: `inspect-fi2010`, `inspect-binance-replay`, `inspect-event-log`
+- Reports: [data_quality](../reports/data_quality.md),
+  [order_book_reconstruction](../reports/order_book_reconstruction.md),
+  [event_log_storage](../reports/event_log_storage.md)
+
+## Features and Labels
+
+- Modules: `chronoslob/features/`, `chronoslob/labels/`
+- Configs: `configs/experiments/feature_audit_fi2010.yaml`,
+  `configs/experiments/label_audit_fi2010.yaml`
+- Tests: `tests/test_feature_pipeline.py`,
+  `tests/test_label_pipeline.py`, `tests/test_no_lookahead.py`
+- CLI: `inspect-features-fi2010`, `inspect-labels-fi2010`
+- Reports: [feature_engine](../reports/feature_engine.md),
+  [label_engine](../reports/label_engine.md),
+  [leakage_controls](../reports/leakage_controls.md)
+
+## Temporal Validation and Registry
+
+- Modules: `chronoslob/training/splitters.py`,
+  `chronoslob/training/experiment.py`
+- Configs: `configs/experiments/fi2010_split_audit.yaml`
+- Tests: `tests/test_splitters.py`,
+  `tests/test_purged_embargoed_splitters.py`,
+  `tests/test_experiment_registry.py`
+- CLI: `inspect-split`, `init-run`
+- Reports: [validation_protocol](../reports/validation_protocol.md),
+  [experiment_registry](../reports/experiment_registry.md)
+
+## Baselines and Sequence Models
+
+- Modules: `chronoslob/models/`, `chronoslob/training/`
+- Configs: `configs/models/*.yaml`,
+  `configs/experiments/*smoke.yaml`
+- Tests: `tests/test_baselines.py`,
+  `tests/test_deeplob_forward.py`,
+  `tests/test_transformer_model.py`
+- CLI: `inspect-baselines`, `inspect-deeplob`, `inspect-transformer`
+- Reports: [baselines](../reports/baselines.md),
+  [deeplob_baseline](../reports/deeplob_baseline.md),
+  [transformer_architecture](../reports/transformer_architecture.md)
+
+## Self-Supervised and Multi-Task Learning
+
+- Modules: `chronoslob/models/ssl.py`,
+  `chronoslob/models/multitask.py`, `chronoslob/training/ssl_*`,
+  `chronoslob/training/multitask_*`
+- Configs: `configs/models/ssl_transformer.yaml`,
+  `configs/models/multitask_transformer.yaml`,
+  `configs/experiments/event_ssl_smoke.yaml`,
+  `configs/experiments/event_multitask_smoke.yaml`
+- Tests: `tests/test_ssl_datasets.py`,
+  `tests/test_ssl_objectives.py`,
+  `tests/test_multitask_model.py`,
+  `tests/test_multitask_experiment.py`
+- CLI: `inspect-ssl`, `inspect-multitask`
+- Reports:
+  [self_supervised_objectives](../reports/self_supervised_objectives.md),
+  [multitask_finetuning](../reports/multitask_finetuning.md)
+
+## Calibration and Uncertainty
+
+- Modules: `chronoslob/models/calibration.py`,
+  `chronoslob/training/calibration.py`
+- Configs: `configs/experiments/calibration_smoke.yaml`
+- Tests: `tests/test_calibration_metrics.py`,
+  `tests/test_confidence_filtering.py`,
+  `tests/test_temperature_scaling.py`
+- CLI: `inspect-calibration`
+- Reports:
+  [calibration_uncertainty](../reports/calibration_uncertainty.md)
+
+## Execution-Aware Validation
+
+- Modules: `chronoslob/backtest/`
+- Configs: `configs/experiments/execution_validation_smoke.yaml`
+- Tests: `tests/test_execution_validation.py`,
+  `tests/test_execution_costs.py`,
+  `tests/test_latency_model.py`,
+  `tests/test_turnover.py`,
+  `tests/test_risk_constraints.py`
+- CLI: `inspect-execution-validation`
+- Reports:
+  [execution_aware_validation](../reports/execution_aware_validation.md)
+
+## Robustness Analysis
+
+- Modules: `chronoslob/analysis/`
+- Configs: `configs/experiments/robustness_analysis_smoke.yaml`
+- Tests: `tests/test_analysis_transfer.py`,
+  `tests/test_analysis_regimes.py`,
+  `tests/test_analysis_ablations.py`,
+  `tests/test_analysis_sensitivity.py`
+- CLI: `inspect-analysis`
+- Reports:
+  [transfer_regime_ablation_analysis](../reports/transfer_regime_ablation_analysis.md)
+
+## Reproducibility and Audit
+
+- Modules: `chronoslob/utils/audit.py`,
+  `chronoslob/utils/report_archive.py`
+- Configs: `configs/experiments/report_archive_smoke.yaml`,
+  `configs/experiments/full_audit_smoke.yaml`
+- Tests: `tests/test_audit_utils.py`,
+  `tests/test_report_archive.py`,
+  `tests/test_config_inventory.py`,
+  `tests/test_report_inventory.py`
+- CLI: `inspect-release-readiness`, `run-project-audit`,
+  `build-report-archive`, `inspect-report-archive`
+- Docs: [REPRODUCIBILITY](REPRODUCIBILITY.md),
+  [SAFETY_AND_LIMITATIONS](SAFETY_AND_LIMITATIONS.md)

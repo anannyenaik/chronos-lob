@@ -1,9 +1,9 @@
 """Technical evidence archive builders for ChronosLOB.
 
 The utilities in this module are local-only. They collect repository inventory,
-curated CLI smoke outputs and text-based Mermaid diagrams for later manual
-technical report writing. They do not download data, run heavy training by
-default, call external services or create benchmark results.
+curated CLI output captures and text-based Mermaid diagrams to support
+reproducibility reviews. They do not download data, run heavy training by
+default, call external services or generate benchmark results.
 """
 
 from __future__ import annotations
@@ -33,13 +33,12 @@ __all__ = [
     "ReportArchiveSection",
     "build_report_archive",
     "capture_command",
-    "collect_cli_smoke_outputs",
+    "collect_cli_outputs",
     "collect_config_inventory",
     "collect_limitations_index",
     "collect_module_inventory",
     "collect_project_inventory",
     "collect_release_history",
-    "collect_report_claims_checklist",
     "collect_test_inventory",
     "default_cli_command_specs",
     "inspect_report_archive",
@@ -51,18 +50,16 @@ EXPECTED_ARCHIVE_FILES: tuple[Path, ...] = (
     Path("README.md"),
     Path("project_inventory.md"),
     Path("release_history.md"),
-    Path("cli_smoke_outputs.md"),
+    Path("cli_outputs.md"),
     Path("config_inventory.md"),
     Path("module_inventory.md"),
     Path("test_inventory.md"),
     Path("limitations_index.md"),
-    Path("report_claims_checklist.md"),
     Path("reproducibility_commands.md"),
     Path("figures/architecture_overview.mmd"),
     Path("figures/data_pipeline.mmd"),
     Path("figures/model_stack.mmd"),
     Path("figures/evaluation_stack.mmd"),
-    Path("figures/report_dependency_map.mmd"),
 )
 
 _CAPTURE_LIMIT_CHARS = 8_000
@@ -513,8 +510,8 @@ def capture_command(
     )
 
 
-def collect_cli_smoke_outputs(config: ReportArchiveConfig) -> tuple[CommandCapture, ...]:
-    """Capture curated lightweight CLI outputs for the report evidence archive."""
+def collect_cli_outputs(config: ReportArchiveConfig) -> tuple[CommandCapture, ...]:
+    """Capture curated lightweight CLI outputs for the technical evidence archive."""
 
     specs = config.command_specs
     if specs is None:
@@ -565,8 +562,7 @@ def collect_project_inventory(config: ReportArchiveConfig) -> ReportArchiveSecti
         [
             "# Project Inventory",
             "",
-            "This inventory supports later manual report writing. It is not a final "
-            "technical report and it contains no benchmark result claims.",
+            "Snapshot of repository structure for reproducibility and review.",
             "",
             f"- Package version: `{__version__}`",
             f"- Config files: `{len(config_files)}`",
@@ -585,12 +581,6 @@ def collect_project_inventory(config: ReportArchiveConfig) -> ReportArchiveSecti
             "## Validation Command List",
             "",
             *validation_lines,
-            "",
-            "## Evidence Boundary",
-            "",
-            "The inventory describes implemented research-engineering artefacts. Real "
-            "performance claims require separately generated experiment outputs with "
-            "documented data provenance, configs, seeds and code versions.",
         ]
     )
     return ReportArchiveSection(
@@ -631,9 +621,7 @@ def collect_release_history() -> ReportArchiveSection:
         [
             "# Release History",
             "",
-            "This history summarises implementation milestones for report writing. It "
-            "does not imply that benchmark experiments or final report results have "
-            "been produced.",
+            "Summary of implementation milestones in this repository.",
             "",
             *table,
         ]
@@ -645,30 +633,25 @@ def collect_release_history() -> ReportArchiveSection:
     )
 
 
-def collect_phase_timeline() -> ReportArchiveSection:
-    """Return the release-history section for older callers."""
-
-    return collect_release_history()
-
-
 def _render_stream_block(label: str, value: str) -> list[str]:
     rendered = value if value else "<empty>"
     return [f"{label}:", "", "```text", rendered, "```"]
 
 
-def _render_cli_smoke_outputs(
+def _render_cli_outputs(
     captures: Sequence[CommandCapture],
     *,
     include_smoke_training: bool,
 ) -> ReportArchiveSection:
     lines = [
-        "# CLI Smoke Outputs",
+        "# CLI Outputs",
         "",
-        "These outputs were captured locally for report-writing reference. Synthetic "
-        "fixture commands are labelled synthetic and are not market evidence, "
-        "benchmark evidence or execution evidence.",
+        "Local CLI captures included for reproducibility review. Commands run "
+        "against bundled synthetic fixtures are labelled accordingly; see "
+        "[../../docs/SAFETY_AND_LIMITATIONS.md] for what synthetic outputs "
+        "do and do not represent.",
         "",
-        f"- Optional smoke-training commands included: `{include_smoke_training}`",
+        f"- Optional training-style commands included: `{include_smoke_training}`",
         f"- Commands captured: `{len(captures)}`",
         "",
     ]
@@ -677,7 +660,7 @@ def _render_cli_smoke_outputs(
             [
                 f"## {index}. {capture.description}",
                 "",
-                f"- Synthetic fixture or synthetic smoke: `{capture.synthetic}`",
+                f"- Uses synthetic fixture: `{capture.synthetic}`",
                 f"- Optional command: `{capture.optional}`",
                 f"- Exit code: `{capture.exit_code}`",
                 f"- Timed out: `{capture.timed_out}`",
@@ -696,8 +679,8 @@ def _render_cli_smoke_outputs(
         lines.append("")
 
     return ReportArchiveSection(
-        relative_path=Path("cli_smoke_outputs.md"),
-        title="CLI Smoke Outputs",
+        relative_path=Path("cli_outputs.md"),
+        title="CLI Outputs",
         content="\n".join(lines).rstrip(),
         synthetic=True,
     )
@@ -707,9 +690,9 @@ def _infer_config_purpose(relative_path: Path) -> str:
     name = relative_path.name.lower()
     parent = relative_path.parent.name.lower()
     if name == "report_archive_smoke.yaml":
-        return "Synthetic report-archive build configuration."
+        return "Evidence-archive build configuration."
     if "smoke" in name:
-        return "Synthetic smoke or plumbing configuration."
+        return "Synthetic-fixture configuration."
     if parent == "data":
         return "Local data loading or replay configuration."
     if parent == "models":
@@ -731,9 +714,8 @@ def collect_config_inventory(config: ReportArchiveConfig) -> ReportArchiveSectio
     lines = [
         "# Config Inventory",
         "",
-        "This inventory lists local YAML configs by directory. Files containing "
-        "`smoke` in the name are synthetic plumbing configs unless documented "
-        "otherwise.",
+        "Local YAML configs grouped by directory. Files containing `smoke` in "
+        "the name use bundled synthetic fixtures.",
         "",
     ]
     for directory in sorted(grouped):
@@ -742,7 +724,7 @@ def collect_config_inventory(config: ReportArchiveConfig) -> ReportArchiveSectio
             synthetic = "yes" if "smoke" in relative.name.lower() else "no"
             lines.append(
                 f"- `{relative.as_posix()}` - {_infer_config_purpose(relative)} "
-                f"Synthetic smoke: `{synthetic}`."
+                f"Uses synthetic fixture: `{synthetic}`."
             )
         lines.append("")
 
@@ -761,8 +743,7 @@ def collect_module_inventory(config: ReportArchiveConfig) -> ReportArchiveSectio
     lines = [
         "# Module Inventory",
         "",
-        "Public modules are grouped by package area to support architecture and "
-        "implementation references in the final technical report.",
+        "Public modules grouped by package area.",
         "",
     ]
     for area in _PACKAGE_AREAS:
@@ -826,8 +807,8 @@ def collect_test_inventory(config: ReportArchiveConfig) -> ReportArchiveSection:
     lines = [
         "# Test Inventory",
         "",
-        "This inventory summarises pytest files by inferred area. It deliberately "
-        "does not include test source contents.",
+        "Pytest files grouped by inferred area. Test source contents are not "
+        "included here.",
         "",
     ]
     for area in sorted(grouped):
@@ -844,20 +825,19 @@ def collect_test_inventory(config: ReportArchiveConfig) -> ReportArchiveSection:
 
 
 def collect_limitations_index() -> ReportArchiveSection:
-    """Build a limitations and caveats index for report writing."""
+    """Build a limitations and caveats index keyed to the public docs."""
 
     lines = [
         "# Limitations Index",
         "",
-        "Use this index to keep report claims aligned with implemented evidence and "
-        "documented caveats.",
+        "Pointer index to the canonical scope and limitation documents.",
         "",
         "## Primary References",
         "",
-        "- `../limitations.md`: current limitations statement.",
-        "- `../../docs/SAFETY_AND_LIMITATIONS.md`: public safety boundaries.",
-        "- `../../docs/REPRODUCIBILITY.md`: validation and smoke-command caveats.",
-        "- `../../docs/PROJECT_STATUS.md`: implemented versus not implemented scope.",
+        "- `../limitations.md`: technical caveats for extending the platform.",
+        "- `../../docs/SAFETY_AND_LIMITATIONS.md`: canonical scope statement.",
+        "- `../../docs/REPRODUCIBILITY.md`: validation and reproducibility path.",
+        "- `../../docs/PROJECT_STATUS.md`: implemented and current limitations.",
         "",
         "## Implementation Reports With Limitation Context",
         "",
@@ -871,17 +851,18 @@ def collect_limitations_index() -> ReportArchiveSection:
         "- `../transfer_regime_ablation_analysis.md`",
         "- `../full_audit_ci_hardening.md`",
         "",
-        "## Caveats To Preserve",
+        "## Core Caveats",
         "",
         "- Public data may have coverage, preprocessing and timestamp limitations.",
-        "- Synthetic fixtures are plumbing checks only.",
-        "- Crypto-style reconstruction examples should not be overclaimed as equity "
+        "- Synthetic fixtures exercise code paths only.",
+        "- Crypto-style reconstruction examples should not be treated as equity-"
         "market evidence.",
         "- Execution-aware validation is a simplified research simulation.",
         "- Queue position, partial fills, latency realism and venue rules remain "
         "explicit assumptions.",
         "- No production market impact model is implemented.",
-        "- Real result claims require reproducible experiment artefacts.",
+        "- Reported metrics must trace to versioned configs, data, seeds and "
+        "stored outputs.",
     ]
     return ReportArchiveSection(
         relative_path=Path("limitations_index.md"),
@@ -890,68 +871,11 @@ def collect_limitations_index() -> ReportArchiveSection:
     )
 
 
-def collect_report_claims_checklist() -> ReportArchiveSection:
-    lines = [
-        "# Report Claims Checklist",
-        "",
-        "Use this checklist before moving any statement from repository evidence into "
-        "the final technical report.",
-        "",
-        "## Claims Allowed Now",
-        "",
-        "- ChronosLOB is a reproducible research-engineering platform.",
-        "- The repository implements local schemas, loaders, features, labels, split "
-        "helpers, model plumbing, calibration diagnostics, execution-aware "
-        "validation utilities and robustness-analysis utilities.",
-        "- Synthetic fixtures and smoke commands exercise code paths.",
-        "- Audit and CI material exists to support public review.",
-        "",
-        "## Claims Not Allowed Yet",
-        "",
-        "- Claims of real benchmark superiority or production readiness.",
-        "- Claims that forecasts are tradable signals.",
-        "- Claims of profitability, market beating or investment usefulness.",
-        "- Claims that simplified execution validation models full venue mechanics.",
-        "- Claims that synthetic smoke outputs are market evidence.",
-        "",
-        "## Evidence Required Before Performance Claims",
-        "",
-        "- Public or licensed data provenance and preprocessing notes.",
-        "- Leakage-safe configs, temporal splits and train-only transform records.",
-        "- Versioned experiment configs, seeds, code commit and output paths.",
-        "- Predictive, calibration and execution-aware validation outputs reported "
-        "as separate evidence types.",
-        "- Limitations for costs, latency, queue position, partial fills and market "
-        "impact assumptions.",
-        "",
-        "## Wording To Use",
-        "",
-        "- `research-engineering platform`",
-        "- `short-horizon market-state forecasting`",
-        "- `execution-aware validation under simplified assumptions`",
-        "- `synthetic plumbing smoke output`",
-        "- `reproducible experiment artefact`",
-        "",
-        "## Wording To Avoid",
-        "",
-        "- Language that presents the repository as automated trading infrastructure.",
-        "- Language that implies certain returns or market outperformance.",
-        "- Language that merges forecast accuracy with tradability.",
-        "- Language that treats synthetic fixtures as real market evidence.",
-    ]
-    return ReportArchiveSection(
-        relative_path=Path("report_claims_checklist.md"),
-        title="Report Claims Checklist",
-        content="\n".join(lines),
-    )
-
-
 def _collect_reproducibility_commands() -> ReportArchiveSection:
     lines = [
         "# Reproducibility Commands",
         "",
-        "These Python commands are canonical because `make` may be unavailable on "
-        "Windows. Run them from the repository root.",
+        "Canonical Python commands. Run them from the repository root.",
         "",
         "## Install",
         "",
@@ -966,14 +890,14 @@ def _collect_reproducibility_commands() -> ReportArchiveSection:
         *(_VALIDATION_COMMANDS),
         "```",
         "",
-        "## Build The Report Evidence Archive",
+        "## Rebuild The Evidence Archive",
         "",
         "```bash",
         "python -m chronoslob.cli build-report-archive",
         "python -m chronoslob.cli inspect-report-archive",
         "```",
         "",
-        "## Lightweight CLI Smoke Commands",
+        "## Lightweight CLI Commands",
         "",
         "```bash",
         (
@@ -1003,13 +927,6 @@ def _collect_reproducibility_commands() -> ReportArchiveSection:
         "python -m chronoslob.cli inspect-execution-validation",
         "python -m chronoslob.cli inspect-analysis",
         "```",
-        "",
-        "## Warning Caveats",
-        "",
-        "- Synthetic fixture outputs are not market evidence.",
-        "- Torch and scikit-learn may emit upstream warnings in tests; record exact "
-        "warnings rather than hiding them.",
-        "- Real benchmark reporting requires separately generated artefacts.",
     ]
     return ReportArchiveSection(
         relative_path=Path("reproducibility_commands.md"),
@@ -1021,22 +938,14 @@ def _collect_reproducibility_commands() -> ReportArchiveSection:
 
 def _collect_report_archive_readme() -> ReportArchiveSection:
     lines = [
-        "# Report Evidence Archive",
+        "# Technical Evidence Archive",
         "",
-        "This directory is a reference archive for writing the ChronosLOB technical "
-        "report manually. It is not the final report.",
+        "Generated archive of repository inventories, release history, current "
+        "CLI captures and Mermaid diagrams. Used as a reproducibility reference.",
         "",
-        "The archive contains repository inventories, release history, current CLI "
-        "smoke outputs, config and test cross-references, limitations, claim-safety "
-        "checks and Mermaid diagram sources.",
-        "",
-        "Synthetic fixture outputs are labelled synthetic. They are useful for "
-        "checking local plumbing, but they are not market evidence, benchmark "
-        "evidence, execution evidence or proof of signal quality.",
-        "",
-        "Real benchmark results must be generated separately from documented data, "
-        "configs, temporal splits, seeds, code versions and output artefacts before "
-        "the final report makes result claims.",
+        "Commands captured against bundled synthetic fixtures are labelled "
+        "accordingly. See `../../docs/SAFETY_AND_LIMITATIONS.md` for the full "
+        "scope statement.",
         "",
         "Rebuild with:",
         "",
@@ -1046,7 +955,7 @@ def _collect_report_archive_readme() -> ReportArchiveSection:
     ]
     return ReportArchiveSection(
         relative_path=Path("README.md"),
-        title="Report Evidence Archive",
+        title="Technical Evidence Archive",
         content="\n".join(lines),
         synthetic=True,
     )
@@ -1124,26 +1033,6 @@ def _collect_mermaid_diagrams() -> tuple[ReportArchiveSection, ...]:
                 "  robustness --> caveats",
             ]
         ),
-        Path("figures/report_dependency_map.mmd"): "\n".join(
-            [
-                "flowchart TB",
-                '  report["Manual final technical report"]',
-                '  docs["Docs\\nstatus, CLI, reproducibility, safety"]',
-                '  configs["Configs\\nsmoke and experiment specs"]',
-                '  reports["Implementation reports and limitations"]',
-                '  cli["CLI smoke outputs"]',
-                '  tests["Tests and audit checks"]',
-                '  diagrams["Mermaid diagrams"]',
-                '  caveats["Claim-safety checklist"]',
-                "  docs --> report",
-                "  configs --> report",
-                "  reports --> report",
-                "  cli --> report",
-                "  tests --> report",
-                "  diagrams --> report",
-                "  caveats --> report",
-            ]
-        ),
     }
     return tuple(
         ReportArchiveSection(
@@ -1186,7 +1075,7 @@ def _all_archive_sections(
         _collect_report_archive_readme(),
         collect_project_inventory(config),
         collect_release_history(),
-        _render_cli_smoke_outputs(
+        _render_cli_outputs(
             captures,
             include_smoke_training=config.include_smoke_training,
         ),
@@ -1194,7 +1083,6 @@ def _all_archive_sections(
         collect_module_inventory(config),
         collect_test_inventory(config),
         collect_limitations_index(),
-        collect_report_claims_checklist(),
         _collect_reproducibility_commands(),
         *_collect_mermaid_diagrams(),
     )
@@ -1224,10 +1112,10 @@ def write_report_archive(
 
 
 def build_report_archive(config: ReportArchiveConfig | None = None) -> ReportArchiveResult:
-    """Build the local report evidence archive."""
+    """Build the local technical evidence archive."""
 
     resolved_config = config if config is not None else ReportArchiveConfig()
-    captures = collect_cli_smoke_outputs(resolved_config)
+    captures = collect_cli_outputs(resolved_config)
     if resolved_config.strict:
         _raise_for_strict_failures(captures)
     sections = _all_archive_sections(resolved_config, captures)

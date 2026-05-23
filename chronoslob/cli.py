@@ -108,6 +108,8 @@ def _run_project_audit_impl(
             print(f"  public docs status:           {result.status.value}")
         elif result.name == "public_release_wording":
             print(f"  public wording issue count:   {result.issue_count}")
+        elif result.name == "markdown_formatting":
+            print(f"  markdown formatting status:   {result.status.value}")
 
     if audit.issue_count:
         print("  issues:")
@@ -138,12 +140,14 @@ def _inspect_release_readiness_impl(*, root: Path | None = None) -> int:
     structure = result_by_name["public_release_structure"]
     wording = result_by_name["public_release_wording"]
     claims = result_by_name["forbidden_claims"]
+    formatting = result_by_name["markdown_formatting"]
     workflow_label = "AI/" + "pro" + "mpt artefact scan status"
 
     print("ChronosLOB release readiness inspection")
     print(f"  root:                            {audit.root}")
     print(f"  README status:                   {readme.status.value}")
     print(f"  docs status:                     {structure.status.value}")
+    print(f"  markdown formatting status:      {formatting.status.value}")
     print(f"  {workflow_label}:  {wording.status.value}")
     print(f"  safety/claims scan status:       {claims.status.value}")
     print(
@@ -198,7 +202,6 @@ def _build_report_archive_impl(
     for warning in result.warnings:
         print(f"    - {warning}")
     print("  network calls:                none performed")
-    print("  final report written:         no")
     return 0
 
 

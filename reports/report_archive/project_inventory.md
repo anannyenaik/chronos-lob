@@ -1,10 +1,10 @@
 # Project Inventory
 
-This inventory supports later manual report writing. It is not a final technical report and it contains no benchmark result claims.
+Snapshot of repository structure for reproducibility and review.
 
 - Package version: `0.1.0`
 - Config files: `25`
-- Report files, excluding this generated archive: `24`
+- Report files, excluding this generated archive: `22`
 - Test files: `74`
 - CLI commands: `32`
 
@@ -65,7 +65,3 @@ This inventory supports later manual report writing. It is not a final technical
 - `python -m compileall -q chronoslob tests`
 - `python -m ruff check .`
 - `python -m mypy chronoslob`
-
-## Evidence Boundary
-
-The inventory describes implemented research-engineering artefacts. Real performance claims require separately generated experiment outputs with documented data provenance, configs, seeds and code versions.

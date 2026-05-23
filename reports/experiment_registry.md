@@ -48,8 +48,7 @@ Models, training loops, checkpoints, calibration reports, forecasts, backtests
 and metric tables do not exist in this phase. The registry therefore does not
 create or expect those artefacts.
 
-## No Fake Metrics Policy
+## Reporting Discipline
 
-No manually invented metrics, plots, result tables or notebooks should be added.
-Any future reported result must be generated from a reproducible run with a
-captured config, seed, code version, input paths and output paths.
+Any reported result must be generated from a reproducible run with a
+captured config, seed, code commit and input and output paths.

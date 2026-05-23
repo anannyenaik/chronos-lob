@@ -1,26 +1,19 @@
-# Full Audit And CI Hardening
+# Audit and CI
 
-This hardening pass supports ChronosLOB as a reproducible research-engineering
-artefact. It does not add model architectures, training objectives, benchmark
-results, dashboards, notebook outputs or trading functionality.
+This note describes the local audit utilities and continuous
+integration setup for ChronosLOB. It does not add model architectures,
+training objectives or any evaluation evidence.
 
-## Purpose
+## CI
 
-The hardening pass checks that the repository is internally consistent before
-later report-writing and public documentation work. The focus is quality, safety,
-reproducibility and claim discipline across code, CLI commands, configs, reports,
-tests and documentation.
+The GitHub Actions workflow runs on push and pull request using Ubuntu
+and Python 3.11. It installs the package with `.[dev,torch]` because
+existing tests cover torch-backed data and model code paths. CI runs
+package import, the doctor command, pytest, compileall, ruff and mypy.
 
-## CI Design
-
-The GitHub Actions workflow runs on push and pull request using Ubuntu and Python
-3.11. It installs the package with `.[dev,torch]` because existing tests cover
-torch-backed data and model plumbing. CI then runs package import, doctor,
-pytest, compileall, ruff and mypy checks.
-
-CI does not require real FI-2010 data, real exchange data, secrets, API keys,
-remote services or live data downloads. Network access is only used for
-dependency installation by GitHub Actions.
+CI does not require real FI-2010 data, real exchange data, secrets or
+API keys. Network access is used only for dependency installation by
+GitHub Actions.
 
 ## Audit Utilities
 
@@ -31,61 +24,34 @@ dependency installation by GitHub Actions.
 - scanning for unsupported trading or performance claim phrases;
 - checking synthetic fixture and smoke-config labelling;
 - detecting unexpectedly large repository-facing files;
-- returning structured audit results for CLI and tests.
+- inspecting the public README for required structure and links;
+- returning structured audit results for the CLI and tests.
 
-The audit does not call the GitHub API, shell out, mutate files or contact
-external services.
+The audit does not call the GitHub API, shell out, mutate files or
+contact external services.
 
-## Data And Claim Safety
+## Claim Scanner
 
-The claim scanner is a conservative heuristic. It reports file path, line number
-and matched phrase for suspicious unsupported claims, while allowing documented
-"do not say this" and limitation contexts. Human review remains required before a
-public release.
+The claim scanner is a conservative heuristic. It reports the file
+path, line number and matched phrase for suspicious unsupported
+claims and allows documented limitation contexts. Human review
+remains required before a public release.
 
-Synthetic fixture checks focus on smoke configs and fixture READMEs. They help
-keep plumbing outputs clearly separated from benchmark evidence and real market
-evidence.
+## Config and Report Inventory
 
-## Config And Report Inventory
+Tests parse YAML configs, check fixture path references, reject
+obvious secret fields and ensure configs do not require network data
+by default. Report tests check that expected reports exist and stay
+within the claim discipline.
 
-New tests parse YAML configs, check fixture path references, reject obvious secret
-fields and ensure configs do not require network data by default. Report tests
-check expected reports, limitation coverage, claim discipline and implementation
-report discoverability.
+## CLI Surface
 
-## CLI Documentation
+The CLI exposes the audit and evidence-archive commands described in
+[docs/CLI_REFERENCE.md](../docs/CLI_REFERENCE.md). The
+`run-project-audit --strict` command exits non-zero if any warning or
+failure is detected.
 
-`docs/CLI_REFERENCE.md` groups commands by area, including version and doctor,
-FI-2010 inspection, feature and label inspection, split and registry, baselines,
-torch datasets, DeepLOB smoke, Binance replay, event logs, tokenisation,
-transformer, SSL, multi-task, calibration, execution validation, robustness
-analysis and audit.
+## Validation Path
 
-The new `run-project-audit` command prints local inventory counts and issue
-counts without writing output files. `--strict` exits non-zero if warnings or
-failures are found.
-
-## Reproducibility Documentation
-
-`docs/REPRODUCIBILITY.md` records Python expectations, install commands, local
-validation commands, the Windows `make` caveat, data policy, deterministic smoke
-notes and interpretation rules for synthetic smoke outputs.
-
-## Remaining Limitations
-
-ChronosLOB remains a research infrastructure project. It has no live trading,
-broker integration, production queue model, production partial-fill model,
-market impact model, portfolio optimiser or real benchmark result claims.
-
-Before final public release, contributors should:
-
-- rerun the full validation suite in a clean environment;
-- confirm GitHub Actions passes remotely;
-- review docs for stale release-history wording;
-- verify that no local data, generated artefacts, notebook outputs or secrets are
-  staged;
-- generate any future report metrics only from reproducible experiment artefacts.
-
-This hardening work adds no new model results, benchmark claims, execution
-evidence or production-use claims.
+The canonical local validation path is documented in
+[docs/REPRODUCIBILITY.md](../docs/REPRODUCIBILITY.md).

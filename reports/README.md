@@ -1,15 +1,12 @@
 # Reports
 
-Reports should be generated from reproducible experiment outputs.
+This directory contains implementation notes for the major
+ChronosLOB subsystems. Each note describes the technical scope of one
+module or layer.
 
-Do not add manually invented result tables, placeholder metrics or fake plots. Every
-future reported metric should be traceable to a config, code version, data version,
-seed and stored experiment artefact.
+Empirical results, when added, must trace to a versioned config, data
+source, seed, code commit and stored output artefact.
 
-Current implementation reports document infrastructure and limitations. Synthetic
-smoke outputs are plumbing checks only and should not be described as benchmark
-results or market evidence.
-
-`reports/report_archive/` is a technical evidence archive for manual report
-writing. It is not the final report and should not be treated as performance
-evidence.
+`reports/report_archive/` is a generated technical evidence archive of
+inventories, current command outputs and Mermaid diagrams. Rebuild it
+with `python -m chronoslob.cli build-report-archive`.

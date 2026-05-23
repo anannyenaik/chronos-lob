@@ -1,54 +1,55 @@
-# Safety And Limitations
+# Safety and Limitations
 
-ChronosLOB is research infrastructure for market microstructure modelling. It is
-not financial advice, not live trading infrastructure and not a production
-execution platform.
+ChronosLOB is research software for limit order book modelling. It is
+not financial advice, not live trading infrastructure and not a
+production execution system. This document is the single, canonical
+statement of scope. Other documents stay focused on technical content
+and refer here for boundaries.
 
-## Claim Boundaries
+## Research Scope
 
-- No investment usefulness or live execution claim is made.
-- No real benchmark result is claimed unless it is later generated from a
-  reproducible experiment artefact.
-- Synthetic smoke outputs are plumbing checks only.
-- Report archive CLI captures are report-writing references only; synthetic
-  captures are not market evidence.
-- Prediction quality, uncertainty quality and execution-aware validation are
-  reported separately.
+The platform studies whether self-supervised representations of order
+book dynamics can improve short-horizon market-state forecasting, and
+whether those forecasts remain useful under explicit execution
+assumptions. Forecast quality, calibration quality and cost-aware
+signal quality are reported as separate evidence streams.
 
-## Data Caveats
+## Data Limitations
 
-FI-2010 is a useful public benchmark, but users must obtain it locally and verify
-the exact mirror, preprocessing and label conventions they use. The repository
-does not bundle FI-2010 data and does not claim published benchmark replication.
+- The repository ships no real exchange data, no licensed data and no
+  credentials. Users provide any real FI-2010 or public venue data
+  locally.
+- Public limit order book datasets may have restricted coverage,
+  simplified message semantics, survivorship effects, preprocessing
+  choices or unclear timestamp conventions. Any experiment should
+  document its exact data source and preprocessing.
+- Fixtures under `tests/fixtures/` are small synthetic files. They
+  exercise code paths and are not market evidence.
+- Crypto-style reconstruction examples should not be treated as
+  evidence for equity-market behaviour.
 
-Crypto and Binance-style data can be useful for engineering demonstrations, but
-crypto market microstructure should not be treated as directly equivalent to
-equity-market behaviour. The bundled Binance-style files are synthetic fixtures,
-not real venue data.
+## Modelling Limitations
 
-## Execution Caveats
+- Implemented baselines, transformer encoders and self-supervised
+  objectives are infrastructure. No benchmark performance is claimed.
+- Forecast accuracy, calibration error and confidence-filtering
+  diagnostics do not in themselves characterise tradability.
 
-Execution-aware validation in this repository is a simplified research
-simulation. It can account for configured fees, spread costs, latency, turnover,
-risk constraints, passive fill proxies and adverse-selection labels, but it is
-not a production execution simulator.
+## Execution-Validation Limitations
 
-The project does not implement:
+The execution-aware validation layer is a deterministic research
+simulation. It supports configured fees, spread costs, row-step
+latency, turnover, passive fill proxies, adverse-selection labels and
+simple risk constraints.
 
-- live trading;
-- broker or exchange integration;
-- production queue modelling;
-- production partial-fill modelling;
-- venue-specific matching rules;
-- market impact modelling;
-- portfolio optimisation.
+It does not model live trading, broker or exchange integration,
+venue-specific queue priority, production-grade partial fills,
+production queue dynamics, market impact or portfolio optimisation.
+Any future execution-aware result must state these assumptions.
 
-All future reports should state these assumptions clearly and should avoid
-treating forecast accuracy as cost-adjusted signal quality.
+## Reporting Discipline
 
-## Evidence Archive Caveat
-
-The technical evidence archive organises repository evidence for manual report
-writing. It does not create the final report, benchmark results, real data
-outputs or production-readiness evidence. Any future result claim must cite
-reproducible experiment inputs and outputs rather than the archive itself.
+Any reported metric must trace to a versioned config, data source,
+seed, code commit and stored output artefact. Predictive, calibration
+and execution-aware validation outputs are reported as separate
+evidence types rather than collapsed into a single score.

@@ -1,4 +1,4 @@
-"""Tests for report evidence archive utilities."""
+"""Tests for technical evidence archive utilities."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ from chronoslob.utils.report_archive import (
     collect_module_inventory,
     collect_project_inventory,
     collect_release_history,
-    collect_report_claims_checklist,
 )
 
 
@@ -71,8 +70,8 @@ def test_config_inventory_marks_synthetic_smoke_configs() -> None:
     section = collect_config_inventory(ReportArchiveConfig(root=project_root()))
 
     assert "configs/experiments/report_archive_smoke.yaml" in section.content
-    assert "Synthetic report-archive build configuration" in section.content
-    assert "Synthetic smoke: `yes`" in section.content
+    assert "Evidence-archive build configuration" in section.content
+    assert "Uses synthetic fixture: `yes`" in section.content
 
 
 def test_module_inventory_includes_key_packages() -> None:
@@ -104,16 +103,6 @@ def test_limitations_index_references_required_caveats() -> None:
         "market impact model",
     ):
         assert phrase in lowered
-
-
-def test_claims_checklist_contains_allowed_and_disallowed_claims() -> None:
-    section = collect_report_claims_checklist()
-    lowered = section.content.lower()
-
-    assert "claims allowed now" in lowered
-    assert "claims not allowed yet" in lowered
-    assert "research-engineering platform" in lowered
-    assert "synthetic smoke outputs are market evidence" in lowered
 
 
 def test_command_capture_handles_success() -> None:
@@ -175,15 +164,12 @@ def test_mermaid_diagram_files_are_generated(tmp_path: Path) -> None:
         "data_pipeline.mmd",
         "model_stack.mmd",
         "evaluation_stack.mmd",
-        "report_dependency_map.mmd",
     ):
         text = (result.output_path / "figures" / name).read_text(encoding="utf-8")
         assert text.startswith("flowchart")
 
 
-def test_generated_archive_markdown_contains_synthetic_disclaimers(
-    tmp_path: Path,
-) -> None:
+def test_generated_archive_readme_describes_archive(tmp_path: Path) -> None:
     result = build_report_archive(
         ReportArchiveConfig(
             root=project_root(),
@@ -193,11 +179,11 @@ def test_generated_archive_markdown_contains_synthetic_disclaimers(
     )
 
     readme = (result.output_path / "README.md").read_text(encoding="utf-8")
-    smoke = (result.output_path / "cli_smoke_outputs.md").read_text(encoding="utf-8")
+    outputs = (result.output_path / "cli_outputs.md").read_text(encoding="utf-8")
 
-    assert "not the final report" in readme
-    assert "Synthetic fixture outputs are labelled synthetic" in readme
-    assert "not market evidence" in smoke
+    assert "Technical Evidence Archive" in readme
+    assert "synthetic fixtures" in readme.lower()
+    assert "synthetic fixture" in outputs.lower()
 
 
 def test_strict_mode_raises_for_failed_command(tmp_path: Path) -> None:
