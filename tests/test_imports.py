@@ -46,6 +46,25 @@ def test_audit_utils_import() -> None:
         assert hasattr(audit, name), f"chronoslob.utils.audit is missing {name}"
 
 
+def test_report_archive_utils_import() -> None:
+    report_archive = importlib.import_module("chronoslob.utils.report_archive")
+
+    for name in (
+        "ReportArchiveConfig",
+        "ReportArchiveResult",
+        "ReportArchiveSection",
+        "CommandCapture",
+        "build_report_archive",
+        "collect_project_inventory",
+        "collect_phase_timeline",
+        "collect_cli_smoke_outputs",
+        "write_report_archive",
+    ):
+        assert hasattr(report_archive, name), (
+            f"chronoslob.utils.report_archive is missing {name}"
+        )
+
+
 def test_schema_modules_import() -> None:
     schemas = importlib.import_module("chronoslob.data.schemas")
     events = importlib.import_module("chronoslob.book.events")

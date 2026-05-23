@@ -1,0 +1,13 @@
+flowchart TB
+  inputs["Features or event tokens"]
+  classical["Classical baselines"]
+  deeplob["DeepLOB-style CNN-LSTM"]
+  tokenisation["Deterministic tokenisation"]
+  transformer["Transformer encoder"]
+  ssl["Self-supervised objectives"]
+  multitask["Multi-task heads"]
+  inputs --> classical
+  inputs --> deeplob
+  inputs --> tokenisation --> transformer
+  transformer --> ssl
+  transformer --> multitask

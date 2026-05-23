@@ -11,6 +11,8 @@ platform.
 - No real benchmark result is claimed unless it is later generated from a
   reproducible experiment artefact.
 - Synthetic smoke outputs are plumbing checks only.
+- Report archive CLI captures are report-writing references only; synthetic
+  captures are not market evidence.
 - Prediction quality, uncertainty quality and execution-aware validation are
   reported separately.
 
@@ -44,3 +46,10 @@ The project does not implement:
 
 All future reports should state these assumptions clearly and should avoid
 treating forecast accuracy as cost-adjusted signal quality.
+
+## Report Archive Caveat
+
+The Phase 19 report archive organises evidence for manual report writing. It
+does not create the final report, benchmark results, real data outputs or
+production-readiness evidence. Any future result claim must cite reproducible
+experiment inputs and outputs rather than the archive itself.

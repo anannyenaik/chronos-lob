@@ -1,0 +1,16 @@
+flowchart LR
+  fi["FI-2010 local loader"]
+  binance["Offline Binance-style reconstruction"]
+  logs["Canonical JSONL event logs"]
+  snapshots["Snapshots and events"]
+  feats["Past-only features"]
+  labels["Future-window labels"]
+  leakage["Leakage checks"]
+  splits["Temporal splits"]
+  fi --> snapshots
+  binance --> logs --> snapshots
+  snapshots --> feats
+  snapshots --> labels
+  feats --> leakage
+  labels --> leakage
+  leakage --> splits

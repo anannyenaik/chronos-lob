@@ -1,0 +1,13 @@
+flowchart LR
+  data["Data layer\nFI-2010 loader, schemas, validation"]
+  replay["Book and replay layer\nLocal order book, event logs"]
+  features["Feature and label layer\nPast-only features, future labels"]
+  splits["Split and experiment layer\nTemporal, walk-forward, purged"]
+  models["Model layer\nBaselines, DeepLOB-style, transformer"]
+  calibration["Calibration layer\nUncertainty and confidence filtering"]
+  execution["Execution validation layer\nCosts, latency, risk constraints"]
+  analysis["Analysis and report layer\nTransfer, regime, archive"]
+  data --> replay --> features --> splits --> models
+  models --> calibration --> execution --> analysis
+  splits --> analysis
+  features --> analysis

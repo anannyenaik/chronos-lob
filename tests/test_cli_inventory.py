@@ -22,6 +22,8 @@ def test_cli_command_collection_includes_known_commands() -> None:
         "run-execution-validation-smoke",
         "run-robustness-analysis-smoke",
         "run-project-audit",
+        "build-report-archive",
+        "inspect-report-archive",
     ):
         assert command in commands
 

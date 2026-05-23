@@ -35,6 +35,8 @@ python -c "import chronoslob; print(chronoslob.__version__)"
 python -m chronoslob.cli doctor
 python -m chronoslob.cli run-project-audit
 python -m chronoslob.cli run-project-audit --strict
+python -m chronoslob.cli build-report-archive
+python -m chronoslob.cli inspect-report-archive
 python -m pytest
 python -m compileall -q chronoslob tests
 python -m ruff check .
@@ -82,6 +84,20 @@ python -m chronoslob.cli run-robustness-analysis-smoke
 Synthetic smoke outputs show that plumbing executes, shapes align and summaries
 are produced. They are not benchmark results, market evidence, execution
 evidence or proof of cost-adjusted signal quality.
+
+## Report Evidence Archive
+
+The report archive can be rebuilt locally with:
+
+```bash
+python -m chronoslob.cli build-report-archive
+python -m chronoslob.cli inspect-report-archive
+```
+
+The default archive build captures lightweight inspect and audit outputs only.
+Use `--include-smoke-training` only when synthetic smoke-training outputs are
+explicitly needed for documentation. The archive supports manual report writing;
+it is not the final report.
 
 ## Reporting Rule
 

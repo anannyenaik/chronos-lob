@@ -122,6 +122,69 @@ def _run_project_audit_impl(
     return 0
 
 
+def _build_report_archive_impl(
+    *,
+    output: Path = Path("reports/report_archive"),
+    strict: bool = False,
+    include_smoke_training: bool = False,
+) -> int:
+    """Build the local report evidence archive."""
+    from chronoslob.utils.report_archive import (
+        ReportArchiveConfig,
+        build_report_archive,
+    )
+
+    try:
+        result = build_report_archive(
+            ReportArchiveConfig(
+                output_path=output,
+                strict=strict,
+                include_smoke_training=include_smoke_training,
+            )
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"Failed to build report archive: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB report evidence archive")
+    print(f"  archive path:                 {result.output_path}")
+    print(f"  files written:                {len(result.files_written)}")
+    print(f"  commands captured:            {result.commands_captured}")
+    print(f"  synthetic sections included:  {result.synthetic_section_count}")
+    print(f"  warnings:                     {result.warnings_count}")
+    for warning in result.warnings:
+        print(f"    - {warning}")
+    print("  network calls:                none performed")
+    print("  final report written:         no")
+    return 0
+
+
+def _inspect_report_archive_impl(
+    *,
+    output: Path = Path("reports/report_archive"),
+) -> int:
+    """Inspect expected report archive files without writing."""
+    from chronoslob.utils.report_archive import inspect_report_archive
+
+    try:
+        statuses = inspect_report_archive(output)
+    except (OSError, ValueError) as exc:
+        print(f"Failed to inspect report archive: {exc}", file=sys.stderr)
+        return 1
+
+    present_count = sum(1 for _, present in statuses if present)
+    print("ChronosLOB report archive inspection")
+    print(f"  archive path:    {output}")
+    print(f"  expected files:  {len(statuses)}")
+    print(f"  present files:   {present_count}")
+    print(f"  missing files:   {len(statuses) - present_count}")
+    for relative_path, present in statuses:
+        status = "present" if present else "missing"
+        print(f"  {relative_path.as_posix()}: {status}")
+    print("  network calls:   none performed")
+    return 0 if present_count == len(statuses) else 1
+
+
 def _is_synthetic_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return "tests" in parts and "fixtures" in parts
@@ -1671,7 +1734,8 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-calibration|run-calibration-smoke|"
             "inspect-execution-validation|run-execution-validation-smoke|"
             "inspect-analysis|run-robustness-analysis-smoke|"
-            "inspect-binance-replay|run-project-audit] [...]"
+            "inspect-binance-replay|run-project-audit|"
+            "build-report-archive|inspect-report-archive] [...]"
         )
         return 0
 
@@ -1691,6 +1755,32 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--strict", action="store_true")
         parsed = parser.parse_args(args[1:])
         return _run_project_audit_impl(root=parsed.root, strict=parsed.strict)
+    if command == "build-report-archive":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-report-archive",
+            description="Build the local report evidence archive.",
+        )
+        parser.add_argument("--output", type=Path, default=Path("reports/report_archive"))
+        parser.add_argument("--strict", action="store_true")
+        parser.add_argument(
+            "--include-smoke-training",
+            action="store_true",
+            help="Also capture short synthetic smoke-training commands.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _build_report_archive_impl(
+            output=parsed.output,
+            strict=parsed.strict,
+            include_smoke_training=parsed.include_smoke_training,
+        )
+    if command == "inspect-report-archive":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-report-archive",
+            description="Inspect expected report archive files without writing.",
+        )
+        parser.add_argument("--output", type=Path, default=Path("reports/report_archive"))
+        parsed = parser.parse_args(args[1:])
+        return _inspect_report_archive_impl(output=parsed.output)
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -2235,6 +2325,21 @@ if typer is not None:
         "--strict",
         help="Exit non-zero when warnings or failures are found.",
     )
+    _REPORT_ARCHIVE_OUTPUT_OPTION = typer.Option(
+        Path("reports/report_archive"),
+        "--output",
+        help="Directory where report archive files are written.",
+    )
+    _REPORT_ARCHIVE_STRICT_OPTION = typer.Option(
+        False,
+        "--strict",
+        help="Fail if any captured command exits non-zero.",
+    )
+    _REPORT_ARCHIVE_INCLUDE_SMOKE_TRAINING_OPTION = typer.Option(
+        False,
+        "--include-smoke-training",
+        help="Also capture short synthetic smoke-training commands.",
+    )
 
     def run_project_audit(
         root: Path | None = _AUDIT_ROOT_OPTION,
@@ -2242,6 +2347,28 @@ if typer is not None:
     ) -> None:
         """Run local repository audit checks without writing outputs."""
         exit_code = _run_project_audit_impl(root=root, strict=strict)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_report_archive(
+        output: Path = _REPORT_ARCHIVE_OUTPUT_OPTION,
+        strict: bool = _REPORT_ARCHIVE_STRICT_OPTION,
+        include_smoke_training: bool = _REPORT_ARCHIVE_INCLUDE_SMOKE_TRAINING_OPTION,
+    ) -> None:
+        """Build the local report evidence archive."""
+        exit_code = _build_report_archive_impl(
+            output=output,
+            strict=strict,
+            include_smoke_training=include_smoke_training,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_report_archive(
+        output: Path = _REPORT_ARCHIVE_OUTPUT_OPTION,
+    ) -> None:
+        """Inspect expected report archive files without writing."""
+        exit_code = _inspect_report_archive_impl(output=output)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -3316,6 +3443,8 @@ if typer is not None:
     app.command()(version)
     app.command()(doctor)
     app.command("run-project-audit")(run_project_audit)
+    app.command("build-report-archive")(build_report_archive)
+    app.command("inspect-report-archive")(inspect_report_archive)
     app.command("inspect-event-log")(inspect_event_log)
     app.command("inspect-event-tokens")(inspect_event_tokens)
     app.command("event-log-to-features")(event_log_to_features)

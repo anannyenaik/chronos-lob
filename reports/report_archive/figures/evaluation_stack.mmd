@@ -1,0 +1,12 @@
+flowchart LR
+  predictive["Predictive metrics"]
+  calibration["Calibration metrics"]
+  confidence["Confidence filtering"]
+  execution["Execution-aware validation"]
+  robustness["Transfer, regime, ablation, sensitivity"]
+  caveats["Limitations and assumptions"]
+  predictive --> calibration --> confidence
+  confidence --> execution
+  predictive --> robustness
+  execution --> robustness
+  robustness --> caveats

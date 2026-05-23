@@ -1,0 +1,16 @@
+flowchart TB
+  report["Manual final technical report"]
+  docs["Docs\nstatus, CLI, reproducibility, safety"]
+  configs["Configs\nsmoke and experiment specs"]
+  reports["Phase reports and limitations"]
+  cli["CLI smoke outputs"]
+  tests["Tests and audit checks"]
+  diagrams["Mermaid diagrams"]
+  caveats["Claim-safety checklist"]
+  docs --> report
+  configs --> report
+  reports --> report
+  cli --> report
+  tests --> report
+  diagrams --> report
+  caveats --> report

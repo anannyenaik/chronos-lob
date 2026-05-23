@@ -7,7 +7,7 @@ representation learning, short-horizon market-state forecasting and
 execution-aware validation. It is not a live trading system and it does not
 claim deployable alpha.
 
-## Completed Through Phase 17
+## Completed Through Phase 19
 
 - Phase 0: repository scaffold, tooling, documentation conventions and project
   safety rules.
@@ -35,6 +35,12 @@ claim deployable alpha.
   turnover, risk constraints and adverse-selection tracking.
 - Phase 17: transfer, regime, ablation and sensitivity analysis utilities with
   structured summaries and synthetic smoke tooling.
+- Phase 18: local project audit utilities, `run-project-audit`, GitHub Actions
+  CI, CLI reference documentation, reproducibility notes, project status
+  documentation and safety/limitations documentation.
+- Phase 19: report evidence archive utilities, `build-report-archive`,
+  report-writing guide, evidence index, GitHub polish checklist, Mermaid
+  diagrams and archive inventory files.
 
 ## Implemented
 
@@ -49,6 +55,8 @@ claim deployable alpha.
 - Simplified execution-aware validation utilities.
 - Robustness analysis summaries for supplied experiment records.
 - CLI smoke commands, configs, reports and tests for the implemented modules.
+- Local audit and CI hardening utilities.
+- Report evidence archive generation for manual final-report writing.
 
 ## Not Implemented
 
@@ -57,17 +65,19 @@ claim deployable alpha.
 - Production queue-position, partial-fill or market impact models.
 - Portfolio optimisation or deployable execution logic.
 - Dashboards, notebook outputs, final technical report or CV packaging.
+- Real report results or final report prose.
 
 ## Current Limitations
 
-The repository is a research infrastructure artefact. Smoke outputs are synthetic
-plumbing checks only. FI-2010 data must be supplied locally by the user. Public
-crypto-style fixtures are not evidence for equity-market behaviour. Simplified
-execution validation does not model all venue mechanics, queue dynamics,
-latency, partial fills or market impact.
+The repository is a research infrastructure artefact. Smoke outputs and report
+archive CLI captures are synthetic plumbing checks only where labelled.
+FI-2010 data must be supplied locally by the user. Public crypto-style fixtures
+are not evidence for equity-market behaviour. Simplified execution validation
+does not model all venue mechanics, queue dynamics, latency, partial fills or
+market impact.
 
 ## Next Phases
 
-The next planned work is final report and GitHub polish, followed later by CV
-packaging. Those phases should summarise implemented and verified artefacts only,
+The next planned work is final public release readiness and CV packaging
+support. Those phases should summarise implemented and verified artefacts only,
 without adding fake results or unsupported trading claims.

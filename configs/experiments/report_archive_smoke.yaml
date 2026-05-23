@@ -1,0 +1,50 @@
+name: report_archive_smoke
+phase: phase_19_report_evidence_archive
+scope: synthetic report archive smoke configuration
+description: >
+  Builds the local report evidence archive for manual report-writing support.
+  This configuration is synthetic plumbing only. It is not the final report and
+  contains no benchmark claims.
+archive:
+  output_path: reports/report_archive
+  include_smoke_training: false
+  strict: false
+command_capture:
+  note: >
+    Capture lightweight inspect and audit commands only by default. Do not run
+    smoke-training commands unless include_smoke_training is explicitly enabled.
+  commands:
+    - python -m chronoslob.cli doctor
+    - python -m chronoslob.cli run-project-audit
+    - python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+    - python -m chronoslob.cli inspect-features-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+    - python -m chronoslob.cli inspect-labels-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+    - python -m chronoslob.cli inspect-event-log --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
+    - python -m chronoslob.cli inspect-event-tokens --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
+    - python -m chronoslob.cli inspect-transformer
+    - python -m chronoslob.cli inspect-ssl
+    - python -m chronoslob.cli inspect-multitask
+    - python -m chronoslob.cli inspect-calibration
+    - python -m chronoslob.cli inspect-execution-validation
+    - python -m chronoslob.cli inspect-analysis
+expected_archive_files:
+  - reports/report_archive/README.md
+  - reports/report_archive/project_inventory.md
+  - reports/report_archive/phase_timeline.md
+  - reports/report_archive/cli_smoke_outputs.md
+  - reports/report_archive/config_inventory.md
+  - reports/report_archive/module_inventory.md
+  - reports/report_archive/test_inventory.md
+  - reports/report_archive/limitations_index.md
+  - reports/report_archive/report_claims_checklist.md
+  - reports/report_archive/reproducibility_commands.md
+  - reports/report_archive/figures/architecture_overview.mmd
+  - reports/report_archive/figures/data_pipeline.mmd
+  - reports/report_archive/figures/model_stack.mmd
+  - reports/report_archive/figures/evaluation_stack.mmd
+  - reports/report_archive/figures/report_dependency_map.mmd
+safety_notes:
+  - The archive is not the final report.
+  - Synthetic smoke outputs are not market evidence.
+  - Real benchmark claims require separately generated reproducible artefacts.
+  - No model functionality, training objective or execution logic is added here.

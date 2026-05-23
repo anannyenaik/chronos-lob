@@ -113,6 +113,19 @@ python -m chronoslob.cli <command> [options]
 - `run-project-audit --strict`: exit non-zero if warnings or failures are found.
 - `run-project-audit --root PATH`: audit an explicit repository root.
 
+## Report Archive
+
+- `build-report-archive`: build or update the local report evidence archive
+  under `reports/report_archive`.
+- `build-report-archive --output PATH`: write the archive to an explicit local
+  directory.
+- `build-report-archive --strict`: fail if any captured command exits non-zero.
+- `build-report-archive --include-smoke-training`: also capture short synthetic
+  smoke-training commands. This is off by default.
+- `inspect-report-archive`: list expected archive files and whether they are
+  present.
+- `inspect-report-archive --output PATH`: inspect an explicit archive location.
+
 ## Safety Notes
 
 Smoke commands use bundled synthetic fixtures or deterministic synthetic records.

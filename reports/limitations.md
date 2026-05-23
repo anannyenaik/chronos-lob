@@ -70,3 +70,10 @@ Transfer, regime, ablation and sensitivity utilities organise supplied
 experiment records. They do not generate evidence by themselves. Real robustness
 analysis requires real upstream experiment records produced from documented
 configs, seeds, data versions and code versions.
+
+## Report Archive Limitations
+
+The report evidence archive is an index and smoke-output bundle for manual
+technical report writing. It is not the final report and does not create
+performance evidence. Synthetic command captures in the archive remain synthetic
+plumbing checks only.
