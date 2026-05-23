@@ -1,0 +1,26 @@
+# ChronosLOB Phase 14 synthetic supervised multi-task smoke config.
+# This is a plumbing check for tokenised sequence fine-tuning only.
+
+experiment_type: event_multitask_smoke
+path: tests/fixtures/event_logs/synthetic_snapshots.jsonl
+symbol: TESTUSDT
+window_length: 4
+batch_size: 4
+epochs: 1
+learning_rate: 0.001
+seed: 42
+device: cpu
+max_levels_per_side: 2
+
+tasks:
+  - direction
+  - return_quantile
+  - volatility_regime
+  - spread_widening
+  - fill_probability
+  - adverse_selection
+
+notes:
+  - "Synthetic supervised smoke config only; outputs are not market evidence."
+  - "No random time-series split, checkpoint, dashboard, backtest or execution simulation is configured."
+  - "Labels are generated before dataset construction and are not used during tokenisation."

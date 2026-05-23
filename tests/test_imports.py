@@ -321,6 +321,8 @@ def test_training_modules_import() -> None:
     )
     datasets = importlib.import_module("chronoslob.training.datasets")
     batching = importlib.import_module("chronoslob.training.batching")
+    token_datasets = importlib.import_module("chronoslob.training.token_datasets")
+    token_batching = importlib.import_module("chronoslob.training.token_batching")
     dataloaders = importlib.import_module("chronoslob.training.dataloaders")
     torch_training = importlib.import_module("chronoslob.training.torch_training")
     torch_experiment = importlib.import_module("chronoslob.training.torch_experiment")
@@ -416,6 +418,27 @@ def test_training_modules_import() -> None:
         )
 
     for name in (
+        "TokenWindowConfig",
+        "TokenWindowIndex",
+        "TokenSequenceDataset",
+        "build_token_window_indices",
+    ):
+        assert hasattr(token_datasets, name), (
+            f"chronoslob.training.token_datasets is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in ("collate_token_windows", "pad_variable_length_token_windows"):
+        assert hasattr(token_batching, name), (
+            f"chronoslob.training.token_batching is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    for name in (
         "DataLoaderConfig",
         "build_dataloaders_for_split",
         "create_sequence_dataloader",
@@ -454,11 +477,100 @@ def test_training_modules_import() -> None:
             f"chronoslob.training is missing re-exported {name}"
         )
 
+    transformer_experiment = importlib.import_module(
+        "chronoslob.training.transformer_experiment"
+    )
+    for name in (
+        "TransformerEpochResult",
+        "TransformerTrainingConfig",
+        "evaluate_transformer_classifier",
+        "fit_transformer_classifier",
+        "run_transformer_smoke_from_event_log",
+        "train_transformer_one_epoch",
+    ):
+        assert hasattr(transformer_experiment, name), (
+            f"chronoslob.training.transformer_experiment is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    ssl_datasets = importlib.import_module("chronoslob.training.ssl_datasets")
+    for name in (
+        "DEFAULT_IGNORE_INDEX",
+        "MaskedTokenBatch",
+        "MaskingPolicy",
+        "SSLTokenSequenceDataset",
+        "apply_field_masking",
+        "build_next_field_targets",
+        "collate_ssl_token_windows",
+    ):
+        assert hasattr(ssl_datasets, name), (
+            f"chronoslob.training.ssl_datasets is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    ssl_experiment = importlib.import_module("chronoslob.training.ssl_experiment")
+    for name in (
+        "SSLEpochResult",
+        "SSLTrainingConfig",
+        "evaluate_ssl",
+        "fit_ssl_model",
+        "run_ssl_smoke_from_event_log",
+        "train_ssl_one_epoch",
+    ):
+        assert hasattr(ssl_experiment, name), (
+            f"chronoslob.training.ssl_experiment is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    multitask_datasets = importlib.import_module(
+        "chronoslob.training.multitask_datasets"
+    )
+    for name in (
+        "DEFAULT_MULTITASK_IGNORE_INDEX",
+        "MultiTaskLabelSpec",
+        "MultiTaskSampleIndex",
+        "MultiTaskTokenDataset",
+        "MultiTaskWindowConfig",
+        "build_multitask_sample_indices",
+        "collate_multitask_token_windows",
+    ):
+        assert hasattr(multitask_datasets, name), (
+            f"chronoslob.training.multitask_datasets is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
+    multitask_experiment = importlib.import_module(
+        "chronoslob.training.multitask_experiment"
+    )
+    for name in (
+        "MultiTaskEpochResult",
+        "MultiTaskTrainingConfig",
+        "evaluate_multitask_classifier",
+        "fit_multitask_model",
+        "run_multitask_smoke_from_event_log",
+        "train_multitask_one_epoch",
+    ):
+        assert hasattr(multitask_experiment, name), (
+            f"chronoslob.training.multitask_experiment is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
 
 def test_model_baseline_modules_import() -> None:
     baselines = importlib.import_module("chronoslob.models.baselines")
     preprocessing = importlib.import_module("chronoslob.models.preprocessing")
     deeplob = importlib.import_module("chronoslob.models.deeplob")
+    tokenisation = importlib.import_module("chronoslob.models.tokenisation")
     models = importlib.import_module("chronoslob.models")
 
     for name in (
@@ -492,5 +604,65 @@ def test_model_baseline_modules_import() -> None:
     ):
         assert hasattr(deeplob, name), (
             f"chronoslob.models.deeplob is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    for name in (
+        "TokenisationConfig",
+        "TokenVocabulary",
+        "TokenisedRecord",
+        "TokenSequence",
+        "build_static_token_vocabulary",
+        "tokenise_records",
+        "tokenise_event_log",
+    ):
+        assert hasattr(tokenisation, name), (
+            f"chronoslob.models.tokenisation is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    transformer = importlib.import_module("chronoslob.models.transformer")
+    for name in (
+        "MarketTransformerConfig",
+        "MarketTransformerEncoder",
+        "MarketTransformerOutput",
+        "TokenFieldEmbeddingConfig",
+        "TransformerPooling",
+        "create_market_transformer",
+    ):
+        assert hasattr(transformer, name), (
+            f"chronoslob.models.transformer is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    ssl_module = importlib.import_module("chronoslob.models.ssl")
+    for name in (
+        "DEFAULT_MASKED_FIELDS",
+        "DEFAULT_NEXT_FIELDS",
+        "MarketSSLTransformer",
+        "MaskingConfig",
+        "SSLObjectiveName",
+        "SSLTransformerConfig",
+        "SSLTransformerOutput",
+        "create_ssl_transformer",
+    ):
+        assert hasattr(ssl_module, name), (
+            f"chronoslob.models.ssl is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    multitask = importlib.import_module("chronoslob.models.multitask")
+    for name in (
+        "DEFAULT_TASK_HEADS",
+        "MultiTaskTransformer",
+        "MultiTaskTransformerConfig",
+        "MultiTaskTransformerOutput",
+        "TaskHeadConfig",
+        "TaskType",
+        "copy_encoder_weights_from_ssl",
+        "create_multitask_transformer",
+    ):
+        assert hasattr(multitask, name), (
+            f"chronoslob.models.multitask is missing {name}"
         )
         assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"

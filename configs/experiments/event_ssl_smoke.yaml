@@ -1,0 +1,91 @@
+# Synthetic smoke configuration for Phase 13 self-supervised pretraining.
+# This file is plumbing only. It does not encode an experiment result, a
+# benchmark, an alpha claim or any market signal. The objectives are
+# derived from the token sequence itself (masked field modelling and
+# next-field prediction); no supervised market labels are used.
+
+phase: 13
+name: event_ssl_smoke
+description: >
+  Deterministic self-supervised smoke run that wires the Phase 11 token
+  batches to the Phase 13 SSL transformer wrapper. Trains for one epoch on
+  CPU with deterministic BERT-style field masking and one-step next-field
+  prediction. Losses are plumbing only and carry no market information.
+
+data:
+  path: tests/fixtures/event_logs/synthetic_snapshots.jsonl
+  symbol: TESTUSDT
+  note: Synthetic engineering fixture only; not real venue data.
+
+tokenisation:
+  max_levels_per_side: 2
+  price_reference: mid
+  include_bos: false
+  include_eos: false
+
+windowing:
+  window_length: 4
+  stride: 1
+  drop_incomplete: false
+  padding_side: left
+
+ssl:
+  enable_masked_field_loss: true
+  enable_next_field_loss: true
+  enable_contrastive_loss: false  # deferred in Phase 13; see report
+  ignore_index: -100
+  masked_fields:
+    - event_type
+    - side
+    - price_bucket
+    - quantity_bucket
+  next_fields:
+    - event_type
+    - side
+    - price_bucket
+    - quantity_bucket
+  loss_weights:
+    masked_field: 1.0
+    next_field: 1.0
+    contrastive: 0.0
+
+masking:
+  mask_probability: 0.15
+  mask_token_probability: 0.8
+  random_token_probability: 0.1
+  keep_token_probability: 0.1
+  force_at_least_one_mask: true
+
+model:
+  field_embedding_dim: 8
+  model_dim: 32
+  num_heads: 4
+  num_layers: 2
+  feedforward_dim: 64
+  dropout: 0.1
+  pooling: mean
+  activation: gelu
+  use_layer_norm: true
+
+training:
+  batch_size: 4
+  epochs: 1
+  learning_rate: 1.0e-3
+  seed: 42
+  device: cpu
+
+objectives:
+  source: self_supervised
+  market_labels_used: false
+  note: >
+    Smoke SSL objectives derive their targets from the token sequence itself
+    (mask reconstruction and one-step next-field prediction). They do not
+    encode market direction, microstructure regime or trade outcome and
+    must not be used to compare models or claim signal quality.
+
+limitations:
+  - No supervised market labels are used.
+  - No calibration, execution simulation, backtest or PnL claim is implied.
+  - The contrastive objective is deferred; only masked-field and next-field
+    objectives are implemented in Phase 13.
+  - Synthetic smoke losses do not measure forecast skill or tradability.

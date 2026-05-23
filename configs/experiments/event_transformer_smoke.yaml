@@ -1,0 +1,62 @@
+# Synthetic smoke configuration for Phase 12 transformer architecture.
+# This file is plumbing only. It does not encode an experiment result, a
+# benchmark, an alpha claim or any market signal. Labels are synthetic and
+# derived from window index and final-token side; see
+# chronoslob/training/transformer_experiment.py for the exact rule.
+
+phase: 12
+name: event_transformer_smoke
+description: >
+  Deterministic supervised smoke run that wires the Phase 11 token batches
+  to the Phase 12 transformer encoder. Labels are synthetic plumbing only;
+  they carry no market information.
+
+data:
+  path: tests/fixtures/event_logs/synthetic_snapshots.jsonl
+  symbol: TESTUSDT
+  note: Synthetic engineering fixture only; not real venue data.
+
+tokenisation:
+  max_levels_per_side: 2
+  price_reference: mid
+  include_bos: false
+  include_eos: false
+
+windowing:
+  window_length: 4
+  stride: 1
+  drop_incomplete: false
+  padding_side: left
+
+model:
+  field_embedding_dim: 8
+  model_dim: 32
+  num_heads: 4
+  num_layers: 2
+  feedforward_dim: 64
+  dropout: 0.1
+  pooling: mean
+  activation: gelu
+  use_layer_norm: true
+
+training:
+  batch_size: 4
+  epochs: 1
+  learning_rate: 1.0e-3
+  seed: 42
+  device: cpu
+
+labels:
+  source: synthetic_plumbing
+  rule: (sample_index + last_real_token_side_id) mod num_classes
+  num_classes: 3
+  note: >
+    Smoke labels are deterministic synthetic IDs. They do not encode any
+    market direction, microstructure regime or trade outcome and must not
+    be used to compare models or claim signal quality.
+
+limitations:
+  - No self-supervised pretraining objective is implemented.
+  - No masked event modelling or next-event prediction objective is implemented.
+  - No calibration, execution simulation, backtest or PnL claim is implied.
+  - Synthetic smoke labels do not measure forecast skill or tradability.

@@ -1,0 +1,46 @@
+# ChronosLOB Market Transformer encoder configuration.
+#
+# This file documents the configurable hyperparameters of the supervised
+# transformer encoder over field-wise tokenised market microstructure
+# (Phase 12). It is architecture/plumbing only: no self-supervised
+# objective, masked event modelling, calibration, execution simulation or
+# benchmark result is implied. See reports/transformer_architecture.md for
+# the design and the explicit limitations.
+
+model:
+  # vocab_sizes are determined at runtime from the frozen Phase 11
+  # vocabulary (chronoslob.models.tokenisation.TokenVocabulary.field_sizes).
+  # The placeholders below document the expected keys; values are filled
+  # in by the experiment runner from the tokenised data.
+  vocab_sizes:
+    event_type: null
+    side: null
+    price_bucket: null
+    quantity_bucket: null
+    time_delta_bucket: null
+    context_bucket: null
+    source: null
+  field_embedding_dim: 16
+  model_dim: 64
+  num_heads: 4
+  num_layers: 2
+  feedforward_dim: 128
+  dropout: 0.1
+  max_sequence_length: 128
+  # num_classes is determined by the supervised label space at runtime.
+  num_classes: null
+  pooling: mean
+  activation: gelu
+  use_layer_norm: true
+  pad_token_id: 0
+
+notes:
+  variant: "supervised transformer encoder over field-wise token batches"
+  exact_paper_reproduction: false
+  cpu_smoke_friendly: true
+  saves_checkpoints: false
+  ssl_pretraining: false
+  masked_event_modelling: false
+  next_event_prediction: false
+  execution_simulation: false
+  backtest: false

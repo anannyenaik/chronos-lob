@@ -2,8 +2,11 @@
 
 This repository currently contains scaffold code, canonical schemas, a local
 FI-2010-style loader, a microstructure feature engine, a future-window label
-engine and leakage-control utilities. No model, training loop, baseline,
-backtest or execution-aware simulator has been implemented yet.
+engine, leakage-control utilities, classical baselines, PyTorch sequence
+datasets, DeepLOB-style and transformer model plumbing, self-supervised
+objectives and supervised multi-task fine-tuning infrastructure. No
+execution-aware simulator, backtest or real benchmark result has been
+implemented.
 
 No model results exist yet. No trading performance is claimed.
 
@@ -28,3 +31,30 @@ assumptions.
 The project should separate forecast quality from tradability. Accuracy,
 cross-entropy or calibration improvements do not automatically imply cost-adjusted
 signal quality or profitable execution.
+
+The supervised transformer encoder added in Phase 12 is architecture and
+plumbing only. It consumes field-wise tokenised market microstructure batches
+and produces classification logits, but it has no real-label training run, no
+calibration, no execution simulation and no backtest. Smoke-training paths use
+deterministic synthetic labels derived from the window index and the final
+token's side; these labels carry no market information and must not be
+reported as forecast or trading evidence.
+
+The self-supervised pretraining wrapper added in Phase 13 is pretraining
+infrastructure only. It implements masked field modelling and one-step
+next-field prediction over the same field-wise token batches, using targets
+derived entirely from the token sequence (no supervised market labels). The
+contrastive objective is deferred. Loss values produced by the SSL smoke
+runner verify only that the wrapper builds, accepts masked and next-field
+targets, and supports backward passes through the wrapped encoder; they do
+not measure forecast quality, alpha, Sharpe, profitability, tradability or
+execution viability.
+
+The multi-task fine-tuning layer added in Phase 14 is supervised training
+infrastructure only. It reuses the field-wise transformer backbone and adds
+classification heads for direction, return quantile, volatility regime, spread
+widening, fill-proxy and adverse-selection proxy labels. Its smoke runner uses
+a tiny synthetic event-log fixture and reports only plumbing diagnostics.
+Those losses and accuracies are not market evidence and must not be presented
+as alpha, tradability, profitability, Sharpe or execution viability. Calibration
+and uncertainty are intentionally left for Phase 15.

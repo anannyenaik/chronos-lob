@@ -1,0 +1,46 @@
+# Synthetic smoke configuration for Phase 11 event tokenisation only.
+# This file is not an experiment result and does not report model performance.
+
+phase: 11
+name: event_tokenisation_smoke
+description: >
+  Deterministic tokenisation smoke config for the bundled synthetic canonical
+  event-log fixture. It prepares field-wise token IDs and token-window indices
+  for future transformer architecture work.
+
+data:
+  path: tests/fixtures/event_logs/synthetic_snapshots.jsonl
+  symbol: TESTUSDT
+  note: Synthetic engineering fixture only; not real venue data.
+
+tokenisation:
+  max_levels_per_side: 2
+  price_reference: mid
+  include_bos: false
+  include_eos: false
+  fit_source_tokens: true
+  price_buckets:
+    relative_bps_thresholds: [-100.0, -50.0, -10.0, 0.0, 10.0, 50.0, 100.0]
+  quantity_buckets:
+    positive_thresholds: [0.01, 0.1, 1.0, 10.0]
+    positive_labels: [very_small, small, medium, large, very_large]
+  time_delta_buckets:
+    thresholds_seconds: [0.001, 0.01, 0.1, 1.0, 10.0]
+    labels: [lte_1ms, lte_10ms, lte_100ms, lte_1s, lte_10s, gt_10s]
+  context_buckets:
+    mode: relative_mid_bps
+    thresholds: [1.0, 5.0, 10.0, 50.0, 100.0]
+    labels: [lte_1bp, lte_5bp, lte_10bp, lte_50bp, lte_100bp, gt_100bp]
+
+windowing:
+  window_length: 8
+  stride: 1
+  drop_incomplete: false
+  respect_symbol_boundaries: true
+  respect_split_boundaries: true
+  padding_side: left
+
+limitations:
+  - No transformer architecture is implemented by this config.
+  - No self-supervised masking or next-event objective is implemented.
+  - No labels, calibration, execution simulation or performance metrics are produced.

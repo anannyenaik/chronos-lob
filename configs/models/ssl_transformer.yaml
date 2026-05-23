@@ -1,0 +1,76 @@
+# ChronosLOB Self-Supervised Transformer wrapper configuration.
+#
+# Phase 13 wraps the Phase 12 supervised transformer encoder with
+# self-supervised pretraining heads over field-wise tokenised market
+# microstructure. This file documents the configurable hyperparameters of
+# that wrapper. The contrastive objective is currently deferred; the flag
+# is documented here for forward compatibility but must remain false. See
+# reports/self_supervised_objectives.md for the design and the explicit
+# limitations.
+#
+# No supervised market labels, calibration, execution simulation or
+# benchmark result is implied by this config.
+
+transformer:
+  # vocab_sizes are determined at runtime from the frozen Phase 11
+  # vocabulary (chronoslob.models.tokenisation.TokenVocabulary.field_sizes).
+  # The placeholders below document the expected keys; values are filled
+  # in by the experiment runner from the tokenised data.
+  vocab_sizes:
+    event_type: null
+    side: null
+    price_bucket: null
+    quantity_bucket: null
+    time_delta_bucket: null
+    context_bucket: null
+    source: null
+  field_embedding_dim: 8
+  model_dim: 32
+  num_heads: 4
+  num_layers: 2
+  feedforward_dim: 64
+  dropout: 0.1
+  max_sequence_length: 16
+  num_classes: 2  # unused by the SSL forward; retained for the wrapped backbone
+  pooling: mean
+  activation: gelu
+  use_layer_norm: true
+  pad_token_id: 0
+
+ssl:
+  enable_masked_field_loss: true
+  enable_next_field_loss: true
+  enable_contrastive_loss: false  # deferred in Phase 13; see report
+  ignore_index: -100
+  contrastive_temperature: 0.07  # only used if contrastive is implemented
+  masked_fields:
+    - event_type
+    - side
+    - price_bucket
+    - quantity_bucket
+  next_fields:
+    - event_type
+    - side
+    - price_bucket
+    - quantity_bucket
+  loss_weights:
+    masked_field: 1.0
+    next_field: 1.0
+    contrastive: 0.0
+
+masking:
+  mask_probability: 0.15
+  mask_token_probability: 0.8
+  random_token_probability: 0.1
+  keep_token_probability: 0.1
+  force_at_least_one_mask: true
+
+notes:
+  variant: "self-supervised pretraining over field-wise token batches"
+  reuses_phase_12_backbone: true
+  contrastive_objective: deferred
+  uses_market_labels: false
+  saves_checkpoints: false
+  execution_simulation: false
+  backtest: false
+  cpu_smoke_friendly: true

@@ -135,6 +135,65 @@ def _inspect_event_log_impl(path: Path) -> int:
     return 0
 
 
+def _inspect_event_tokens_impl(
+    path: Path,
+    *,
+    symbol: str | None = None,
+    window_length: int = 8,
+    max_levels_per_side: int = 2,
+    include_eos: bool = False,
+) -> int:
+    """Tokenise a canonical event log and print a read-only summary."""
+    from chronoslob.models.tokenisation import (
+        TokenisationConfig,
+        tokenise_event_log,
+    )
+    from chronoslob.training.token_datasets import (
+        TokenWindowConfig,
+        build_token_window_indices,
+    )
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        config = TokenisationConfig(
+            max_levels_per_side=max_levels_per_side,
+            include_eos=include_eos,
+        )
+        sequence = tokenise_event_log(path, config, symbol=symbol)
+        windows = build_token_window_indices(
+            sequence,
+            TokenWindowConfig(window_length=window_length),
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"Failed to inspect event tokens: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB event-token inspection")
+    print(f"  path:                    {path}")
+    print(f"  symbol filter:           {symbol if symbol is not None else 'none'}")
+    print(f"  input records:           {sequence.input_record_count}")
+    print(f"  tokenised records:       {len(sequence.records)}")
+    print(f"  token windows:           {len(windows)}")
+    print(f"  window length:           {window_length}")
+    print(
+        "  snapshot-derived tokens: "
+        f"{'yes' if sequence.has_snapshot_derived_tokens else 'no'}"
+    )
+    print("  vocabulary sizes:")
+    for field_name, size in sequence.field_sizes.items():
+        print(f"    {field_name}: {size}")
+    print("  first token ids:")
+    for record in sequence.records[:5]:
+        print(f"    pos={record.position} ids={record.field_id_mapping()}")
+    print("  outputs:                 not written")
+    print("  network calls:           none performed")
+    return 0
+
+
 def _event_log_to_features_impl(path: Path) -> int:
     """Build replay-derived features from a local event log without writing."""
     from chronoslob.book.event_replay import replay_event_log_to_feature_frame
@@ -767,6 +826,377 @@ def _run_deeplob_smoke_impl(
     return 0
 
 
+def _inspect_transformer_impl() -> int:
+    """Print the market transformer encoder defaults without training."""
+    try:
+        from chronoslob.models.transformer import (
+            MarketTransformerConfig,
+            create_market_transformer,
+        )
+    except ImportError as exc:
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    config = MarketTransformerConfig()
+    model = create_market_transformer(config)
+    print("ChronosLOB Market Transformer encoder")
+    print("  Supervised encoder over field-wise tokenised market microstructure.")
+    print("  No self-supervised objective, calibration or execution claim.")
+    print(f"  token fields expected:    {len(config.token_field_names)}")
+    print(f"  token field names:        {list(config.token_field_names)}")
+    print("  vocab sizes (default):")
+    for field_name, size in config.vocab_sizes.items():
+        print(f"    {field_name}: {size}")
+    print("  defaults:")
+    print(f"    field_embedding_dim:    {config.field_embedding_dim}")
+    print(f"    model_dim:              {config.model_dim}")
+    print(f"    num_heads:              {config.num_heads}")
+    print(f"    num_layers:             {config.num_layers}")
+    print(f"    feedforward_dim:        {config.feedforward_dim}")
+    print(f"    dropout:                {config.dropout}")
+    print(f"    max_sequence_length:    {config.max_sequence_length}")
+    print(f"    num_classes:            {config.num_classes}")
+    print(f"    pooling:                {config.pooling}")
+    print(f"    activation:             {config.activation}")
+    print(f"    use_layer_norm:         {config.use_layer_norm}")
+    print(f"    pad_token_id:           {config.pad_token_id}")
+    print(f"  model parameter count:    {model.n_parameters()}")
+    print("  No training was run.")
+    return 0
+
+
+def _run_transformer_smoke_impl(
+    path: Path,
+    *,
+    window_length: int = 4,
+    batch_size: int = 4,
+    epochs: int = 1,
+    seed: int = 42,
+    num_classes: int = 3,
+    symbol: str | None = None,
+    max_levels_per_side: int = 2,
+) -> int:
+    """Run a tiny synthetic-label transformer smoke experiment."""
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.training.transformer_experiment import (
+        run_transformer_smoke_from_event_log,
+    )
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        result = run_transformer_smoke_from_event_log(
+            path=path,
+            symbol=symbol,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            num_classes=num_classes,
+            max_levels_per_side=max_levels_per_side,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError, RuntimeError) as exc:
+        print(f"Transformer smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("Synthetic smoke labels only; no market signal or benchmark is implied.")
+    print(f"  path:                   {path}")
+    print(f"  symbol filter:          {symbol if symbol is not None else 'none'}")
+    print(f"  input records:          {result['input_record_count']}")
+    print(f"  tokenised records:      {result['tokenised_record_count']}")
+    print(f"  window length:          {result['window_length']}")
+    print(f"  window count:           {result['window_count']}")
+    print(f"  num classes (smoke):    {result['num_classes']}")
+    print(f"  model parameter count:  {result['model_parameter_count']}")
+    if result["training_history"]:
+        final_epoch = result["training_history"][-1]
+        print(f"  final train loss:       {final_epoch['train_loss']:.6f}")
+    print(f"  label source:           {result['label_source']}")
+    print(
+        "  synthetic smoke metric: "
+        f"accuracy={result['synthetic_smoke_metrics']['accuracy']:.6f} "
+        "(synthetic plumbing only; not a market signal)"
+    )
+    print("  outputs:                not written (smoke command)")
+    print("  checkpoints:            not written")
+    print("  network calls:          none performed")
+    return 0
+
+
+def _inspect_ssl_impl() -> int:
+    """Print the SSL transformer wrapper defaults without training."""
+    try:
+        from chronoslob.models.ssl import (
+            SSLTransformerConfig,
+            create_ssl_transformer,
+        )
+    except ImportError as exc:
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    config = SSLTransformerConfig()
+    model = create_ssl_transformer(config)
+    print("ChronosLOB SSL Transformer wrapper")
+    print(
+        "  Self-supervised pretraining over field-wise tokenised market "
+        "microstructure."
+    )
+    print(
+        "  No supervised market labels, calibration, execution simulation or "
+        "benchmark claim."
+    )
+    print(f"  enabled objectives:       {list(config.enabled_objectives())}")
+    print(f"  masked fields:            {list(config.masked_fields)}")
+    print(f"  next-predicted fields:    {list(config.next_fields)}")
+    print(f"  ignore_index:             {config.ignore_index}")
+    print(f"  contrastive enabled:      {config.enable_contrastive_loss}")
+    print("  masking config:")
+    print(f"    mask_probability:        {config.masking.mask_probability}")
+    print(f"    mask_token_probability:  {config.masking.mask_token_probability}")
+    print(
+        "    random_token_probability:"
+        f" {config.masking.random_token_probability}"
+    )
+    print(f"    keep_token_probability:  {config.masking.keep_token_probability}")
+    print(
+        f"    force_at_least_one_mask: {config.masking.force_at_least_one_mask}"
+    )
+    print("  loss weights:")
+    for name, weight in dict(config.loss_weights).items():
+        print(f"    {name}: {weight}")
+    print("  transformer backbone:")
+    print(f"    model_dim:              {config.transformer.model_dim}")
+    print(f"    num_heads:              {config.transformer.num_heads}")
+    print(f"    num_layers:             {config.transformer.num_layers}")
+    print(
+        "    max_sequence_length:    "
+        f"{config.transformer.max_sequence_length}"
+    )
+    print(f"  model parameter count:    {model.n_parameters()}")
+    print("  No training was run.")
+    return 0
+
+
+def _run_ssl_smoke_impl(
+    path: Path,
+    *,
+    window_length: int = 4,
+    batch_size: int = 4,
+    epochs: int = 1,
+    seed: int = 42,
+    symbol: str | None = None,
+    max_levels_per_side: int = 2,
+    mask_probability: float = 0.15,
+) -> int:
+    """Run a tiny synthetic SSL smoke experiment from an event log."""
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.training.ssl_experiment import (
+        run_ssl_smoke_from_event_log,
+    )
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        result = run_ssl_smoke_from_event_log(
+            path=path,
+            symbol=symbol,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            max_levels_per_side=max_levels_per_side,
+            mask_probability=mask_probability,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError, RuntimeError) as exc:
+        print(f"SSL smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        "Synthetic SSL plumbing only; losses do not measure market signal, "
+        "alpha or benchmark performance."
+    )
+    print(f"  path:                   {path}")
+    print(f"  symbol filter:          {symbol if symbol is not None else 'none'}")
+    print(f"  input records:          {result['input_record_count']}")
+    print(f"  tokenised records:      {result['tokenised_record_count']}")
+    print(f"  window length:          {result['window_length']}")
+    print(f"  window count:           {result['window_count']}")
+    print(f"  enabled objectives:     {result['enabled_objectives']}")
+    print(f"  masked fields:          {result['masked_fields']}")
+    print(f"  next fields:            {result['next_fields']}")
+    print(f"  model parameter count:  {result['model_parameter_count']}")
+    if result["final_train_loss"] is not None:
+        print(f"  final train loss:       {result['final_train_loss']:.6f}")
+        for name, value in result["final_train_loss_components"].items():
+            print(f"    {name} loss:          {value:.6f}")
+    print(
+        "  synthetic smoke metric: "
+        f"loss={result['synthetic_smoke_metrics']['loss']:.6f} "
+        "(synthetic plumbing only; not a market signal)"
+    )
+    print("  outputs:                not written (smoke command)")
+    print("  checkpoints:            not written")
+    print("  network calls:          none performed")
+    return 0
+
+
+def _inspect_multitask_impl() -> int:
+    """Print multi-task transformer defaults without training."""
+    try:
+        from chronoslob.models.multitask import (
+            MultiTaskTransformerConfig,
+            create_multitask_transformer,
+        )
+    except ImportError as exc:
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    config = MultiTaskTransformerConfig()
+    model = create_multitask_transformer(config)
+    print("ChronosLOB Multi-Task Transformer")
+    print(
+        "  Supervised fine-tuning heads over a shared field-wise token "
+        "transformer backbone."
+    )
+    print(
+        "  No calibration, confidence filtering, execution simulation, "
+        "backtesting or performance claim."
+    )
+    print("  supervised tasks:")
+    for task in config.tasks:
+        print(
+            "    "
+            f"{task.name}: type={task.task_type}, "
+            f"classes={task.num_classes}, loss_weight={task.loss_weight}"
+        )
+    print("  transformer backbone:")
+    print(f"    token fields:          {list(config.backbone.token_field_names)}")
+    print(f"    model_dim:             {config.backbone.model_dim}")
+    print(f"    num_heads:             {config.backbone.num_heads}")
+    print(f"    num_layers:            {config.backbone.num_layers}")
+    print(f"    feedforward_dim:       {config.backbone.feedforward_dim}")
+    print(f"    dropout:               {config.backbone.dropout}")
+    print(f"    max_sequence_length:   {config.backbone.max_sequence_length}")
+    print(f"    pooling:               {config.backbone.pooling}")
+    print(f"  head dropout:            {config.dropout}")
+    print(f"  freeze backbone:         {config.freeze_backbone}")
+    print(f"  model parameter count:   {model.n_parameters()}")
+    print("  No training was run.")
+    return 0
+
+
+def _run_multitask_smoke_impl(
+    path: Path,
+    *,
+    window_length: int = 4,
+    batch_size: int = 4,
+    epochs: int = 1,
+    seed: int = 42,
+    symbol: str | None = None,
+    max_levels_per_side: int = 2,
+) -> int:
+    """Run a tiny synthetic supervised multi-task smoke experiment."""
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.training.multitask_experiment import (
+        run_multitask_smoke_from_event_log,
+    )
+
+    path = Path(path)
+    _print_synthetic_fixture_warning(path)
+    try:
+        result = run_multitask_smoke_from_event_log(
+            path=path,
+            symbol=symbol,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            max_levels_per_side=max_levels_per_side,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, TypeError, RuntimeError) as exc:
+        print(f"Multi-task smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        "Synthetic supervised multi-task plumbing only; losses and accuracies "
+        "are not market evidence, alpha or tradability claims."
+    )
+    print(f"  path:                   {path}")
+    print(f"  symbol filter:          {symbol if symbol is not None else 'none'}")
+    print(f"  input records:          {result['input_record_count']}")
+    print(f"  tokenised records:      {result['tokenised_record_count']}")
+    print(f"  window length:          {result['window_length']}")
+    print(f"  token windows:          {result['window_count']}")
+    print(f"  supervised windows:     {result['supervised_window_count']}")
+    print(f"  enabled tasks:          {result['enabled_tasks']}")
+    print("  valid labels per task:")
+    for name, count in result["valid_labels_per_task"].items():
+        print(f"    {name}: {count}")
+    print(f"  model parameter count:  {result['model_parameter_count']}")
+    if result["final_train_loss"] is not None:
+        print(f"  final train loss:       {result['final_train_loss']:.6f}")
+        for name, value in result["final_train_loss_components"].items():
+            print(f"    {name} loss:          {value:.6f}")
+    task_accuracy = result["synthetic_smoke_metrics"]["task_accuracy"]
+    if task_accuracy:
+        print("  synthetic smoke accuracy:")
+        for name, value in task_accuracy.items():
+            print(f"    {name}: {value:.6f}")
+    print(f"  label source:           {result['label_source']}")
+    print("  outputs:                not written (smoke command)")
+    print("  checkpoints:            not written")
+    print("  network calls:          none performed")
+    return 0
+
+
 def _inspect_binance_replay_impl(
     snapshot_path: Path,
     updates_path: Path,
@@ -859,9 +1289,13 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         print(
             "Usage: python -m chronoslob.cli "
             "[version|doctor|inspect-event-log|event-log-to-features|"
+            "inspect-event-tokens|"
             "inspect-fi2010|inspect-features-fi2010|inspect-labels-fi2010|"
             "inspect-split|init-run|inspect-baselines|run-baseline-smoke|"
             "inspect-torch-dataset|inspect-deeplob|run-deeplob-smoke|"
+            "inspect-transformer|run-transformer-smoke|"
+            "inspect-ssl|run-ssl-smoke|"
+            "inspect-multitask|run-multitask-smoke|"
             "inspect-binance-replay] [...]"
         )
         return 0
@@ -881,6 +1315,39 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--path", type=Path, required=True)
         parsed = parser.parse_args(args[1:])
         return _inspect_event_log_impl(parsed.path)
+    if command == "inspect-event-tokens":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-event-tokens",
+            description=(
+                "Tokenise a local canonical event-log JSONL file and print "
+                "a read-only summary."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--window-length", type=int, default=8)
+        parser.add_argument("--max-levels-per-side", type=int, default=2)
+        parser.add_argument(
+            "--include-eos",
+            dest="include_eos",
+            action="store_true",
+            help="Append one [EOS] record to the inspected token sequence.",
+        )
+        parser.add_argument(
+            "--no-include-eos",
+            dest="include_eos",
+            action="store_false",
+            help="Do not append an [EOS] record.",
+        )
+        parser.set_defaults(include_eos=False)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_event_tokens_impl(
+            path=parsed.path,
+            symbol=parsed.symbol,
+            window_length=parsed.window_length,
+            max_levels_per_side=parsed.max_levels_per_side,
+            include_eos=parsed.include_eos,
+        )
     if command == "event-log-to-features":
         parser = argparse.ArgumentParser(
             prog="chronoslob event-log-to-features",
@@ -1124,6 +1591,91 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             output_root=parsed.output_root,
         )
 
+    if command == "inspect-transformer":
+        return _inspect_transformer_impl()
+    if command == "run-transformer-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-transformer-smoke",
+            description=(
+                "Run a synthetic-label transformer smoke experiment on a "
+                "canonical event log. Labels are synthetic plumbing only."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--window-length", type=int, default=4)
+        parser.add_argument("--batch-size", type=int, default=4)
+        parser.add_argument("--epochs", type=int, default=1)
+        parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--num-classes", type=int, default=3)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--max-levels-per-side", type=int, default=2)
+        parsed = parser.parse_args(args[1:])
+        return _run_transformer_smoke_impl(
+            path=parsed.path,
+            window_length=parsed.window_length,
+            batch_size=parsed.batch_size,
+            epochs=parsed.epochs,
+            seed=parsed.seed,
+            num_classes=parsed.num_classes,
+            symbol=parsed.symbol,
+            max_levels_per_side=parsed.max_levels_per_side,
+        )
+    if command == "inspect-ssl":
+        return _inspect_ssl_impl()
+    if command == "run-ssl-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-ssl-smoke",
+            description=(
+                "Run a synthetic self-supervised pretraining smoke experiment "
+                "on a canonical event log. Losses are plumbing only."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--window-length", type=int, default=4)
+        parser.add_argument("--batch-size", type=int, default=4)
+        parser.add_argument("--epochs", type=int, default=1)
+        parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--max-levels-per-side", type=int, default=2)
+        parser.add_argument("--mask-probability", type=float, default=0.15)
+        parsed = parser.parse_args(args[1:])
+        return _run_ssl_smoke_impl(
+            path=parsed.path,
+            window_length=parsed.window_length,
+            batch_size=parsed.batch_size,
+            epochs=parsed.epochs,
+            seed=parsed.seed,
+            symbol=parsed.symbol,
+            max_levels_per_side=parsed.max_levels_per_side,
+            mask_probability=parsed.mask_probability,
+        )
+    if command == "inspect-multitask":
+        return _inspect_multitask_impl()
+    if command == "run-multitask-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-multitask-smoke",
+            description=(
+                "Run a synthetic supervised multi-task smoke experiment on a "
+                "canonical event log. Labels are plumbing only."
+            ),
+        )
+        parser.add_argument("--path", type=Path, required=True)
+        parser.add_argument("--window-length", type=int, default=4)
+        parser.add_argument("--batch-size", type=int, default=4)
+        parser.add_argument("--epochs", type=int, default=1)
+        parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--max-levels-per-side", type=int, default=2)
+        parsed = parser.parse_args(args[1:])
+        return _run_multitask_smoke_impl(
+            path=parsed.path,
+            window_length=parsed.window_length,
+            batch_size=parsed.batch_size,
+            epochs=parsed.epochs,
+            seed=parsed.seed,
+            symbol=parsed.symbol,
+            max_levels_per_side=parsed.max_levels_per_side,
+        )
     if command == "inspect-binance-replay":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-binance-replay",
@@ -1189,6 +1741,26 @@ if typer is not None:
         "--path",
         help="Path to the local canonical event-log JSONL file.",
     )
+    _EVENT_TOKENS_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Optional symbol filter for event-token inspection.",
+    )
+    _EVENT_TOKENS_WINDOW_LENGTH_OPTION = typer.Option(
+        8,
+        "--window-length",
+        help="Fixed token-window length used for inspection.",
+    )
+    _EVENT_TOKENS_MAX_LEVELS_OPTION = typer.Option(
+        2,
+        "--max-levels-per-side",
+        help="Maximum snapshot levels per side to tokenise.",
+    )
+    _EVENT_TOKENS_INCLUDE_EOS_OPTION = typer.Option(
+        False,
+        "--include-eos/--no-include-eos",
+        help="Append one [EOS] record to the inspected token sequence.",
+    )
     _INSPECT_TIMESTAMP_OPTION = typer.Option(
         "timestamp",
         "--timestamp-column",
@@ -1220,6 +1792,24 @@ if typer is not None:
     ) -> None:
         """Inspect a local canonical event-log JSONL file."""
         exit_code = _inspect_event_log_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_event_tokens(
+        path: Path = _EVENT_LOG_PATH_OPTION,
+        symbol: str | None = _EVENT_TOKENS_SYMBOL_OPTION,
+        window_length: int = _EVENT_TOKENS_WINDOW_LENGTH_OPTION,
+        max_levels_per_side: int = _EVENT_TOKENS_MAX_LEVELS_OPTION,
+        include_eos: bool = _EVENT_TOKENS_INCLUDE_EOS_OPTION,
+    ) -> None:
+        """Tokenise a local canonical event log and summarise IDs."""
+        exit_code = _inspect_event_tokens_impl(
+            path=path,
+            symbol=symbol,
+            window_length=window_length,
+            max_levels_per_side=max_levels_per_side,
+            include_eos=include_eos,
+        )
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -1545,6 +2135,212 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    _TRANSFORMER_SMOKE_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local canonical event-log JSONL fixture.",
+    )
+    _TRANSFORMER_SMOKE_WINDOW_OPTION = typer.Option(
+        4,
+        "--window-length",
+        help="Fixed token-window length used for the smoke run.",
+    )
+    _TRANSFORMER_SMOKE_BATCH_OPTION = typer.Option(
+        4,
+        "--batch-size",
+        help="Batch size for the smoke DataLoader.",
+    )
+    _TRANSFORMER_SMOKE_EPOCHS_OPTION = typer.Option(
+        1,
+        "--epochs",
+        help="Number of training epochs for the smoke run.",
+    )
+    _TRANSFORMER_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for the smoke run.",
+    )
+    _TRANSFORMER_SMOKE_NUM_CLASSES_OPTION = typer.Option(
+        3,
+        "--num-classes",
+        help="Number of synthetic smoke classes used for plumbing.",
+    )
+    _TRANSFORMER_SMOKE_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Optional symbol filter applied to the event log.",
+    )
+    _TRANSFORMER_SMOKE_LEVELS_OPTION = typer.Option(
+        2,
+        "--max-levels-per-side",
+        help="Maximum snapshot levels per side to tokenise.",
+    )
+
+    def inspect_transformer() -> None:
+        """Print market transformer encoder defaults without training."""
+        exit_code = _inspect_transformer_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_transformer_smoke(
+        path: Path = _TRANSFORMER_SMOKE_PATH_OPTION,
+        window_length: int = _TRANSFORMER_SMOKE_WINDOW_OPTION,
+        batch_size: int = _TRANSFORMER_SMOKE_BATCH_OPTION,
+        epochs: int = _TRANSFORMER_SMOKE_EPOCHS_OPTION,
+        seed: int = _TRANSFORMER_SMOKE_SEED_OPTION,
+        num_classes: int = _TRANSFORMER_SMOKE_NUM_CLASSES_OPTION,
+        symbol: str | None = _TRANSFORMER_SMOKE_SYMBOL_OPTION,
+        max_levels_per_side: int = _TRANSFORMER_SMOKE_LEVELS_OPTION,
+    ) -> None:
+        """Run a synthetic-label transformer smoke experiment."""
+        exit_code = _run_transformer_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            num_classes=num_classes,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _SSL_SMOKE_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local canonical event-log JSONL fixture.",
+    )
+    _SSL_SMOKE_WINDOW_OPTION = typer.Option(
+        4,
+        "--window-length",
+        help="Fixed token-window length used for the SSL smoke run.",
+    )
+    _SSL_SMOKE_BATCH_OPTION = typer.Option(
+        4,
+        "--batch-size",
+        help="Batch size for the SSL smoke DataLoader.",
+    )
+    _SSL_SMOKE_EPOCHS_OPTION = typer.Option(
+        1,
+        "--epochs",
+        help="Number of pretraining epochs for the smoke run.",
+    )
+    _SSL_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for the SSL smoke run.",
+    )
+    _SSL_SMOKE_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Optional symbol filter applied to the event log.",
+    )
+    _SSL_SMOKE_LEVELS_OPTION = typer.Option(
+        2,
+        "--max-levels-per-side",
+        help="Maximum snapshot levels per side to tokenise.",
+    )
+    _SSL_SMOKE_MASK_PROBABILITY_OPTION = typer.Option(
+        0.15,
+        "--mask-probability",
+        help="Probability of selecting a valid position for masking.",
+    )
+
+    def inspect_ssl() -> None:
+        """Print SSL transformer wrapper defaults without training."""
+        exit_code = _inspect_ssl_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_ssl_smoke(
+        path: Path = _SSL_SMOKE_PATH_OPTION,
+        window_length: int = _SSL_SMOKE_WINDOW_OPTION,
+        batch_size: int = _SSL_SMOKE_BATCH_OPTION,
+        epochs: int = _SSL_SMOKE_EPOCHS_OPTION,
+        seed: int = _SSL_SMOKE_SEED_OPTION,
+        symbol: str | None = _SSL_SMOKE_SYMBOL_OPTION,
+        max_levels_per_side: int = _SSL_SMOKE_LEVELS_OPTION,
+        mask_probability: float = _SSL_SMOKE_MASK_PROBABILITY_OPTION,
+    ) -> None:
+        """Run a tiny synthetic SSL smoke experiment."""
+        exit_code = _run_ssl_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+            mask_probability=mask_probability,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _MULTITASK_SMOKE_PATH_OPTION = typer.Option(
+        ...,
+        "--path",
+        help="Path to the local canonical event-log JSONL fixture.",
+    )
+    _MULTITASK_SMOKE_WINDOW_OPTION = typer.Option(
+        4,
+        "--window-length",
+        help="Fixed token-window length used for the multi-task smoke run.",
+    )
+    _MULTITASK_SMOKE_BATCH_OPTION = typer.Option(
+        4,
+        "--batch-size",
+        help="Batch size for the multi-task smoke DataLoader.",
+    )
+    _MULTITASK_SMOKE_EPOCHS_OPTION = typer.Option(
+        1,
+        "--epochs",
+        help="Number of supervised fine-tuning epochs for the smoke run.",
+    )
+    _MULTITASK_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for the multi-task smoke run.",
+    )
+    _MULTITASK_SMOKE_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Optional symbol filter applied to the event log.",
+    )
+    _MULTITASK_SMOKE_LEVELS_OPTION = typer.Option(
+        2,
+        "--max-levels-per-side",
+        help="Maximum snapshot levels per side to tokenise.",
+    )
+
+    def inspect_multitask() -> None:
+        """Print multi-task transformer defaults without training."""
+        exit_code = _inspect_multitask_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_multitask_smoke(
+        path: Path = _MULTITASK_SMOKE_PATH_OPTION,
+        window_length: int = _MULTITASK_SMOKE_WINDOW_OPTION,
+        batch_size: int = _MULTITASK_SMOKE_BATCH_OPTION,
+        epochs: int = _MULTITASK_SMOKE_EPOCHS_OPTION,
+        seed: int = _MULTITASK_SMOKE_SEED_OPTION,
+        symbol: str | None = _MULTITASK_SMOKE_SYMBOL_OPTION,
+        max_levels_per_side: int = _MULTITASK_SMOKE_LEVELS_OPTION,
+    ) -> None:
+        """Run a tiny synthetic supervised multi-task smoke experiment."""
+        exit_code = _run_multitask_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     _BINANCE_SNAPSHOT_OPTION = typer.Option(
         ...,
         "--snapshot",
@@ -1601,6 +2397,24 @@ else:
     def inspect_event_log(path: Path) -> None:
         """Inspect a local canonical event-log JSONL file."""
         exit_code = _inspect_event_log_impl(path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_event_tokens(
+        path: Path,
+        symbol: str | None = None,
+        window_length: int = 8,
+        max_levels_per_side: int = 2,
+        include_eos: bool = False,
+    ) -> None:
+        """Tokenise a local canonical event log and summarise IDs."""
+        exit_code = _inspect_event_tokens_impl(
+            path=path,
+            symbol=symbol,
+            window_length=window_length,
+            max_levels_per_side=max_levels_per_side,
+            include_eos=include_eos,
+        )
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -1792,11 +2606,100 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_transformer() -> None:
+        """Print market transformer encoder defaults without training."""
+        exit_code = _inspect_transformer_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_transformer_smoke(
+        path: Path,
+        window_length: int = 4,
+        batch_size: int = 4,
+        epochs: int = 1,
+        seed: int = 42,
+        num_classes: int = 3,
+        symbol: str | None = None,
+        max_levels_per_side: int = 2,
+    ) -> None:
+        """Run a synthetic-label transformer smoke experiment."""
+        exit_code = _run_transformer_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            num_classes=num_classes,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_ssl() -> None:
+        """Print SSL transformer wrapper defaults without training."""
+        exit_code = _inspect_ssl_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_ssl_smoke(
+        path: Path,
+        window_length: int = 4,
+        batch_size: int = 4,
+        epochs: int = 1,
+        seed: int = 42,
+        symbol: str | None = None,
+        max_levels_per_side: int = 2,
+        mask_probability: float = 0.15,
+    ) -> None:
+        """Run a tiny synthetic SSL smoke experiment."""
+        exit_code = _run_ssl_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+            mask_probability=mask_probability,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_multitask() -> None:
+        """Print multi-task transformer defaults without training."""
+        exit_code = _inspect_multitask_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_multitask_smoke(
+        path: Path,
+        window_length: int = 4,
+        batch_size: int = 4,
+        epochs: int = 1,
+        seed: int = 42,
+        symbol: str | None = None,
+        max_levels_per_side: int = 2,
+    ) -> None:
+        """Run a tiny synthetic supervised multi-task smoke experiment."""
+        exit_code = _run_multitask_smoke_impl(
+            path=path,
+            window_length=window_length,
+            batch_size=batch_size,
+            epochs=epochs,
+            seed=seed,
+            symbol=symbol,
+            max_levels_per_side=max_levels_per_side,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
     app.command()(doctor)
     app.command("inspect-event-log")(inspect_event_log)
+    app.command("inspect-event-tokens")(inspect_event_tokens)
     app.command("event-log-to-features")(event_log_to_features)
     app.command("inspect-fi2010")(inspect_fi2010)
     app.command("inspect-features-fi2010")(inspect_features_fi2010)
@@ -1808,6 +2711,12 @@ if typer is not None:
     app.command("inspect-torch-dataset")(inspect_torch_dataset)
     app.command("inspect-deeplob")(inspect_deeplob)
     app.command("run-deeplob-smoke")(run_deeplob_smoke)
+    app.command("inspect-transformer")(inspect_transformer)
+    app.command("run-transformer-smoke")(run_transformer_smoke)
+    app.command("inspect-ssl")(inspect_ssl)
+    app.command("run-ssl-smoke")(run_ssl_smoke)
+    app.command("inspect-multitask")(inspect_multitask)
+    app.command("run-multitask-smoke")(run_multitask_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
 else:
 
