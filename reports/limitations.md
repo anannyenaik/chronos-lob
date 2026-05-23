@@ -6,7 +6,10 @@ engine, leakage-control utilities, classical baselines, PyTorch sequence
 datasets, DeepLOB-style and transformer model plumbing, self-supervised
 objectives, supervised multi-task fine-tuning infrastructure and calibration
 utilities. No execution-aware simulator, backtest or real benchmark result has
-been implemented.
+been implemented before Phase 16. Phase 16 now adds simplified execution-aware
+validation utilities for spread costs, fees, latency, turnover, passive
+fill-proxy assumptions, adverse-selection labels and risk constraints. These
+utilities are deterministic research-simulation infrastructure only.
 
 No model results exist yet. No trading performance is claimed.
 
@@ -23,10 +26,10 @@ Crypto market microstructure differs from equities. Public crypto data may suppo
 engineering demonstrations, but results on crypto venues should not be overclaimed
 as directly equivalent to equity-market behaviour.
 
-Future backtests will be simplified research simulations unless explicitly proven
-otherwise. Queue position, latency, market impact, maker/taker fees, partial fills,
-order priority, exchange-specific matching rules and data delays all require careful
-assumptions.
+Any backtests or execution-validation runs are simplified research simulations
+unless explicitly proven otherwise. Queue position, latency, market impact,
+maker/taker fees, partial fills, order priority, exchange-specific matching
+rules and data delays all require careful assumptions.
 
 The project should separate forecast quality from tradability. Accuracy,
 cross-entropy or calibration improvements do not automatically imply
@@ -68,3 +71,30 @@ filtering is not a trading strategy, abstention analysis is not an execution
 backtest, and calibration diagnostics do not claim alpha, Sharpe, profitability
 or execution viability. Execution-aware validation is intentionally left for
 Phase 16.
+
+The execution-aware validation layer added in Phase 16 is simulation
+infrastructure only. It supports aggressive, passive and hybrid execution modes,
+spread/fee cost decomposition, row-step latency, turnover accounting,
+confidence-threshold sweeps, passive fill-proxy checks, adverse-selection labels
+and simple inventory, trade-count, turnover and drawdown constraints. Its
+synthetic smoke runner uses deterministic synthetic market states and signals.
+Simulated PnL is an execution-validation metric, not a profitability claim.
+The layer does not implement live trading, broker or exchange integration,
+production market impact, venue-specific queue priority, partial-fill realism,
+portfolio optimisation or deployable trading decisions.
+
+The transfer, regime and ablation analysis layer added in Phase 17 is
+analysis infrastructure only. It organises and summarises supplied
+experiment-result records into regime breakdowns, transfer matrices,
+ablation comparisons and sensitivity curves. It does not train models,
+does not run backtests and does not generate evidence by itself. The
+layer keeps predictive metrics (accuracy, macro-F1, MCC, NLL, Brier
+score, ECE), calibration diagnostics and execution-validation metrics
+clearly separated, and explicitly refuses any combined or magic score
+field. Regime thresholds are explicit by default; data-derived
+boundaries require a separate `fit_regime_boundaries` call driven by
+training or calibration data only. The synthetic smoke runner uses
+deterministic synthetic records and is plumbing only; its outputs are
+not market evidence, alpha evidence, tradability evidence or live
+performance. Real robustness analysis requires real upstream
+experiment records.

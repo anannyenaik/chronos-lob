@@ -1,0 +1,86 @@
+# ChronosLOB Phase 17 synthetic robustness-analysis smoke config.
+# This is deterministic analysis plumbing only, not market evidence.
+
+experiment_type: robustness_analysis_smoke
+synthetic_record_count: 36
+seed: 42
+
+regimes:
+  volatility:
+    labels: ["low", "medium", "high"]
+    thresholds: [0.005, 0.02]
+  spread:
+    labels: ["tight", "normal", "wide"]
+    thresholds: [0.0005, 0.002]
+  liquidity:
+    labels: ["thin", "normal", "deep"]
+    thresholds: [50.0, 250.0]
+  confidence:
+    labels: ["low", "medium", "high", "very_high"]
+    edges: [0.5, 0.7, 0.85]
+  latency:
+    step_labels:
+      "0": "zero"
+      "1": "low"
+      "2": "medium"
+      "5": "high"
+  note: >-
+    Regime boundaries here are explicit configuration values. Any data-derived
+    boundaries must be fitted on training or calibration data only and never
+    on evaluation or test data.
+
+ablation_names:
+  - baseline
+  - no_order_flow_features
+  - no_depth_imbalance
+  - no_ssl_pretraining
+  - no_calibration
+  - no_confidence_filtering
+  - no_latency
+  - aggressive_only
+  - passive_only
+
+ablation_categories:
+  - feature
+  - token_field
+  - model_component
+  - objective
+  - task_head
+  - execution_setting
+
+sensitivity_parameters:
+  - confidence_threshold
+  - latency_steps
+  - fee_bps
+  - spread_multiplier
+  - turnover_cap
+  - inventory_cap
+  - mask_probability
+  - temperature
+
+confidence_threshold_grid: [0.5, 0.6, 0.7, 0.8]
+latency_steps_grid: [0, 1, 2, 5]
+
+predictive_metric_names:
+  - accuracy
+  - macro_f1
+  - mcc
+  - nll
+  - brier_score
+  - ece
+
+execution_metric_names:
+  - coverage
+  - fill_rate
+  - simulated_net_pnl
+  - total_cost
+  - turnover
+  - adverse_selection_rate
+  - max_drawdown
+  - latency_steps
+
+notes:
+  - "Synthetic robustness-analysis smoke only; outputs are not market evidence."
+  - "No real model training, broker integration or live data ingestion is configured."
+  - "Predictive, calibration and execution metrics are kept separate; no combined magic score is computed."
+  - "Real robustness analysis requires real upstream experiment records, not synthetic plumbing."

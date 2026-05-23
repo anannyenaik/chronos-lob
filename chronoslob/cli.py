@@ -1315,6 +1315,213 @@ def _run_calibration_smoke_impl(
     return 0
 
 
+def _inspect_execution_validation_impl() -> int:
+    """Print supported execution-aware validation infrastructure."""
+    from chronoslob.backtest.execution import ExecutionMode
+
+    print("ChronosLOB execution-aware validation")
+    print("  supported execution modes:")
+    for mode in ExecutionMode:
+        print(f"    {mode.value}")
+    print("  supported cost components:")
+    print("    fixed_fee_per_trade")
+    print("    proportional_fee_bps")
+    print("    aggressive half-spread or full-spread convention")
+    print("    passive adverse-selection/slippage assumptions")
+    print("  supported risk constraints:")
+    print("    inventory_limit")
+    print("    max_trades")
+    print("    max_turnover")
+    print("    optional max_drawdown")
+    print("  summary metrics:")
+    print("    coverage, fill_rate, hit_rate")
+    print("    gross_pnl_simulated, total_cost_simulated, net_pnl_simulated")
+    print("    turnover, adverse_selection_rate, latency sensitivity")
+    print("    confidence-threshold sweep")
+    print("  training run:       none")
+    print("  live trading:       not implemented")
+    print("  outputs:            not written")
+    print("  statement:          simulation infrastructure only; no tradability claim")
+    return 0
+
+
+def _run_execution_validation_smoke_impl(
+    *,
+    n_signals: int = 24,
+    seed: int = 42,
+) -> int:
+    """Run deterministic synthetic execution-validation plumbing."""
+    from chronoslob.backtest.validation import run_execution_validation_smoke
+
+    try:
+        result = cast(
+            Mapping[str, Any],
+            run_execution_validation_smoke(n_signals=n_signals, seed=seed),
+        )
+    except (ValueError, TypeError) as exc:
+        print(f"Execution-validation smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        "Synthetic execution-validation plumbing only; outputs are not market "
+        "evidence, alpha evidence, tradability evidence or live performance."
+    )
+    print(f"  synthetic signals:      {result['n_signals']}")
+    print(f"  market-state rows:      {result['market_state_rows']}")
+    print(f"  seed:                   {result['seed']}")
+    print(f"  primary mode:           {result['primary_mode']}")
+    summary = cast(Mapping[str, Any], result["summary"])
+    print(f"  number of trades:       {summary['n_trades']}")
+    print(f"  number filled:          {summary['n_filled']}")
+    print(f"  fill rate:              {summary['fill_rate']:.6f}")
+    print(f"  gross simulated PnL:    {summary['gross_pnl_simulated']:.6f}")
+    print(f"  total simulated cost:   {summary['total_cost_simulated']:.6f}")
+    print(f"  net simulated PnL:      {summary['net_pnl_simulated']:.6f}")
+    print(f"  turnover:               {summary['turnover']:.6f}")
+    adverse_rate = summary["adverse_selection_rate"]
+    adverse_text = "n/a" if adverse_rate is None else f"{adverse_rate:.6f}"
+    print(f"  adverse selection rate: {adverse_text}")
+    print("  confidence-threshold sweep:")
+    print("    threshold  coverage  filled  net_pnl_simulated")
+    threshold_rows = cast(
+        Sequence[Mapping[str, Any]],
+        result["confidence_threshold_sweep"],
+    )
+    for row in threshold_rows:
+        print(
+            "    "
+            f"{row['threshold']:.2f}       "
+            f"{row['coverage']:.6f}  "
+            f"{row['n_filled']}       "
+            f"{row['net_pnl_simulated']:.6f}"
+        )
+    print("  latency-sensitivity summary:")
+    print("    steps  coverage  filled  net_pnl_simulated")
+    latency_rows = cast(Sequence[Mapping[str, Any]], result["latency_sensitivity"])
+    for row in latency_rows:
+        print(
+            "    "
+            f"{row['latency_steps']}      "
+            f"{row['coverage']:.6f}  "
+            f"{row['n_filled']}       "
+            f"{row['net_pnl_simulated']:.6f}"
+        )
+    print("  outputs:                not written (smoke command)")
+    print("  live trading:           not implemented")
+    print("  network calls:          none performed")
+    return 0
+
+
+def _inspect_analysis_impl() -> int:
+    """Print supported analysis tools without running them."""
+    from chronoslob.analysis.ablations import ABLATION_CATEGORIES
+    from chronoslob.analysis.regimes import SUPPORTED_REGIME_KINDS
+    from chronoslob.analysis.sensitivity import SENSITIVITY_PARAMETERS
+    from chronoslob.analysis.summary import (
+        ANALYSIS_TYPES,
+        EXECUTION_METRIC_NAMES,
+        PREDICTIVE_METRIC_NAMES,
+        SUPPORTED_METRIC_NAMES,
+    )
+
+    print("ChronosLOB analysis layer")
+    print("  supported analysis types:")
+    for analysis_type in ANALYSIS_TYPES:
+        print(f"    {analysis_type}")
+    print("  supported regime kinds:")
+    for kind in SUPPORTED_REGIME_KINDS:
+        print(f"    {kind}")
+    print("  supported ablation categories:")
+    for category in ABLATION_CATEGORIES:
+        print(f"    {category}")
+    print("  supported sensitivity parameters:")
+    for parameter in SENSITIVITY_PARAMETERS:
+        print(f"    {parameter}")
+    print("  supported metric names:")
+    for metric_name in SUPPORTED_METRIC_NAMES:
+        print(f"    {metric_name}")
+    print("  predictive metric names:")
+    for metric_name in PREDICTIVE_METRIC_NAMES:
+        print(f"    {metric_name}")
+    print("  execution metric names:")
+    for metric_name in EXECUTION_METRIC_NAMES:
+        print(f"    {metric_name}")
+    print(
+        "  note: analysis summaries require real upstream experiment records "
+        "and do not generate evidence by themselves."
+    )
+    print("  outputs:             not written (read-only command)")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _run_robustness_analysis_smoke_impl(
+    *,
+    n_records: int = 36,
+    seed: int = 42,
+) -> int:
+    """Run a deterministic synthetic robustness-analysis smoke check."""
+    from chronoslob.analysis.summary import run_robustness_analysis_smoke
+
+    try:
+        result = cast(
+            Mapping[str, Any],
+            run_robustness_analysis_smoke(n_records=n_records, seed=seed),
+        )
+    except (ValueError, TypeError) as exc:
+        print(f"Robustness-analysis smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(str(result["warning"]))
+    print(f"  synthetic records:        {result['n_records']}")
+    print(f"  transfer records:         {result['n_transfer_records']}")
+    print(f"  sensitivity points:       {result['n_sensitivity_points']}")
+    print(f"  ablation records:         {result['n_ablation_records']}")
+    regime_summary_counts = cast(
+        Mapping[str, int], result["regime_summary_counts"]
+    )
+    print("  regime summary counts:")
+    for kind, count in regime_summary_counts.items():
+        print(f"    {kind}: {count}")
+    transfer_matrix = cast(Mapping[str, Any], result["transfer_matrix"])
+    matrix_shape = cast(Sequence[int], transfer_matrix["shape"])
+    print(
+        "  transfer matrix dimensions: "
+        f"{matrix_shape[0]}x{matrix_shape[1]} "
+        f"(metric={transfer_matrix['metric_name']})"
+    )
+    print(
+        "  ablation comparisons:     "
+        f"{result['ablation_comparisons_count']}"
+    )
+    print(
+        "  sensitivity curves:       "
+        f"{result['sensitivity_curves_produced']}"
+    )
+    print("  example metric summaries:")
+    example_rows = cast(
+        Sequence[Mapping[str, Any]], result["example_summary_rows"]
+    )
+    for example in example_rows[:4]:
+        row = cast(Mapping[str, Any], example["row"])
+        mean_value = row.get("mean")
+        mean_text = "n/a" if mean_value is None else f"{float(mean_value):.6f}"
+        print(
+            "    "
+            f"metric={example['metric_name']} "
+            f"direction={example['metric_direction']} "
+            f"mean={mean_text} "
+            f"count={row.get('count')}"
+        )
+    print(
+        "  WARNING: synthetic analysis plumbing only; outputs are not market "
+        "evidence and require real upstream experiment records to be useful."
+    )
+    print("  outputs:                  not written (smoke command)")
+    print("  network calls:            none performed")
+    return 0
+
+
 def _inspect_binance_replay_impl(
     snapshot_path: Path,
     updates_path: Path,
@@ -1415,6 +1622,8 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-ssl|run-ssl-smoke|"
             "inspect-multitask|run-multitask-smoke|"
             "inspect-calibration|run-calibration-smoke|"
+            "inspect-execution-validation|run-execution-validation-smoke|"
+            "inspect-analysis|run-robustness-analysis-smoke|"
             "inspect-binance-replay] [...]"
         )
         return 0
@@ -1815,6 +2024,40 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             num_classes=parsed.num_classes,
             seed=parsed.seed,
             ece_bins=parsed.ece_bins,
+        )
+    if command == "inspect-execution-validation":
+        return _inspect_execution_validation_impl()
+    if command == "run-execution-validation-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-execution-validation-smoke",
+            description=(
+                "Run a deterministic synthetic execution-validation smoke "
+                "check. This is simulation plumbing only."
+            ),
+        )
+        parser.add_argument("--n-signals", type=int, default=24)
+        parser.add_argument("--seed", type=int, default=42)
+        parsed = parser.parse_args(args[1:])
+        return _run_execution_validation_smoke_impl(
+            n_signals=parsed.n_signals,
+            seed=parsed.seed,
+        )
+    if command == "inspect-analysis":
+        return _inspect_analysis_impl()
+    if command == "run-robustness-analysis-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-robustness-analysis-smoke",
+            description=(
+                "Run a deterministic synthetic robustness-analysis smoke "
+                "check. This is analysis plumbing only."
+            ),
+        )
+        parser.add_argument("--n-records", type=int, default=36)
+        parser.add_argument("--seed", type=int, default=42)
+        parsed = parser.parse_args(args[1:])
+        return _run_robustness_analysis_smoke_impl(
+            n_records=parsed.n_records,
+            seed=parsed.seed,
         )
     if command == "inspect-binance-replay":
         parser = argparse.ArgumentParser(
@@ -2524,6 +2767,64 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    _EXECUTION_SMOKE_N_SIGNALS_OPTION = typer.Option(
+        24,
+        "--n-signals",
+        help="Number of deterministic synthetic prediction signals.",
+    )
+    _EXECUTION_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for synthetic market-state noise.",
+    )
+
+    def inspect_execution_validation() -> None:
+        """Print execution-aware validation support without running a model."""
+        exit_code = _inspect_execution_validation_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_execution_validation_smoke(
+        n_signals: int = _EXECUTION_SMOKE_N_SIGNALS_OPTION,
+        seed: int = _EXECUTION_SMOKE_SEED_OPTION,
+    ) -> None:
+        """Run a deterministic synthetic execution-validation smoke check."""
+        exit_code = _run_execution_validation_smoke_impl(
+            n_signals=n_signals,
+            seed=seed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _ROBUSTNESS_SMOKE_N_RECORDS_OPTION = typer.Option(
+        36,
+        "--n-records",
+        help="Number of deterministic synthetic analysis records.",
+    )
+    _ROBUSTNESS_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for synthetic analysis records.",
+    )
+
+    def inspect_analysis() -> None:
+        """Print supported analysis tools without running anything."""
+        exit_code = _inspect_analysis_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_robustness_analysis_smoke(
+        n_records: int = _ROBUSTNESS_SMOKE_N_RECORDS_OPTION,
+        seed: int = _ROBUSTNESS_SMOKE_SEED_OPTION,
+    ) -> None:
+        """Run a deterministic synthetic robustness-analysis smoke check."""
+        exit_code = _run_robustness_analysis_smoke_impl(
+            n_records=n_records,
+            seed=seed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     _BINANCE_SNAPSHOT_OPTION = typer.Option(
         ...,
         "--snapshot",
@@ -2899,6 +3200,42 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_execution_validation() -> None:
+        """Print execution-aware validation support without running a model."""
+        exit_code = _inspect_execution_validation_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_execution_validation_smoke(
+        n_signals: int = 24,
+        seed: int = 42,
+    ) -> None:
+        """Run a deterministic synthetic execution-validation smoke check."""
+        exit_code = _run_execution_validation_smoke_impl(
+            n_signals=n_signals,
+            seed=seed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_analysis() -> None:
+        """Print supported analysis tools without running anything."""
+        exit_code = _inspect_analysis_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_robustness_analysis_smoke(
+        n_records: int = 36,
+        seed: int = 42,
+    ) -> None:
+        """Run a deterministic synthetic robustness-analysis smoke check."""
+        exit_code = _run_robustness_analysis_smoke_impl(
+            n_records=n_records,
+            seed=seed,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
@@ -2924,6 +3261,10 @@ if typer is not None:
     app.command("run-multitask-smoke")(run_multitask_smoke)
     app.command("inspect-calibration")(inspect_calibration)
     app.command("run-calibration-smoke")(run_calibration_smoke)
+    app.command("inspect-execution-validation")(inspect_execution_validation)
+    app.command("run-execution-validation-smoke")(run_execution_validation_smoke)
+    app.command("inspect-analysis")(inspect_analysis)
+    app.command("run-robustness-analysis-smoke")(run_robustness_analysis_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
 else:
 

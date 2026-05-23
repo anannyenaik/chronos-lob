@@ -706,3 +706,176 @@ def test_model_baseline_modules_import() -> None:
             f"chronoslob.models.calibration is missing {name}"
         )
         assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+
+def test_analysis_modules_import() -> None:
+    regimes = importlib.import_module("chronoslob.analysis.regimes")
+    transfer = importlib.import_module("chronoslob.analysis.transfer")
+    ablations = importlib.import_module("chronoslob.analysis.ablations")
+    sensitivity = importlib.import_module("chronoslob.analysis.sensitivity")
+    summary = importlib.import_module("chronoslob.analysis.summary")
+    analysis = importlib.import_module("chronoslob.analysis")
+
+    for module, names in (
+        (
+            regimes,
+            (
+                "SUPPORTED_REGIME_KINDS",
+                "UNKNOWN_REGIME_LABEL",
+                "RegimeAssignment",
+                "RegimeDefinition",
+                "RegimeMetricSummary",
+                "assign_confidence_bucket",
+                "assign_latency_regime",
+                "assign_liquidity_regime",
+                "assign_spread_regime",
+                "assign_volatility_regime",
+                "fit_regime_boundaries",
+                "summarise_by_regime",
+            ),
+        ),
+        (
+            transfer,
+            (
+                "TransferMatrix",
+                "TransferResult",
+                "TransferSplit",
+                "build_transfer_matrix",
+                "compare_in_domain_vs_out_of_domain",
+                "summarise_transfer_results",
+            ),
+        ),
+        (
+            ablations,
+            (
+                "ABLATION_CATEGORIES",
+                "AblationComparison",
+                "AblationResult",
+                "AblationSpec",
+                "compare_against_baseline",
+                "rank_ablations",
+                "summarise_ablation_table",
+            ),
+        ),
+        (
+            sensitivity,
+            (
+                "SENSITIVITY_PARAMETERS",
+                "SensitivityCurve",
+                "SensitivityParameter",
+                "SensitivityPoint",
+                "build_sensitivity_curve",
+                "compare_sensitivity_curves",
+                "summarise_sensitivity_curve",
+            ),
+        ),
+        (
+            summary,
+            (
+                "ANALYSIS_TYPES",
+                "EXECUTION_METRIC_NAMES",
+                "FORBIDDEN_COMBINED_FIELDS",
+                "METRIC_DIRECTIONS",
+                "PREDICTIVE_METRIC_NAMES",
+                "SUPPORTED_METRIC_NAMES",
+                "SYNTHETIC_ANALYSIS_WARNING",
+                "AnalysisMetric",
+                "AnalysisRecord",
+                "AnalysisSummary",
+                "aggregate_metric",
+                "aggregate_records",
+                "format_summary_table",
+                "run_robustness_analysis_smoke",
+                "summarise_records",
+            ),
+        ),
+    ):
+        for name in names:
+            assert hasattr(module, name), f"{module.__name__} is missing {name}"
+            assert hasattr(analysis, name), (
+                f"chronoslob.analysis is missing re-exported {name}"
+            )
+
+
+def test_execution_validation_modules_import() -> None:
+    execution = importlib.import_module("chronoslob.backtest.execution")
+    costs = importlib.import_module("chronoslob.backtest.costs")
+    latency = importlib.import_module("chronoslob.backtest.latency")
+    turnover = importlib.import_module("chronoslob.backtest.turnover")
+    risk = importlib.import_module("chronoslob.backtest.risk")
+    validation = importlib.import_module("chronoslob.backtest.validation")
+    backtest = importlib.import_module("chronoslob.backtest")
+
+    for module, names in (
+        (
+            execution,
+            (
+                "TradeSide",
+                "ExecutionMode",
+                "PredictionSignal",
+                "MarketState",
+                "ExecutionDecision",
+                "ExecutionFill",
+                "ExecutionResult",
+            ),
+        ),
+        (
+            costs,
+            (
+                "FeeModel",
+                "SpreadCostModel",
+                "ExecutionCostConfig",
+                "estimate_aggressive_cost",
+                "estimate_passive_cost",
+                "estimate_total_cost",
+            ),
+        ),
+        (
+            latency,
+            (
+                "LatencyConfig",
+                "apply_latency",
+                "get_latency_state",
+                "latency_sensitivity_grid",
+            ),
+        ),
+        (
+            turnover,
+            (
+                "TurnoverSummary",
+                "compute_turnover",
+                "compute_position_path",
+                "compute_trade_count",
+                "compute_average_holding_period",
+            ),
+        ),
+        (
+            risk,
+            (
+                "RiskConfig",
+                "RiskState",
+                "apply_inventory_limit",
+                "apply_turnover_limit",
+                "apply_drawdown_limit",
+                "should_abstain_for_risk",
+            ),
+        ),
+        (
+            validation,
+            (
+                "ExecutionValidationConfig",
+                "ExecutionValidationSummary",
+                "ExecutionValidationResult",
+                "run_execution_validation",
+                "summarise_execution_results",
+                "confidence_threshold_sweep",
+                "latency_sensitivity_analysis",
+                "run_execution_validation_smoke",
+            ),
+        ),
+    ):
+        for name in names:
+            assert hasattr(module, name), f"{module.__name__} is missing {name}"
+            assert hasattr(backtest, name), (
+                f"chronoslob.backtest is missing re-exported {name}"
+            )

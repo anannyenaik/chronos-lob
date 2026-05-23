@@ -1,0 +1,55 @@
+# ChronosLOB Phase 16 synthetic execution-validation smoke config.
+# This is deterministic simulation plumbing only, not market evidence.
+
+experiment_type: execution_validation_smoke
+synthetic_signal_count: 24
+seed: 42
+
+execution_modes:
+  - aggressive
+  - passive
+  - hybrid
+
+execution_assumptions:
+  quantity: 1.0
+  passive_fill_probability_threshold: 0.55
+  high_confidence_threshold: 0.85
+  passive_confidence_threshold: 0.65
+  note: "Queue position is a simplified fill-probability proxy only."
+
+fee_model:
+  fixed_fee_per_trade: 0.01
+  proportional_fee_bps: 1.0
+
+spread_cost:
+  aggressive_convention: half_spread
+  passive_spread_crossing_cost: 0.0
+  note: "Passive posting does not pay spread crossing cost by default."
+
+latency:
+  default_latency_steps: 1
+  grid:
+    - 0
+    - 1
+    - 2
+    - 5
+
+confidence_filtering:
+  thresholds:
+    - 0.5
+    - 0.6
+    - 0.7
+    - 0.8
+
+risk_limits:
+  inventory_limit: 4.0
+  max_trades: 20
+  max_turnover: 20.0
+  max_drawdown: 1.0
+  turnover_basis: quantity
+
+notes:
+  - "Synthetic execution-validation smoke only; outputs are not market evidence."
+  - "No live trading, broker integration, exchange API client or order placement is configured."
+  - "Simulated PnL is a validation metric for cost-adjusted signal quality, not a profitability claim."
+  - "No market impact model or production queue-position model is implemented."
