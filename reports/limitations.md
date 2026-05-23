@@ -4,9 +4,9 @@ This repository currently contains scaffold code, canonical schemas, a local
 FI-2010-style loader, a microstructure feature engine, a future-window label
 engine, leakage-control utilities, classical baselines, PyTorch sequence
 datasets, DeepLOB-style and transformer model plumbing, self-supervised
-objectives and supervised multi-task fine-tuning infrastructure. No
-execution-aware simulator, backtest or real benchmark result has been
-implemented.
+objectives, supervised multi-task fine-tuning infrastructure and calibration
+utilities. No execution-aware simulator, backtest or real benchmark result has
+been implemented.
 
 No model results exist yet. No trading performance is claimed.
 
@@ -29,8 +29,8 @@ order priority, exchange-specific matching rules and data delays all require car
 assumptions.
 
 The project should separate forecast quality from tradability. Accuracy,
-cross-entropy or calibration improvements do not automatically imply cost-adjusted
-signal quality or profitable execution.
+cross-entropy or calibration improvements do not automatically imply
+cost-adjusted signal quality or profitable execution.
 
 The supervised transformer encoder added in Phase 12 is architecture and
 plumbing only. It consumes field-wise tokenised market microstructure batches
@@ -56,5 +56,15 @@ classification heads for direction, return quantile, volatility regime, spread
 widening, fill-proxy and adverse-selection proxy labels. Its smoke runner uses
 a tiny synthetic event-log fixture and reports only plumbing diagnostics.
 Those losses and accuracies are not market evidence and must not be presented
-as alpha, tradability, profitability, Sharpe or execution viability. Calibration
-and uncertainty are intentionally left for Phase 15.
+as alpha, tradability, profitability, Sharpe or execution viability.
+
+The calibration and uncertainty layer added in Phase 15 is probabilistic
+forecasting infrastructure only. It implements negative log-likelihood, Brier
+score, expected calibration error, reliability-bin data, temperature scaling,
+confidence filtering and abstention analysis for classifier outputs. Its smoke
+runner uses synthetic logits and labels only, fits temperature on a synthetic
+calibration subset and evaluates a separate synthetic subset. Confidence
+filtering is not a trading strategy, abstention analysis is not an execution
+backtest, and calibration diagnostics do not claim alpha, Sharpe, profitability
+or execution viability. Execution-aware validation is intentionally left for
+Phase 16.

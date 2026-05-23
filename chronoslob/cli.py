@@ -5,9 +5,9 @@ from __future__ import annotations
 import argparse
 import platform
 import sys
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from chronoslob import __version__
 from chronoslob.utils.paths import project_root
@@ -1197,6 +1197,124 @@ def _run_multitask_smoke_impl(
     return 0
 
 
+def _inspect_calibration_impl() -> int:
+    """Print supported calibration utilities without fitting anything."""
+    from chronoslob.models.calibration import CalibrationErrorConfig
+    from chronoslob.training.calibration import ConfidenceFilterConfig
+
+    error_config = CalibrationErrorConfig()
+    filter_config = ConfidenceFilterConfig()
+
+    print("ChronosLOB calibration and uncertainty")
+    print("  supported metrics:")
+    print("    negative_log_likelihood")
+    print("    brier_score")
+    print("    expected_calibration_error")
+    print("    reliability_bins")
+    print("    confidence_filtering")
+    print("    abstention_curve")
+    print(f"  default ECE bins:          {error_config.n_bins}")
+    print(
+        "  default confidence range:  "
+        f"{error_config.min_confidence:.1f}..{error_config.max_confidence:.1f}"
+    )
+    print(f"  default thresholds:        {list(filter_config.thresholds)}")
+    print(
+        "  temperature scaling:       one positive scalar fitted on a "
+        "calibration split by minimising NLL"
+    )
+    print("  training run:              none")
+    print("  outputs:                   not written")
+    print("  performance claims:        none")
+    return 0
+
+
+def _run_calibration_smoke_impl(
+    *,
+    n_examples: int = 60,
+    num_classes: int = 3,
+    seed: int = 42,
+    ece_bins: int = 10,
+) -> int:
+    """Run a deterministic synthetic calibration smoke check."""
+    try:
+        from chronoslob.training.datasets import torch_is_available
+    except ImportError as exc:  # pragma: no cover - defensive
+        print(f"PyTorch is unavailable: {exc}", file=sys.stderr)
+        return 3
+
+    if not torch_is_available():
+        print(
+            "PyTorch is not installed. Install the 'torch' optional "
+            "dependency: pip install -e '.[torch]'",
+            file=sys.stderr,
+        )
+        return 3
+
+    from chronoslob.training.calibration import run_calibration_smoke
+
+    try:
+        result = cast(
+            Mapping[str, Any],
+            run_calibration_smoke(
+                n_examples=n_examples,
+                num_classes=num_classes,
+                seed=seed,
+                ece_bins=ece_bins,
+            ),
+        )
+    except (ValueError, TypeError, RuntimeError) as exc:
+        print(f"Calibration smoke failed: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        "Synthetic calibration plumbing only; metrics do not measure market "
+        "signal, alpha, tradability or execution-aware validation."
+    )
+    print(f"  synthetic examples:      {result['n_examples']}")
+    print(f"  calibration examples:    {result['calibration_examples']}")
+    print(f"  evaluation examples:     {result['evaluation_examples']}")
+    print(f"  number of classes:       {result['num_classes']}")
+    print(f"  seed:                    {result['seed']}")
+    print(f"  fitted temperature:      {result['fitted_temperature']:.6f}")
+    print("  pre-calibration metrics:")
+    pre = cast(Mapping[str, Any], result["pre_calibration"])
+    print(
+        f"    nll={pre['nll']:.6f} "
+        f"ece={pre['ece']:.6f} "
+        f"brier={pre['brier_score']:.6f}"
+    )
+    print("  post-calibration metrics:")
+    post = cast(Mapping[str, Any], result["post_calibration"])
+    print(
+        f"    nll={post['nll']:.6f} "
+        f"ece={post['ece']:.6f} "
+        f"brier={post['brier_score']:.6f}"
+    )
+    print("  confidence filtering:")
+    print("    threshold  coverage  abstention  accuracy  n_covered/n_total")
+    confidence_filtering = cast(
+        Mapping[str, Any],
+        result["confidence_filtering"],
+    )
+    buckets = cast(Sequence[Mapping[str, Any]], confidence_filtering["buckets"])
+    for bucket in buckets:
+        accuracy = bucket["accuracy_on_covered"]
+        accuracy_text = "n/a" if accuracy is None else f"{accuracy:.6f}"
+        print(
+            "    "
+            f"{bucket['threshold']:.2f}       "
+            f"{bucket['coverage']:.6f}  "
+            f"{bucket['abstention_rate']:.6f}  "
+            f"{accuracy_text:<8}  "
+            f"{bucket['n_covered']}/{bucket['n_total']}"
+        )
+    print("  outputs:                 not written (smoke command)")
+    print("  checkpoints:             not written")
+    print("  network calls:           none performed")
+    return 0
+
+
 def _inspect_binance_replay_impl(
     snapshot_path: Path,
     updates_path: Path,
@@ -1296,6 +1414,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-transformer|run-transformer-smoke|"
             "inspect-ssl|run-ssl-smoke|"
             "inspect-multitask|run-multitask-smoke|"
+            "inspect-calibration|run-calibration-smoke|"
             "inspect-binance-replay] [...]"
         )
         return 0
@@ -1675,6 +1794,27 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             seed=parsed.seed,
             symbol=parsed.symbol,
             max_levels_per_side=parsed.max_levels_per_side,
+        )
+    if command == "inspect-calibration":
+        return _inspect_calibration_impl()
+    if command == "run-calibration-smoke":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-calibration-smoke",
+            description=(
+                "Run a deterministic synthetic calibration smoke check. "
+                "This is plumbing only."
+            ),
+        )
+        parser.add_argument("--n-examples", type=int, default=60)
+        parser.add_argument("--num-classes", type=int, default=3)
+        parser.add_argument("--seed", type=int, default=42)
+        parser.add_argument("--ece-bins", type=int, default=10)
+        parsed = parser.parse_args(args[1:])
+        return _run_calibration_smoke_impl(
+            n_examples=parsed.n_examples,
+            num_classes=parsed.num_classes,
+            seed=parsed.seed,
+            ece_bins=parsed.ece_bins,
         )
     if command == "inspect-binance-replay":
         parser = argparse.ArgumentParser(
@@ -2341,6 +2481,49 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    _CALIBRATION_SMOKE_N_EXAMPLES_OPTION = typer.Option(
+        60,
+        "--n-examples",
+        help="Number of deterministic synthetic examples.",
+    )
+    _CALIBRATION_SMOKE_NUM_CLASSES_OPTION = typer.Option(
+        3,
+        "--num-classes",
+        help="Number of synthetic classification classes.",
+    )
+    _CALIBRATION_SMOKE_SEED_OPTION = typer.Option(
+        42,
+        "--seed",
+        help="Deterministic seed for synthetic logits.",
+    )
+    _CALIBRATION_SMOKE_ECE_BINS_OPTION = typer.Option(
+        10,
+        "--ece-bins",
+        help="Number of bins for expected calibration error.",
+    )
+
+    def inspect_calibration() -> None:
+        """Print calibration and uncertainty support without training."""
+        exit_code = _inspect_calibration_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_calibration_smoke(
+        n_examples: int = _CALIBRATION_SMOKE_N_EXAMPLES_OPTION,
+        num_classes: int = _CALIBRATION_SMOKE_NUM_CLASSES_OPTION,
+        seed: int = _CALIBRATION_SMOKE_SEED_OPTION,
+        ece_bins: int = _CALIBRATION_SMOKE_ECE_BINS_OPTION,
+    ) -> None:
+        """Run a deterministic synthetic calibration smoke check."""
+        exit_code = _run_calibration_smoke_impl(
+            n_examples=n_examples,
+            num_classes=num_classes,
+            seed=seed,
+            ece_bins=ece_bins,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     _BINANCE_SNAPSHOT_OPTION = typer.Option(
         ...,
         "--snapshot",
@@ -2694,6 +2877,28 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_calibration() -> None:
+        """Print calibration and uncertainty support without training."""
+        exit_code = _inspect_calibration_impl()
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_calibration_smoke(
+        n_examples: int = 60,
+        num_classes: int = 3,
+        seed: int = 42,
+        ece_bins: int = 10,
+    ) -> None:
+        """Run a deterministic synthetic calibration smoke check."""
+        exit_code = _run_calibration_smoke_impl(
+            n_examples=n_examples,
+            num_classes=num_classes,
+            seed=seed,
+            ece_bins=ece_bins,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
@@ -2717,6 +2922,8 @@ if typer is not None:
     app.command("run-ssl-smoke")(run_ssl_smoke)
     app.command("inspect-multitask")(inspect_multitask)
     app.command("run-multitask-smoke")(run_multitask_smoke)
+    app.command("inspect-calibration")(inspect_calibration)
+    app.command("run-calibration-smoke")(run_calibration_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
 else:
 

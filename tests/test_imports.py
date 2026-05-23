@@ -565,6 +565,27 @@ def test_training_modules_import() -> None:
             f"chronoslob.training is missing re-exported {name}"
         )
 
+    calibration_training = importlib.import_module(
+        "chronoslob.training.calibration"
+    )
+    for name in (
+        "ConfidenceFilterConfig",
+        "ConfidenceBucket",
+        "ConfidenceFilteringResult",
+        "AbstentionCurvePoint",
+        "build_confidence_filter",
+        "evaluate_confidence_filter",
+        "abstention_curve",
+        "summarise_multitask_calibration",
+        "run_calibration_smoke",
+    ):
+        assert hasattr(calibration_training, name), (
+            f"chronoslob.training.calibration is missing {name}"
+        )
+        assert hasattr(training, name), (
+            f"chronoslob.training is missing re-exported {name}"
+        )
+
 
 def test_model_baseline_modules_import() -> None:
     baselines = importlib.import_module("chronoslob.models.baselines")
@@ -664,5 +685,24 @@ def test_model_baseline_modules_import() -> None:
     ):
         assert hasattr(multitask, name), (
             f"chronoslob.models.multitask is missing {name}"
+        )
+        assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"
+
+    calibration = importlib.import_module("chronoslob.models.calibration")
+    for name in (
+        "CalibrationErrorConfig",
+        "ReliabilityBin",
+        "CalibrationSummary",
+        "TemperatureScaler",
+        "MultiTaskTemperatureScaler",
+        "softmax_probabilities",
+        "classification_confidence",
+        "negative_log_likelihood",
+        "brier_score",
+        "expected_calibration_error",
+        "reliability_bins",
+    ):
+        assert hasattr(calibration, name), (
+            f"chronoslob.models.calibration is missing {name}"
         )
         assert hasattr(models, name), f"chronoslob.models is missing re-exported {name}"

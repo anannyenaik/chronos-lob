@@ -1,0 +1,37 @@
+# ChronosLOB Phase 15 synthetic calibration smoke config.
+# This is a deterministic plumbing check for calibration utilities only.
+
+experiment_type: calibration_smoke
+synthetic_example_count: 60
+class_count: 3
+seed: 42
+
+calibration_split:
+  method: first_half_sequential_calibration_split
+  note: "Temperature scaling is fitted only on the synthetic calibration subset."
+
+metrics:
+  ece_bin_count: 10
+  confidence_thresholds:
+    - 0.5
+    - 0.6
+    - 0.7
+    - 0.8
+    - 0.9
+  abstention_coverage_levels:
+    - 1.0
+    - 0.8
+    - 0.6
+    - 0.4
+    - 0.2
+
+temperature_scaling:
+  optimiser: lbfgs
+  initial_temperature: 1.0
+  max_iterations: 50
+  learning_rate: 0.1
+
+notes:
+  - "Synthetic calibration smoke only; outputs are not market evidence."
+  - "No random time-series split, checkpoint, dashboard, backtest or execution simulation is configured."
+  - "Confidence filtering and abstention are uncertainty diagnostics, not execution-aware validation."
