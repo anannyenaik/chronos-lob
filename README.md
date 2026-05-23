@@ -1,7 +1,6 @@
 # ChronosLOB
 
-**A research-engineering platform for leakage-safe limit order book
-representation learning, calibrated forecasting and execution-aware validation.**
+**A research-engineering platform for leakage-safe limit order book representation learning, calibrated forecasting and execution-aware validation.**
 
 [![CI](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml/badge.svg)](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
@@ -9,12 +8,7 @@ representation learning, calibrated forecasting and execution-aware validation.*
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
 
-ChronosLOB is a research platform for limit order book representation learning,
-market-state forecasting, calibration and execution-aware validation.
-
-ChronosLOB is research software. It is not financial advice, not live trading
-infrastructure and not a production execution system. It makes no deployment or
-trading-use claims.
+ChronosLOB provides a reproducible framework for studying market microstructure as noisy sequential data: data validation, feature and label construction, temporal splits, classical and neural baselines, transformer-based representation learning, uncertainty analysis, execution-aware validation and robustness analysis.
 
 ## Why ChronosLOB
 
