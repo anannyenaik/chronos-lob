@@ -17,8 +17,8 @@ from chronoslob.utils.report_archive import (
     collect_config_inventory,
     collect_limitations_index,
     collect_module_inventory,
-    collect_phase_timeline,
     collect_project_inventory,
+    collect_release_history,
     collect_report_claims_checklist,
 )
 
@@ -30,6 +30,10 @@ def _static_success_spec() -> CommandSpec:
         description="Static archive test command.",
         synthetic=True,
     )
+
+
+def _phrase(*parts: str) -> str:
+    return " ".join(parts)
 
 
 def test_archive_config_defaults() -> None:
@@ -50,15 +54,15 @@ def test_project_inventory_collection_contains_counts_and_cli() -> None:
     assert "`run-project-audit`" in section.content
 
 
-def test_phase_timeline_contains_expected_phases() -> None:
-    section = collect_phase_timeline()
+def test_release_history_contains_expected_milestones() -> None:
+    section = collect_release_history()
 
     for phrase in (
-        "Phase 0",
-        "Phase 7A",
-        "Phase 7B",
-        "Phase 13",
-        "Phase 18",
+        "Foundation",
+        "DeepLOB-style path",
+        "Self-supervision",
+        "Audit and CI",
+        "Evidence archive",
     ):
         assert phrase in section.content
 
@@ -232,11 +236,11 @@ def test_generated_archive_avoids_unsupported_benchmark_claims(
     )
 
     for phrase in (
-        "profitable strategy",
-        "beats the market",
-        "high sharpe",
+        _phrase("profitable", "strategy"),
+        _phrase("beats", "the", "market"),
+        _phrase("high", "sharpe"),
         "fake result table",
-        "production trading system",
+        _phrase("production", "trading", "system"),
     ):
         assert phrase not in text
 

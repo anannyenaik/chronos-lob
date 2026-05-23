@@ -1,9 +1,10 @@
 # Execution-Aware Validation
 
-Phase 16 adds a simplified execution-aware validation layer for ChronosLOB. The
-goal is to measure whether prediction-like signals retain cost-adjusted signal
-quality after explicit execution assumptions are applied. It is not a live
-trading system, not a production backtest and not evidence of deployable alpha.
+This report documents the simplified execution-aware validation layer for
+ChronosLOB. The goal is to measure whether prediction-like signals retain
+cost-adjusted signal quality after explicit execution assumptions are applied.
+It is not live execution infrastructure, not a production backtest and not a
+deployment claim.
 
 ## Why Forecasting Metrics Are Not Enough
 
@@ -79,13 +80,13 @@ The implementation is deterministic simulation infrastructure. It does not
 download data, place orders, connect to brokers or exchanges, model production
 latency, estimate market impact, reconstruct queue position or verify venue
 rules. Synthetic smoke outputs are plumbing checks and must not be reported as
-benchmark results, alpha evidence, Sharpe evidence, profitability evidence or
-live trading performance.
+benchmark results, signal evidence, risk-adjusted performance evidence,
+profitability evidence or live execution performance.
 
 ## Future Work
 
-Future phases can connect this layer to reproducible experiment artefacts,
-realistic temporal evaluation runs, transfer and regime-shift analysis,
-ablation studies, richer passive-fill labels and more careful venue-specific
-assumptions. Any such work should continue to distinguish forecasting quality
-from execution-aware cost-adjusted signal quality.
+Future work can connect this layer to reproducible experiment artefacts,
+realistic temporal evaluation runs, transfer and regime-shift analysis, ablation
+studies, richer passive-fill labels and more careful venue-specific assumptions.
+Any such work should continue to distinguish forecasting quality from
+execution-aware cost-adjusted signal quality.

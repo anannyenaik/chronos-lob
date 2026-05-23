@@ -56,6 +56,7 @@ def test_report_archive_utils_import() -> None:
         "CommandCapture",
         "build_report_archive",
         "collect_project_inventory",
+        "collect_release_history",
         "collect_phase_timeline",
         "collect_cli_smoke_outputs",
         "write_report_archive",

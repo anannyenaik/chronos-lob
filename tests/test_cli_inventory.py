@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 
-from chronoslob.cli import _run_project_audit_impl
+from chronoslob.cli import _inspect_release_readiness_impl, _run_project_audit_impl
 from chronoslob.utils import audit as audit_module
 from chronoslob.utils.audit import collect_cli_commands, run_project_audit
 from chronoslob.utils.paths import project_root
@@ -22,6 +22,7 @@ def test_cli_command_collection_includes_known_commands() -> None:
         "run-execution-validation-smoke",
         "run-robustness-analysis-smoke",
         "run-project-audit",
+        "inspect-release-readiness",
         "build-report-archive",
         "inspect-report-archive",
     ):
@@ -46,6 +47,10 @@ def test_run_project_audit_returns_structured_result() -> None:
 
 def test_cli_project_audit_impl_returns_success_without_writing() -> None:
     assert _run_project_audit_impl(root=project_root(), strict=True) == 0
+
+
+def test_cli_release_readiness_impl_returns_success_without_writing() -> None:
+    assert _inspect_release_readiness_impl(root=project_root()) == 0
 
 
 def test_audit_inventory_does_not_use_network_or_subprocess_calls() -> None:

@@ -1,13 +1,13 @@
 # Full Audit And CI Hardening
 
-Phase 18 hardens ChronosLOB as a reproducible research-engineering artefact. It
-does not add model architectures, training objectives, benchmark results,
-dashboards, notebook outputs or trading functionality.
+This hardening pass supports ChronosLOB as a reproducible research-engineering
+artefact. It does not add model architectures, training objectives, benchmark
+results, dashboards, notebook outputs or trading functionality.
 
 ## Purpose
 
 The hardening pass checks that the repository is internally consistent before
-later final-report and GitHub polish work. The focus is quality, safety,
+later report-writing and public documentation work. The focus is quality, safety,
 reproducibility and claim discipline across code, CLI commands, configs, reports,
 tests and documentation.
 
@@ -51,7 +51,7 @@ evidence.
 
 New tests parse YAML configs, check fixture path references, reject obvious secret
 fields and ensure configs do not require network data by default. Report tests
-check expected reports, limitation coverage, forbidden-claim discipline and phase
+check expected reports, limitation coverage, claim discipline and implementation
 report discoverability.
 
 ## CLI Documentation
@@ -82,10 +82,10 @@ Before final public release, contributors should:
 
 - rerun the full validation suite in a clean environment;
 - confirm GitHub Actions passes remotely;
-- review docs for stale phase numbering;
+- review docs for stale release-history wording;
 - verify that no local data, generated artefacts, notebook outputs or secrets are
   staged;
 - generate any future report metrics only from reproducible experiment artefacts.
 
-This phase adds no new model results, benchmark claims, execution evidence or
-deployable trading claims.
+This hardening work adds no new model results, benchmark claims, execution
+evidence or production-use claims.

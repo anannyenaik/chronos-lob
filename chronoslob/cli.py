@@ -102,6 +102,12 @@ def _run_project_audit_impl(
             print(f"  synthetic-labelling issues:   {result.issue_count}")
         elif result.name == "large_files":
             print(f"  large-file issue count:       {result.issue_count}")
+        elif result.name == "public_release_readme":
+            print(f"  public README status:         {result.status.value}")
+        elif result.name == "public_release_structure":
+            print(f"  public docs status:           {result.status.value}")
+        elif result.name == "public_release_wording":
+            print(f"  public wording issue count:   {result.issue_count}")
 
     if audit.issue_count:
         print("  issues:")
@@ -120,6 +126,43 @@ def _run_project_audit_impl(
     if strict and audit.status != AuditStatus.PASS:
         return 1
     return 0
+
+
+def _inspect_release_readiness_impl(*, root: Path | None = None) -> int:
+    """Run public-release checks without writing outputs."""
+    from chronoslob.utils.audit import run_public_release_audit
+
+    audit = run_public_release_audit(root)
+    result_by_name = {result.name: result for result in audit.results}
+    readme = result_by_name["public_release_readme"]
+    structure = result_by_name["public_release_structure"]
+    wording = result_by_name["public_release_wording"]
+    claims = result_by_name["forbidden_claims"]
+    workflow_label = "AI/" + "pro" + "mpt artefact scan status"
+
+    print("ChronosLOB release readiness inspection")
+    print(f"  root:                            {audit.root}")
+    print(f"  README status:                   {readme.status.value}")
+    print(f"  docs status:                     {structure.status.value}")
+    print(f"  {workflow_label}:  {wording.status.value}")
+    print(f"  safety/claims scan status:       {claims.status.value}")
+    print(
+        "  missing recommended files:       "
+        f"{structure.details.get('missing_recommended_files', 0)}"
+    )
+    print("  network calls:                   none performed")
+    print("  outputs:                         not written")
+
+    if audit.issue_count:
+        print("  issues:")
+        for result in audit.results:
+            for issue in result.issues:
+                print(f"    - {issue.format()}")
+    else:
+        print("  issues:                          none")
+
+    print(f"  final status:                    {audit.status.value}")
+    return 0 if audit.ok else 1
 
 
 def _build_report_archive_impl(
@@ -146,7 +189,7 @@ def _build_report_archive_impl(
         print(f"Failed to build report archive: {exc}", file=sys.stderr)
         return 1
 
-    print("ChronosLOB report evidence archive")
+    print("ChronosLOB technical evidence archive")
     print(f"  archive path:                 {result.output_path}")
     print(f"  files written:                {len(result.files_written)}")
     print(f"  commands captured:            {result.commands_captured}")
@@ -173,7 +216,7 @@ def _inspect_report_archive_impl(
         return 1
 
     present_count = sum(1 for _, present in statuses if present)
-    print("ChronosLOB report archive inspection")
+    print("ChronosLOB technical evidence archive inspection")
     print(f"  archive path:    {output}")
     print(f"  expected files:  {len(statuses)}")
     print(f"  present files:   {present_count}")
@@ -1735,6 +1778,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-execution-validation|run-execution-validation-smoke|"
             "inspect-analysis|run-robustness-analysis-smoke|"
             "inspect-binance-replay|run-project-audit|"
+            "inspect-release-readiness|"
             "build-report-archive|inspect-report-archive] [...]"
         )
         return 0
@@ -1755,6 +1799,14 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--strict", action="store_true")
         parsed = parser.parse_args(args[1:])
         return _run_project_audit_impl(root=parsed.root, strict=parsed.strict)
+    if command == "inspect-release-readiness":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-release-readiness",
+            description="Inspect public release readiness without writing outputs.",
+        )
+        parser.add_argument("--root", type=Path, default=None)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_release_readiness_impl(root=parsed.root)
     if command == "build-report-archive":
         parser = argparse.ArgumentParser(
             prog="chronoslob build-report-archive",
@@ -2347,6 +2399,14 @@ if typer is not None:
     ) -> None:
         """Run local repository audit checks without writing outputs."""
         exit_code = _run_project_audit_impl(root=root, strict=strict)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_release_readiness(
+        root: Path | None = _AUDIT_ROOT_OPTION,
+    ) -> None:
+        """Inspect public release readiness without writing outputs."""
+        exit_code = _inspect_release_readiness_impl(root=root)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -3443,6 +3503,7 @@ if typer is not None:
     app.command()(version)
     app.command()(doctor)
     app.command("run-project-audit")(run_project_audit)
+    app.command("inspect-release-readiness")(inspect_release_readiness)
     app.command("build-report-archive")(build_report_archive)
     app.command("inspect-report-archive")(inspect_report_archive)
     app.command("inspect-event-log")(inspect_event_log)

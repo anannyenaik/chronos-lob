@@ -1,15 +1,15 @@
-# Phase 19 Report Archive Build
+# Technical Evidence Archive Build
 
-Phase 19 prepares a structured evidence archive for manual technical report
-writing. It does not write the final report, add model functionality, create
-benchmark tables or introduce trading claims.
+ChronosLOB includes a structured evidence archive for later manual technical
+report writing. It does not write the final report, add model functionality,
+create benchmark tables or introduce trading-use claims.
 
 ## What The Archive Contains
 
 The archive under `reports/report_archive/` contains:
 
 - project, config, module and test inventories;
-- an implementation phase timeline through Phase 18;
+- an implementation release history;
 - curated local CLI smoke outputs;
 - limitations and claim-safety indexes;
 - reproducibility command bundles;
@@ -52,12 +52,12 @@ report conclusions. Those require separate reproducible experiment artefacts.
 
 ## Support For Manual Report Writing
 
-The archive gives the user stable references for architecture, implemented
+The archive gives maintainers stable references for architecture, implemented
 scope, validation commands, limitations and claim boundaries. It is intended to
 make manual report writing faster without inventing results.
 
 ## Remaining Public-Release Work
 
-Before final public release, the repository still needs a release-readiness
-pass: README and badge review, final command verification, archive inspection,
-claims review and CV packaging support if requested.
+Manual GitHub metadata review remains outside the local archive build. In
+particular, the repository description and topics should be checked in the
+GitHub UI before a public release.

@@ -24,6 +24,7 @@ This inventory lists local YAML configs by directory. Files containing `smoke` i
 - `configs/experiments/fi2010_torch_dataset_smoke.yaml` - Synthetic smoke or plumbing configuration. Synthetic smoke: `yes`.
 - `configs/experiments/full_audit_smoke.yaml` - Synthetic smoke or plumbing configuration. Synthetic smoke: `yes`.
 - `configs/experiments/label_audit_fi2010.yaml` - Experiment or audit configuration. Synthetic smoke: `no`.
+- `configs/experiments/public_release_readiness.yaml` - Experiment or audit configuration. Synthetic smoke: `no`.
 - `configs/experiments/report_archive_smoke.yaml` - Synthetic report-archive build configuration. Synthetic smoke: `yes`.
 - `configs/experiments/robustness_analysis_smoke.yaml` - Synthetic smoke or plumbing configuration. Synthetic smoke: `yes`.
 

@@ -60,6 +60,7 @@ This inventory summarises pytest files by inferred area. It deliberately does no
 - `tests/test_no_lookahead.py`
 - `tests/test_paths.py`
 - `tests/test_preprocessing.py`
+- `tests/test_public_release_readiness.py`
 - `tests/test_reconstruction.py`
 - `tests/test_replay.py`
 - `tests/test_risk_constraints.py`

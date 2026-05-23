@@ -16,6 +16,7 @@ EXPECTED_REPORTS = (
     "reports/transfer_regime_ablation_analysis.md",
     "reports/calibration_uncertainty.md",
     "reports/report_archive_build.md",
+    "reports/public_release_readiness.md",
 )
 
 
@@ -53,7 +54,7 @@ def test_reports_do_not_make_forbidden_claims() -> None:
     assert result.status == AuditStatus.PASS
 
 
-def test_smoke_reports_and_phase_reports_are_discoverable() -> None:
+def test_smoke_reports_and_implementation_reports_are_discoverable() -> None:
     root = project_root()
     report_names = {path.name for path in collect_report_files(root)}
 

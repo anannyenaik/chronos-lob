@@ -1,4 +1,4 @@
-"""Report evidence archive builders for ChronosLOB.
+"""Technical evidence archive builders for ChronosLOB.
 
 The utilities in this module are local-only. They collect repository inventory,
 curated CLI smoke outputs and text-based Mermaid diagrams for later manual
@@ -37,8 +37,8 @@ __all__ = [
     "collect_config_inventory",
     "collect_limitations_index",
     "collect_module_inventory",
-    "collect_phase_timeline",
     "collect_project_inventory",
+    "collect_release_history",
     "collect_report_claims_checklist",
     "collect_test_inventory",
     "default_cli_command_specs",
@@ -50,7 +50,7 @@ __all__ = [
 EXPECTED_ARCHIVE_FILES: tuple[Path, ...] = (
     Path("README.md"),
     Path("project_inventory.md"),
-    Path("phase_timeline.md"),
+    Path("release_history.md"),
     Path("cli_smoke_outputs.md"),
     Path("config_inventory.md"),
     Path("module_inventory.md"),
@@ -80,6 +80,7 @@ _PACKAGE_AREAS = (
 _VALIDATION_COMMANDS = (
     'python -c "import chronoslob; print(chronoslob.__version__)"',
     "python -m chronoslob.cli doctor",
+    "python -m chronoslob.cli inspect-release-readiness",
     "python -m chronoslob.cli run-project-audit --strict",
     "python -m pytest",
     "python -m compileall -q chronoslob tests",
@@ -599,52 +600,55 @@ def collect_project_inventory(config: ReportArchiveConfig) -> ReportArchiveSecti
     )
 
 
-def collect_phase_timeline() -> ReportArchiveSection:
-    """Build the implemented phase timeline through Phase 18."""
+def collect_release_history() -> ReportArchiveSection:
+    """Build the implemented release-history summary."""
 
-    phase_rows = (
-        ("Phase 0", "repository scaffold, tooling and documentation conventions"),
-        ("Phase 1", "schemas for events, order books, features, labels and quality issues"),
-        ("Phase 2", "local FI-2010-style loading and validation"),
-        ("Phase 3", "past-only microstructure feature engine"),
-        ("Phase 4", "future-window labels and no-look-ahead leakage checks"),
-        ("Phase 5", "temporal, walk-forward and purged or embargoed splitters"),
-        ("Phase 6", "classical baselines, metrics and train-only preprocessing"),
-        ("Phase 7A", "PyTorch sequence-window data layer"),
-        ("Phase 7B", "DeepLOB-style supervised CNN-LSTM baseline"),
-        ("Phase 8", "offline Binance-style order book reconstruction"),
-        ("Phase 9", "canonical JSONL event logs and replay-to-feature/label integration"),
-        ("Phase 10", "event-log storage and replay planning absorbed into Phase 9 outputs"),
-        ("Phase 11", "deterministic event tokenisation and transformer inputs"),
-        ("Phase 12", "supervised transformer encoder architecture"),
-        ("Phase 13", "self-supervised masked-field and next-field objectives"),
-        ("Phase 14", "multi-task fine-tuning infrastructure"),
-        ("Phase 15", "calibration, uncertainty and confidence filtering"),
-        ("Phase 16", "execution-aware validation under explicit simplified assumptions"),
-        ("Phase 17", "transfer, regime, ablation and sensitivity analysis"),
-        ("Phase 18", "local audit utilities, CI hardening and reproducibility documentation"),
+    history_rows = (
+        ("Foundation", "repository scaffold, tooling and documentation conventions"),
+        ("Data contracts", "schemas for events, order books, features, labels and quality issues"),
+        ("Local loading", "FI-2010-style loading and validation"),
+        ("Feature engine", "past-only microstructure feature generation"),
+        ("Label engine", "future-window labels and no-look-ahead leakage checks"),
+        ("Validation protocols", "temporal, walk-forward and purged or embargoed splitters"),
+        ("Classical baselines", "baseline interfaces, metrics and train-only preprocessing"),
+        ("Torch data layer", "PyTorch sequence-window datasets and loaders"),
+        ("DeepLOB-style path", "supervised CNN-LSTM baseline plumbing"),
+        ("Book reconstruction", "offline Binance-style order book reconstruction"),
+        ("Event logs", "canonical JSONL storage and replay-to-feature/label integration"),
+        ("Tokenisation", "deterministic event tokenisation and transformer inputs"),
+        ("Transformer modelling", "supervised transformer encoder architecture"),
+        ("Self-supervision", "masked-field and next-field objectives"),
+        ("Multi-task modelling", "fine-tuning infrastructure"),
+        ("Calibration", "uncertainty and confidence-filtering diagnostics"),
+        ("Execution-aware validation", "explicit simplified assumptions for costs and latency"),
+        ("Robustness analysis", "transfer, regime, ablation and sensitivity summaries"),
+        ("Audit and CI", "local audit utilities, CI hardening and reproducibility documentation"),
+        ("Evidence archive", "technical evidence archive and public documentation polish"),
     )
-    table = ["| Phase | Implemented scope |", "|---|---|"]
-    table.extend(f"| {phase} | {scope}. |" for phase, scope in phase_rows)
+    table = ["| Milestone | Implemented scope |", "|---|---|"]
+    table.extend(f"| {name} | {scope}. |" for name, scope in history_rows)
     content = "\n".join(
         [
-            "# Phase Timeline",
+            "# Release History",
             "",
-            "This timeline summarises implementation history for report writing. It "
+            "This history summarises implementation milestones for report writing. It "
             "does not imply that benchmark experiments or final report results have "
             "been produced.",
             "",
             *table,
-            "",
-            "Phase 19 adds this evidence archive and GitHub polish material without "
-            "adding new modelling functionality.",
         ]
     )
     return ReportArchiveSection(
-        relative_path=Path("phase_timeline.md"),
-        title="Phase Timeline",
+        relative_path=Path("release_history.md"),
+        title="Release History",
         content=content,
     )
+
+
+def collect_phase_timeline() -> ReportArchiveSection:
+    """Return the release-history section for older callers."""
+
+    return collect_release_history()
 
 
 def _render_stream_block(label: str, value: str) -> list[str]:
@@ -855,7 +859,7 @@ def collect_limitations_index() -> ReportArchiveSection:
         "- `../../docs/REPRODUCIBILITY.md`: validation and smoke-command caveats.",
         "- `../../docs/PROJECT_STATUS.md`: implemented versus not implemented scope.",
         "",
-        "## Phase Reports With Limitation Context",
+        "## Implementation Reports With Limitation Context",
         "",
         "- `../data_quality.md`",
         "- `../feature_engine.md`",
@@ -930,8 +934,8 @@ def collect_report_claims_checklist() -> ReportArchiveSection:
         "",
         "## Wording To Avoid",
         "",
-        "- Language that presents the repository as a trading bot.",
-        "- Language that implies guaranteed returns or market outperformance.",
+        "- Language that presents the repository as automated trading infrastructure.",
+        "- Language that implies certain returns or market outperformance.",
         "- Language that merges forecast accuracy with tradability.",
         "- Language that treats synthetic fixtures as real market evidence.",
     ]
@@ -1022,7 +1026,7 @@ def _collect_report_archive_readme() -> ReportArchiveSection:
         "This directory is a reference archive for writing the ChronosLOB technical "
         "report manually. It is not the final report.",
         "",
-        "The archive contains repository inventories, phase history, current CLI "
+        "The archive contains repository inventories, release history, current CLI "
         "smoke outputs, config and test cross-references, limitations, claim-safety "
         "checks and Mermaid diagram sources.",
         "",
@@ -1126,7 +1130,7 @@ def _collect_mermaid_diagrams() -> tuple[ReportArchiveSection, ...]:
                 '  report["Manual final technical report"]',
                 '  docs["Docs\\nstatus, CLI, reproducibility, safety"]',
                 '  configs["Configs\\nsmoke and experiment specs"]',
-                '  reports["Phase reports and limitations"]',
+                '  reports["Implementation reports and limitations"]',
                 '  cli["CLI smoke outputs"]',
                 '  tests["Tests and audit checks"]',
                 '  diagrams["Mermaid diagrams"]',
@@ -1181,7 +1185,7 @@ def _all_archive_sections(
     return (
         _collect_report_archive_readme(),
         collect_project_inventory(config),
-        collect_phase_timeline(),
+        collect_release_history(),
         _render_cli_smoke_outputs(
             captures,
             include_smoke_training=config.include_smoke_training,

@@ -1,5 +1,5 @@
 name: report_archive_smoke
-phase: phase_19_report_evidence_archive
+release_track: report_evidence_archive
 scope: synthetic report archive smoke configuration
 description: >
   Builds the local report evidence archive for manual report-writing support.
@@ -30,7 +30,7 @@ command_capture:
 expected_archive_files:
   - reports/report_archive/README.md
   - reports/report_archive/project_inventory.md
-  - reports/report_archive/phase_timeline.md
+  - reports/report_archive/release_history.md
   - reports/report_archive/cli_smoke_outputs.md
   - reports/report_archive/config_inventory.md
   - reports/report_archive/module_inventory.md

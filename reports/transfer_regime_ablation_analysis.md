@@ -171,7 +171,7 @@ records and sensitivity points. Every record carries
 `is_synthetic=True`. The CLI command
 `run-robustness-analysis-smoke` and the YAML config
 `configs/experiments/robustness_analysis_smoke.yaml` both label the run
-as plumbing. The synthetic records are not market evidence, alpha
+as plumbing. The synthetic records are not market evidence, signal
 evidence, tradability evidence or live performance.
 
 The smoke layer exists only to verify that the analysis machinery runs
@@ -180,8 +180,8 @@ correctly.
 
 ## How this will later support the final report
 
-When Phase 18 hardens CI and the final paper/CV phase begins, real
-upstream experiments will produce real `AnalysisRecord`,
+When reproducible experiment runs are available, real upstream experiments will
+produce real `AnalysisRecord`,
 `TransferResult`, `AblationResult` and `SensitivityPoint` inputs. The
 analysis layer will then turn those records into transfer matrices,
 regime breakdowns, ablation tables and sensitivity curves without any
@@ -201,6 +201,6 @@ robustness section.
 - No new model architectures, live data ingestion, broker integration,
   notebook outputs, dashboards or fake benchmark tables are added.
 
-Phase 18 will harden CI, full audit and reproducibility around the
-combined Phase 16 and Phase 17 infrastructure. No live trading,
-profitability claim or alpha claim is introduced by Phase 17.
+CI, full audit and reproducibility checks surround the execution-validation and
+robustness-analysis infrastructure. No live execution, profitability claim or
+investment-usefulness claim is introduced by this analysis layer.

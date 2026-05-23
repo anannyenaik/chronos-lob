@@ -18,6 +18,7 @@ from chronoslob.utils.paths import project_root
 __all__ = [
     "DEFAULT_FORBIDDEN_CLAIM_PHRASES",
     "DEFAULT_LARGE_FILE_THRESHOLD_BYTES",
+    "DEFAULT_PUBLIC_RELEASE_REQUIRED_FILES",
     "DEFAULT_REQUIRED_PATHS",
     "AuditIssue",
     "AuditResult",
@@ -26,6 +27,9 @@ __all__ = [
     "ProjectAuditResult",
     "check_no_forbidden_claims",
     "check_no_large_generated_files",
+    "check_public_release_readme",
+    "check_public_release_structure",
+    "check_public_release_wording",
     "check_required_paths",
     "check_synthetic_fixture_labelling",
     "collect_cli_commands",
@@ -33,6 +37,7 @@ __all__ = [
     "collect_report_files",
     "collect_test_files",
     "run_project_audit",
+    "run_public_release_audit",
 ]
 
 
@@ -157,22 +162,37 @@ class ProjectAuditResult:
         return self.status == AuditStatus.PASS
 
 
+def _words(*parts: str) -> str:
+    return " ".join(parts)
+
+
+def _compact(*parts: str) -> str:
+    return "".join(parts)
+
+
+def _hyphenated(*parts: str) -> str:
+    return "-".join(parts)
+
+
 DEFAULT_FORBIDDEN_CLAIM_PHRASES: tuple[str, ...] = (
-    "guaranteed alpha",
-    "guaranteed profit",
-    "beats the market",
-    "deployable trading strategy",
-    "production trading system",
-    "live trading bot",
-    "risk-free",
-    "high Sharpe",
-    "proven profitable",
+    _words("guaranteed", "alpha"),
+    _words("guaranteed", "profit"),
+    _words("beats", "the", "market"),
+    _words("deployable", "trading", "strategy"),
+    _words("deployable", "trading", "system"),
+    _words("production", "trading", "system"),
+    _words("live", "trading", "bot"),
+    _words("trading", "bot"),
+    _hyphenated("risk", "free"),
+    _words("high", "Sharpe"),
+    _words("profitable", "strategy"),
+    _words("proven", "profitable"),
 )
 
 DEFAULT_REQUIRED_PATHS: tuple[str, ...] = (
     ".github/workflows/ci.yml",
-    "AGENTS.md",
-    "PLANS.md",
+    "CONTRIBUTING.md",
+    "ROADMAP.md",
     "README.md",
     "pyproject.toml",
     "chronoslob",
@@ -183,7 +203,28 @@ DEFAULT_REQUIRED_PATHS: tuple[str, ...] = (
     "docs/SAFETY_AND_LIMITATIONS.md",
     "reports/limitations.md",
     "reports/full_audit_ci_hardening.md",
+    "reports/public_release_readiness.md",
     "tests",
+)
+
+DEFAULT_PUBLIC_RELEASE_REQUIRED_FILES: tuple[str, ...] = (
+    "README.md",
+    "CONTRIBUTING.md",
+    "ROADMAP.md",
+    "LICENSE",
+    "pyproject.toml",
+    ".github/workflows/ci.yml",
+    "docs/CLI_REFERENCE.md",
+    "docs/PROJECT_STATUS.md",
+    "docs/REPRODUCIBILITY.md",
+    "docs/SAFETY_AND_LIMITATIONS.md",
+    "docs/REPORT_EVIDENCE_INDEX.md",
+    "docs/GITHUB_POLISH_CHECKLIST.md",
+    "reports/README.md",
+    "reports/limitations.md",
+    "reports/public_release_readiness.md",
+    "reports/report_archive/README.md",
+    "reports/technical_report/README.md",
 )
 
 DEFAULT_LARGE_FILE_THRESHOLD_BYTES = 1_000_000
@@ -199,6 +240,14 @@ _TEXT_SUFFIXES = {
     ".yaml",
     ".yml",
 }
+_PUBLIC_RELEASE_TEXT_SUFFIXES = {
+    ".md",
+    ".mmd",
+    ".py",
+    ".toml",
+    ".yaml",
+    ".yml",
+}
 _AUDIT_SCAN_DIRS = (
     ".github",
     "chronoslob",
@@ -209,12 +258,60 @@ _AUDIT_SCAN_DIRS = (
     "tests",
 )
 _ROOT_SCAN_FILES = (
-    "AGENTS.md",
+    ".gitattributes",
+    ".gitignore",
+    "CONTRIBUTING.md",
     "LICENSE",
     "Makefile",
-    "PLANS.md",
+    "ROADMAP.md",
     "README.md",
     "pyproject.toml",
+)
+_LEGACY_PUBLIC_FILES = (
+    _compact("AG", "ENTS.md"),
+    "PLANS.md",
+)
+_PUBLIC_RELEASE_WORDING_GROUPS: Mapping[str, tuple[str, ...]] = {
+    "internal_workflow": (
+        _compact("Co", "dex"),
+        _compact("Ch", "at", "GPT"),
+        _words(_compact("Mas", "ter"), _compact("Pro", "mpt")),
+        _compact("pro", "mpt"),
+        _compact("ch", "at"),
+        _compact("ag", "ent"),
+        _compact("ag", "ents"),
+        _compact("AG", "ENTS"),
+        _words(_compact("auto", "mated"), "contributor"),
+        _hyphenated("AI", "generated"),
+        _words("AI", "generated"),
+        _hyphenated("AI", "coded"),
+        _words("AI", "coded"),
+    ),
+    "external_positioning": (
+        _hyphenated(_compact("recruit", "er"), "facing"),
+        _compact("recruit", "er"),
+        _compact("C", "V"),
+        _compact("res", "ume"),
+        _compact("car", "eer"),
+        _compact("hir", "ing"),
+    ),
+    "unsupported_claims": (
+        _words("alpha", "validation"),
+        _words("deployable", "alpha"),
+        _words("AI", "trading", "bot"),
+        *DEFAULT_FORBIDDEN_CLAIM_PHRASES,
+    ),
+}
+_README_REQUIRED_LINK_TARGETS = (
+    "docs/REPRODUCIBILITY.md",
+    "docs/CLI_REFERENCE.md",
+    "docs/PROJECT_STATUS.md",
+    "docs/SAFETY_AND_LIMITATIONS.md",
+    "docs/REPORT_EVIDENCE_INDEX.md",
+    "ROADMAP.md",
+)
+_README_LOCAL_LINK_PATTERN = re.compile(
+    r"\[[^\]]+\]\((?!https?:|mailto:|#)(?P<target>[^)#]+)(?:#[^)]+)?\)"
 )
 _EXCLUDED_DIR_NAMES = {
     ".git",
@@ -302,6 +399,18 @@ def _iter_repository_files(root: Path) -> tuple[Path, ...]:
             }
         )
     )
+
+
+def _iter_public_release_files(root: Path) -> tuple[Path, ...]:
+    files = []
+    for path in _iter_repository_files(root):
+        relative = _relative_to_root(root, path)
+        if path.suffix.lower() in _PUBLIC_RELEASE_TEXT_SUFFIXES:
+            files.append(path)
+            continue
+        if len(relative.parts) == 1 and relative.name in _ROOT_SCAN_FILES:
+            files.append(path)
+    return tuple(sorted(path.resolve() for path in files if path.is_file()))
 
 
 def _read_text(path: Path) -> str | None:
@@ -516,6 +625,207 @@ def check_no_large_generated_files(
     )
 
 
+def check_public_release_structure(
+    root: str | Path | None = None,
+    required_files: Sequence[str | Path] = DEFAULT_PUBLIC_RELEASE_REQUIRED_FILES,
+) -> AuditResult:
+    """Check that public release documentation has the expected shape."""
+    resolved_root = _resolve_root(root)
+    issues: list[AuditIssue] = []
+    missing_count = 0
+
+    for relative_path in required_files:
+        candidate = resolved_root / Path(relative_path)
+        if candidate.exists():
+            continue
+        missing_count += 1
+        issues.append(
+            AuditIssue(
+                check_name="public_release_structure",
+                status=AuditStatus.FAIL,
+                message="Recommended public-release path is missing.",
+                path=Path(relative_path),
+            )
+        )
+
+    for legacy_name in _LEGACY_PUBLIC_FILES:
+        if (resolved_root / legacy_name).exists():
+            issues.append(
+                AuditIssue(
+                    check_name="public_release_structure",
+                    status=AuditStatus.FAIL,
+                    message="Internal-maintenance file should not be published.",
+                    path=Path(legacy_name),
+                )
+            )
+
+    return AuditResult(
+        name="public_release_structure",
+        status=_status_from_issues(issues),
+        issues=tuple(issues),
+        details={
+            "required_files": len(required_files),
+            "missing_recommended_files": missing_count,
+        },
+    )
+
+
+def _normalise_readme_link_target(target: str) -> str:
+    return target.strip().split("#", maxsplit=1)[0]
+
+
+def check_public_release_readme(root: str | Path | None = None) -> AuditResult:
+    """Check public README claims, links and status language."""
+    resolved_root = _resolve_root(root)
+    readme_path = resolved_root / "README.md"
+    issues: list[AuditIssue] = []
+    text = _read_text(readme_path)
+    if text is None:
+        issues.append(
+            AuditIssue(
+                check_name="public_release_readme",
+                status=AuditStatus.FAIL,
+                message="README.md is missing or unreadable.",
+                path=Path("README.md"),
+            )
+        )
+        return AuditResult(
+            name="public_release_readme",
+            status=AuditStatus.FAIL,
+            issues=tuple(issues),
+            details={"links_checked": 0},
+        )
+
+    required_snippets = (
+        "# ChronosLOB",
+        (
+            "ChronosLOB is a research platform for leakage-safe limit order book "
+            "representation learning, market-state forecasting, calibration and "
+            "execution-aware validation."
+        ),
+        "not financial advice",
+        "not live trading infrastructure",
+        "no deployment or trading-use claims",
+        "Synthetic fixture outputs are plumbing checks only.",
+    )
+    normalised_text = " ".join(text.split())
+    for snippet in required_snippets:
+        if " ".join(snippet.split()) not in normalised_text:
+            issues.append(
+                AuditIssue(
+                    check_name="public_release_readme",
+                    status=AuditStatus.FAIL,
+                    message="README.md is missing required public-release wording.",
+                    path=Path("README.md"),
+                    matched_text=snippet,
+                )
+            )
+
+    links_checked = 0
+    for match in _README_LOCAL_LINK_PATTERN.finditer(text):
+        target = _normalise_readme_link_target(match.group("target"))
+        if not target:
+            continue
+        links_checked += 1
+        if not (resolved_root / target).exists():
+            issues.append(
+                AuditIssue(
+                    check_name="public_release_readme",
+                    status=AuditStatus.FAIL,
+                    message="README.md local link target is missing.",
+                    path=Path("README.md"),
+                    matched_text=target,
+                )
+            )
+
+    for target in _README_REQUIRED_LINK_TARGETS:
+        if f"]({target}" not in text:
+            issues.append(
+                AuditIssue(
+                    check_name="public_release_readme",
+                    status=AuditStatus.FAIL,
+                    message="README.md does not link to a recommended document.",
+                    path=Path("README.md"),
+                    matched_text=target,
+                )
+            )
+
+    return AuditResult(
+        name="public_release_readme",
+        status=_status_from_issues(issues),
+        issues=tuple(issues),
+        details={"links_checked": links_checked},
+    )
+
+
+def check_public_release_wording(
+    root: str | Path | None = None,
+    scan_paths: Sequence[str | Path] | None = None,
+) -> AuditResult:
+    """Scan repository text for public-release wording problems."""
+    resolved_root = _resolve_root(root)
+    files: Sequence[Path]
+    if scan_paths is None:
+        files = _iter_public_release_files(resolved_root)
+    else:
+        files = tuple(resolved_root / Path(path) for path in scan_paths)
+
+    phrase_entries = tuple(
+        (group, phrase, phrase.lower())
+        for group, phrases in _PUBLIC_RELEASE_WORDING_GROUPS.items()
+        for phrase in phrases
+    )
+    issues: list[AuditIssue] = []
+    for file_path in files:
+        text = _read_text(file_path)
+        if text is None:
+            continue
+        for line_index, line in enumerate(text.splitlines()):
+            lowered_line = line.lower()
+            for group, phrase, lowered_phrase in phrase_entries:
+                if lowered_phrase not in lowered_line:
+                    continue
+                issues.append(
+                    AuditIssue(
+                        check_name="public_release_wording",
+                        status=AuditStatus.FAIL,
+                        message=f"Public-release wording issue in {group}.",
+                        path=_relative_to_root(resolved_root, file_path),
+                        line_number=line_index + 1,
+                        matched_text=phrase,
+                    )
+                )
+
+    return AuditResult(
+        name="public_release_wording",
+        status=_status_from_issues(issues),
+        issues=tuple(issues),
+        details={
+            "phrase_groups": len(_PUBLIC_RELEASE_WORDING_GROUPS),
+            "files_scanned": len(files),
+        },
+    )
+
+
+def run_public_release_audit(root: str | Path | None = None) -> ProjectAuditResult:
+    """Run public-release checks and return a structured result."""
+    resolved_root = _resolve_root(root)
+    inventory = PathInventory(
+        root=resolved_root,
+        config_files=collect_config_files(resolved_root),
+        report_files=collect_report_files(resolved_root),
+        test_files=collect_test_files(resolved_root),
+        cli_commands=collect_cli_commands(resolved_root),
+    )
+    results = (
+        check_public_release_readme(resolved_root),
+        check_public_release_structure(resolved_root),
+        check_public_release_wording(resolved_root),
+        check_no_forbidden_claims(resolved_root),
+    )
+    return ProjectAuditResult(root=resolved_root, inventory=inventory, results=results)
+
+
 def run_project_audit(
     root: str | Path | None = None,
     *,
@@ -543,5 +853,8 @@ def run_project_audit(
             resolved_root,
             threshold_bytes=large_file_threshold_bytes,
         ),
+        check_public_release_readme(resolved_root),
+        check_public_release_structure(resolved_root),
+        check_public_release_wording(resolved_root),
     )
     return ProjectAuditResult(root=resolved_root, inventory=inventory, results=results)

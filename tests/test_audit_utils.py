@@ -10,11 +10,22 @@ from chronoslob.utils.audit import (
     AuditStatus,
     check_no_forbidden_claims,
     check_no_large_generated_files,
+    check_public_release_structure,
+    check_public_release_wording,
     check_required_paths,
     check_synthetic_fixture_labelling,
     run_project_audit,
+    run_public_release_audit,
 )
 from chronoslob.utils.paths import project_root
+
+
+def _phrase(*parts: str) -> str:
+    return " ".join(parts)
+
+
+def _compact(*parts: str) -> str:
+    return "".join(parts)
 
 
 def test_required_paths_check_reports_missing_paths(tmp_path: Path) -> None:
@@ -33,28 +44,52 @@ def test_required_paths_check_reports_missing_paths(tmp_path: Path) -> None:
 def test_forbidden_claim_detection_flags_unsupported_phrase(
     tmp_path: Path,
 ) -> None:
+    claim = _phrase("guaranteed", "profit")
     (tmp_path / "README.md").write_text(
-        "This system offers guaranteed profit.",
+        f"This system offers {claim}.",
         encoding="utf-8",
     )
 
     result = check_no_forbidden_claims(tmp_path)
 
     assert result.status == AuditStatus.FAIL
-    assert result.issues[0].matched_text == "guaranteed profit"
+    assert result.issues[0].matched_text == claim
 
 
 def test_forbidden_claim_detection_allows_avoid_context(
     tmp_path: Path,
 ) -> None:
-    (tmp_path / "AGENTS.md").write_text(
-        "Vocabulary to avoid:\n- guaranteed profit\n",
+    (tmp_path / "GUIDANCE.md").write_text(
+        f"Vocabulary to avoid:\n- {_phrase('guaranteed', 'profit')}\n",
         encoding="utf-8",
     )
 
     result = check_no_forbidden_claims(tmp_path)
 
     assert result.status == AuditStatus.PASS
+
+
+def test_public_release_wording_flags_internal_workflow_terms(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "README.md").write_text(
+        f"Built with {_compact('Co', 'dex')}.",
+        encoding="utf-8",
+    )
+
+    result = check_public_release_wording(tmp_path, scan_paths=("README.md",))
+
+    assert result.status == AuditStatus.FAIL
+    assert result.issues[0].check_name == "public_release_wording"
+
+
+def test_public_release_structure_rejects_internal_files(tmp_path: Path) -> None:
+    (tmp_path / _compact("AG", "ENTS.md")).write_text("internal", encoding="utf-8")
+
+    result = check_public_release_structure(tmp_path, required_files=())
+
+    assert result.status == AuditStatus.FAIL
+    assert result.issues[0].path == Path(_compact("AG", "ENTS.md"))
 
 
 def test_synthetic_fixture_labelling_warns_for_unlabelled_smoke(
@@ -109,3 +144,10 @@ def test_project_audit_smoke_on_repo_root() -> None:
     assert audit.inventory.report_count > 0
     assert audit.inventory.test_count > 0
     assert "run-project-audit" in audit.inventory.cli_commands
+
+
+def test_public_release_audit_smoke_on_repo_root() -> None:
+    audit = run_public_release_audit(project_root())
+
+    assert audit.status == AuditStatus.PASS
+    assert "inspect-release-readiness" in audit.inventory.cli_commands

@@ -9,7 +9,7 @@ Use this index to keep report claims aligned with implemented evidence and docum
 - `../../docs/REPRODUCIBILITY.md`: validation and smoke-command caveats.
 - `../../docs/PROJECT_STATUS.md`: implemented versus not implemented scope.
 
-## Phase Reports With Limitation Context
+## Implementation Reports With Limitation Context
 
 - `../data_quality.md`
 - `../feature_engine.md`

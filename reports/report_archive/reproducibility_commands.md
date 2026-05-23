@@ -14,6 +14,7 @@ python -m pip install -e ".[dev,torch]"
 ```bash
 python -c "import chronoslob; print(chronoslob.__version__)"
 python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-release-readiness
 python -m chronoslob.cli run-project-audit --strict
 python -m pytest
 python -m compileall -q chronoslob tests

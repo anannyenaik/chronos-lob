@@ -33,6 +33,7 @@ reproducing CI locally.
 ```bash
 python -c "import chronoslob; print(chronoslob.__version__)"
 python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-release-readiness
 python -m chronoslob.cli run-project-audit
 python -m chronoslob.cli run-project-audit --strict
 python -m chronoslob.cli build-report-archive
@@ -85,7 +86,7 @@ Synthetic smoke outputs show that plumbing executes, shapes align and summaries
 are produced. They are not benchmark results, market evidence, execution
 evidence or proof of cost-adjusted signal quality.
 
-## Report Evidence Archive
+## Technical Evidence Archive
 
 The report archive can be rebuilt locally with:
 

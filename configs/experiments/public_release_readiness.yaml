@@ -1,0 +1,54 @@
+# ChronosLOB public release-readiness audit configuration.
+# This is a local documentation and repository hygiene audit only.
+
+experiment_type: public_release_readiness
+audit_root: "."
+strict: true
+
+public_docs_to_scan:
+  - README.md
+  - CONTRIBUTING.md
+  - ROADMAP.md
+  - docs
+  - reports
+  - chronoslob
+  - configs
+  - tests
+  - .github/workflows
+
+forbidden_phrase_groups:
+  internal_workflow_terms: true
+  external_positioning_terms: true
+  unsupported_result_claims: true
+  unsupported_execution_claims: true
+
+required_files:
+  - README.md
+  - CONTRIBUTING.md
+  - ROADMAP.md
+  - LICENSE
+  - pyproject.toml
+  - .github/workflows/ci.yml
+  - docs/CLI_REFERENCE.md
+  - docs/PROJECT_STATUS.md
+  - docs/REPRODUCIBILITY.md
+  - docs/SAFETY_AND_LIMITATIONS.md
+  - docs/REPORT_EVIDENCE_INDEX.md
+  - reports/public_release_readiness.md
+  - reports/report_archive/README.md
+  - reports/technical_report/README.md
+
+excluded_directories:
+  - .git
+  - .mypy_cache
+  - .pytest_cache
+  - .ruff_cache
+  - .venv
+  - __pycache__
+  - data
+  - runs
+
+notes:
+  - "Synthetic fixtures must remain clearly labelled."
+  - "The audit does not write files or contact external services."
+  - "The final technical report is intentionally not included yet."

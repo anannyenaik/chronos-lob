@@ -35,7 +35,7 @@ Use this checklist before moving any statement from repository evidence into the
 
 ## Wording To Avoid
 
-- Language that presents the repository as a trading bot.
-- Language that implies guaranteed returns or market outperformance.
+- Language that presents the repository as automated trading infrastructure.
+- Language that implies certain returns or market outperformance.
 - Language that merges forecast accuracy with tradability.
 - Language that treats synthetic fixtures as real market evidence.

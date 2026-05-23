@@ -147,13 +147,14 @@ alpha, Sharpe, profitability or execution viability is implied.
   curriculum or per-epoch resampling could be added later if the smoke
   runner is grown into a longer pretraining workflow.
 * Random-replacement tokens are sampled uniformly from the non-special
-  vocabulary; later phases could weight them by empirical frequency.
+  vocabulary; later work could weight them by empirical frequency.
 * The smoke training path uses synthetic fixtures only; no real
   exchange data is consumed and no network calls are made.
 
-## Out of Scope: Multi-Task Fine-Tuning Is Phase 14
+## Out of Scope: Multi-Task Fine-Tuning
 
 Supervised multi-task fine-tuning on real labels (direction, volatility,
-spread, fill, adverse selection) is deliberately left for Master Prompt
-14. Phase 13 produces a small, well-tested SSL pretraining wrapper that
-Phase 14 can call into without further changes to Phase 11 or Phase 12.
+spread, fill, adverse selection) is deliberately left to the multi-task
+modelling component. The SSL implementation provides a small, well-tested
+pretraining wrapper that downstream supervised code can call without changing
+the tokenisation or transformer encoder layers.

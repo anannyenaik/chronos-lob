@@ -108,6 +108,8 @@ python -m chronoslob.cli <command> [options]
 
 ## Audit
 
+- `inspect-release-readiness`: inspect README, documentation structure, public
+  wording and safety-claim checks without writing files.
 - `run-project-audit`: run local repository audit checks and print inventory
   counts.
 - `run-project-audit --strict`: exit non-zero if warnings or failures are found.
@@ -130,4 +132,5 @@ python -m chronoslob.cli <command> [options]
 
 Smoke commands use bundled synthetic fixtures or deterministic synthetic records.
 Their outputs are plumbing checks only. They must not be reported as FI-2010
-benchmark results, real venue evidence, alpha evidence or execution performance.
+benchmark results, real venue evidence, signal evidence or execution
+performance.

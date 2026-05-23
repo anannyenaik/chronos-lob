@@ -3,10 +3,10 @@
 This inventory supports later manual report writing. It is not a final technical report and it contains no benchmark result claims.
 
 - Package version: `0.1.0`
-- Config files: `24`
-- Report files, excluding this generated archive: `22`
-- Test files: `73`
-- CLI commands: `31`
+- Config files: `25`
+- Report files, excluding this generated archive: `24`
+- Test files: `74`
+- CLI commands: `32`
 
 ## Major Package Areas
 
@@ -25,6 +25,7 @@ This inventory supports later manual report writing. It is not a final technical
 - `version`
 - `doctor`
 - `run-project-audit`
+- `inspect-release-readiness`
 - `build-report-archive`
 - `inspect-report-archive`
 - `inspect-event-log`
@@ -58,6 +59,7 @@ This inventory supports later manual report writing. It is not a final technical
 
 - `python -c "import chronoslob; print(chronoslob.__version__)"`
 - `python -m chronoslob.cli doctor`
+- `python -m chronoslob.cli inspect-release-readiness`
 - `python -m chronoslob.cli run-project-audit --strict`
 - `python -m pytest`
 - `python -m compileall -q chronoslob tests`

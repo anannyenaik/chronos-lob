@@ -134,5 +134,5 @@ missing evidence so the final prose stays honest and reproducible.
   `reports/report_archive/reproducibility_commands.md`.
 - Safe claims: ChronosLOB is ready to support manual report writing and future
   reproducible experiments.
-- Missing evidence: final public release checks, real results and CV packaging
-  should be handled in later phases.
+- Missing evidence: real results and report-ready findings should be handled
+  only after reproducible experiments exist.

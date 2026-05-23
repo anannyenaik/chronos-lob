@@ -60,14 +60,17 @@ Stdout:
 ```text
 ChronosLOB project audit
   root:                         C:\Users\Lenovo\Programming\ChronosLOB\chronos-lob
-  configs:                      24
-  reports:                      33
-  tests:                        73
-  CLI commands:                 31
+  configs:                      25
+  reports:                      35
+  tests:                        74
+  CLI commands:                 32
   required paths status:        pass
   forbidden-claim issue count:  0
   synthetic-labelling issues:   0
   large-file issue count:       0
+  public README status:         pass
+  public docs status:           pass
+  public wording issue count:   0
   issues:                       none
   network calls:                none performed
   outputs:                      not written

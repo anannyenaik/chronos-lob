@@ -1,23 +1,17 @@
-# ChronosLOB Phase 18 full-audit smoke configuration.
+# ChronosLOB full-audit smoke configuration.
 # This is a local repository audit only. It does not train models, download data,
 # contact GitHub, run live exchange clients or produce benchmark results.
 
 experiment_type: full_audit_ci_hardening
-phase: 18
+release_track: audit_ci_hardening
 audit_root: "."
 strict: false
 large_file_threshold_bytes: 1000000
 
-forbidden_claims:
-  - guaranteed alpha
-  - guaranteed profit
-  - beats the market
-  - deployable trading strategy
-  - production trading system
-  - live trading bot
-  - risk-free
-  - high Sharpe
-  - proven profitable
+forbidden_claim_groups:
+  unsupported_performance_claims: true
+  unsupported_execution_claims: true
+  unsupported_public_positioning: true
 
 expected_docs:
   - docs/CLI_REFERENCE.md
@@ -40,6 +34,7 @@ checks:
   forbidden_claims: true
   synthetic_fixture_labelling: true
   large_generated_files: true
+  public_release_wording: true
 
 notes:
   - "Synthetic fixtures and smoke outputs are plumbing checks only."
