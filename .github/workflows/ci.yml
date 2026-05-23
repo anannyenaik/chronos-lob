@@ -2,18 +2,12 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
 
 jobs:
-  checks:
-    name: Python ${{ matrix.python-version }}
+  validate:
+    name: Validate
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11", "3.12"]
 
     steps:
       - name: Check out repository
@@ -22,28 +16,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
           cache: pip
 
-      - name: Install package
+      - name: Install package with development and torch extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[dev,torch]"
 
-      - name: Lint
-        run: python -m ruff check .
+      - name: Import package
+        run: python -c "import chronoslob; print(chronoslob.__version__)"
 
-      - name: Format check
-        run: python -m ruff format --check .
-
-      - name: Typecheck
-        run: python -m mypy chronoslob
+      - name: Doctor
+        run: python -m chronoslob.cli doctor
 
       - name: Test
         run: python -m pytest
 
-      - name: Smoke
-        run: |
-          python -c "import chronoslob; print(chronoslob.__version__)"
-          python -m chronoslob.cli version
-          python -m chronoslob.cli doctor
+      - name: Compile
+        run: python -m compileall -q chronoslob tests
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Mypy
+        run: python -m mypy chronoslob

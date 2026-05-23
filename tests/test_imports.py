@@ -32,6 +32,20 @@ def test_cli_module_imports() -> None:
     assert importlib.import_module("chronoslob.cli")
 
 
+def test_audit_utils_import() -> None:
+    audit = importlib.import_module("chronoslob.utils.audit")
+
+    for name in (
+        "AuditStatus",
+        "AuditIssue",
+        "AuditResult",
+        "PathInventory",
+        "collect_cli_commands",
+        "run_project_audit",
+    ):
+        assert hasattr(audit, name), f"chronoslob.utils.audit is missing {name}"
+
+
 def test_schema_modules_import() -> None:
     schemas = importlib.import_module("chronoslob.data.schemas")
     events = importlib.import_module("chronoslob.book.events")

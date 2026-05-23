@@ -7,13 +7,10 @@ Every future experiment should be reproducible from a config in this directory o
 tracked derivative of one. Financial data experiments should use temporal splits by
 default and must document label horizons and leakage controls.
 
-Current examples cover feature audits, label audits and Phase 5 split validation.
-`fi2010_split_audit.yaml` is a pre-modelling config for temporal split, purging,
-embargo and train-only fitting checks; it contains no model or performance target.
-`fi2010_baseline_smoke.yaml` documents a synthetic-fixture classical baseline
-smoke run. `fi2010_torch_dataset_smoke.yaml` documents a synthetic-fixture
-sequence DataLoader smoke run and `fi2010_deeplob_smoke.yaml` documents the
-DeepLOB-style supervised neural smoke run from Phase 7B. None of these
-smoke configs claim benchmark performance.
+Current examples cover feature audits, label audits, split validation, classical
+baselines, torch datasets, DeepLOB-style supervised smoke, event tokenisation,
+transformer smoke, self-supervised smoke, multi-task smoke, calibration smoke,
+execution-validation smoke, robustness-analysis smoke and full audit hardening.
+None of these smoke configs claim benchmark performance or market evidence.
 
 Do not create config files for fake or manually invented results.

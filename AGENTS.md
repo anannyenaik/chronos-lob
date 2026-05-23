@@ -157,5 +157,5 @@ When finishing a task, report:
 - Do not create fake result files, fake plots or fake notebooks.
 - Do not download data unless explicitly requested.
 - Do not include secrets, API keys or private data.
-- Do not implement FI-2010 loading, Binance ingestion, features, labels, models or
-  backtesting before the relevant phase.
+- Do not implement future data ingestion, modelling, backtesting, reporting or
+  packaging phases before the relevant prompt.

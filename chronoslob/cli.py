@@ -75,6 +75,53 @@ def _doctor_impl() -> None:
     Console().print(table)
 
 
+def _run_project_audit_impl(
+    *,
+    root: Path | None = None,
+    strict: bool = False,
+) -> int:
+    """Run the local repository audit and print a concise summary."""
+    from chronoslob.utils.audit import AuditStatus, run_project_audit
+
+    audit = run_project_audit(root)
+    inventory = audit.inventory
+
+    print("ChronosLOB project audit")
+    print(f"  root:                         {audit.root}")
+    print(f"  configs:                      {inventory.config_count}")
+    print(f"  reports:                      {inventory.report_count}")
+    print(f"  tests:                        {inventory.test_count}")
+    print(f"  CLI commands:                 {inventory.cli_command_count}")
+
+    for result in audit.results:
+        if result.name == "required_paths":
+            print(f"  required paths status:        {result.status.value}")
+        elif result.name == "forbidden_claims":
+            print(f"  forbidden-claim issue count:  {result.issue_count}")
+        elif result.name == "synthetic_labelling":
+            print(f"  synthetic-labelling issues:   {result.issue_count}")
+        elif result.name == "large_files":
+            print(f"  large-file issue count:       {result.issue_count}")
+
+    if audit.issue_count:
+        print("  issues:")
+        for result in audit.results:
+            for issue in result.issues:
+                print(f"    - {issue.format()}")
+    else:
+        print("  issues:                       none")
+
+    print("  network calls:                none performed")
+    print("  outputs:                      not written")
+    print(f"  final status:                 {audit.status.value}")
+
+    if audit.failure_count > 0:
+        return 1
+    if strict and audit.status != AuditStatus.PASS:
+        return 1
+    return 0
+
+
 def _is_synthetic_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return "tests" in parts and "fixtures" in parts
@@ -1624,7 +1671,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-calibration|run-calibration-smoke|"
             "inspect-execution-validation|run-execution-validation-smoke|"
             "inspect-analysis|run-robustness-analysis-smoke|"
-            "inspect-binance-replay] [...]"
+            "inspect-binance-replay|run-project-audit] [...]"
         )
         return 0
 
@@ -1635,6 +1682,15 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
     if command == "doctor":
         _doctor_impl()
         return 0
+    if command == "run-project-audit":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-project-audit",
+            description="Run local repository audit checks without writing outputs.",
+        )
+        parser.add_argument("--root", type=Path, default=None)
+        parser.add_argument("--strict", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _run_project_audit_impl(root=parsed.root, strict=parsed.strict)
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -2169,6 +2225,25 @@ if typer is not None:
         "--no-split-column",
         help="Treat the file as having no split column.",
     )
+    _AUDIT_ROOT_OPTION = typer.Option(
+        None,
+        "--root",
+        help="Optional repository root to audit.",
+    )
+    _AUDIT_STRICT_OPTION = typer.Option(
+        False,
+        "--strict",
+        help="Exit non-zero when warnings or failures are found.",
+    )
+
+    def run_project_audit(
+        root: Path | None = _AUDIT_ROOT_OPTION,
+        strict: bool = _AUDIT_STRICT_OPTION,
+    ) -> None:
+        """Run local repository audit checks without writing outputs."""
+        exit_code = _run_project_audit_impl(root=root, strict=strict)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
 
     def inspect_event_log(
         path: Path = _EVENT_LOG_PATH_OPTION,
@@ -3240,6 +3315,7 @@ else:
 if typer is not None:
     app.command()(version)
     app.command()(doctor)
+    app.command("run-project-audit")(run_project_audit)
     app.command("inspect-event-log")(inspect_event_log)
     app.command("inspect-event-tokens")(inspect_event_tokens)
     app.command("event-log-to-features")(event_log_to_features)
