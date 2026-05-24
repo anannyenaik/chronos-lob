@@ -73,27 +73,38 @@ or reproducing the platform.
 ## Calibration and Uncertainty
 
 - Modules: `chronoslob/models/calibration.py`,
-  `chronoslob/training/calibration.py`
-- Configs: `configs/experiments/calibration_smoke.yaml`
+  `chronoslob/training/calibration.py`,
+  `chronoslob/experiments/evidence.py`
+- Configs: `configs/experiments/calibration_smoke.yaml`,
+  `configs/experiments/fi2010_midprice_h10.yaml`
 - Tests: `tests/test_calibration_metrics.py`,
   `tests/test_confidence_filtering.py`,
-  `tests/test_temperature_scaling.py`
-- CLI: `inspect-calibration`
+  `tests/test_temperature_scaling.py`,
+  `tests/test_paper_experiment_evidence.py`
+- CLI: `inspect-calibration`, `run-paper-experiment`
 - Reports:
   [calibration_uncertainty](../reports/calibration_uncertainty.md)
+- Phase F artefact: `calibration_bins.csv` (reliability bins built
+  from held-out test predictions).
 
 ## Execution-Aware Validation
 
-- Modules: `chronoslob/backtest/`
-- Configs: `configs/experiments/execution_validation_smoke.yaml`
+- Modules: `chronoslob/backtest/`,
+  `chronoslob/experiments/evidence.py`
+- Configs: `configs/experiments/execution_validation_smoke.yaml`,
+  `configs/experiments/fi2010_midprice_h10.yaml`
 - Tests: `tests/test_execution_validation.py`,
   `tests/test_execution_costs.py`,
   `tests/test_latency_model.py`,
   `tests/test_turnover.py`,
-  `tests/test_risk_constraints.py`
-- CLI: `inspect-execution-validation`
+  `tests/test_risk_constraints.py`,
+  `tests/test_paper_experiment_evidence.py`
+- CLI: `inspect-execution-validation`, `run-paper-experiment`
 - Reports:
   [execution_aware_validation](../reports/execution_aware_validation.md)
+- Phase F artefact: `execution_sensitivity.csv` (cost-aware signal
+  quality rows under explicit cost assumptions; not a production
+  backtest).
 
 ## Robustness Analysis
 
@@ -126,11 +137,13 @@ or reproducing the platform.
 
 - Modules: `chronoslob/experiments/paper_runner.py`,
   `chronoslob/experiments/model_registry.py`,
-  `chronoslob/experiments/neural_adapters.py`
+  `chronoslob/experiments/neural_adapters.py`,
+  `chronoslob/experiments/evidence.py`
 - Configs: `configs/experiments/fi2010_midprice_h10.yaml`
 - Tests: `tests/test_paper_experiment_runner.py`,
   `tests/test_classical_paper_models.py`,
-  `tests/test_neural_paper_models.py`
+  `tests/test_neural_paper_models.py`,
+  `tests/test_paper_experiment_evidence.py`
 - CLI: `run-paper-experiment`
 - Docs: [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
 

@@ -330,18 +330,47 @@ reproduction unless the protocol matches closely enough.
 Purpose: compute calibration and execution-aware evidence from stored
 predictions without retraining or changing model selection.
 
-Files likely to be added or modified: `chronoslob/training/calibration.py`,
-`chronoslob/backtest/validation.py`, `chronoslob/cli.py`,
-`tests/test_empirical_calibration_execution.py`.
+Status: implemented inside the paper experiment runner. A new evidence
+helper module (`chronoslob/experiments/evidence.py`) builds
+per-model reliability bins from held-out test predictions and
+cost-aware signal-sensitivity rows from a simplified forward
+mid-price return proxy under explicit cost assumptions. The runner
+now emits two additional artefacts when the inputs are available:
+`calibration_bins.csv` and `execution_sensitivity.csv`. Both are
+referenced from `results.json` per model, recorded in the
+`evidence_streams` block, summarised in `runner_summary.json` and
+listed in the model card. When evidence cannot be computed (no
+probability outputs, missing price columns or forward horizon outside
+the held-out window) the runner records a clear warning and
+continues. The execution-sensitivity calculation is an explicit
+simplified proxy, not a production backtest, and does not claim
+tradable profitability or live execution.
 
-CLI command expected: `python -m chronoslob.cli build-empirical-evidence --experiment experiments/fi2010_midprice_h10`.
+Files added or modified: `chronoslob/experiments/evidence.py`,
+`chronoslob/experiments/paper_runner.py`,
+`chronoslob/experiments/fi2010_benchmark.py`,
+`configs/experiments/fi2010_midprice_h10.yaml`,
+`tests/test_paper_experiment_evidence.py`,
+`docs/PAPER_EXPERIMENTS.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md` and `docs/REPRODUCIBILITY.md`.
 
-Tests expected: Brier score, ECE, reliability bins, confidence filtering,
-turnover, cost sensitivity and latency sensitivity recomputed from stored
-predictions.
+CLI command: `python -m chronoslob.cli run-paper-experiment --config
+configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out
+PATH [--models majority[,...]] [--overwrite]`. The runner writes the
+evidence artefacts as part of the same invocation.
 
-Strict non-goals: do not refit calibrators on test predictions, hide execution
-assumptions or report cost-aware metrics as predictive accuracy.
+Tests expected: calibration bin rows are finite and have the expected
+columns, execution-sensitivity rows are finite and honour configured
+thresholds and costs, `results.json` references the new artefacts,
+`runner_summary.json` records the new metric groups, the model card
+mentions the artefacts without claiming trading performance,
+`inspect-experiment-artifacts` reports the optional evidence as
+present and a missing return-proxy column triggers a clear warning
+rather than a fabricated artefact.
+
+Strict non-goals: do not refit calibrators on test predictions, hide
+execution assumptions or report cost-aware metrics as predictive
+accuracy.
 
 ### Phase G: Plot generation and experiment inspection
 

@@ -27,6 +27,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from chronoslob.data.fi2010 import FI2010Config, FI2010Dataset, load_fi2010
 from chronoslob.data.schemas import ensure_utc_datetime
 from chronoslob.data.validation import validate_fi2010_dataset
+from chronoslob.experiments.evidence import (
+    CalibrationConfig,
+    ExecutionSensitivityConfig,
+)
 from chronoslob.experiments.manifests import (
     build_local_file_manifest,
     stable_json_dumps,
@@ -465,6 +469,10 @@ class FI2010BenchmarkConfig(BaseModel):
     execution_assumptions_planned: dict[str, Any] = Field(default_factory=dict)
     neural_settings: PaperNeuralSettings = Field(
         default_factory=PaperNeuralSettings
+    )
+    calibration: CalibrationConfig = Field(default_factory=CalibrationConfig)
+    execution_sensitivity: ExecutionSensitivityConfig = Field(
+        default_factory=ExecutionSensitivityConfig
     )
 
     @field_validator(

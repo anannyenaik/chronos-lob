@@ -42,6 +42,19 @@ from chronoslob.experiments.artifacts import (
     validate_experiment_directory,
     write_json_model,
 )
+from chronoslob.experiments.evidence import (
+    CalibrationBinRow,
+    CalibrationSummary,
+    ExecutionRow,
+    ExecutionSummary,
+    build_calibration_bins,
+    build_execution_sensitivity,
+    build_return_proxy_series,
+    summarise_calibration,
+    summarise_execution,
+    write_calibration_bins_csv,
+    write_execution_sensitivity_csv,
+)
 from chronoslob.experiments.fi2010_benchmark import (
     FI2010BenchmarkConfig,
     FI2010PreparationResult,
@@ -185,6 +198,9 @@ class PaperExperimentSummary(BaseModel):
     metric_names: list[str]
     predictive_metric_names: list[str]
     calibration_metric_names: list[str]
+    execution_metric_names: list[str] = Field(default_factory=list)
+    calibration_models: list[str] = Field(default_factory=list)
+    execution_models: list[str] = Field(default_factory=list)
     artefacts: dict[str, str]
     is_fixture: bool
     runner_version: str
@@ -541,6 +557,25 @@ def _confusion_matrix_payload(
     }
 
 
+def _resolve_execution_direction_map(
+    *,
+    config: FI2010BenchmarkConfig,
+    all_labels: Sequence[Any],
+) -> dict[str, int]:
+    """Resolve the predicted-class to direction-sign mapping for execution.
+
+    A config-provided map wins; otherwise the FI-2010 convention is used
+    as a sensible default for integer-coded labels.
+    """
+    from chronoslob.experiments.evidence import _default_direction_map
+
+    label_strings = [str(label) for label in all_labels]
+    config_map = config.execution_sensitivity.class_direction_map
+    if config_map is not None:
+        return {str(key): int(value) for key, value in config_map.items()}
+    return _default_direction_map(label_strings)
+
+
 def _build_environment_payload() -> dict[str, str]:
     return {
         "python": platform.python_version(),
@@ -564,10 +599,15 @@ def _write_model_card(
     metric_names: Sequence[str],
     predictive_metric_names: Sequence[str],
     calibration_metric_names: Sequence[str],
+    execution_metric_names: Sequence[str],
     artefacts: Mapping[str, str],
     code_commit: str | None,
     split_counts: Mapping[str, int],
     neural_settings: Mapping[str, Any],
+    calibration_models: Sequence[str],
+    execution_models: Sequence[str],
+    calibration_warning: str | None,
+    execution_warning: str | None,
 ) -> None:
     lines: list[str] = []
     lines.append(f"# Model Card: {config.experiment_name}")
@@ -694,7 +734,12 @@ def _write_model_card(
             lines.append(f"  - {name}")
     else:
         lines.append("  - none (no model emitted probabilities on this run)")
-    lines.append("- execution-aware metrics: not computed in this phase")
+    lines.append("- execution-aware sensitivity metrics emitted:")
+    if execution_metric_names and execution_metric_names != ["not_computed"]:
+        for name in execution_metric_names:
+            lines.append(f"  - {name}")
+    else:
+        lines.append("  - none on this run")
     lines.append("- all emitted metrics:")
     for metric in metric_names:
         lines.append(f"  - {metric}")
@@ -705,6 +750,53 @@ def _write_model_card(
     lines.append("")
     for key, relative_path in artefacts.items():
         lines.append(f"- `{relative_path}` ({key})")
+    lines.append("")
+    lines.append("## Calibration Evidence")
+    lines.append("")
+    if calibration_models:
+        lines.append(
+            "- reliability bins computed from held-out test predictions "
+            "and written to `calibration_bins.csv`."
+        )
+        lines.append(
+            "- models with calibration bins: "
+            + ", ".join(f"`{name}`" for name in calibration_models)
+        )
+        lines.append(
+            "- calibration artefacts are derived from stored prediction "
+            "rows; no calibrator is fitted on test data."
+        )
+    elif calibration_warning is not None:
+        lines.append(f"- not produced this run: {calibration_warning}")
+    else:
+        lines.append(
+            "- no model with usable probability output was available, so "
+            "no calibration bins were written."
+        )
+    lines.append("")
+    lines.append("## Execution-Aware Sensitivity")
+    lines.append("")
+    if execution_models:
+        lines.append(
+            "- cost-aware signal sensitivity rows are computed from "
+            "stored prediction rows under explicit simple assumptions "
+            "and are written to `execution_sensitivity.csv`."
+        )
+        lines.append(
+            "- models with sensitivity rows: "
+            + ", ".join(f"`{name}`" for name in execution_models)
+        )
+        lines.append(
+            "- this is a simplified proxy analysis, not a production "
+            "backtest, and does not claim tradable profitability or "
+            "live execution."
+        )
+    elif execution_warning is not None:
+        lines.append(f"- not produced this run: {execution_warning}")
+    else:
+        lines.append(
+            "- execution-aware sensitivity was not produced for this run."
+        )
     lines.append("")
     lines.append("## Leakage Controls")
     lines.append("")
@@ -735,9 +827,9 @@ def _write_model_card(
         "not an exact external-paper reproduction.",
     )
     lines.append(
-        "- Calibration evidence (reliability bins, recomputed ECE), "
-        "execution-sensitivity evidence and plot generation are not "
-        "produced in this phase.",
+        "- Plot generation remains tracked under a later phase; this "
+        "runner emits calibration and execution-sensitivity evidence "
+        "as CSV artefacts only.",
     )
     lines.append(
         "- Reported numbers are run-specific and must not be interpreted "
@@ -779,7 +871,11 @@ def _build_results(
     outcomes: Sequence[PaperModelOutcome],
     created_at: datetime,
     code_commit: str | None,
-) -> tuple[ExperimentResults, list[str], list[str], list[str]]:
+    calibration_models: Sequence[str],
+    execution_models: Sequence[str],
+    calibration_emitted: bool,
+    execution_emitted: bool,
+) -> tuple[ExperimentResults, list[str], list[str], list[str], list[str]]:
     metric_names: list[str] = []
     seen: set[str] = set()
     for outcome in outcomes:
@@ -803,18 +899,25 @@ def _build_results(
         code_commit=code_commit,
     )
 
+    calibration_lookup = set(calibration_models)
+    execution_lookup = set(execution_models)
     model_results: list[ModelResult] = []
     for outcome in outcomes:
+        artefacts: dict[str, str] = {
+            "predictions": "predictions.csv",
+            "confusion_matrix": "confusion_matrix.json",
+        }
+        if outcome.model_name in calibration_lookup:
+            artefacts["calibration_bins"] = "calibration_bins.csv"
+        if outcome.model_name in execution_lookup:
+            artefacts["execution_sensitivity"] = "execution_sensitivity.csv"
         model_results.append(
             ModelResult(
                 model_name=outcome.model_name,
                 split=outcome.split,
                 horizon=outcome.horizon,
                 metrics=outcome.metrics,
-                artefacts={
-                    "predictions": "predictions.csv",
-                    "confusion_matrix": "confusion_matrix.json",
-                },
+                artefacts=artefacts,
             )
         )
 
@@ -829,10 +932,23 @@ def _build_results(
     if not calibration_metrics:
         calibration_metrics = ["not_computed"]
 
+    if calibration_emitted and "calibration_bins" not in calibration_metrics:
+        calibration_metrics = [*calibration_metrics, "calibration_bins"]
+    execution_metrics: list[str]
+    if execution_emitted:
+        execution_metrics = [
+            "gross_signal_return_proxy",
+            "net_signal_return_proxy",
+            "turnover_proxy",
+            "hit_rate_proxy",
+        ]
+    else:
+        execution_metrics = ["not_computed"]
+
     evidence_streams = EvidenceStreams(
         predictive=predictive_metrics,
         calibration=calibration_metrics,
-        execution=["not_computed"],
+        execution=execution_metrics,
         robustness=[],
         systems=[],
     )
@@ -845,7 +961,13 @@ def _build_results(
         model_results=model_results,
         evidence_streams=evidence_streams,
     )
-    return results, metric_names, predictive_metrics, calibration_metrics
+    return (
+        results,
+        metric_names,
+        predictive_metrics,
+        calibration_metrics,
+        execution_metrics,
+    )
 
 
 def _evaluate_model(
@@ -1213,14 +1335,144 @@ def run_paper_experiment(
     predictions_path = resolved_out_dir / "predictions.csv"
     _write_predictions_csv(prediction_rows, predictions_path)
 
-    code_commit = _resolve_code_commit()
-    results, metric_names, predictive_metric_names, calibration_metric_names = (
-        _build_results(
-            config=config,
-            outcomes=outcomes,
-            created_at=created_at,
-            code_commit=code_commit,
+    predictions_frame = pd.DataFrame(prediction_rows)
+
+    calibration_bin_rows: list[CalibrationBinRow] = []
+    calibration_summaries: list[CalibrationSummary] = []
+    calibration_models: list[str] = []
+    calibration_warning: str | None = None
+    if config.calibration.enabled:
+        for outcome in outcomes:
+            if not outcome.emits_probabilities:
+                continue
+            model_rows = predictions_frame[
+                predictions_frame["model_name"] == outcome.model_name
+            ]
+            if model_rows.empty or "confidence" not in model_rows.columns:
+                continue
+            bins = build_calibration_bins(
+                model_rows,
+                model_name=outcome.model_name,
+                split=outcome.split,
+                n_bins=config.calibration.n_bins,
+            )
+            if not bins:
+                continue
+            calibration_bin_rows.extend(bins)
+            summary = summarise_calibration(bins)
+            if summary is not None:
+                calibration_summaries.append(summary)
+            calibration_models.append(outcome.model_name)
+        if not calibration_models:
+            calibration_warning = (
+                "no model in this run emitted usable probability output, "
+                "so calibration_bins.csv was not written"
+            )
+    else:
+        calibration_warning = "calibration.enabled is false in the config"
+
+    calibration_emitted = bool(calibration_bin_rows)
+    if calibration_emitted:
+        write_calibration_bins_csv(
+            calibration_bin_rows,
+            resolved_out_dir / "calibration_bins.csv",
         )
+
+    execution_rows: list[ExecutionRow] = []
+    execution_summaries: list[ExecutionSummary] = []
+    execution_models: list[str] = []
+    execution_warning: str | None = None
+    if config.execution_sensitivity.enabled:
+        return_proxy = build_return_proxy_series(
+            combined_frame,
+            horizon=config.horizon,
+            config=config.execution_sensitivity.return_proxy,
+        )
+        if return_proxy is None:
+            execution_warning = (
+                "execution-sensitivity skipped: forward mid-price proxy "
+                "could not be built from the supplied frame"
+            )
+        else:
+            direction_map = _resolve_execution_direction_map(
+                config=config,
+                all_labels=all_labels,
+            )
+            for outcome in outcomes:
+                if not outcome.emits_probabilities:
+                    continue
+                model_rows = predictions_frame[
+                    predictions_frame["model_name"] == outcome.model_name
+                ]
+                if model_rows.empty:
+                    continue
+                sensitivity_rows = build_execution_sensitivity(
+                    model_rows,
+                    model_name=outcome.model_name,
+                    split=outcome.split,
+                    return_proxy=return_proxy,
+                    config=config.execution_sensitivity,
+                    direction_map=direction_map,
+                )
+                if not sensitivity_rows:
+                    continue
+                execution_rows.extend(sensitivity_rows)
+                execution_summaries.append(
+                    summarise_execution(
+                        sensitivity_rows,
+                        model_name=outcome.model_name,
+                        split=outcome.split,
+                    )
+                )
+                execution_models.append(outcome.model_name)
+            if not execution_models and execution_warning is None:
+                execution_warning = (
+                    "execution-sensitivity skipped: no model emitted "
+                    "probabilities that could be combined with the "
+                    "forward-return proxy on this run"
+                )
+            if (
+                execution_models
+                and execution_warning is None
+                and all(
+                    int(row.eligible_predictions) == 0 for row in execution_rows
+                )
+            ):
+                execution_warning = (
+                    "execution-sensitivity rows recorded but every "
+                    "parameter combination has zero eligible predictions; "
+                    "the forward-return proxy is undefined on this "
+                    "split (typically because horizon exceeds the "
+                    "available rows beyond the test window)"
+                )
+    else:
+        execution_warning = (
+            "execution_sensitivity.enabled is false in the config"
+        )
+
+    execution_emitted = bool(execution_rows)
+    if execution_emitted:
+        write_execution_sensitivity_csv(
+            execution_rows,
+            resolved_out_dir / "execution_sensitivity.csv",
+        )
+
+    code_commit = _resolve_code_commit()
+    (
+        results,
+        metric_names,
+        predictive_metric_names,
+        calibration_metric_names,
+        execution_metric_names,
+    ) = _build_results(
+        config=config,
+        outcomes=outcomes,
+        created_at=created_at,
+        code_commit=code_commit,
+        calibration_models=calibration_models,
+        execution_models=execution_models,
+        calibration_emitted=calibration_emitted,
+        execution_emitted=execution_emitted,
     )
     results_path = resolved_out_dir / "results.json"
     write_json_model(results_path, results)
@@ -1243,6 +1495,10 @@ def run_paper_experiment(
         "confusion_matrix": "confusion_matrix.json",
         "runner_summary": "runner_summary.json",
     }
+    if calibration_emitted:
+        artefacts["calibration_bins"] = "calibration_bins.csv"
+    if execution_emitted:
+        artefacts["execution_sensitivity"] = "execution_sensitivity.csv"
 
     is_fixture = _is_fixture_path(resolved_data_path.resolve())
     split_counts = {
@@ -1266,11 +1522,33 @@ def run_paper_experiment(
         metric_names=metric_names,
         predictive_metric_names=predictive_metric_names,
         calibration_metric_names=calibration_metric_names,
+        execution_metric_names=execution_metric_names,
         artefacts=artefacts,
         code_commit=code_commit,
         split_counts=split_counts,
         neural_settings=config.neural_settings.model_dump(mode="json"),
+        calibration_models=calibration_models,
+        execution_models=execution_models,
+        calibration_warning=calibration_warning,
+        execution_warning=execution_warning,
     )
+
+    evidence_summary: dict[str, Any] = {
+        "calibration_artefact_written": calibration_emitted,
+        "calibration_models": list(calibration_models),
+        "execution_artefact_written": execution_emitted,
+        "execution_models": list(execution_models),
+        "calibration_warning": calibration_warning,
+        "execution_warning": execution_warning,
+        "calibration_summaries": [
+            summary.model_dump() for summary in calibration_summaries
+        ],
+        "execution_summaries": [
+            summary.model_dump() for summary in execution_summaries
+        ],
+        "calibration_config": config.calibration.model_dump(),
+        "execution_sensitivity_config": config.execution_sensitivity.model_dump(),
+    }
 
     runner_summary_payload: dict[str, Any] = {
         "experiment_name": config.experiment_name,
@@ -1285,6 +1563,7 @@ def run_paper_experiment(
         "metric_names": metric_names,
         "predictive_metric_names": predictive_metric_names,
         "calibration_metric_names": calibration_metric_names,
+        "execution_metric_names": execution_metric_names,
         "runner_version": PAPER_RUNNER_VERSION,
         "created_at": created_at.isoformat(),
         "is_fixture": is_fixture,
@@ -1292,6 +1571,7 @@ def run_paper_experiment(
         "environment": _build_environment_payload(),
         "split_counts": split_counts,
         "neural_settings": config.neural_settings.model_dump(mode="json"),
+        "evidence": evidence_summary,
         "model_metadata": {
             outcome.model_name: outcome.metadata
             for outcome in outcomes
@@ -1315,6 +1595,10 @@ def run_paper_experiment(
         warnings.append(
             f"requested model {skip.model_name!r} was skipped: {skip.reason}"
         )
+    if calibration_warning is not None:
+        warnings.append(f"calibration evidence note: {calibration_warning}")
+    if execution_warning is not None:
+        warnings.append(f"execution sensitivity note: {execution_warning}")
 
     return PaperExperimentSummary(
         experiment_name=config.experiment_name,
@@ -1329,6 +1613,9 @@ def run_paper_experiment(
         metric_names=metric_names,
         predictive_metric_names=predictive_metric_names,
         calibration_metric_names=calibration_metric_names,
+        execution_metric_names=execution_metric_names,
+        calibration_models=list(calibration_models),
+        execution_models=list(execution_models),
         artefacts=artefacts,
         is_fixture=is_fixture,
         runner_version=PAPER_RUNNER_VERSION,

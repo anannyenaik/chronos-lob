@@ -34,10 +34,17 @@ and does not invent benchmark evidence from synthetic fixtures.
    missing or invalid.
 
 The runner is deliberately limited: it does not refit calibrators on
-test predictions, does not select model hyperparameters on test data,
-does not produce plot files in this phase and does not produce
-execution-aware sensitivity records in this phase. Those evidence
-streams are tracked under later phases of the empirical upgrade plan.
+test predictions, does not select model hyperparameters on test data
+and does not produce plot files in this phase. Plot generation remains
+tracked under a later phase of the empirical upgrade plan.
+
+Phase F now adds calibration and execution-aware sensitivity evidence:
+when the runner produces predictions that contain confidence values it
+also writes `calibration_bins.csv`, and when a forward mid-price
+return proxy can be constructed from the supplied frame it writes
+`execution_sensitivity.csv`. Both artefacts are derived only from
+stored held-out prediction rows; no calibrator is fitted on test data
+and no model selection uses test data.
 
 ## Currently Supported Models
 
@@ -122,6 +129,8 @@ directory:
   data_manifest.json
   results.json
   predictions.csv
+  calibration_bins.csv        # emitted when models produce confidences
+  execution_sensitivity.csv   # emitted when a return proxy is available
   model_card.md
   confusion_matrix.json
   runner_summary.json
@@ -136,9 +145,15 @@ directory:
 
 `runner_summary.json` records the requested model list, the models
 that ran successfully, any skipped models with their reason, the
-metric groups emitted, the data source kind and split counts.
+metric groups emitted, the data source kind and split counts. Phase F
+adds an `evidence` block to `runner_summary.json` recording whether
+`calibration_bins.csv` and `execution_sensitivity.csv` were written,
+which models contributed to each artefact and any warning explaining
+why an evidence stream was skipped.
 
-Plots, calibration bins and execution sensitivity records are not
+When the runner emits calibration or execution evidence it also adds
+`calibration_bins.csv` and `execution_sensitivity.csv` to the output
+layout below and references them from `results.json`. Plots are not
 written in this phase; the artefact contract treats them as optional
 warnings, so their absence does not invalidate the directory.
 
@@ -154,13 +169,23 @@ separate via the `evidence_streams` field:
   `expected_calibration_error` and `mean_confidence`, and are emitted
   only for models that produce class probabilities. Models
   without `predict_proba` (currently `ridge`) record no calibration
-  metrics.
-- Execution-aware metrics are not computed in this phase.
+  metrics. Phase F additionally writes `calibration_bins.csv`
+  containing per-model reliability bins (`bin_index`, `bin_lower`,
+  `bin_upper`, `count`, `mean_confidence`, `accuracy`,
+  `confidence_gap`) computed from held-out test predictions.
+- Execution-aware sensitivity metrics include
+  `gross_signal_return_proxy`, `net_signal_return_proxy`,
+  `turnover_proxy` and `hit_rate_proxy`. They are emitted in
+  `execution_sensitivity.csv` whenever the configured forward
+  mid-price return proxy can be constructed from the supplied frame.
+  These are simplified proxy measurements under explicit cost
+  assumptions, not a production backtest.
 
-The `evidence_streams.execution` field is therefore set to
-`["not_computed"]` for the paper benchmark suite. This is an
-explicit placeholder until Phase F adds execution-sensitivity
-artefacts.
+When evidence cannot be produced (for example when no model emits
+probabilities, when the configured price columns are absent or when
+the forward horizon falls outside the available frame) the runner
+records a clear warning in `runner_summary.json` and the model card
+and continues with the remaining artefacts.
 
 ## How Artefact Validation Works
 
@@ -248,19 +273,45 @@ artefact validator can be exercised end-to-end. The numbers it
 produces describe fixture plumbing, not market microstructure. The
 model card emitted for any fixture run states this explicitly.
 
+## Calibration And Execution Evidence
+
+The calibration artefact is a per-model reliability table built from
+held-out test predictions only. Bin edges are deterministic
+(`n_bins` equal-width bins on the unit interval), empty bins are
+recorded with `count` of 0 and finite placeholder values, and the
+runner never refits any calibrator on test data.
+
+The execution-sensitivity artefact is a cost-aware signal-quality
+table. For each model that emits confidence values and each
+combination of `confidence_threshold`, `cost_bps` and `latency_steps`
+defined in the config, the runner records:
+
+- `eligible_predictions` — rows above the threshold with a valid
+  forward-return proxy.
+- `trade_count_proxy` — eligible rows with a non-zero directional
+  sign under the configured class-to-direction map.
+- `turnover_proxy` — sum of absolute trade signs across eligible rows.
+- `gross_signal_return_proxy` — mean of
+  `direction_sign × forward_mid_return_bps` over trade rows.
+- `cost_proxy` — the configured cost in basis points.
+- `net_signal_return_proxy` — `gross_signal_return_proxy − cost_proxy`.
+- `hit_rate_proxy` — fraction of eligible rows where the prediction
+  matched the realised label.
+
+The forward-return proxy is built from `bid_price_1` and `ask_price_1`
+on the supplied frame and the horizon comes from the experiment
+config. Where the proxy is unavailable for a row (for example the
+forward horizon falls outside the test window) the row is recorded
+with zero counts so the artefact remains traceable. This is an
+explicit simplified analysis, not a production backtest, not a
+tradable strategy and not live trading evidence.
+
 ## Out Of Scope For This Phase
 
 - SSL-pretrained transformer experiments inside `run-paper-experiment`.
   The model name is left out of the supported registry until
   train-only pretraining and supervised fine-tuning are implemented
   end to end.
-- Calibration evidence stream as a stored artefact (reliability bins,
-  recomputed ECE). The runner records `brier_score`, `log_loss`,
-  `expected_calibration_error` and `mean_confidence` in `results.json`
-  when probabilities are compatible with the label set, but no
-  separate `calibration_bins.csv` is generated in this phase.
-- Execution-sensitivity evidence stream (cost, latency, turnover
-  sensitivity). Tracked under Phase F.
 - Plot generation. Tracked under Phase G.
 - Ablation suites and systems benchmarks. Tracked under Phase H and
   Phase I.

@@ -92,10 +92,19 @@ floor. Neural settings are controlled by the `neural_settings` section
 of `configs/experiments/fi2010_midprice_h10.yaml` and default to CPU
 smoke-safe values.
 
-Synthetic fixture smoke runs (under `tests/fixtures/fi2010`) exist
-only to exercise the runner plumbing and are not benchmark evidence.
-Real benchmark evidence requires a local FI-2010 path and stored
-artefacts produced by this runner. See
+Phase F additionally emits two evidence artefacts from stored
+predictions: `calibration_bins.csv` (per-model reliability bins on
+held-out test rows) and `execution_sensitivity.csv` (cost-aware
+signal-quality rows over configured confidence thresholds, cost
+levels in basis points and latency steps). Calibration and execution
+sensitivity are configured under the `calibration` and
+`execution_sensitivity` blocks of the same config. Synthetic fixture
+smoke runs (under `tests/fixtures/fi2010`) exist only to exercise the
+runner plumbing and are not benchmark evidence; in particular the
+execution-sensitivity proxy is typically undefined on the tiny
+fixture because the forward horizon exceeds the available rows. Real
+benchmark evidence requires a local FI-2010 path and stored artefacts
+produced by this runner. See
 [PAPER_EXPERIMENTS.md](PAPER_EXPERIMENTS.md) for the full contract,
 metric groups, leakage controls and the tiny fixture smoke command.
 
