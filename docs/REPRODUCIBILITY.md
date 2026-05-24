@@ -83,10 +83,19 @@ any future paper experiment run.
 
 The paper experiment runner consumes the same FI-2010 preparation
 config and a local data path and writes a validated experiment
-artefact directory in one command. The currently supported model path
-is the majority-class baseline (and optionally logistic regression).
-See [PAPER_EXPERIMENTS.md](PAPER_EXPERIMENTS.md) for the full contract,
-limitations and the tiny fixture smoke command.
+artefact directory in one command. Phase D establishes the classical
+benchmark suite; the supported model short names are `majority`,
+`logistic`, `ridge`, `elastic_net`, `random_forest` and
+`gradient_boosting`. Multiple models can be selected with a
+comma-separated `--models` list and the `majority` baseline must
+always be included as the interpretable floor.
+
+Synthetic fixture smoke runs (under `tests/fixtures/fi2010`) exist
+only to exercise the runner plumbing and are not benchmark evidence.
+Real benchmark evidence requires a local FI-2010 path and stored
+artefacts produced by this runner. See
+[PAPER_EXPERIMENTS.md](PAPER_EXPERIMENTS.md) for the full contract,
+metric groups, leakage controls and the tiny fixture smoke command.
 
 ## Evidence Archive
 

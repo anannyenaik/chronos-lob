@@ -24,11 +24,21 @@ from chronoslob.experiments.manifests import (
     sha256_file,
     stable_json_dumps,
 )
+from chronoslob.experiments.model_registry import (
+    DEFAULT_PAPER_MODELS,
+    REQUIRED_PAPER_MODELS,
+    SUPPORTED_PAPER_MODELS,
+    PaperModelSpec,
+    build_paper_baseline_config,
+    get_paper_model_spec,
+    list_supported_paper_models,
+    normalise_paper_model_names,
+)
 from chronoslob.experiments.paper_runner import (
     PAPER_RUNNER_VERSION,
-    SUPPORTED_PAPER_MODELS,
     PaperExperimentSummary,
     PaperModelOutcome,
+    PaperModelSkip,
     run_paper_experiment,
 )
 from chronoslob.experiments.schemas import (
@@ -46,7 +56,9 @@ from chronoslob.experiments.schemas import (
 )
 
 __all__ = [
+    "DEFAULT_PAPER_MODELS",
     "PAPER_RUNNER_VERSION",
+    "REQUIRED_PAPER_MODELS",
     "SUPPORTED_PAPER_MODELS",
     "ArtifactKind",
     "DataManifest",
@@ -64,15 +76,21 @@ __all__ = [
     "ModelResult",
     "PaperExperimentSummary",
     "PaperModelOutcome",
+    "PaperModelSkip",
+    "PaperModelSpec",
     "SourceKind",
     "SplitSummary",
     "ValidationSummary",
     "build_directory_manifest",
     "build_local_file_manifest",
+    "build_paper_baseline_config",
     "expected_experiment_artifacts",
+    "get_paper_model_spec",
+    "list_supported_paper_models",
     "load_benchmark_config",
     "load_data_manifest",
     "load_results",
+    "normalise_paper_model_names",
     "prepare_fi2010_benchmark",
     "read_json_model",
     "run_paper_experiment",

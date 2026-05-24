@@ -4,21 +4,22 @@ This module turns a user-supplied local FI-2010-style file into a
 validated experiment artefact directory. It composes the existing
 benchmark preparation logic, classical baseline infrastructure and
 artefact contract so that one CLI invocation produces a complete,
-validated experiment record.
+validated experiment record covering several classical baselines.
 
 The runner is deliberately scoped:
 
-* It supports only a small initial set of classifiers (``majority`` and
-  optionally ``logistic``) so it can be exercised on the tiny synthetic
-  fixture without any neural infrastructure.
+* It runs the classical paper model registry (see
+  :mod:`chronoslob.experiments.model_registry`) and never trains
+  DeepLOB-style, transformer or self-supervised models.
 * It writes only the required artefacts plus row-level predictions and
-  (when computed) a confusion-matrix artefact.
+  a confusion-matrix artefact.
 * It never downloads data, never fits preprocessing or model-selection
   choices on validation or test data and never performs network calls.
 
-Stronger model families (random forest, DeepLOB-style, transformer,
-SSL) are out of scope for this phase; they are tracked under Phase D
-and Phase E of the empirical upgrade plan.
+The classical benchmark suite is the predictive-quality evidence
+stream. Calibration evidence (reliability bins, ECE recomputation
+from stored predictions), execution-sensitivity evidence and plot
+generation remain tracked under later phases.
 """
 
 from __future__ import annotations
@@ -48,16 +49,20 @@ from chronoslob.experiments.fi2010_benchmark import (
     prepare_fi2010_benchmark,
 )
 from chronoslob.experiments.manifests import stable_json_dumps
+from chronoslob.experiments.model_registry import (
+    REQUIRED_PAPER_MODELS,
+    SUPPORTED_PAPER_MODELS,
+    PaperModelSpec,
+    build_paper_baseline_config,
+    get_paper_model_spec,
+    normalise_paper_model_names,
+)
 from chronoslob.experiments.schemas import (
     EvidenceStreams,
     ExperimentConfigSummary,
     ExperimentResults,
     ExperimentValidationReport,
     ModelResult,
-)
-from chronoslob.models.baselines import (
-    BaselineModelConfig,
-    create_baseline_model,
 )
 from chronoslob.models.preprocessing import (
     TrainOnlyStandardScaler,
@@ -78,25 +83,40 @@ from chronoslob.training.splitters import (
 
 __all__ = [
     "PAPER_RUNNER_VERSION",
+    "REQUIRED_PAPER_MODELS",
     "SUPPORTED_PAPER_MODELS",
     "PaperExperimentSummary",
     "PaperModelOutcome",
+    "PaperModelSkip",
     "run_paper_experiment",
 ]
 
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
-PAPER_RUNNER_VERSION = "phase-c/paper-experiment-runner/v1"
-
-_MAJORITY_MODEL = "majority"
-_LOGISTIC_MODEL = "logistic"
-
-SUPPORTED_PAPER_MODELS: tuple[str, ...] = (
-    _MAJORITY_MODEL,
-    _LOGISTIC_MODEL,
-)
+PAPER_RUNNER_VERSION = "phase-d/paper-experiment-runner/v2"
 
 _FIXTURE_PATH_MARKERS = ("tests", "fixtures")
+
+_PREDICTIVE_METRIC_NAMES: frozenset[str] = frozenset(
+    {
+        "accuracy",
+        "macro_f1",
+        "weighted_f1",
+        "balanced_accuracy",
+        "matthews_corrcoef",
+        "n_samples",
+        "class_count_train",
+        "class_count_test",
+    }
+)
+_CALIBRATION_METRIC_NAMES: frozenset[str] = frozenset(
+    {
+        "brier_score",
+        "log_loss",
+        "expected_calibration_error",
+        "mean_confidence",
+    }
+)
 
 
 class PaperModelOutcome(BaseModel):
@@ -111,6 +131,7 @@ class PaperModelOutcome(BaseModel):
     metrics: dict[str, float]
     confusion_matrix: dict[str, Any]
     n_test_rows: int
+    emits_probabilities: bool
 
     @field_validator("model_name", "model_type", "split")
     @classmethod
@@ -129,6 +150,22 @@ class PaperModelOutcome(BaseModel):
         return value
 
 
+class PaperModelSkip(BaseModel):
+    """Record describing a requested model that could not be run."""
+
+    model_config = _MODEL_CONFIG
+
+    model_name: str
+    reason: str
+
+    @field_validator("model_name", "reason")
+    @classmethod
+    def _validate_non_empty(cls, value: str) -> str:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("skipped-model strings must be non-empty")
+        return value.strip()
+
+
 class PaperExperimentSummary(BaseModel):
     """Top-level summary returned by :func:`run_paper_experiment`."""
 
@@ -140,8 +177,12 @@ class PaperExperimentSummary(BaseModel):
     split_name: str
     data_path: str
     output_dir: str
+    requested_models: list[str]
     models_run: list[str]
+    skipped_models: list[PaperModelSkip] = Field(default_factory=list)
     metric_names: list[str]
+    predictive_metric_names: list[str]
+    calibration_metric_names: list[str]
     artefacts: dict[str, str]
     is_fixture: bool
     runner_version: str
@@ -179,34 +220,6 @@ class PaperExperimentSummary(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _normalise_models(models: Sequence[str] | None) -> tuple[str, ...]:
-    if models is None:
-        return (_MAJORITY_MODEL,)
-    cleaned: list[str] = []
-    seen: set[str] = set()
-    for model in models:
-        if not isinstance(model, str) or not model.strip():
-            raise ValueError("model names must be non-empty strings")
-        token = model.strip().lower()
-        if token not in SUPPORTED_PAPER_MODELS:
-            raise ValueError(
-                "unsupported model name: "
-                f"{model!r}; supported: {list(SUPPORTED_PAPER_MODELS)}"
-            )
-        if token in seen:
-            continue
-        cleaned.append(token)
-        seen.add(token)
-    if not cleaned:
-        raise ValueError("models must contain at least one supported entry")
-    if _MAJORITY_MODEL not in cleaned:
-        raise ValueError(
-            "the majority baseline must be included; "
-            "add 'majority' to --models",
-        )
-    return tuple(cleaned)
-
-
 def _is_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return all(marker in parts for marker in _FIXTURE_PATH_MARKERS)
@@ -214,14 +227,6 @@ def _is_fixture_path(path: Path) -> bool:
 
 def _resolve_code_commit() -> str | None:
     return get_git_commit()
-
-
-def _split_indices_to_lookup(split: SplitIndices) -> dict[str, list[int]]:
-    return {
-        "train": list(split.train),
-        "validation": list(split.validation),
-        "test": list(split.test),
-    }
 
 
 def _build_combined_frame(
@@ -264,22 +269,6 @@ def _feature_columns_from_frame(
     exclude.update(extra_exclude)
     candidate = frame.drop(columns=[col for col in exclude if col in frame.columns])
     return select_feature_columns(candidate, reject_label_like=True)
-
-
-def _baseline_config_for(model_name: str, *, seed: int) -> BaselineModelConfig:
-    if model_name == _MAJORITY_MODEL:
-        return BaselineModelConfig(
-            name="majority_class",
-            model_type="majority_class",
-            random_state=seed,
-        )
-    if model_name == _LOGISTIC_MODEL:
-        return BaselineModelConfig(
-            name="logistic_regression",
-            model_type="logistic_regression",
-            random_state=seed,
-        )
-    raise ValueError(f"unsupported model name in runner: {model_name!r}")
 
 
 def _safe_prepare_in_subdir(
@@ -386,7 +375,7 @@ def _predictions_for_split(
     model_name: str,
     labels: Sequence[Any],
     timestamps: Sequence[str] | None,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], np.ndarray, np.ndarray | None]:
     predictions = np.asarray(model.predict(x))
     proba = model.predict_proba(x)
     label_order = [str(label) for label in labels]
@@ -416,7 +405,7 @@ def _predictions_for_split(
                 row[f"probability_{class_label}"] = value
             row["confidence"] = float(np.max(row_probabilities))
         rows.append(row)
-    return rows
+    return rows, predictions, aligned_probabilities
 
 
 def _to_json_value(value: Any) -> Any:
@@ -472,11 +461,61 @@ def _write_predictions_csv(rows: Sequence[Mapping[str, Any]], path: Path) -> Non
     frame.to_csv(path, index=False)
 
 
-def _build_confusion_matrix_payload(
+def _expected_calibration_error(
+    *,
+    y_true: np.ndarray,
+    probabilities: np.ndarray,
+    labels: Sequence[Any],
+    n_bins: int = 10,
+) -> float:
+    """Compute equal-width expected calibration error.
+
+    The bin width is fixed at ``1 / n_bins`` over the unit interval and
+    bin assignment is performed on the per-row top-class probability.
+    """
+    if probabilities.ndim != 2:
+        raise ValueError("probabilities must be 2D for ECE")
+    confidences = probabilities.max(axis=1)
+    predicted_indices = probabilities.argmax(axis=1)
+    label_array = np.asarray(list(labels))
+    predicted_labels = label_array[predicted_indices]
+    accuracies = (predicted_labels == np.asarray(y_true)).astype(float)
+    bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
+    total = float(len(y_true))
+    if total <= 0:
+        return 0.0
+    ece = 0.0
+    for index in range(n_bins):
+        lo = bin_edges[index]
+        hi = bin_edges[index + 1]
+        if index == 0:
+            in_bin = (confidences >= lo) & (confidences <= hi)
+        else:
+            in_bin = (confidences > lo) & (confidences <= hi)
+        if not bool(in_bin.any()):
+            continue
+        bin_size = float(in_bin.sum())
+        bin_acc = float(accuracies[in_bin].mean())
+        bin_conf = float(confidences[in_bin].mean())
+        ece += abs(bin_acc - bin_conf) * bin_size / total
+    return ece
+
+
+def _confusion_matrix_payload(
     outcomes: Sequence[PaperModelOutcome],
 ) -> dict[str, Any]:
     return {
-        outcome.model_name: outcome.confusion_matrix for outcome in outcomes
+        "models": [
+            {
+                "model_name": outcome.model_name,
+                "model_type": outcome.model_type,
+                "split": outcome.split,
+                "horizon": outcome.horizon,
+                "labels": outcome.confusion_matrix["labels"],
+                "matrix": outcome.confusion_matrix["matrix"],
+            }
+            for outcome in outcomes
+        ]
     }
 
 
@@ -493,28 +532,36 @@ def _write_model_card(
     path: Path,
     config: FI2010BenchmarkConfig,
     outcomes: Sequence[PaperModelOutcome],
+    requested_models: Sequence[str],
+    skipped_models: Sequence[PaperModelSkip],
     data_path: Path,
+    data_source_kind: str,
     data_sha256: str | None,
     is_fixture: bool,
     seed: int,
     metric_names: Sequence[str],
+    predictive_metric_names: Sequence[str],
+    calibration_metric_names: Sequence[str],
+    artefacts: Mapping[str, str],
     code_commit: str | None,
+    split_counts: Mapping[str, int],
 ) -> None:
     lines: list[str] = []
     lines.append(f"# Model Card: {config.experiment_name}")
     lines.append("")
     if is_fixture:
         lines.append(
-            "Status: synthetic fixture smoke run. "
-            "This artefact set exercises the paper experiment runner on a "
-            "tiny synthetic fixture and is not benchmark evidence, market "
-            "evidence or execution evidence.",
+            "Status: synthetic fixture smoke run of the classical "
+            "benchmark suite. This artefact set exercises the paper "
+            "experiment runner on a tiny synthetic fixture and is not "
+            "benchmark evidence, market evidence or execution evidence.",
         )
     else:
         lines.append(
-            "Status: locally executed paper experiment run. "
-            "Inspect the data manifest, split summary and limitations "
-            "before treating the metrics as benchmark evidence.",
+            "Status: locally executed paper experiment run of the "
+            "classical benchmark suite. Inspect the data manifest, "
+            "split summary and limitations before treating the metrics "
+            "as benchmark evidence.",
         )
     lines.append("")
     lines.append("## Experiment")
@@ -532,37 +579,80 @@ def _write_model_card(
     lines.append("## Data")
     lines.append("")
     lines.append(f"- dataset: `{config.dataset_name}`")
+    lines.append(f"- data source kind: `{data_source_kind}`")
     lines.append(f"- local source path: `{data_path}`")
     if data_sha256 is not None:
         lines.append(f"- source SHA-256: `{data_sha256}`")
     if is_fixture:
         lines.append(
             "- fixture flag: this path lives under `tests/fixtures/` and "
-            "is a synthetic FI-2010-like file used only for plumbing checks.",
+            "is a synthetic FI-2010-like file used only for plumbing "
+            "checks.",
         )
+    lines.append("")
+    lines.append("## Split Design")
+    lines.append("")
+    total_rows = int(split_counts.get("n_rows", 0))
+    train_rows = int(split_counts.get("n_train", 0))
+    validation_rows = int(split_counts.get("n_validation", 0))
+    test_rows = int(split_counts.get("n_test", 0))
+    lines.append(f"- total rows loaded: {total_rows}")
+    lines.append(f"- train rows: {train_rows}")
+    lines.append(f"- validation rows: {validation_rows}")
+    lines.append(f"- test rows: {test_rows}")
+    lines.append(
+        "- split is constructed by the deterministic temporal splitter; "
+        "no shuffling, no stratification and no test-row use during "
+        "preprocessing or model fitting.",
+    )
     lines.append("")
     lines.append("## Models")
     lines.append("")
-    for outcome in outcomes:
-        lines.append(
-            f"- `{outcome.model_name}` (type `{outcome.model_type}`) on "
-            f"the `{outcome.split}` split with {outcome.n_test_rows} rows",
-        )
+    lines.append("- requested:")
+    for name in requested_models:
+        lines.append(f"  - `{name}`")
+    lines.append("- successfully run:")
+    if outcomes:
+        for outcome in outcomes:
+            lines.append(
+                f"  - `{outcome.model_name}` (type `{outcome.model_type}`) "
+                f"on the `{outcome.split}` split with {outcome.n_test_rows} "
+                "test rows",
+            )
+    else:
+        lines.append("  - none")
+    lines.append("- skipped:")
+    if skipped_models:
+        for skip in skipped_models:
+            lines.append(f"  - `{skip.model_name}`: {skip.reason}")
+    else:
+        lines.append("  - none")
     lines.append("")
-    lines.append("## Metrics Emitted")
+    lines.append("## Metric Groups")
     lines.append("")
+    lines.append("- predictive metrics emitted:")
+    if predictive_metric_names:
+        for name in predictive_metric_names:
+            lines.append(f"  - {name}")
+    else:
+        lines.append("  - none")
+    lines.append("- calibration metrics emitted:")
+    if calibration_metric_names:
+        for name in calibration_metric_names:
+            lines.append(f"  - {name}")
+    else:
+        lines.append("  - none (no model emitted probabilities on this run)")
+    lines.append("- execution-aware metrics: not computed in this phase")
+    lines.append("- all emitted metrics:")
     for metric in metric_names:
-        lines.append(f"- {metric}")
+        lines.append(f"  - {metric}")
     if not metric_names:
-        lines.append("- none")
+        lines.append("  - none")
     lines.append("")
     lines.append("## Artefacts")
     lines.append("")
-    lines.append("- `config.yaml`")
-    lines.append("- `data_manifest.json`")
-    lines.append("- `results.json`")
-    lines.append("- `predictions.csv`")
-    lines.append("- `model_card.md`")
+    for key, relative_path in artefacts.items():
+        lines.append(f"- `{relative_path}` ({key})")
     lines.append("")
     lines.append("## Leakage Controls")
     lines.append("")
@@ -571,24 +661,31 @@ def _write_model_card(
         "temporal splitter; no random or stratified shuffling is used.",
     )
     lines.append(
-        "- Train-only standardisation is applied for logistic regression; "
-        "the majority baseline never inspects feature values.",
+        "- Per-model train-only feature standardisation is applied for "
+        "models that require it; standardisation statistics are never "
+        "fit on validation or test rows.",
     )
     lines.append(
-        "- No model-selection choice, calibrator or bucket boundary is "
-        "fitted on validation or test rows in this phase.",
+        "- No model-selection choice, calibrator, bucket boundary or "
+        "threshold is fitted on validation or test rows in this phase.",
+    )
+    lines.append(
+        "- Label, split and timestamp columns are excluded from the "
+        "feature matrix.",
     )
     lines.append("")
     lines.append("## Limitations")
     lines.append("")
     lines.append(
-        "- Only the majority-class baseline (and optionally logistic "
-        "regression) is supported in this phase. Random forest, DeepLOB "
-        "and transformer baselines are tracked under later phases.",
+        "- This phase exposes only the classical benchmark suite "
+        "(`majority`, `logistic`, `ridge`, `elastic_net`, "
+        "`random_forest`, `gradient_boosting`). DeepLOB-style, "
+        "transformer and self-supervised variants remain out of scope.",
     )
     lines.append(
-        "- Calibration, execution-sensitivity, robustness and systems "
-        "evidence streams are not produced in this phase.",
+        "- Calibration evidence (reliability bins, recomputed ECE), "
+        "execution-sensitivity evidence and plot generation are not "
+        "produced in this phase.",
     )
     lines.append(
         "- Reported numbers are run-specific and must not be interpreted "
@@ -597,7 +694,7 @@ def _write_model_card(
     if is_fixture:
         lines.append(
             "- The data source is a synthetic fixture; metrics describe "
-            "fixture plumbing only.",
+            "fixture plumbing only and are not benchmark evidence.",
         )
     lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -630,7 +727,7 @@ def _build_results(
     outcomes: Sequence[PaperModelOutcome],
     created_at: datetime,
     code_commit: str | None,
-) -> ExperimentResults:
+) -> tuple[ExperimentResults, list[str], list[str], list[str]]:
     metric_names: list[str] = []
     seen: set[str] = set()
     for outcome in outcomes:
@@ -641,6 +738,7 @@ def _build_results(
     if not metric_names:
         metric_names = ["accuracy", "macro_f1"]
 
+    primary_metric = "macro_f1" if "macro_f1" in seen else metric_names[0]
     config_summary = ExperimentConfigSummary(
         experiment_name=config.experiment_name,
         task_name=config.task_name,
@@ -648,7 +746,7 @@ def _build_results(
         split_name=config.split_name,
         seed=config.seed,
         model_names=[outcome.model_name for outcome in outcomes],
-        primary_metric="macro_f1" if "macro_f1" in seen else metric_names[0],
+        primary_metric=primary_metric,
         created_at=created_at,
         code_commit=code_commit,
     )
@@ -661,25 +759,18 @@ def _build_results(
                 split=outcome.split,
                 horizon=outcome.horizon,
                 metrics=outcome.metrics,
-                artefacts={"predictions": "predictions.csv"},
+                artefacts={
+                    "predictions": "predictions.csv",
+                    "confusion_matrix": "confusion_matrix.json",
+                },
             )
         )
 
-    predictive_metric_names: frozenset[str] = frozenset(
-        {
-            "accuracy",
-            "macro_f1",
-            "weighted_f1",
-            "balanced_accuracy",
-            "matthews_corrcoef",
-            "n_samples",
-        }
-    )
     predictive_metrics = [
-        name for name in metric_names if name in predictive_metric_names
+        name for name in metric_names if name in _PREDICTIVE_METRIC_NAMES
     ]
     calibration_metrics = [
-        name for name in metric_names if name in {"brier_score", "log_loss"}
+        name for name in metric_names if name in _CALIBRATION_METRIC_NAMES
     ]
     if not predictive_metrics:
         predictive_metrics = ["accuracy"]
@@ -694,7 +785,7 @@ def _build_results(
         systems=[],
     )
 
-    return ExperimentResults(
+    results = ExperimentResults(
         experiment_name=config.experiment_name,
         task_name=config.task_name,
         created_at=created_at,
@@ -702,6 +793,92 @@ def _build_results(
         model_results=model_results,
         evidence_streams=evidence_streams,
     )
+    return results, metric_names, predictive_metrics, calibration_metrics
+
+
+def _evaluate_model(
+    *,
+    spec: PaperModelSpec,
+    seed: int,
+    train_features_raw: np.ndarray,
+    test_features_raw: np.ndarray,
+    train_labels: np.ndarray,
+    test_labels: np.ndarray,
+    all_labels: Sequence[Any],
+    class_count_train: int,
+    class_count_test: int,
+    test_indices: Sequence[int],
+    horizon: int,
+    test_timestamps: Sequence[str] | None,
+) -> tuple[PaperModelOutcome, list[dict[str, Any]]]:
+    """Fit one classical model and produce its outcome and prediction rows."""
+    baseline_config = build_paper_baseline_config(spec.name, seed=seed)
+    # Late import keeps the baseline factory in one place.
+    from chronoslob.models.baselines import create_baseline_model
+
+    model = create_baseline_model(baseline_config)
+
+    if spec.requires_standardisation:
+        scaler = TrainOnlyStandardScaler()
+        train_x = scaler.fit_transform(train_features_raw)
+        inference_x = scaler.transform(test_features_raw)
+    else:
+        train_x = train_features_raw
+        inference_x = test_features_raw
+
+    model.fit(train_x, train_labels)
+    predictions = np.asarray(model.predict(inference_x))
+    proba_raw = model.predict_proba(inference_x)
+    proba = np.asarray(proba_raw, dtype=float) if proba_raw is not None else None
+
+    metrics = compute_classification_metrics(
+        y_true=test_labels.tolist(),
+        y_pred=predictions.tolist(),
+        y_proba=proba,
+        labels=all_labels,
+    )
+    confusion = confusion_matrix_as_dict(
+        y_true=test_labels.tolist(),
+        y_pred=predictions.tolist(),
+        labels=all_labels,
+    )
+
+    metric_subset = _select_metric_subset(metrics.to_dict())
+    metric_subset["class_count_train"] = float(class_count_train)
+    metric_subset["class_count_test"] = float(class_count_test)
+    if proba is not None:
+        confidences = proba.max(axis=1)
+        metric_subset["mean_confidence"] = float(confidences.mean())
+        metric_subset["expected_calibration_error"] = float(
+            _expected_calibration_error(
+                y_true=test_labels,
+                probabilities=proba,
+                labels=all_labels,
+            )
+        )
+
+    rows, _, _ = _predictions_for_split(
+        model=model,
+        x=inference_x,
+        y_true=test_labels,
+        row_indices=test_indices,
+        split_name="test",
+        model_name=spec.name,
+        labels=all_labels,
+        timestamps=test_timestamps,
+    )
+
+    outcome = PaperModelOutcome(
+        model_name=spec.name,
+        model_type=spec.model_type,
+        split="test",
+        horizon=horizon,
+        metrics=metric_subset,
+        confusion_matrix=confusion,
+        n_test_rows=len(test_labels),
+        emits_probabilities=spec.emits_probabilities and proba is not None,
+    )
+    return outcome, rows
 
 
 # ---------------------------------------------------------------------------
@@ -728,7 +905,10 @@ def run_paper_experiment(
     out_dir:
         Directory where experiment artefacts will be written.
     models:
-        Optional sequence of model names. Defaults to ``("majority",)``.
+        Optional sequence of model short names from
+        :data:`SUPPORTED_PAPER_MODELS`. Defaults to ``("majority",)``.
+        Names are case-folded and de-duplicated. The ``majority``
+        baseline must always be present.
     overwrite:
         When ``False``, refuse to write into an existing directory that
         already contains artefacts. When ``True``, the target directory
@@ -758,7 +938,7 @@ def run_paper_experiment(
         )
 
     config = load_benchmark_config(resolved_config_path)
-    model_tokens = _normalise_models(models)
+    requested_models = normalise_paper_model_names(models)
     created_at = datetime.now(UTC)
 
     if resolved_out_dir.exists():
@@ -841,67 +1021,55 @@ def run_paper_experiment(
         target_column=config.label_name,
     )
 
-    standardise_required = _LOGISTIC_MODEL in model_tokens
-    if standardise_required:
-        scaler = TrainOnlyStandardScaler()
-        x_train_scaled = scaler.fit_transform(train_features.x)
-        x_test_scaled = scaler.transform(test_features.x)
-    else:
-        x_train_scaled = train_features.x
-        x_test_scaled = test_features.x
-
     test_timestamps = _timestamps_for_indices(
         combined_frame,
         timestamp_column=config.timestamp_column,
         indices=split.test,
     )
 
+    all_labels = list(all_target.classes or [])
+    class_count_train = len(train_target.classes or [])
+    class_count_test = len(test_target.classes or [])
+
     outcomes: list[PaperModelOutcome] = []
+    skipped: list[PaperModelSkip] = []
     prediction_rows: list[dict[str, Any]] = []
 
-    for model_token in model_tokens:
-        baseline_config = _baseline_config_for(model_token, seed=config.seed)
-        model = create_baseline_model(baseline_config)
-        if model_token == _LOGISTIC_MODEL:
-            model.fit(x_train_scaled, train_target.y)
-            inference_x = x_test_scaled
-        else:
-            model.fit(train_features.x, train_target.y)
-            inference_x = test_features.x
-
-        metrics = compute_classification_metrics(
-            y_true=test_target.y.tolist(),
-            y_pred=np.asarray(model.predict(inference_x)).tolist(),
-            y_proba=model.predict_proba(inference_x),
-            labels=all_target.classes,
-        )
-        confusion = confusion_matrix_as_dict(
-            y_true=test_target.y.tolist(),
-            y_pred=np.asarray(model.predict(inference_x)).tolist(),
-            labels=all_target.classes,
-        )
-        outcome = PaperModelOutcome(
-            model_name=baseline_config.name,
-            model_type=baseline_config.model_type,
-            split="test",
-            horizon=config.horizon,
-            metrics=_select_metric_subset(metrics.to_dict()),
-            confusion_matrix=confusion,
-            n_test_rows=len(test_target.y),
-        )
+    for model_token in requested_models:
+        spec = get_paper_model_spec(model_token)
+        try:
+            outcome, rows = _evaluate_model(
+                spec=spec,
+                seed=config.seed,
+                train_features_raw=train_features.x,
+                test_features_raw=test_features.x,
+                train_labels=train_target.y,
+                test_labels=test_target.y,
+                all_labels=all_labels,
+                class_count_train=class_count_train,
+                class_count_test=class_count_test,
+                test_indices=split.test,
+                horizon=config.horizon,
+                test_timestamps=test_timestamps,
+            )
+        except (ValueError, RuntimeError, TypeError) as exc:
+            if spec.name in REQUIRED_PAPER_MODELS:
+                raise
+            skipped.append(
+                PaperModelSkip(
+                    model_name=spec.name,
+                    reason=f"{type(exc).__name__}: {exc}",
+                )
+            )
+            continue
         outcomes.append(outcome)
-
-        rows = _predictions_for_split(
-            model=model,
-            x=inference_x,
-            y_true=test_target.y,
-            row_indices=split.test,
-            split_name="test",
-            model_name=baseline_config.name,
-            labels=all_target.classes or [],
-            timestamps=test_timestamps,
-        )
         prediction_rows.extend(rows)
+
+    if not outcomes:
+        raise RuntimeError(
+            "all requested paper-runner models were skipped; "
+            f"skipped: {[skip.model_name for skip in skipped]}",
+        )
 
     # Move data_manifest.json out of preparation/ into the experiment root.
     manifest_source = preparation.output_dir / "data_manifest.json"
@@ -923,43 +1091,61 @@ def run_paper_experiment(
     _write_predictions_csv(prediction_rows, predictions_path)
 
     code_commit = _resolve_code_commit()
-    results = _build_results(
-        config=config,
-        outcomes=outcomes,
-        created_at=created_at,
-        code_commit=code_commit,
+    results, metric_names, predictive_metric_names, calibration_metric_names = (
+        _build_results(
+            config=config,
+            outcomes=outcomes,
+            created_at=created_at,
+            code_commit=code_commit,
+        )
     )
     results_path = resolved_out_dir / "results.json"
     write_json_model(results_path, results)
 
     confusion_path = resolved_out_dir / "confusion_matrix.json"
     confusion_path.write_text(
-        stable_json_dumps(_build_confusion_matrix_payload(outcomes)),
+        stable_json_dumps(_confusion_matrix_payload(outcomes)),
         encoding="utf-8",
     )
 
-    metric_names: list[str] = []
-    seen_metrics: set[str] = set()
-    for outcome in outcomes:
-        for name in outcome.metrics:
-            if name not in seen_metrics:
-                metric_names.append(name)
-                seen_metrics.add(name)
-
     data_sha256 = preparation.data_manifest.source_sha256
+    data_source_kind = preparation.data_manifest.source_kind.value
 
-    model_card_path = resolved_out_dir / "model_card.md"
+    artefacts: dict[str, str] = {
+        "config": "config.yaml",
+        "data_manifest": "data_manifest.json",
+        "results": "results.json",
+        "predictions": "predictions.csv",
+        "model_card": "model_card.md",
+        "confusion_matrix": "confusion_matrix.json",
+        "runner_summary": "runner_summary.json",
+    }
+
     is_fixture = _is_fixture_path(resolved_data_path.resolve())
+    split_counts = {
+        "n_rows": n_rows,
+        "n_train": split.n_train,
+        "n_validation": split.n_validation,
+        "n_test": split.n_test,
+    }
+    model_card_path = resolved_out_dir / "model_card.md"
     _write_model_card(
         path=model_card_path,
         config=config,
         outcomes=outcomes,
+        requested_models=requested_models,
+        skipped_models=skipped,
         data_path=resolved_data_path,
+        data_source_kind=data_source_kind,
         data_sha256=data_sha256,
         is_fixture=is_fixture,
         seed=config.seed,
         metric_names=metric_names,
+        predictive_metric_names=predictive_metric_names,
+        calibration_metric_names=calibration_metric_names,
+        artefacts=artefacts,
         code_commit=code_commit,
+        split_counts=split_counts,
     )
 
     runner_summary_payload: dict[str, Any] = {
@@ -969,18 +1155,18 @@ def run_paper_experiment(
         "split_name": config.split_name,
         "data_path": str(resolved_data_path),
         "output_dir": str(resolved_out_dir),
-        "models_run": list(model_tokens),
+        "requested_models": list(requested_models),
+        "models_run": [outcome.model_name for outcome in outcomes],
+        "skipped_models": [skip.model_dump() for skip in skipped],
         "metric_names": metric_names,
+        "predictive_metric_names": predictive_metric_names,
+        "calibration_metric_names": calibration_metric_names,
         "runner_version": PAPER_RUNNER_VERSION,
         "created_at": created_at.isoformat(),
         "is_fixture": is_fixture,
+        "data_source_kind": data_source_kind,
         "environment": _build_environment_payload(),
-        "split_counts": {
-            "n_rows": n_rows,
-            "n_train": split.n_train,
-            "n_validation": split.n_validation,
-            "n_test": split.n_test,
-        },
+        "split_counts": split_counts,
     }
     (resolved_out_dir / "runner_summary.json").write_text(
         stable_json_dumps(runner_summary_payload),
@@ -994,15 +1180,11 @@ def run_paper_experiment(
             f"paper experiment artefacts failed validation; missing: {missing}",
         )
 
-    artefacts: dict[str, str] = {
-        "config": "config.yaml",
-        "data_manifest": "data_manifest.json",
-        "results": "results.json",
-        "predictions": "predictions.csv",
-        "model_card": "model_card.md",
-        "confusion_matrix": "confusion_matrix.json",
-        "runner_summary": "runner_summary.json",
-    }
+    warnings: list[str] = list(validation.warnings)
+    for skip in skipped:
+        warnings.append(
+            f"requested model {skip.model_name!r} was skipped: {skip.reason}"
+        )
 
     return PaperExperimentSummary(
         experiment_name=config.experiment_name,
@@ -1011,15 +1193,19 @@ def run_paper_experiment(
         split_name=config.split_name,
         data_path=str(resolved_data_path),
         output_dir=str(resolved_out_dir),
-        models_run=list(model_tokens),
+        requested_models=list(requested_models),
+        models_run=[outcome.model_name for outcome in outcomes],
+        skipped_models=skipped,
         metric_names=metric_names,
+        predictive_metric_names=predictive_metric_names,
+        calibration_metric_names=calibration_metric_names,
         artefacts=artefacts,
         is_fixture=is_fixture,
         runner_version=PAPER_RUNNER_VERSION,
         created_at=created_at,
         validation=validation,
         outcomes=outcomes,
-        warnings=list(validation.warnings),
+        warnings=warnings,
     )
 
 

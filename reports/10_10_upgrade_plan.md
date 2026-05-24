@@ -251,18 +251,44 @@ data or merge predictive, calibration and execution metrics into one score.
 
 Purpose: establish leakage-safe classical baselines as the benchmark floor.
 
-Files likely to be added or modified: `chronoslob/training/baseline_experiment.py`,
-`chronoslob/training/paper_experiment.py`, `configs/experiments/fi2010_classical_baselines.yaml`,
-`tests/test_fi2010_classical_baselines.py`.
+Status: implemented by extending the paper experiment runner with a
+classical model registry under `chronoslob/experiments/model_registry.py`.
+The runner now supports `majority`, `logistic`, `ridge`, `elastic_net`,
+`random_forest` and `gradient_boosting` as short model names exposed
+via `--models`. The combined artefact set is unchanged
+(`config.yaml`, `data_manifest.json`, `results.json`,
+`predictions.csv`, `model_card.md`, `confusion_matrix.json`,
+`runner_summary.json`) and `results.json` keeps predictive and
+calibration metric groups conceptually separate via
+`evidence_streams`.
 
-CLI command expected: `python -m chronoslob.cli run-fi2010-classical-baselines --config configs/experiments/fi2010_classical_baselines.yaml`.
+Files added or modified: `chronoslob/experiments/model_registry.py`,
+`chronoslob/experiments/paper_runner.py`,
+`chronoslob/experiments/__init__.py`,
+`chronoslob/experiments/fi2010_benchmark.py`,
+`chronoslob/cli.py`, `configs/experiments/fi2010_midprice_h10.yaml`,
+`tests/test_paper_experiment_runner.py`,
+`tests/test_classical_paper_models.py`,
+`docs/PAPER_EXPERIMENTS.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md` and `docs/REPRODUCIBILITY.md`.
 
-Tests expected: majority-class, logistic-regression and random-forest runs
-with train-only standardisation, validation/test separation and stored
-predictions.
+CLI command: `python -m chronoslob.cli run-paper-experiment --config
+configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out PATH
+[--models majority[,logistic,ridge,elastic_net,random_forest,gradient_boosting]]
+[--overwrite]`.
 
-Strict non-goals: do not tune on test data, add broad hyperparameter searches
-or present fixture metrics as benchmark performance.
+Tests expected: registry recognises every supported classical name,
+unsupported names fail clearly, comma-separated CLI lists work, a
+multi-model run writes predictions, results and confusion-matrix
+entries per model, probabilities are finite where emitted and sum to
+one, preprocessing is fit on the training split only, the output
+directory validates under the artefact contract and overwrite
+protection is preserved.
+
+Strict non-goals: do not tune on test data, add broad hyperparameter
+searches, treat synthetic fixture smoke runs as benchmark evidence or
+present per-model probabilities for models that do not natively emit
+them.
 
 ### Phase E: Neural benchmark suite
 

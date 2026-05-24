@@ -405,9 +405,26 @@ def _run_paper_experiment_impl(
     print(f"  split name:          {summary.split_name}")
     print(f"  data path:           {summary.data_path}")
     print(f"  output directory:    {summary.output_dir}")
+    print(f"  requested models:    {', '.join(summary.requested_models)}")
     print(f"  models run:          {', '.join(summary.models_run)}")
+    if summary.skipped_models:
+        print("  skipped models:")
+        for skip in summary.skipped_models:
+            print(f"    - {skip.model_name}: {skip.reason}")
+    else:
+        print("  skipped models:      none")
+    if summary.predictive_metric_names:
+        print(
+            "  predictive metrics:  "
+            + ", ".join(summary.predictive_metric_names)
+        )
+    if summary.calibration_metric_names:
+        print(
+            "  calibration metrics: "
+            + ", ".join(summary.calibration_metric_names)
+        )
     if summary.metric_names:
-        print(f"  metrics emitted:     {', '.join(summary.metric_names)}")
+        print(f"  all metrics emitted: {', '.join(summary.metric_names)}")
     else:
         print("  metrics emitted:     none")
     print(f"  fixture run:         {'yes' if summary.is_fixture else 'no'}")

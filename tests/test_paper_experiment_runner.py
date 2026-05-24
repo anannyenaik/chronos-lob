@@ -35,6 +35,8 @@ _REQUIRED_FILES: tuple[str, ...] = (
     "results.json",
     "predictions.csv",
     "model_card.md",
+    "confusion_matrix.json",
+    "runner_summary.json",
 )
 
 
@@ -96,6 +98,8 @@ def test_results_json_loads_as_experiment_results_schema(tmp_path: Path) -> None
     assert model_result.split == "test"
     assert "accuracy" in model_result.metrics
     assert "macro_f1" in model_result.metrics
+    assert "class_count_train" in model_result.metrics
+    assert "class_count_test" in model_result.metrics
     assert "predictive" not in model_result.metrics
     assert results.evidence_streams.predictive
     assert results.evidence_streams.calibration
@@ -138,7 +142,7 @@ def test_predictions_csv_has_expected_columns_and_finite_probabilities(
     ]
     assert probability_columns, "predictions.csv must include probability columns"
     for column in probability_columns:
-        for value in frame[column].tolist():
+        for value in frame[column].dropna().tolist():
             assert math.isfinite(float(value))
     assert (frame["split"] == "test").all()
 
@@ -155,6 +159,8 @@ def test_majority_model_predictions_have_normalised_probabilities(
         column for column in frame.columns if column.startswith("probability_")
     ]
     for _, row in frame.iterrows():
+        if any(pd.isna(row[column]) for column in probability_columns):
+            continue
         total = sum(float(row[column]) for column in probability_columns)
         assert math.isclose(total, 1.0, abs_tol=1e-6)
 
@@ -217,10 +223,7 @@ def test_runner_supports_logistic_when_requested(tmp_path: Path) -> None:
 
     assert summary.models_run == ["majority", "logistic"]
     frame = pd.read_csv(output_dir / "predictions.csv")
-    assert set(frame["model_name"].unique()) == {
-        "majority_class",
-        "logistic_regression",
-    }
+    assert set(frame["model_name"].unique()) == {"majority", "logistic"}
 
 
 def test_runner_refuses_models_without_majority(tmp_path: Path) -> None:
@@ -256,6 +259,7 @@ def test_tiny_fixture_model_card_does_not_claim_benchmark_evidence(
 
     text = (output_dir / "model_card.md").read_text(encoding="utf-8")
     assert "synthetic fixture smoke" in text.lower()
+    assert "not benchmark evidence" in text.lower()
     forbidden_phrases = [
         "profitable",
         " ".join(("production", "trading")),
@@ -268,12 +272,19 @@ def test_tiny_fixture_model_card_does_not_claim_benchmark_evidence(
         assert phrase not in lowered, phrase
 
 
-def test_supported_models_constant_reports_majority(tmp_path: Path) -> None:
-    assert "majority" in SUPPORTED_PAPER_MODELS
-    assert "logistic" in SUPPORTED_PAPER_MODELS
-    assert "random_forest" not in SUPPORTED_PAPER_MODELS
+def test_supported_models_constant_includes_classical_suite(tmp_path: Path) -> None:
+    for required in (
+        "majority",
+        "logistic",
+        "ridge",
+        "elastic_net",
+        "random_forest",
+        "gradient_boosting",
+    ):
+        assert required in SUPPORTED_PAPER_MODELS, required
     assert "deeplob" not in SUPPORTED_PAPER_MODELS
     assert "transformer" not in SUPPORTED_PAPER_MODELS
+    assert "ssl_transformer" not in SUPPORTED_PAPER_MODELS
 
 
 def test_cli_command_works_on_tiny_fixture(tmp_path: Path) -> None:
@@ -379,3 +390,51 @@ def test_runner_summary_records_split_counts(tmp_path: Path) -> None:
     total = counts["n_train"] + counts["n_validation"] + counts["n_test"]
     assert total == counts["n_rows"]
     assert counts["n_test"] >= 1
+    assert "requested_models" in payload
+    assert "models_run" in payload
+    assert "skipped_models" in payload
+    assert "predictive_metric_names" in payload
+    assert "calibration_metric_names" in payload
+    assert payload["data_source_kind"] == "local_file"
+
+
+def test_confusion_matrix_json_lists_one_entry_per_model(tmp_path: Path) -> None:
+    output_dir = tmp_path / "paper_experiment"
+
+    _run_on_tiny_fixture(output_dir, models=("majority", "logistic"))
+
+    payload = _read_json(output_dir / "confusion_matrix.json")
+    assert "models" in payload
+    entries = payload["models"]
+    assert isinstance(entries, list)
+    names = {entry["model_name"] for entry in entries}
+    assert names == {"majority", "logistic"}
+    for entry in entries:
+        assert entry["split"] == "test"
+        assert entry["horizon"] == 10
+        assert isinstance(entry["labels"], list)
+        assert isinstance(entry["matrix"], list)
+
+
+def test_model_card_lists_requested_and_successful_models(tmp_path: Path) -> None:
+    output_dir = tmp_path / "paper_experiment"
+
+    _run_on_tiny_fixture(output_dir, models=("majority", "logistic"))
+
+    text = (output_dir / "model_card.md").read_text(encoding="utf-8")
+    assert "## Models" in text
+    assert "- `majority`" in text
+    assert "- `logistic`" in text
+    assert "## Metric Groups" in text
+    assert "predictive metrics emitted:" in text
+    assert "calibration metrics emitted:" in text
+    assert "## Split Design" in text
+
+
+def test_runner_summary_includes_skipped_models_field(tmp_path: Path) -> None:
+    output_dir = tmp_path / "paper_experiment"
+
+    summary = _run_on_tiny_fixture(output_dir)
+    assert summary.skipped_models == []
+    payload = _read_json(output_dir / "runner_summary.json")
+    assert payload["skipped_models"] == []

@@ -335,6 +335,7 @@ class FI2010BenchmarkConfig(BaseModel):
     validation_fraction: float = 0.15
     test_fraction: float = 0.15
     notes: str | None = None
+    classical_models_supported: tuple[str, ...] = ()
     models_planned: tuple[str, ...] = ()
     metrics_planned: tuple[str, ...] = ()
     execution_assumptions_planned: dict[str, Any] = Field(default_factory=dict)
@@ -418,7 +419,11 @@ class FI2010BenchmarkConfig(BaseModel):
             raise ValueError("notes must be a non-empty string when provided")
         return value.strip()
 
-    @field_validator("models_planned", "metrics_planned")
+    @field_validator(
+        "classical_models_supported",
+        "models_planned",
+        "metrics_planned",
+    )
     @classmethod
     def _validate_planned_lists(cls, value: Sequence[str]) -> tuple[str, ...]:
         cleaned: list[str] = []

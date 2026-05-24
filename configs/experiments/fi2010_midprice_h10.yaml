@@ -31,12 +31,25 @@ train_fraction: 0.7
 validation_fraction: 0.15
 test_fraction: 0.15
 
-# The following sections are recorded for the later paper experiment
-# runner. They are not consumed by the preparation step.
-models_planned:
-  - majority_class
-  - logistic_regression
+# The following sections are recorded for the paper experiment runner
+# and are not consumed by the preparation step. They describe the
+# planned classical benchmark suite and the wider model roadmap; not
+# every entry has been benchmarked on real FI-2010 data.
+classical_models_supported:
+  - majority
+  - logistic
+  - ridge
+  - elastic_net
   - random_forest
+  - gradient_boosting
+
+models_planned:
+  - majority
+  - logistic
+  - ridge
+  - elastic_net
+  - random_forest
+  - gradient_boosting
   - deeplob
   - transformer
   - ssl_transformer
@@ -46,6 +59,8 @@ metrics_planned:
   - accuracy
   - brier_score
   - expected_calibration_error
+  - mean_confidence
+  - log_loss
   - turnover
   - cost_aware_signal
 
