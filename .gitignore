@@ -52,6 +52,7 @@ mlruns/
 experiments/fi2010_midprice_h10/
 experiments/paper_experiment_*/
 experiments/paper_ablation_*/
+experiments/system_benchmark_*/
 
 # Model artefacts and large generated files
 *.ckpt

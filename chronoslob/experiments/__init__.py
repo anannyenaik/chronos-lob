@@ -64,6 +64,13 @@ from chronoslob.experiments.schemas import (
     ModelResult,
     SourceKind,
 )
+from chronoslob.experiments.system_benchmarks import (
+    SUPPORTED_SYSTEM_BENCHMARK_SETS,
+    SYSTEM_BENCHMARK_RESULTS_COLUMNS,
+    SystemBenchmarkMetric,
+    SystemBenchmarkSummary,
+    run_system_benchmarks,
+)
 
 __all__ = [
     "DEFAULT_PAPER_MODELS",
@@ -72,6 +79,8 @@ __all__ = [
     "REQUIRED_PAPER_MODELS",
     "SUPPORTED_ABLATION_SETS",
     "SUPPORTED_PAPER_MODELS",
+    "SUPPORTED_SYSTEM_BENCHMARK_SETS",
+    "SYSTEM_BENCHMARK_RESULTS_COLUMNS",
     "ArtifactKind",
     "DataManifest",
     "EvidenceStreams",
@@ -96,6 +105,8 @@ __all__ = [
     "PaperNeuralSettings",
     "SourceKind",
     "SplitSummary",
+    "SystemBenchmarkMetric",
+    "SystemBenchmarkSummary",
     "ValidationSummary",
     "build_ablation_specs",
     "build_directory_manifest",
@@ -112,6 +123,7 @@ __all__ = [
     "read_json_model",
     "run_paper_ablations",
     "run_paper_experiment",
+    "run_system_benchmarks",
     "sha256_file",
     "stable_json_dumps",
     "validate_experiment_directory",

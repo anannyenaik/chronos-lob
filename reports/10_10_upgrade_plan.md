@@ -450,14 +450,30 @@ evidence into a single ranking.
 Purpose: measure practical research-platform behaviour such as runtime,
 memory, artefact size and optional inference latency sensitivity.
 
-Files likely to be added or modified: `chronoslob/utils/benchmarking.py`,
-`chronoslob/cli.py`, `reports/systems_benchmark.md`,
-`tests/test_systems_benchmark.py`.
+Status: implemented as a systems benchmark runner under
+`chronoslob/experiments/system_benchmarks.py`. The suite measures loader
+throughput, feature-generation speed, paper experiment-runner timing,
+CPU inference latency and a small `tracemalloc` resource profile. It
+writes `system_benchmark_summary.json`, `system_benchmark_results.csv`,
+`environment.json`, per-category Markdown reports and a validated child
+paper experiment for runner timing. Synthetic fixture timings are labelled
+as smoke measurements only and are not benchmark evidence.
 
-CLI command expected: `python -m chronoslob.cli run-systems-benchmark --experiment experiments/fi2010_midprice_h10`.
+Files added or modified: `chronoslob/experiments/system_benchmarks.py`,
+`chronoslob/experiments/__init__.py`, `chronoslob/cli.py`,
+`tests/test_system_benchmarks.py`, `docs/SYSTEM_BENCHMARKS.md`,
+`docs/CLI_REFERENCE.md`, `docs/EXPERIMENT_EVIDENCE_INDEX.md`,
+`docs/REPRODUCIBILITY.md`, `docs/PAPER_EXPERIMENTS.md` and `.gitignore`.
 
-Tests expected: deterministic benchmark record schema, environment capture,
-basic timing sanity checks and no hidden network calls.
+CLI command: `python -m chronoslob.cli run-system-benchmarks --config
+configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out PATH
+[--benchmark-set smoke|standard] [--models majority[,logistic,...]]
+[--overwrite]`.
+
+Tests expected: smoke systems benchmark validation on the tiny FI-2010-like
+fixture, output-file checks, finite local throughput metrics, valid child
+paper experiment artefacts, explicit skipped-row warnings, overwrite
+protection, missing-data errors, CLI coverage and clear fixture wording.
 
 Strict non-goals: do not optimise prematurely, compare against hardware not
 recorded in the artefacts or present systems metrics as forecast quality.

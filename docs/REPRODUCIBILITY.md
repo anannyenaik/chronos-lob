@@ -69,6 +69,7 @@ python -m chronoslob.cli run-calibration-smoke
 python -m chronoslob.cli run-execution-validation-smoke
 python -m chronoslob.cli run-robustness-analysis-smoke
 python -m chronoslob.cli run-paper-ablations --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/paper_ablation_smoke --models majority,logistic --ablation-set smoke --overwrite
+python -m chronoslob.cli run-system-benchmarks --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/system_benchmark_smoke --benchmark-set smoke --models majority,logistic --overwrite
 ```
 
 ## FI-2010 Benchmark Preparation
@@ -136,6 +137,15 @@ directories only for ablations that genuinely run. Synthetic fixture
 smoke runs are not benchmark evidence. See
 [PAPER_ABLATIONS.md](PAPER_ABLATIONS.md) for the output layout and
 the standard local FI-2010 usage pattern.
+
+Phase I adds `run-system-benchmarks` for local systems benchmark
+measurements. The command records loader throughput, feature-generation
+speed, paper experiment-runner timing, inference latency and a small
+resource profile, together with `environment.json` and input provenance.
+Smoke runs on the bundled FI-2010-like fixture validate infrastructure
+only and are not benchmark evidence. See
+[SYSTEM_BENCHMARKS.md](SYSTEM_BENCHMARKS.md) for the output layout,
+smoke command and local FI-2010 usage pattern.
 
 ## Evidence Archive
 

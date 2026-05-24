@@ -171,6 +171,19 @@ or reproducing the platform.
   pretraining in this phase, are explicit status records rather than
   hidden omissions.
 
+## Systems Benchmarks
+
+- Modules: `chronoslob/experiments/system_benchmarks.py`
+- Configs: `configs/experiments/fi2010_midprice_h10.yaml`
+- Tests: `tests/test_system_benchmarks.py`
+- CLI: `run-system-benchmarks`, `inspect-system-benchmarks`
+- Docs: [SYSTEM_BENCHMARKS](SYSTEM_BENCHMARKS.md)
+- Phase I artefacts: `system_benchmark_summary.json`,
+  `system_benchmark_results.csv`, `environment.json`, per-category
+  Markdown reports and a validated child paper experiment for runner
+  timing. Smoke fixture timings are labelled as smoke measurements and
+  are not benchmark evidence.
+
 ## Reproducibility and Audit
 
 - Modules: `chronoslob/utils/audit.py`,

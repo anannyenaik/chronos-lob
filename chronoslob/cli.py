@@ -550,6 +550,157 @@ def _run_paper_ablations_impl(
     return 0
 
 
+def _run_system_benchmarks_impl(
+    *,
+    config_path: Path,
+    data_path: Path,
+    out: Path,
+    benchmark_set: str,
+    models: Sequence[str] | None,
+    overwrite: bool,
+) -> int:
+    """Run local systems benchmarks and write traceable artefacts."""
+    from chronoslob.experiments.system_benchmarks import (
+        SUPPORTED_SYSTEM_BENCHMARK_SETS,
+        run_system_benchmarks,
+    )
+
+    selected_models = list(models) if models else ["majority", "logistic"]
+
+    try:
+        summary = run_system_benchmarks(
+            config_path=Path(config_path),
+            data_path=Path(data_path),
+            out_dir=Path(out),
+            benchmark_set=benchmark_set,
+            models=selected_models,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Systems benchmark failed: {exc}", file=sys.stderr)
+        print(
+            "  supported benchmark sets: "
+            + ", ".join(SUPPORTED_SYSTEM_BENCHMARK_SETS),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB systems benchmark")
+    print(f"  benchmark set:       {summary.benchmark_set}")
+    print(f"  models:              {', '.join(summary.models_requested)}")
+    if summary.benchmarks_run:
+        print("  benchmarks run:")
+        for name in summary.benchmarks_run:
+            print(f"    - {name}")
+    else:
+        print("  benchmarks run:      none")
+    if summary.benchmarks_skipped:
+        print("  benchmarks skipped:")
+        for name in summary.benchmarks_skipped:
+            print(f"    - {name}")
+    else:
+        print("  benchmarks skipped:  none")
+    print(f"  output directory:    {summary.output_dir}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _inspect_system_benchmarks_impl(*, benchmark: Path) -> int:
+    """Print a concise summary of a systems benchmark directory."""
+    import json as _json
+
+    resolved_dir = Path(benchmark)
+    if not resolved_dir.exists():
+        print(f"Systems benchmark directory not found: {resolved_dir}", file=sys.stderr)
+        return 2
+    if not resolved_dir.is_dir():
+        print(
+            f"Systems benchmark path is not a directory: {resolved_dir}",
+            file=sys.stderr,
+        )
+        return 1
+
+    summary_path = resolved_dir / "system_benchmark_summary.json"
+    results_path = resolved_dir / "system_benchmark_results.csv"
+    if not summary_path.is_file():
+        print(f"Missing system_benchmark_summary.json: {summary_path}", file=sys.stderr)
+        return 1
+    try:
+        payload = _json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, _json.JSONDecodeError) as exc:
+        print(f"Invalid system_benchmark_summary.json: {exc}", file=sys.stderr)
+        return 1
+    if not isinstance(payload, Mapping):
+        print("Invalid system_benchmark_summary.json: expected object", file=sys.stderr)
+        return 1
+
+    result_rows = 0
+    if results_path.is_file():
+        try:
+            result_rows = max(
+                sum(1 for _ in results_path.open("r", encoding="utf-8")) - 1,
+                0,
+            )
+        except OSError as exc:
+            print(f"Result CSV row count error: {exc}", file=sys.stderr)
+            return 1
+
+    reports_dir = resolved_dir / "reports"
+    reports_present = (
+        sorted(path.name for path in reports_dir.glob("*.md"))
+        if reports_dir.is_dir()
+        else []
+    )
+    benchmark_set = str(payload.get("benchmark_set", "unknown"))
+    benchmarks_run = payload.get("benchmarks_run")
+    benchmarks_skipped = payload.get("benchmarks_skipped")
+    warnings = payload.get("warnings")
+
+    print("ChronosLOB systems benchmark inspection")
+    print(f"  benchmark dir:       {resolved_dir}")
+    print(f"  benchmark set:       {benchmark_set}")
+    print(f"  result rows:         {result_rows}")
+    if reports_present:
+        print("  reports present:")
+        for report in reports_present:
+            print(f"    - reports/{report}")
+    else:
+        print("  reports present:     none")
+    if isinstance(benchmarks_run, list) and benchmarks_run:
+        print("  benchmarks run:")
+        for name in benchmarks_run:
+            print(f"    - {name}")
+    else:
+        print("  benchmarks run:      none")
+    if isinstance(benchmarks_skipped, list) and benchmarks_skipped:
+        print("  benchmarks skipped:")
+        for name in benchmarks_skipped:
+            print(f"    - {name}")
+    else:
+        print("  benchmarks skipped:  none")
+    if isinstance(warnings, list) and warnings:
+        print("  warnings:")
+        for warning in warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  outputs:             not written")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _build_paper_plots_impl(
     *,
     experiment: Path,
@@ -2376,6 +2527,8 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "prepare-fi2010-benchmark|"
             "run-paper-experiment|"
             "run-paper-ablations|"
+            "run-system-benchmarks|"
+            "inspect-system-benchmarks|"
             "build-paper-plots|"
             "inspect-paper-experiment] [...]"
         )
@@ -2559,6 +2712,56 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             overwrite=bool(parsed.overwrite),
             build_plots=bool(parsed.build_plots),
         )
+    if command == "run-system-benchmarks":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-system-benchmarks",
+            description=(
+                "Run local systems benchmarks on a supplied FI-2010-style "
+                "data path and write traceable benchmark artefacts."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--data-path", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--benchmark-set",
+            type=str,
+            default="smoke",
+            help="Named benchmark set. Supported values: smoke, standard.",
+        )
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="majority,logistic",
+            help="Comma-separated paper-runner model list.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        model_tokens = [
+            token.strip()
+            for token in str(parsed.models).split(",")
+            if token.strip()
+        ]
+        return _run_system_benchmarks_impl(
+            config_path=parsed.config,
+            data_path=parsed.data_path,
+            out=parsed.out,
+            benchmark_set=str(parsed.benchmark_set),
+            models=model_tokens or None,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "inspect-system-benchmarks":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-system-benchmarks",
+            description="Inspect a completed systems benchmark directory.",
+        )
+        parser.add_argument("--benchmark", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_system_benchmarks_impl(benchmark=parsed.benchmark)
     if command == "build-paper-plots":
         parser = argparse.ArgumentParser(
             prog="chronoslob build-paper-plots",
@@ -3236,6 +3439,41 @@ if typer is not None:
         "--build-plots",
         help="Generate plots inside each child paper experiment directory.",
     )
+    _RUN_SYSTEM_BENCHMARKS_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the systems benchmark configuration YAML file.",
+    )
+    _RUN_SYSTEM_BENCHMARKS_DATA_PATH_OPTION = typer.Option(
+        ...,
+        "--data-path",
+        help="Local FI-2010-style file path supplied by the user.",
+    )
+    _RUN_SYSTEM_BENCHMARKS_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for systems benchmark artefacts.",
+    )
+    _RUN_SYSTEM_BENCHMARKS_SET_OPTION = typer.Option(
+        "smoke",
+        "--benchmark-set",
+        help="Named benchmark set. Supported values: smoke, standard.",
+    )
+    _RUN_SYSTEM_BENCHMARKS_MODELS_OPTION = typer.Option(
+        "majority,logistic",
+        "--models",
+        help="Comma-separated paper-runner model list.",
+    )
+    _RUN_SYSTEM_BENCHMARKS_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _INSPECT_SYSTEM_BENCHMARKS_BENCHMARK_OPTION = typer.Option(
+        ...,
+        "--benchmark",
+        help="Path to a completed systems benchmark directory.",
+    )
     _BUILD_PAPER_PLOTS_EXPERIMENT_OPTION = typer.Option(
         ...,
         "--experiment",
@@ -3354,6 +3592,35 @@ if typer is not None:
             overwrite=overwrite,
             build_plots=build_plots,
         )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_system_benchmarks(
+        config: Path = _RUN_SYSTEM_BENCHMARKS_CONFIG_OPTION,
+        data_path: Path = _RUN_SYSTEM_BENCHMARKS_DATA_PATH_OPTION,
+        out: Path = _RUN_SYSTEM_BENCHMARKS_OUT_OPTION,
+        benchmark_set: str = _RUN_SYSTEM_BENCHMARKS_SET_OPTION,
+        models: str = _RUN_SYSTEM_BENCHMARKS_MODELS_OPTION,
+        overwrite: bool = _RUN_SYSTEM_BENCHMARKS_OVERWRITE_OPTION,
+    ) -> None:
+        """Run local systems benchmarks and write artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_system_benchmarks_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            benchmark_set=benchmark_set,
+            models=model_tokens or None,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_system_benchmarks(
+        benchmark: Path = _INSPECT_SYSTEM_BENCHMARKS_BENCHMARK_OPTION,
+    ) -> None:
+        """Print a concise systems benchmark summary."""
+        exit_code = _inspect_system_benchmarks_impl(benchmark=benchmark)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -4513,6 +4780,33 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def run_system_benchmarks(
+        config: Path,
+        data_path: Path,
+        out: Path,
+        benchmark_set: str = "smoke",
+        models: str = "majority,logistic",
+        overwrite: bool = False,
+    ) -> None:
+        """Run local systems benchmarks and write aggregate artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_system_benchmarks_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            benchmark_set=benchmark_set,
+            models=model_tokens or None,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_system_benchmarks(benchmark: Path) -> None:
+        """Print a concise systems benchmark summary."""
+        exit_code = _inspect_system_benchmarks_impl(benchmark=benchmark)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def inspect_paper_experiment(experiment: Path) -> None:
         """Print a concise paper experiment artefact summary."""
         exit_code = _inspect_paper_experiment_impl(experiment=experiment)
@@ -4557,6 +4851,8 @@ if typer is not None:
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
     app.command("run-paper-experiment")(run_paper_experiment)
     app.command("run-paper-ablations")(run_paper_ablations)
+    app.command("run-system-benchmarks")(run_system_benchmarks)
+    app.command("inspect-system-benchmarks")(inspect_system_benchmarks)
     app.command("build-paper-plots")(build_paper_plots)
     app.command("inspect-paper-experiment")(inspect_paper_experiment)
 else:

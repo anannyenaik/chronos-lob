@@ -410,4 +410,6 @@ path and stored artefacts produced by this runner.
   The model name is left out of the supported registry until
   train-only pretraining and supervised fine-tuning are implemented
   end to end.
-- Systems benchmarks. Tracked under Phase I.
+- Systems benchmarks inside `run-paper-experiment`. They are handled
+  separately by `run-system-benchmarks`; see
+  [SYSTEM_BENCHMARKS.md](SYSTEM_BENCHMARKS.md).
