@@ -8,7 +8,15 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
 
-ChronosLOB provides a reproducible framework for studying market microstructure as noisy sequential data: data validation, feature and label construction, temporal splits, classical and neural baselines, transformer-based representation learning, uncertainty analysis, execution-aware validation and robustness analysis.
+ChronosLOB is a research platform for limit order book representation
+learning, market-state forecasting, calibration and execution-aware
+validation. It provides data validation, feature and label construction,
+temporal splits, classical and neural baselines, transformer-based
+representation learning, uncertainty analysis, execution-aware validation
+and robustness analysis.
+
+ChronosLOB is research and engineering infrastructure. It is not financial
+advice and it is not live trading infrastructure.
 
 ## Why ChronosLOB
 

@@ -362,6 +362,75 @@ def _prepare_fi2010_benchmark_impl(
     return 0
 
 
+def _run_paper_experiment_impl(
+    *,
+    config_path: Path,
+    data_path: Path,
+    out: Path,
+    models: Sequence[str] | None,
+    overwrite: bool,
+) -> int:
+    """Run the paper experiment runner and validate the artefact directory."""
+    from chronoslob.experiments.paper_runner import (
+        SUPPORTED_PAPER_MODELS,
+        run_paper_experiment,
+    )
+
+    try:
+        summary = run_paper_experiment(
+            config_path=Path(config_path),
+            data_path=Path(data_path),
+            out_dir=Path(out),
+            models=models,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Paper experiment failed: {exc}", file=sys.stderr)
+        print(
+            "  supported models: " + ", ".join(SUPPORTED_PAPER_MODELS),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB paper experiment runner")
+    print(f"  experiment name:     {summary.experiment_name}")
+    print(f"  task name:           {summary.task_name}")
+    print(f"  horizon:             {summary.horizon}")
+    print(f"  split name:          {summary.split_name}")
+    print(f"  data path:           {summary.data_path}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  models run:          {', '.join(summary.models_run)}")
+    if summary.metric_names:
+        print(f"  metrics emitted:     {', '.join(summary.metric_names)}")
+    else:
+        print("  metrics emitted:     none")
+    print(f"  fixture run:         {'yes' if summary.is_fixture else 'no'}")
+    print(f"  runner version:      {summary.runner_version}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print(
+        "  artefact validation: "
+        f"{'valid' if summary.validation.is_valid else 'invalid'}"
+    )
+    if summary.validation.missing_required:
+        print("  missing required:")
+        for missing in summary.validation.missing_required:
+            print(f"    - {missing}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    print("  network calls:       none performed")
+    return 0 if summary.validation.is_valid else 1
+
+
 def _is_synthetic_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return "tests" in parts and "fixtures" in parts
@@ -1915,7 +1984,8 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-release-readiness|"
             "build-report-archive|inspect-report-archive|"
             "inspect-experiment-artifacts|"
-            "prepare-fi2010-benchmark] [...]"
+            "prepare-fi2010-benchmark|"
+            "run-paper-experiment] [...]"
         )
         return 0
 
@@ -1994,6 +2064,41 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             config_path=parsed.config,
             data_path=parsed.data_path,
             out=parsed.out,
+        )
+    if command == "run-paper-experiment":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-paper-experiment",
+            description=(
+                "Run the paper experiment runner on a local FI-2010-style "
+                "file and write a validated experiment artefact directory."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--data-path", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="majority",
+            help="Comma-separated model list. Defaults to 'majority'.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        model_tokens = [
+            token.strip()
+            for token in str(parsed.models).split(",")
+            if token.strip()
+        ]
+        return _run_paper_experiment_impl(
+            config_path=parsed.config,
+            data_path=parsed.data_path,
+            out=parsed.out,
+            models=model_tokens or None,
+            overwrite=bool(parsed.overwrite),
         )
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
@@ -2574,6 +2679,31 @@ if typer is not None:
         "--out",
         help="Output directory for FI-2010 preparation artefacts.",
     )
+    _RUN_PAPER_EXPERIMENT_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the paper experiment configuration YAML file.",
+    )
+    _RUN_PAPER_EXPERIMENT_DATA_PATH_OPTION = typer.Option(
+        ...,
+        "--data-path",
+        help="Local FI-2010-style file path supplied by the user.",
+    )
+    _RUN_PAPER_EXPERIMENT_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for the paper experiment artefacts.",
+    )
+    _RUN_PAPER_EXPERIMENT_MODELS_OPTION = typer.Option(
+        "majority",
+        "--models",
+        help="Comma-separated model list. Defaults to 'majority'.",
+    )
+    _RUN_PAPER_EXPERIMENT_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
 
     def run_project_audit(
         root: Path | None = _AUDIT_ROOT_OPTION,
@@ -2632,6 +2762,25 @@ if typer is not None:
             config_path=config,
             data_path=data_path,
             out=out,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_paper_experiment(
+        config: Path = _RUN_PAPER_EXPERIMENT_CONFIG_OPTION,
+        data_path: Path = _RUN_PAPER_EXPERIMENT_DATA_PATH_OPTION,
+        out: Path = _RUN_PAPER_EXPERIMENT_OUT_OPTION,
+        models: str = _RUN_PAPER_EXPERIMENT_MODELS_OPTION,
+        overwrite: bool = _RUN_PAPER_EXPERIMENT_OVERWRITE_OPTION,
+    ) -> None:
+        """Run the paper experiment runner and write artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_paper_experiment_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            models=model_tokens or None,
+            overwrite=overwrite,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -3716,6 +3865,25 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def run_paper_experiment(
+        config: Path,
+        data_path: Path,
+        out: Path,
+        models: str = "majority",
+        overwrite: bool = False,
+    ) -> None:
+        """Run the paper experiment runner and write artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_paper_experiment_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            models=model_tokens or None,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
@@ -3752,6 +3920,7 @@ if typer is not None:
     app.command("run-robustness-analysis-smoke")(run_robustness_analysis_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
+    app.command("run-paper-experiment")(run_paper_experiment)
 else:
 
     def app() -> int:

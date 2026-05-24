@@ -2,7 +2,7 @@
 
 ChronosLOB is developed as a research-engineering platform for market microstructure modelling: reproducible data pipelines, leakage-safe labels, sequence models, calibration and execution-aware evaluation.
 
-## Implemented
+## Completed
 
 - **Typed market-data contracts** for order book snapshots, event records, feature rows, label rows and data-quality issues.
 - **Local data adapters** for FI-2010-style benchmark files and offline Binance-style order book replay from synthetic fixtures.
@@ -18,7 +18,7 @@ ChronosLOB is developed as a research-engineering platform for market microstruc
 - **Robustness analysis utilities** for regime summaries, transfer matrices, ablations, sensitivity curves and unified experiment records.
 - **Reproducibility infrastructure** including typed configs, deterministic smoke checks, audit commands, CI, release-readiness checks and an experiment evidence archive.
 
-## Next Milestones
+## In Progress and Next
 
 - Run documented experiments on real locally hosted datasets with clear data provenance, temporal splits, seeds and saved configurations.
 - Produce evidence-backed result tables for predictive performance, calibration quality and execution-aware validation as separate outputs.
@@ -52,6 +52,10 @@ ChronosLOB is developed as a research-engineering platform for market microstruc
 - Avoid static claims that are not backed by reproducible runs.
 - Present limitations as modelling assumptions, not afterthoughts.
 
-## Current Boundary
+## Out of Scope
 
-ChronosLOB focuses on reproducible research infrastructure and offline evaluation. The current codebase deliberately keeps live trading connectivity, broker integration, order placement and production market-impact modelling outside the core platform so the research layer remains auditable and dataset-driven.
+ChronosLOB focuses on reproducible research infrastructure and offline
+evaluation. The current codebase deliberately keeps live trading
+connectivity, broker integration, order placement and production
+market-impact modelling outside the core platform so the research layer
+remains auditable and dataset-driven.

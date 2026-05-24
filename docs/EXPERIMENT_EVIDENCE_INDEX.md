@@ -122,6 +122,14 @@ or reproducing the platform.
 - CLI: `prepare-fi2010-benchmark`
 - Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md)
 
+## Paper Experiment Runner
+
+- Modules: `chronoslob/experiments/paper_runner.py`
+- Configs: `configs/experiments/fi2010_midprice_h10.yaml`
+- Tests: `tests/test_paper_experiment_runner.py`
+- CLI: `run-paper-experiment`
+- Docs: [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
+
 ## Reproducibility and Audit
 
 - Modules: `chronoslob/utils/audit.py`,

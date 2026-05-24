@@ -79,6 +79,15 @@ preparation step that produces a data manifest, label distribution
 summary and temporal split summary from a user-supplied file before
 any future paper experiment run.
 
+## Paper Experiment Runner
+
+The paper experiment runner consumes the same FI-2010 preparation
+config and a local data path and writes a validated experiment
+artefact directory in one command. The currently supported model path
+is the majority-class baseline (and optionally logistic regression).
+See [PAPER_EXPERIMENTS.md](PAPER_EXPERIMENTS.md) for the full contract,
+limitations and the tiny fixture smoke command.
+
 ## Evidence Archive
 
 A local evidence archive of inventories, current command outputs and

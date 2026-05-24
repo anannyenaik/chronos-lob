@@ -70,6 +70,7 @@ python -m chronoslob.cli <command> [options]
 | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | `inspect-experiment-artifacts --experiment PATH`                     | Inspect an experiment directory against the artefact contract.     |
 | `prepare-fi2010-benchmark --config PATH --data-path PATH --out PATH` | Prepare a local-only FI-2010 benchmark input (no model run).       |
+| `run-paper-experiment --config PATH --data-path PATH --out PATH [--models majority[,logistic]] [--overwrite]` | Run the paper experiment runner and write a validated artefact directory. |
 
 ## Audit and Evidence Archive
 

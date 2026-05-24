@@ -24,6 +24,13 @@ from chronoslob.experiments.manifests import (
     sha256_file,
     stable_json_dumps,
 )
+from chronoslob.experiments.paper_runner import (
+    PAPER_RUNNER_VERSION,
+    SUPPORTED_PAPER_MODELS,
+    PaperExperimentSummary,
+    PaperModelOutcome,
+    run_paper_experiment,
+)
 from chronoslob.experiments.schemas import (
     ArtifactKind,
     DataManifest,
@@ -39,6 +46,8 @@ from chronoslob.experiments.schemas import (
 )
 
 __all__ = [
+    "PAPER_RUNNER_VERSION",
+    "SUPPORTED_PAPER_MODELS",
     "ArtifactKind",
     "DataManifest",
     "EvidenceStreams",
@@ -53,6 +62,8 @@ __all__ = [
     "FI2010PreparationSummary",
     "LabelSummary",
     "ModelResult",
+    "PaperExperimentSummary",
+    "PaperModelOutcome",
     "SourceKind",
     "SplitSummary",
     "ValidationSummary",
@@ -64,6 +75,7 @@ __all__ = [
     "load_results",
     "prepare_fi2010_benchmark",
     "read_json_model",
+    "run_paper_experiment",
     "sha256_file",
     "stable_json_dumps",
     "validate_experiment_directory",

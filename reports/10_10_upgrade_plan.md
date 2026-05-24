@@ -224,15 +224,25 @@ terms or fit transforms on validation/test rows.
 Purpose: provide one reproducible runner that consumes a config and writes the
 standard artefacts for a single benchmark experiment.
 
-Files likely to be added or modified: `chronoslob/training/paper_experiment.py`,
-`chronoslob/training/experiment_artifacts.py`, `chronoslob/cli.py`,
-`tests/test_paper_experiment.py`.
+Status: implemented as an initial runner under
+`chronoslob/experiments/paper_runner.py`. The runner supports the
+majority-class baseline (required) and optionally a train-only standardised
+logistic regression baseline; stronger model families remain deferred to
+Phase D and Phase E. It composes the Phase B preparation step, runs the
+selected baselines on a deterministic temporal split and writes the standard
+artefacts under the experiment artefact contract.
 
-CLI command expected: `python -m chronoslob.cli run-paper-experiment --config configs/experiments/fi2010_midprice_h10.yaml`.
+Files added or modified: `chronoslob/experiments/paper_runner.py`,
+`chronoslob/experiments/__init__.py`, `chronoslob/cli.py`,
+`tests/test_paper_experiment_runner.py`, `docs/PAPER_EXPERIMENTS.md`,
+`docs/CLI_REFERENCE.md`, `docs/EXPERIMENT_EVIDENCE_INDEX.md` and
+`docs/REPRODUCIBILITY.md`.
+
+CLI command: `python -m chronoslob.cli run-paper-experiment --config configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out PATH [--models majority[,logistic]] [--overwrite]`.
 
 Tests expected: deterministic tiny-fixture run, artefact validation, seed
-recording, commit recording, split recording and no writes outside the
-configured output directory.
+recording, commit recording, split recording, overwrite protection and clear
+failures for unsupported models or missing data paths.
 
 Strict non-goals: do not optimise for headline metrics, select models on test
 data or merge predictive, calibration and execution metrics into one score.

@@ -50,6 +50,7 @@ checkpoints/
 wandb/
 mlruns/
 experiments/fi2010_midprice_h10/
+experiments/paper_experiment_*/
 
 # Model artefacts and large generated files
 *.ckpt
