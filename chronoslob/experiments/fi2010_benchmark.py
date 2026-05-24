@@ -467,6 +467,7 @@ class FI2010BenchmarkConfig(BaseModel):
     models_planned: tuple[str, ...] = ()
     metrics_planned: tuple[str, ...] = ()
     execution_assumptions_planned: dict[str, Any] = Field(default_factory=dict)
+    feature_patterns: tuple[str, ...] | None = None
     neural_settings: PaperNeuralSettings = Field(
         default_factory=PaperNeuralSettings
     )
@@ -566,6 +567,26 @@ class FI2010BenchmarkConfig(BaseModel):
             if not isinstance(item, str) or not item.strip():
                 raise ValueError("planned entries must be non-empty strings")
             cleaned.append(item.strip())
+        return tuple(cleaned)
+
+    @field_validator("feature_patterns")
+    @classmethod
+    def _validate_feature_patterns(
+        cls, value: Sequence[str] | None
+    ) -> tuple[str, ...] | None:
+        if value is None:
+            return None
+        if isinstance(value, str):
+            raise TypeError("feature_patterns must be a sequence of strings, not a string")
+        cleaned: list[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                raise ValueError("feature_patterns entries must be non-empty strings")
+            cleaned.append(item.strip())
+        if not cleaned:
+            raise ValueError(
+                "feature_patterns must contain at least one entry when provided"
+            )
         return tuple(cleaned)
 
     @model_validator(mode="after")

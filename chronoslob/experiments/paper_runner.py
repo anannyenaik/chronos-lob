@@ -24,6 +24,7 @@ generation remain tracked under later phases.
 
 from __future__ import annotations
 
+import fnmatch
 import platform
 import shutil
 import sys
@@ -292,6 +293,29 @@ def _feature_columns_from_frame(
     exclude.update(extra_exclude)
     candidate = frame.drop(columns=[col for col in exclude if col in frame.columns])
     return select_feature_columns(candidate, reject_label_like=True)
+
+
+def _apply_feature_patterns(
+    feature_columns: Sequence[str],
+    patterns: Sequence[str],
+) -> list[str]:
+    """Return ``feature_columns`` filtered through glob-style ``patterns``.
+
+    A column is retained when it matches any pattern under ``fnmatch``. The
+    relative order of ``feature_columns`` is preserved so the resulting
+    feature matrix stays deterministic. The function does not mutate the
+    input sequences.
+    """
+    if not patterns:
+        return list(feature_columns)
+    pattern_list = list(patterns)
+    selected: list[str] = []
+    for column in feature_columns:
+        for pattern in pattern_list:
+            if fnmatch.fnmatchcase(column, pattern):
+                selected.append(column)
+                break
+    return selected
 
 
 def _safe_prepare_in_subdir(
@@ -1222,6 +1246,26 @@ def run_paper_experiment(
     )
     if not feature_columns:
         raise ValueError("paper experiment requires at least one feature column")
+
+    if config.feature_patterns is not None:
+        filtered_columns = _apply_feature_patterns(
+            feature_columns,
+            config.feature_patterns,
+        )
+        if not filtered_columns:
+            raise ValueError(
+                "paper experiment feature_patterns produced no matching feature "
+                f"columns; patterns: {list(config.feature_patterns)}"
+            )
+        if len(filtered_columns) < 2:
+            raise ValueError(
+                "paper experiment feature_patterns produced too few matching "
+                "feature columns; need at least 2 columns for this controlled "
+                "ablation. "
+                f"matched: {filtered_columns}; "
+                f"patterns: {list(config.feature_patterns)}"
+            )
+        feature_columns = filtered_columns
 
     n_rows = len(combined_frame)
     split = _build_split(n_rows=n_rows, config=config)

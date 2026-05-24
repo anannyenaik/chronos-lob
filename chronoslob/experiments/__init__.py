@@ -1,5 +1,14 @@
 """Experiment artefact contracts and validation helpers."""
 
+from chronoslob.experiments.ablations import (
+    PAPER_ABLATION_VERSION,
+    SUPPORTED_ABLATION_SETS,
+    PaperAblationResult,
+    PaperAblationSpec,
+    PaperAblationSummary,
+    build_ablation_specs,
+    run_paper_ablations,
+)
 from chronoslob.experiments.artifacts import (
     expected_experiment_artifacts,
     load_data_manifest,
@@ -58,8 +67,10 @@ from chronoslob.experiments.schemas import (
 
 __all__ = [
     "DEFAULT_PAPER_MODELS",
+    "PAPER_ABLATION_VERSION",
     "PAPER_RUNNER_VERSION",
     "REQUIRED_PAPER_MODELS",
+    "SUPPORTED_ABLATION_SETS",
     "SUPPORTED_PAPER_MODELS",
     "ArtifactKind",
     "DataManifest",
@@ -75,6 +86,9 @@ __all__ = [
     "FI2010PreparationSummary",
     "LabelSummary",
     "ModelResult",
+    "PaperAblationResult",
+    "PaperAblationSpec",
+    "PaperAblationSummary",
     "PaperExperimentSummary",
     "PaperModelOutcome",
     "PaperModelSkip",
@@ -83,6 +97,7 @@ __all__ = [
     "SourceKind",
     "SplitSummary",
     "ValidationSummary",
+    "build_ablation_specs",
     "build_directory_manifest",
     "build_local_file_manifest",
     "build_paper_baseline_config",
@@ -95,6 +110,7 @@ __all__ = [
     "normalise_paper_model_names",
     "prepare_fi2010_benchmark",
     "read_json_model",
+    "run_paper_ablations",
     "run_paper_experiment",
     "sha256_file",
     "stable_json_dumps",

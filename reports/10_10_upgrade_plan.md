@@ -413,18 +413,37 @@ unreported benchmark results.
 Purpose: quantify sensitivity to model components, labels, horizons,
 pretraining, costs and split assumptions.
 
-Files likely to be added or modified: `chronoslob/analysis/ablations.py`,
-`chronoslob/analysis/sensitivity.py`, `configs/experiments/fi2010_ablations.yaml`,
-`tests/test_empirical_ablations.py`.
+Status: implemented as a paper-experiment ablation suite under
+`chronoslob/experiments/ablations.py`. The runner composes
+`run_paper_experiment`, writes aggregate traceability artefacts and
+creates child experiment directories only for ablations that genuinely run.
+Skipped ablations are explicit status records in the summary, CSV and reports.
+SSL pretraining is recorded as skipped because there is no traceable runner
+support for SSL pretraining/fine-tuning yet.
 
-CLI command expected: `python -m chronoslob.cli run-fi2010-ablation-suite --config configs/experiments/fi2010_ablations.yaml`.
+Files added or modified: `chronoslob/experiments/ablations.py`,
+`chronoslob/experiments/paper_runner.py`,
+`chronoslob/experiments/fi2010_benchmark.py`,
+`chronoslob/experiments/__init__.py`, `chronoslob/cli.py`,
+`tests/test_paper_ablations.py`, `docs/PAPER_ABLATIONS.md`,
+`docs/PAPER_EXPERIMENTS.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md`, `docs/REPRODUCIBILITY.md` and
+`.gitignore`.
 
-Tests expected: ablation-spec validation, paired comparison tables, missing-run
-handling and separation between predictive, calibration and execution-aware
-metrics.
+CLI command: `python -m chronoslob.cli run-paper-ablations --config
+configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out PATH
+[--models majority[,logistic,...]] [--ablation-set smoke|standard]
+[--overwrite] [--build-plots]`.
+
+Tests expected: smoke ablation validation on the tiny FI-2010-like fixture,
+output-file checks, child experiment artefact validation, skipped SSL status,
+finite aggregate CSV metrics, cost and calibration override traceability,
+overwrite protection, missing-data errors and CLI coverage.
 
 Strict non-goals: do not add unbounded experiment grids, use test data for
-model choice or collapse all evidence into a single ranking.
+model choice, add new model families, add SSL support without stored
+pretraining and fine-tuning traces, create systems benchmarks or collapse all
+evidence into a single ranking.
 
 ### Phase I: Systems benchmark suite
 

@@ -155,6 +155,22 @@ or reproducing the platform.
   optionally `plots/regime_breakdown.png` (only when genuine regime
   data is available in stored artefacts) and `plot_summary.json`.
 
+## Paper Ablation Suite
+
+- Modules: `chronoslob/experiments/ablations.py`,
+  `chronoslob/experiments/paper_runner.py`
+- Configs: `configs/experiments/fi2010_midprice_h10.yaml`
+- Tests: `tests/test_paper_ablations.py`
+- CLI: `run-paper-ablations`
+- Docs: [PAPER_ABLATIONS](PAPER_ABLATIONS.md),
+  [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
+- Phase H artefacts: `ablation_summary.json`,
+  `ablation_results.csv`, `ablation_manifest.json`, per-ablation
+  Markdown reports and child paper experiment directories only for
+  ablations that genuinely run. Skipped ablations, including SSL
+  pretraining in this phase, are explicit status records rather than
+  hidden omissions.
+
 ## Reproducibility and Audit
 
 - Modules: `chronoslob/utils/audit.py`,

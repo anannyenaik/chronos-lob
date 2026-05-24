@@ -68,6 +68,7 @@ python -m chronoslob.cli run-multitask-smoke --path tests/fixtures/event_logs/sy
 python -m chronoslob.cli run-calibration-smoke
 python -m chronoslob.cli run-execution-validation-smoke
 python -m chronoslob.cli run-robustness-analysis-smoke
+python -m chronoslob.cli run-paper-ablations --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/paper_ablation_smoke --models majority,logistic --ablation-set smoke --overwrite
 ```
 
 ## FI-2010 Benchmark Preparation
@@ -123,6 +124,18 @@ plots attached; they are not benchmark evidence.
 `inspect-paper-experiment --experiment PATH` prints a concise,
 read-only summary of the directory (artefact validation, evidence
 streams, row counts, plot inventory and fixture flag).
+
+Phase H adds `run-paper-ablations` for controlled robustness analysis
+and assumption sensitivity. The smoke set runs baseline,
+calibration-bin and cost-sensitivity ablations on the synthetic
+fixture and records SSL pretraining as skipped because there is no
+traceable runner support for SSL pretraining/fine-tuning yet. The
+command writes `ablation_summary.json`, `ablation_results.csv`,
+`ablation_manifest.json`, Markdown reports and child paper experiment
+directories only for ablations that genuinely run. Synthetic fixture
+smoke runs are not benchmark evidence. See
+[PAPER_ABLATIONS.md](PAPER_ABLATIONS.md) for the output layout and
+the standard local FI-2010 usage pattern.
 
 ## Evidence Archive
 

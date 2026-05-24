@@ -461,6 +461,95 @@ def _run_paper_experiment_impl(
     return 0 if summary.validation.is_valid else 1
 
 
+def _run_paper_ablations_impl(
+    *,
+    config_path: Path,
+    data_path: Path,
+    out: Path,
+    models: Sequence[str] | None,
+    ablation_set: str,
+    overwrite: bool,
+    build_plots: bool = False,
+) -> int:
+    """Run the paper ablation suite and write aggregate summary artefacts."""
+    from chronoslob.experiments.ablations import (
+        SUPPORTED_ABLATION_SETS,
+        run_paper_ablations,
+    )
+
+    selected_models = list(models) if models else ["majority"]
+
+    try:
+        summary = run_paper_ablations(
+            config_path=Path(config_path),
+            data_path=Path(data_path),
+            out_dir=Path(out),
+            models=selected_models,
+            ablation_set=ablation_set,
+            overwrite=overwrite,
+            build_plots=build_plots,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Paper ablation suite failed: {exc}", file=sys.stderr)
+        print(
+            "  supported ablation sets: " + ", ".join(SUPPORTED_ABLATION_SETS),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB paper ablation suite")
+    print(f"  ablation set:        {summary.ablation_set}")
+    print(f"  base config:         {summary.base_config}")
+    print(f"  data path:           {summary.data_path}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  models:              {', '.join(summary.models_requested)}")
+    if summary.ablations_run:
+        print("  ablations run:")
+        for name in summary.ablations_run:
+            child = summary.child_experiments.get(name, "")
+            suffix = f" ({child})" if child else ""
+            print(f"    - {name}{suffix}")
+    else:
+        print("  ablations run:       none")
+    if summary.ablations_skipped:
+        print("  ablations skipped:")
+        for name in summary.ablations_skipped:
+            reason = next(
+                (
+                    result.reason
+                    for result in summary.results
+                    if result.name == name
+                ),
+                None,
+            )
+            suffix = f" ({reason})" if reason else ""
+            print(f"    - {name}{suffix}")
+    else:
+        print("  ablations skipped:   none")
+    if summary.reports_written:
+        print("  reports written:")
+        for relative_path in summary.reports_written:
+            print(f"    - {relative_path}")
+    else:
+        print("  reports written:     none")
+    print(f"  fixture run:         {'yes' if summary.is_fixture else 'no'}")
+    print(f"  runner version:      {summary.runner_version}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _build_paper_plots_impl(
     *,
     experiment: Path,
@@ -2286,6 +2375,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-experiment-artifacts|"
             "prepare-fi2010-benchmark|"
             "run-paper-experiment|"
+            "run-paper-ablations|"
             "build-paper-plots|"
             "inspect-paper-experiment] [...]"
         )
@@ -2409,6 +2499,63 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             data_path=parsed.data_path,
             out=parsed.out,
             models=model_tokens or None,
+            overwrite=bool(parsed.overwrite),
+            build_plots=bool(parsed.build_plots),
+        )
+    if command == "run-paper-ablations":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-paper-ablations",
+            description=(
+                "Run a controlled paper-experiment ablation suite on a local "
+                "FI-2010-style file. The runner reuses the paper experiment "
+                "runner and writes an aggregate ablation summary plus "
+                "concise markdown reports."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--data-path", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="majority,logistic",
+            help=(
+                "Comma-separated model list forwarded to each child paper "
+                "experiment. Defaults to 'majority,logistic'."
+            ),
+        )
+        parser.add_argument(
+            "--ablation-set",
+            type=str,
+            default="smoke",
+            help=(
+                "Named ablation set. Supported values: smoke, standard. "
+                "Defaults to smoke."
+            ),
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.add_argument(
+            "--build-plots",
+            dest="build_plots",
+            action="store_true",
+            help="Generate plots inside each child experiment directory.",
+        )
+        parsed = parser.parse_args(args[1:])
+        model_tokens = [
+            token.strip()
+            for token in str(parsed.models).split(",")
+            if token.strip()
+        ]
+        return _run_paper_ablations_impl(
+            config_path=parsed.config,
+            data_path=parsed.data_path,
+            out=parsed.out,
+            models=model_tokens or None,
+            ablation_set=str(parsed.ablation_set),
             overwrite=bool(parsed.overwrite),
             build_plots=bool(parsed.build_plots),
         )
@@ -3054,6 +3201,41 @@ if typer is not None:
             "the run finishes."
         ),
     )
+    _RUN_PAPER_ABLATIONS_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the paper ablation base configuration YAML file.",
+    )
+    _RUN_PAPER_ABLATIONS_DATA_PATH_OPTION = typer.Option(
+        ...,
+        "--data-path",
+        help="Local FI-2010-style file path supplied by the user.",
+    )
+    _RUN_PAPER_ABLATIONS_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for aggregate ablation artefacts.",
+    )
+    _RUN_PAPER_ABLATIONS_MODELS_OPTION = typer.Option(
+        "majority,logistic",
+        "--models",
+        help="Comma-separated model list. Defaults to 'majority,logistic'.",
+    )
+    _RUN_PAPER_ABLATIONS_SET_OPTION = typer.Option(
+        "smoke",
+        "--ablation-set",
+        help="Named ablation set. Supported values: smoke, standard.",
+    )
+    _RUN_PAPER_ABLATIONS_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _RUN_PAPER_ABLATIONS_BUILD_PLOTS_OPTION = typer.Option(
+        False,
+        "--build-plots",
+        help="Generate plots inside each child paper experiment directory.",
+    )
     _BUILD_PAPER_PLOTS_EXPERIMENT_OPTION = typer.Option(
         ...,
         "--experiment",
@@ -3146,6 +3328,29 @@ if typer is not None:
             data_path=data_path,
             out=out,
             models=model_tokens or None,
+            overwrite=overwrite,
+            build_plots=build_plots,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_paper_ablations(
+        config: Path = _RUN_PAPER_ABLATIONS_CONFIG_OPTION,
+        data_path: Path = _RUN_PAPER_ABLATIONS_DATA_PATH_OPTION,
+        out: Path = _RUN_PAPER_ABLATIONS_OUT_OPTION,
+        models: str = _RUN_PAPER_ABLATIONS_MODELS_OPTION,
+        ablation_set: str = _RUN_PAPER_ABLATIONS_SET_OPTION,
+        overwrite: bool = _RUN_PAPER_ABLATIONS_OVERWRITE_OPTION,
+        build_plots: bool = _RUN_PAPER_ABLATIONS_BUILD_PLOTS_OPTION,
+    ) -> None:
+        """Run the paper-experiment ablation suite and write artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_paper_ablations_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            models=model_tokens or None,
+            ablation_set=ablation_set,
             overwrite=overwrite,
             build_plots=build_plots,
         )
@@ -4285,6 +4490,29 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def run_paper_ablations(
+        config: Path,
+        data_path: Path,
+        out: Path,
+        models: str = "majority,logistic",
+        ablation_set: str = "smoke",
+        overwrite: bool = False,
+        build_plots: bool = False,
+    ) -> None:
+        """Run the paper-experiment ablation suite and write aggregate artefacts."""
+        model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_paper_ablations_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+            models=model_tokens or None,
+            ablation_set=ablation_set,
+            overwrite=overwrite,
+            build_plots=build_plots,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def inspect_paper_experiment(experiment: Path) -> None:
         """Print a concise paper experiment artefact summary."""
         exit_code = _inspect_paper_experiment_impl(experiment=experiment)
@@ -4328,6 +4556,7 @@ if typer is not None:
     app.command("inspect-binance-replay")(inspect_binance_replay)
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
     app.command("run-paper-experiment")(run_paper_experiment)
+    app.command("run-paper-ablations")(run_paper_ablations)
     app.command("build-paper-plots")(build_paper_plots)
     app.command("inspect-paper-experiment")(inspect_paper_experiment)
 else:

@@ -359,6 +359,33 @@ timestamps and finite, serialisable values only. Plot generation
 failures for optional inputs are recorded as warnings and do not
 invalidate the experiment artefact directory.
 
+## Paper Ablation Suite
+
+Phase H adds a traceable ablation suite for robustness analysis and
+assumption sensitivity. It composes `run-paper-experiment` and writes
+aggregate artefacts (`ablation_summary.json`,
+`ablation_results.csv`, `ablation_manifest.json`) plus concise
+Markdown reports. Child experiment directories are created only for
+ablations that actually run; skipped ablations are explicit in the
+summary, CSV and reports.
+
+The smoke command is:
+
+```bash
+python -m chronoslob.cli run-paper-ablations \
+  --config configs/experiments/fi2010_midprice_h10.yaml \
+  --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv \
+  --out runs/paper_ablation_smoke \
+  --models majority,logistic \
+  --ablation-set smoke \
+  --overwrite
+```
+
+The synthetic fixture output is a smoke artefact only and is not
+benchmark evidence. See [PAPER_ABLATIONS.md](PAPER_ABLATIONS.md) for
+the supported ablation sets, output layout and local FI-2010 usage
+pattern.
+
 ## Inspecting A Paper Experiment Directory
 
 `inspect-paper-experiment` prints a concise, read-only summary of a
@@ -383,5 +410,4 @@ path and stored artefacts produced by this runner.
   The model name is left out of the supported registry until
   train-only pretraining and supervised fine-tuning are implemented
   end to end.
-- Ablation suites and systems benchmarks. Tracked under Phase H and
-  Phase I.
+- Systems benchmarks. Tracked under Phase I.
