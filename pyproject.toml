@@ -51,6 +51,9 @@ dev = [
 torch = [
   "torch>=2.0"
 ]
+plots = [
+  "matplotlib>=3.7"
+]
 
 [project.scripts]
 chronoslob = "chronoslob.cli:app"

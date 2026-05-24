@@ -369,6 +369,7 @@ def _run_paper_experiment_impl(
     out: Path,
     models: Sequence[str] | None,
     overwrite: bool,
+    build_plots: bool = False,
 ) -> int:
     """Run the paper experiment runner and validate the artefact directory."""
     from chronoslob.experiments.paper_runner import (
@@ -383,6 +384,7 @@ def _run_paper_experiment_impl(
             out_dir=Path(out),
             models=models,
             overwrite=overwrite,
+            build_plots=build_plots,
         )
     except FileNotFoundError as exc:
         print(f"File not found: {exc}", file=sys.stderr)
@@ -440,12 +442,293 @@ def _run_paper_experiment_impl(
         print("  missing required:")
         for missing in summary.validation.missing_required:
             print(f"    - {missing}")
+    if summary.plot_summary is not None:
+        if summary.plot_summary.plots_written:
+            print("  plots written:")
+            for relative_path in summary.plot_summary.plots_written:
+                print(f"    - {relative_path}")
+        else:
+            print("  plots written:       none")
+        if summary.plot_summary.plots_skipped:
+            print("  plots skipped:")
+            for relative_path in summary.plot_summary.plots_skipped:
+                print(f"    - {relative_path}")
     if summary.warnings:
         print("  warnings:")
         for warning in summary.warnings:
             print(f"    - {warning}")
     print("  network calls:       none performed")
     return 0 if summary.validation.is_valid else 1
+
+
+def _build_paper_plots_impl(
+    *,
+    experiment: Path,
+    overwrite: bool,
+) -> int:
+    """Generate paper experiment plots from stored artefacts only."""
+    from chronoslob.experiments.plots import build_paper_experiment_plots
+
+    resolved_dir = Path(experiment)
+    try:
+        summary = build_paper_experiment_plots(
+            resolved_dir,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except NotADirectoryError as exc:
+        print(f"Path is not a directory: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, RuntimeError) as exc:
+        print(f"Paper plot generation failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB paper experiment plot builder")
+    print(f"  experiment dir:   {summary.experiment_dir}")
+    print(f"  builder version:  {summary.builder_version}")
+    if summary.plots_written:
+        print("  plots written:")
+        for relative_path in summary.plots_written:
+            print(f"    - {relative_path}")
+    else:
+        print("  plots written:    none")
+    if summary.plots_skipped:
+        print("  plots skipped:")
+        for relative_path in summary.plots_skipped:
+            print(f"    - {relative_path}")
+    else:
+        print("  plots skipped:    none")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:         none")
+    print(f"  plot summary:     {Path(summary.experiment_dir) / 'plot_summary.json'}")
+    print("  network calls:    none performed")
+    return 0
+
+
+def _inspect_paper_experiment_impl(*, experiment: Path) -> int:
+    """Print a concise human-readable summary of a paper experiment directory."""
+    import json as _json
+
+    from chronoslob.experiments.artifacts import (
+        load_results,
+        validate_experiment_directory,
+    )
+    from chronoslob.experiments.plots import (
+        PAPER_PLOT_FILENAMES,
+        PLOT_SUMMARY_FILENAME,
+    )
+
+    resolved_dir = Path(experiment)
+    if not resolved_dir.exists():
+        print(f"Experiment directory not found: {resolved_dir}", file=sys.stderr)
+        return 2
+    if not resolved_dir.is_dir():
+        print(
+            f"Experiment path is not a directory: {resolved_dir}",
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB paper experiment inspection")
+    print(f"  experiment dir:   {resolved_dir}")
+
+    report = validate_experiment_directory(resolved_dir, include_plots=True)
+    print(
+        "  artefact validation: "
+        f"{'valid' if report.is_valid else 'invalid'}"
+    )
+    if report.missing_required:
+        print("  missing required:")
+        for missing in report.missing_required:
+            print(f"    - {missing}")
+
+    runner_summary_path = resolved_dir / "runner_summary.json"
+    runner_payload: Mapping[str, Any] | None = None
+    if runner_summary_path.is_file():
+        try:
+            payload = _json.loads(runner_summary_path.read_text(encoding="utf-8"))
+        except (OSError, _json.JSONDecodeError) as exc:
+            print(f"  runner_summary.json invalid: {exc}")
+        else:
+            if isinstance(payload, Mapping):
+                runner_payload = payload
+
+    if runner_payload is not None:
+        requested = runner_payload.get("requested_models") or []
+        models_run = runner_payload.get("models_run") or []
+        skipped = runner_payload.get("skipped_models") or []
+        print(
+            "  requested models: "
+            + (", ".join(str(item) for item in requested) if requested else "none")
+        )
+        print(
+            "  models run:       "
+            + (", ".join(str(item) for item in models_run) if models_run else "none")
+        )
+        if skipped:
+            print("  skipped models:")
+            for skip in skipped:
+                if isinstance(skip, Mapping):
+                    name = skip.get("model_name", "unknown")
+                    reason = skip.get("reason", "")
+                    print(f"    - {name}: {reason}")
+                else:
+                    print(f"    - {skip}")
+        else:
+            print("  skipped models:   none")
+    else:
+        print("  runner_summary.json: not found")
+
+    results_path = resolved_dir / "results.json"
+    if results_path.is_file():
+        try:
+            results = load_results(results_path)
+        except (OSError, ValueError) as exc:
+            print(f"  results.json invalid: {exc}")
+        else:
+            streams = results.evidence_streams
+            print("  evidence streams:")
+            print(
+                "    predictive:   "
+                + (", ".join(streams.predictive) if streams.predictive else "none")
+            )
+            print(
+                "    calibration:  "
+                + (", ".join(streams.calibration) if streams.calibration else "none")
+            )
+            print(
+                "    execution:    "
+                + (", ".join(streams.execution) if streams.execution else "none")
+            )
+            if streams.robustness:
+                print(
+                    "    robustness:   "
+                    + ", ".join(streams.robustness)
+                )
+    else:
+        print("  results.json:     not found")
+
+    predictions_path = resolved_dir / "predictions.csv"
+    if predictions_path.is_file():
+        try:
+            row_count = sum(1 for _ in predictions_path.open("r", encoding="utf-8")) - 1
+        except OSError as exc:
+            print(f"  predictions.csv row count error: {exc}")
+        else:
+            print(
+                "  prediction rows:  "
+                + (str(max(row_count, 0)) if row_count >= 0 else "0")
+            )
+    else:
+        print("  prediction rows:  predictions.csv not present")
+
+    calibration_path = resolved_dir / "calibration_bins.csv"
+    if calibration_path.is_file():
+        try:
+            calibration_count = (
+                sum(1 for _ in calibration_path.open("r", encoding="utf-8")) - 1
+            )
+        except OSError as exc:
+            print(f"  calibration row count error: {exc}")
+        else:
+            print(
+                "  calibration rows: "
+                + str(max(calibration_count, 0))
+            )
+    else:
+        print("  calibration rows: calibration_bins.csv not present")
+
+    execution_path = resolved_dir / "execution_sensitivity.csv"
+    if execution_path.is_file():
+        try:
+            execution_count = (
+                sum(1 for _ in execution_path.open("r", encoding="utf-8")) - 1
+            )
+        except OSError as exc:
+            print(f"  execution row count error: {exc}")
+        else:
+            print(
+                "  execution rows:   "
+                + str(max(execution_count, 0))
+            )
+    else:
+        print("  execution rows:   execution_sensitivity.csv not present")
+
+    plots_dir = resolved_dir / "plots"
+    plots_present: list[str] = []
+    plots_missing: list[str] = []
+    for filename in PAPER_PLOT_FILENAMES:
+        candidate = plots_dir / filename
+        if candidate.is_file():
+            plots_present.append(f"plots/{filename}")
+        else:
+            plots_missing.append(f"plots/{filename}")
+    if plots_present:
+        print("  plots present:")
+        for relative_path in plots_present:
+            print(f"    - {relative_path}")
+    else:
+        print("  plots present:    none")
+    if plots_missing:
+        print("  plots missing:")
+        for relative_path in plots_missing:
+            print(f"    - {relative_path}")
+
+    plot_summary_path = resolved_dir / PLOT_SUMMARY_FILENAME
+    plot_warnings: list[str] = []
+    if plot_summary_path.is_file():
+        try:
+            plot_payload = _json.loads(plot_summary_path.read_text(encoding="utf-8"))
+        except (OSError, _json.JSONDecodeError) as exc:
+            print(f"  plot_summary.json invalid: {exc}")
+        else:
+            if isinstance(plot_payload, Mapping):
+                summary_warnings = plot_payload.get("warnings")
+                if isinstance(summary_warnings, list):
+                    plot_warnings.extend(
+                        str(item) for item in summary_warnings if isinstance(item, str)
+                    )
+
+    if report.warnings:
+        print("  artefact warnings:")
+        for warning in report.warnings:
+            print(f"    - {warning}")
+    if plot_warnings:
+        print("  plot warnings:")
+        for warning in plot_warnings:
+            print(f"    - {warning}")
+    if not report.warnings and not plot_warnings:
+        print("  warnings:         none")
+
+    is_fixture_flag: bool | None = None
+    if runner_payload is not None:
+        raw_flag = runner_payload.get("is_fixture")
+        if isinstance(raw_flag, bool):
+            is_fixture_flag = raw_flag
+    if is_fixture_flag is None:
+        model_card_path = resolved_dir / "model_card.md"
+        if model_card_path.is_file():
+            try:
+                text = model_card_path.read_text(encoding="utf-8").lower()
+            except OSError:
+                text = ""
+            if "synthetic fixture" in text or "not benchmark evidence" in text:
+                is_fixture_flag = True
+    if is_fixture_flag is True:
+        print("  fixture run:      yes (synthetic fixture smoke run; not benchmark evidence)")
+    elif is_fixture_flag is False:
+        print("  fixture run:      no")
+    else:
+        print("  fixture run:      unknown")
+    print("  outputs:          not written")
+    print("  network calls:    none performed")
+    return 0
 
 
 def _is_synthetic_fixture_path(path: Path) -> bool:
@@ -2002,7 +2285,9 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-report-archive|inspect-report-archive|"
             "inspect-experiment-artifacts|"
             "prepare-fi2010-benchmark|"
-            "run-paper-experiment] [...]"
+            "run-paper-experiment|"
+            "build-paper-plots|"
+            "inspect-paper-experiment] [...]"
         )
         return 0
 
@@ -2104,6 +2389,15 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             action="store_true",
             help="Replace the output directory if it already exists.",
         )
+        parser.add_argument(
+            "--build-plots",
+            dest="build_plots",
+            action="store_true",
+            help=(
+                "Generate paper experiment plots from stored artefacts "
+                "after the run finishes."
+            ),
+        )
         parsed = parser.parse_args(args[1:])
         model_tokens = [
             token.strip()
@@ -2116,7 +2410,38 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             out=parsed.out,
             models=model_tokens or None,
             overwrite=bool(parsed.overwrite),
+            build_plots=bool(parsed.build_plots),
         )
+    if command == "build-paper-plots":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-paper-plots",
+            description=(
+                "Generate paper experiment plots from the artefacts stored "
+                "inside a completed experiment directory."
+            ),
+        )
+        parser.add_argument("--experiment", type=Path, required=True)
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace existing plot files when generating.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _build_paper_plots_impl(
+            experiment=parsed.experiment,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "inspect-paper-experiment":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-paper-experiment",
+            description=(
+                "Print a concise human-readable summary of a paper "
+                "experiment artefact directory."
+            ),
+        )
+        parser.add_argument("--experiment", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_paper_experiment_impl(experiment=parsed.experiment)
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -2721,6 +3046,29 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _RUN_PAPER_EXPERIMENT_BUILD_PLOTS_OPTION = typer.Option(
+        False,
+        "--build-plots",
+        help=(
+            "Generate paper experiment plots from stored artefacts after "
+            "the run finishes."
+        ),
+    )
+    _BUILD_PAPER_PLOTS_EXPERIMENT_OPTION = typer.Option(
+        ...,
+        "--experiment",
+        help="Path to a completed paper experiment artefact directory.",
+    )
+    _BUILD_PAPER_PLOTS_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace existing plot files when generating.",
+    )
+    _INSPECT_PAPER_EXPERIMENT_EXPERIMENT_OPTION = typer.Option(
+        ...,
+        "--experiment",
+        help="Path to a paper experiment artefact directory.",
+    )
 
     def run_project_audit(
         root: Path | None = _AUDIT_ROOT_OPTION,
@@ -2789,6 +3137,7 @@ if typer is not None:
         out: Path = _RUN_PAPER_EXPERIMENT_OUT_OPTION,
         models: str = _RUN_PAPER_EXPERIMENT_MODELS_OPTION,
         overwrite: bool = _RUN_PAPER_EXPERIMENT_OVERWRITE_OPTION,
+        build_plots: bool = _RUN_PAPER_EXPERIMENT_BUILD_PLOTS_OPTION,
     ) -> None:
         """Run the paper experiment runner and write artefacts."""
         model_tokens = [token.strip() for token in models.split(",") if token.strip()]
@@ -2798,7 +3147,28 @@ if typer is not None:
             out=out,
             models=model_tokens or None,
             overwrite=overwrite,
+            build_plots=build_plots,
         )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_paper_plots(
+        experiment: Path = _BUILD_PAPER_PLOTS_EXPERIMENT_OPTION,
+        overwrite: bool = _BUILD_PAPER_PLOTS_OVERWRITE_OPTION,
+    ) -> None:
+        """Generate paper experiment plots from stored artefacts."""
+        exit_code = _build_paper_plots_impl(
+            experiment=experiment,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_paper_experiment(
+        experiment: Path = _INSPECT_PAPER_EXPERIMENT_EXPERIMENT_OPTION,
+    ) -> None:
+        """Print a concise paper experiment artefact summary."""
+        exit_code = _inspect_paper_experiment_impl(experiment=experiment)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -3888,6 +4258,7 @@ else:
         out: Path,
         models: str = "majority",
         overwrite: bool = False,
+        build_plots: bool = False,
     ) -> None:
         """Run the paper experiment runner and write artefacts."""
         model_tokens = [token.strip() for token in models.split(",") if token.strip()]
@@ -3897,7 +4268,26 @@ else:
             out=out,
             models=model_tokens or None,
             overwrite=overwrite,
+            build_plots=build_plots,
         )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_paper_plots(
+        experiment: Path,
+        overwrite: bool = False,
+    ) -> None:
+        """Generate paper experiment plots from stored artefacts."""
+        exit_code = _build_paper_plots_impl(
+            experiment=experiment,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_paper_experiment(experiment: Path) -> None:
+        """Print a concise paper experiment artefact summary."""
+        exit_code = _inspect_paper_experiment_impl(experiment=experiment)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -3938,6 +4328,8 @@ if typer is not None:
     app.command("inspect-binance-replay")(inspect_binance_replay)
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
     app.command("run-paper-experiment")(run_paper_experiment)
+    app.command("build-paper-plots")(build_paper_plots)
+    app.command("inspect-paper-experiment")(inspect_paper_experiment)
 else:
 
     def app() -> int:

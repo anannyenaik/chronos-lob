@@ -70,7 +70,9 @@ python -m chronoslob.cli <command> [options]
 | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | `inspect-experiment-artifacts --experiment PATH`                     | Inspect an experiment directory against the artefact contract.     |
 | `prepare-fi2010-benchmark --config PATH --data-path PATH --out PATH` | Prepare a local-only FI-2010 benchmark input (no model run).       |
-| `run-paper-experiment --config PATH --data-path PATH --out PATH [--models majority[,logistic,ridge,elastic_net,random_forest,gradient_boosting,deeplob_style,transformer]] [--overwrite]` | Run the paper benchmark suite and write a validated artefact directory. Phase F additionally emits `calibration_bins.csv` and `execution_sensitivity.csv` when their inputs are available. |
+| `run-paper-experiment --config PATH --data-path PATH --out PATH [--models majority[,logistic,ridge,elastic_net,random_forest,gradient_boosting,deeplob_style,transformer]] [--overwrite] [--build-plots]` | Run the paper benchmark suite and write a validated artefact directory. Phase F additionally emits `calibration_bins.csv` and `execution_sensitivity.csv` when their inputs are available. Phase G adds `--build-plots`, which generates reproducible plots from stored artefacts. |
+| `build-paper-plots --experiment PATH [--overwrite]`                  | Generate paper experiment plots (`plots/reliability_curve.png`, `plots/cost_sensitivity.png`, `plots/confusion_matrix.png`, and `plots/regime_breakdown.png` when genuine regime data is present) from the artefacts stored inside a completed paper experiment directory. |
+| `inspect-paper-experiment --experiment PATH`                         | Print a concise, read-only summary of a paper experiment directory (validation status, evidence streams, prediction/calibration/execution row counts, plot inventory, fixture flag). |
 
 ## Audit and Evidence Archive
 

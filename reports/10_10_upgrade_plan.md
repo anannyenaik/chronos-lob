@@ -377,17 +377,36 @@ accuracy.
 Purpose: generate plots from validated artefacts and provide a read-only
 inspection command for completed experiments.
 
-Files likely to be added or modified: `chronoslob/analysis/plots.py`,
-`chronoslob/cli.py`, `docs/CLI_REFERENCE.md`, `tests/test_experiment_plots.py`.
+Status: implemented. The paper plot builder
+(`chronoslob/experiments/plots.py`) reads
+`calibration_bins.csv`, `execution_sensitivity.csv`,
+`confusion_matrix.json` and `predictions.csv` to produce
+`plots/reliability_curve.png`, `plots/cost_sensitivity.png`,
+`plots/confusion_matrix.png` and `plots/regime_breakdown.png` (only
+when genuine regime data is available). It writes `plot_summary.json`
+with timezone-aware timestamps and finite, serialisable values only.
 
-CLI command expected: `python -m chronoslob.cli inspect-experiment --path experiments/fi2010_midprice_h10`.
+Files added or modified: `chronoslob/experiments/plots.py`,
+`chronoslob/experiments/paper_runner.py`, `chronoslob/cli.py`,
+`pyproject.toml` (matplotlib as an optional `[plots]` extra),
+`docs/PAPER_EXPERIMENTS.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_ARTIFACT_CONTRACT.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md`, `docs/REPRODUCIBILITY.md`,
+`tests/test_paper_experiment_plots.py`,
+`tests/test_paper_experiment_inspection.py`.
+
+CLI commands added: `build-paper-plots --experiment PATH [--overwrite]`,
+`inspect-paper-experiment --experiment PATH` and a `--build-plots`
+flag on `run-paper-experiment`.
 
 Tests expected: plot generation from stored CSV/Parquet/JSON artefacts,
-read-only inspection, stable filenames and failures when source artefacts are
-missing.
+read-only inspection, stable filenames, missing-input warnings,
+overwrite-protection, and regime-plot skipping when no genuine regime
+data is present.
 
-Strict non-goals: do not hand-edit plots, generate plots without data or add
-visuals that imply unreported benchmark results.
+Strict non-goals: do not hand-edit plots, generate plots without data,
+fabricate regime data to fill a plot, or add visuals that imply
+unreported benchmark results.
 
 ### Phase H: Ablation suite
 

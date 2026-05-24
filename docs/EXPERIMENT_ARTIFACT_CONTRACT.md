@@ -38,6 +38,22 @@ their absence does not invalidate a schema-only directory:
 `predictions.csv` and `predictions.parquet` are alternatives. Either file
 satisfies the prediction artefact expectation.
 
+Plot artefacts are emitted by the Phase G plot builder
+(`build-paper-plots` or `run-paper-experiment --build-plots`). Each
+plot is generated from a specific stored artefact:
+
+- `plots/reliability_curve.png` is derived from `calibration_bins.csv`.
+- `plots/cost_sensitivity.png` is derived from
+  `execution_sensitivity.csv`.
+- `plots/confusion_matrix.png` is derived from `confusion_matrix.json`.
+- `plots/regime_breakdown.png` is only generated when genuine regime
+  data is available in stored artefacts; otherwise the plot is
+  skipped with a clear warning and is not fabricated.
+
+A `plot_summary.json` artefact written next to the experiment root
+records the experiment directory, builder version, plots written,
+plots skipped and any warnings produced during plot generation.
+
 ## Traceability Expectations
 
 Any future benchmark metric should trace to:

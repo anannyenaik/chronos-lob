@@ -108,6 +108,22 @@ produced by this runner. See
 [PAPER_EXPERIMENTS.md](PAPER_EXPERIMENTS.md) for the full contract,
 metric groups, leakage controls and the tiny fixture smoke command.
 
+Phase G adds optional deterministic plot generation from the stored
+artefacts. Pass `--build-plots` to `run-paper-experiment` to generate
+plots in the same run, or invoke `build-paper-plots --experiment PATH`
+on a completed directory. The plot builder writes
+`plots/reliability_curve.png` from `calibration_bins.csv`,
+`plots/cost_sensitivity.png` from `execution_sensitivity.csv`,
+`plots/confusion_matrix.png` from `confusion_matrix.json`, and
+`plots/regime_breakdown.png` only when genuine regime data is
+available in stored artefacts. A `plot_summary.json` artefact
+records plots written, plots skipped and any warnings. Synthetic
+fixture smoke runs remain synthetic fixture smoke runs even with
+plots attached; they are not benchmark evidence.
+`inspect-paper-experiment --experiment PATH` prints a concise,
+read-only summary of the directory (artefact validation, evidence
+streams, row counts, plot inventory and fixture flag).
+
 ## Evidence Archive
 
 A local evidence archive of inventories, current command outputs and

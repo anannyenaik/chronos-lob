@@ -71,6 +71,10 @@ from chronoslob.experiments.model_registry import (
     normalise_paper_model_names,
 )
 from chronoslob.experiments.neural_adapters import run_neural_paper_model
+from chronoslob.experiments.plots import (
+    PaperPlotSummary,
+    build_paper_experiment_plots,
+)
 from chronoslob.experiments.schemas import (
     EvidenceStreams,
     ExperimentConfigSummary,
@@ -208,6 +212,7 @@ class PaperExperimentSummary(BaseModel):
     validation: ExperimentValidationReport
     outcomes: list[PaperModelOutcome] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    plot_summary: PaperPlotSummary | None = None
 
     @field_validator(
         "experiment_name",
@@ -1120,6 +1125,7 @@ def run_paper_experiment(
     *,
     models: Sequence[str] | None = None,
     overwrite: bool = False,
+    build_plots: bool = False,
 ) -> PaperExperimentSummary:
     """Run the paper experiment runner and write a validated artefact directory.
 
@@ -1140,6 +1146,11 @@ def run_paper_experiment(
         When ``False``, refuse to write into an existing directory that
         already contains artefacts. When ``True``, the target directory
         is replaced before writing.
+    build_plots:
+        When ``True``, deterministic plots are generated from the stored
+        artefacts after evidence files have been written. Plot generation
+        failures for optional inputs are recorded as warnings and do not
+        invalidate the experiment.
 
     Returns
     -------
@@ -1550,6 +1561,23 @@ def run_paper_experiment(
         "execution_sensitivity_config": config.execution_sensitivity.model_dump(),
     }
 
+    plot_summary: PaperPlotSummary | None = None
+    plot_warnings: list[str] = []
+    if build_plots:
+        try:
+            plot_summary = build_paper_experiment_plots(
+                resolved_out_dir,
+                overwrite=True,
+            )
+        except (OSError, ValueError, RuntimeError) as exc:
+            plot_warnings.append(
+                f"plot generation failed: {type(exc).__name__}: {exc}"
+            )
+        if plot_summary is not None:
+            plot_warnings.extend(plot_summary.warnings)
+            if plot_summary.plots_written:
+                artefacts["plots"] = "plots/"
+
     runner_summary_payload: dict[str, Any] = {
         "experiment_name": config.experiment_name,
         "task_name": config.task_name,
@@ -1577,6 +1605,19 @@ def run_paper_experiment(
             for outcome in outcomes
             if outcome.metadata
         },
+        "plots": {
+            "requested": bool(build_plots),
+            "plots_written": (
+                list(plot_summary.plots_written) if plot_summary is not None else []
+            ),
+            "plots_skipped": (
+                list(plot_summary.plots_skipped) if plot_summary is not None else []
+            ),
+            "warnings": list(plot_warnings),
+            "builder_version": (
+                plot_summary.builder_version if plot_summary is not None else None
+            ),
+        },
     }
     (resolved_out_dir / "runner_summary.json").write_text(
         stable_json_dumps(runner_summary_payload),
@@ -1599,6 +1640,8 @@ def run_paper_experiment(
         warnings.append(f"calibration evidence note: {calibration_warning}")
     if execution_warning is not None:
         warnings.append(f"execution sensitivity note: {execution_warning}")
+    for plot_warning in plot_warnings:
+        warnings.append(f"plot note: {plot_warning}")
 
     return PaperExperimentSummary(
         experiment_name=config.experiment_name,
@@ -1623,6 +1666,7 @@ def run_paper_experiment(
         validation=validation,
         outcomes=outcomes,
         warnings=warnings,
+        plot_summary=plot_summary,
     )
 
 

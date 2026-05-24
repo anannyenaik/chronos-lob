@@ -34,9 +34,9 @@ and does not invent benchmark evidence from synthetic fixtures.
    missing or invalid.
 
 The runner is deliberately limited: it does not refit calibrators on
-test predictions, does not select model hyperparameters on test data
-and does not produce plot files in this phase. Plot generation remains
-tracked under a later phase of the empirical upgrade plan.
+test predictions and does not select model hyperparameters on test
+data. Phase G now adds optional plot generation from stored
+artefacts (see [Plot Generation](#plot-generation)).
 
 Phase F now adds calibration and execution-aware sensitivity evidence:
 when the runner produces predictions that contain confidence values it
@@ -153,9 +153,11 @@ why an evidence stream was skipped.
 
 When the runner emits calibration or execution evidence it also adds
 `calibration_bins.csv` and `execution_sensitivity.csv` to the output
-layout below and references them from `results.json`. Plots are not
-written in this phase; the artefact contract treats them as optional
-warnings, so their absence does not invalidate the directory.
+layout below and references them from `results.json`. Plots are
+written under `<out_dir>/plots/` only when `--build-plots` is passed
+to `run-paper-experiment` or when `build-paper-plots` is invoked
+explicitly; the artefact contract treats them as optional artefacts,
+so their absence does not invalidate the directory.
 
 ## Metric Groups
 
@@ -306,12 +308,80 @@ with zero counts so the artefact remains traceable. This is an
 explicit simplified analysis, not a production backtest, not a
 tradable strategy and not live trading evidence.
 
+## Plot Generation
+
+Phase G adds deterministic plot generation from stored artefacts only.
+Plots are placed under `<out_dir>/plots/` with stable filenames so
+the experiment artefact contract recognises them as optional artefacts:
+
+- `plots/reliability_curve.png` — built from `calibration_bins.csv`,
+  one line per model plus a diagonal reference. Skipped with a warning
+  when the CSV is absent or has no rows with positive bin counts.
+- `plots/cost_sensitivity.png` — built from
+  `execution_sensitivity.csv`, plotting `net_signal_return_proxy`
+  against `cost_bps` and grouping by model and confidence threshold.
+  Skipped with a warning when the CSV is absent or no rows have
+  finite values. This is execution-aware sensitivity, not strategy
+  performance.
+- `plots/confusion_matrix.png` — built from `confusion_matrix.json`,
+  one panel per model with axes labelled from the stored class
+  identifiers. Skipped with a warning when the JSON is absent or has
+  no usable matrix entries.
+- `plots/regime_breakdown.png` — only generated when genuine regime
+  data is available in stored artefacts (for example a `regime`
+  column on `predictions.csv`). Skipped with a clear warning when no
+  genuine regime breakdown is present. The runner never fabricates
+  regimes from row numbers or timestamps.
+
+Use the same runner with `--build-plots`:
+
+```bash
+python -m chronoslob.cli run-paper-experiment \
+  --config configs/experiments/fi2010_midprice_h10.yaml \
+  --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv \
+  --out runs/paper_experiment_plots_smoke \
+  --models majority,logistic,deeplob_style,transformer \
+  --overwrite \
+  --build-plots
+```
+
+Or build plots later from a completed experiment directory:
+
+```bash
+python -m chronoslob.cli build-paper-plots \
+  --experiment runs/paper_experiment_plots_smoke \
+  --overwrite
+```
+
+A `plot_summary.json` artefact records the experiment directory, the
+plots written, the plots skipped and any warnings, with timezone-aware
+timestamps and finite, serialisable values only. Plot generation
+failures for optional inputs are recorded as warnings and do not
+invalidate the experiment artefact directory.
+
+## Inspecting A Paper Experiment Directory
+
+`inspect-paper-experiment` prints a concise, read-only summary of a
+completed experiment directory:
+
+```bash
+python -m chronoslob.cli inspect-paper-experiment \
+  --experiment runs/paper_experiment_plots_smoke
+```
+
+The output lists artefact validation status, requested and skipped
+models, evidence stream metric names, prediction/calibration/execution
+row counts, plot inventory and whether the run is a synthetic fixture
+smoke run. The command does not train a model, run inference or write
+new files. Fixture smoke runs remain explicitly labelled as not
+benchmark evidence. Real benchmark evidence requires a local FI-2010
+path and stored artefacts produced by this runner.
+
 ## Out Of Scope For This Phase
 
 - SSL-pretrained transformer experiments inside `run-paper-experiment`.
   The model name is left out of the supported registry until
   train-only pretraining and supervised fine-tuning are implemented
   end to end.
-- Plot generation. Tracked under Phase G.
 - Ablation suites and systems benchmarks. Tracked under Phase H and
   Phase I.

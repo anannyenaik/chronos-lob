@@ -138,14 +138,22 @@ or reproducing the platform.
 - Modules: `chronoslob/experiments/paper_runner.py`,
   `chronoslob/experiments/model_registry.py`,
   `chronoslob/experiments/neural_adapters.py`,
-  `chronoslob/experiments/evidence.py`
+  `chronoslob/experiments/evidence.py`,
+  `chronoslob/experiments/plots.py`
 - Configs: `configs/experiments/fi2010_midprice_h10.yaml`
 - Tests: `tests/test_paper_experiment_runner.py`,
   `tests/test_classical_paper_models.py`,
   `tests/test_neural_paper_models.py`,
-  `tests/test_paper_experiment_evidence.py`
-- CLI: `run-paper-experiment`
+  `tests/test_paper_experiment_evidence.py`,
+  `tests/test_paper_experiment_plots.py`,
+  `tests/test_paper_experiment_inspection.py`
+- CLI: `run-paper-experiment`, `build-paper-plots`,
+  `inspect-paper-experiment`
 - Docs: [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
+- Phase G artefacts: `plots/reliability_curve.png`,
+  `plots/cost_sensitivity.png`, `plots/confusion_matrix.png`,
+  optionally `plots/regime_breakdown.png` (only when genuine regime
+  data is available in stored artefacts) and `plot_summary.json`.
 
 ## Reproducibility and Audit
 
