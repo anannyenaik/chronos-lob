@@ -33,8 +33,8 @@ test_fraction: 0.15
 
 # The following sections are recorded for the paper experiment runner
 # and are not consumed by the preparation step. They describe the
-# planned classical benchmark suite and the wider model roadmap; not
-# every entry has been benchmarked on real FI-2010 data.
+# supported benchmark suite and the wider model roadmap; not every
+# entry has been benchmarked on real FI-2010 data.
 classical_models_supported:
   - majority
   - logistic
@@ -43,6 +43,32 @@ classical_models_supported:
   - random_forest
   - gradient_boosting
 
+neural_settings:
+  supported_models:
+    - deeplob_style
+    - transformer
+  planned_models:
+    - ssl_transformer
+  lookback: 1
+  transformer_window_length: 4
+  batch_size: 4
+  max_epochs: 1
+  learning_rate: 0.001
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  device: cpu
+  deterministic: true
+  dropout: 0.0
+  deeplob_conv_channels: 4
+  deeplob_lstm_hidden_size: 8
+  deeplob_use_batch_norm: false
+  transformer_field_embedding_dim: 4
+  transformer_model_dim: 16
+  transformer_num_heads: 2
+  transformer_num_layers: 1
+  transformer_feedforward_dim: 32
+  transformer_max_levels_per_side: 2
+
 models_planned:
   - majority
   - logistic
@@ -50,7 +76,7 @@ models_planned:
   - elastic_net
   - random_forest
   - gradient_boosting
-  - deeplob
+  - deeplob_style
   - transformer
   - ssl_transformer
 

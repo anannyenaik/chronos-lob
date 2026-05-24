@@ -83,12 +83,14 @@ any future paper experiment run.
 
 The paper experiment runner consumes the same FI-2010 preparation
 config and a local data path and writes a validated experiment
-artefact directory in one command. Phase D establishes the classical
-benchmark suite; the supported model short names are `majority`,
-`logistic`, `ridge`, `elastic_net`, `random_forest` and
-`gradient_boosting`. Multiple models can be selected with a
-comma-separated `--models` list and the `majority` baseline must
-always be included as the interpretable floor.
+artefact directory in one command. Phase E supports `majority`,
+`logistic`, `ridge`, `elastic_net`, `random_forest`,
+`gradient_boosting`, `deeplob_style` and `transformer`. Multiple
+models can be selected with a comma-separated `--models` list and the
+`majority` baseline must always be included as the interpretable
+floor. Neural settings are controlled by the `neural_settings` section
+of `configs/experiments/fi2010_midprice_h10.yaml` and default to CPU
+smoke-safe values.
 
 Synthetic fixture smoke runs (under `tests/fixtures/fi2010`) exist
 only to exercise the runner plumbing and are not benchmark evidence.

@@ -125,10 +125,12 @@ or reproducing the platform.
 ## Paper Experiment Runner
 
 - Modules: `chronoslob/experiments/paper_runner.py`,
-  `chronoslob/experiments/model_registry.py`
+  `chronoslob/experiments/model_registry.py`,
+  `chronoslob/experiments/neural_adapters.py`
 - Configs: `configs/experiments/fi2010_midprice_h10.yaml`
 - Tests: `tests/test_paper_experiment_runner.py`,
-  `tests/test_classical_paper_models.py`
+  `tests/test_classical_paper_models.py`,
+  `tests/test_neural_paper_models.py`
 - CLI: `run-paper-experiment`
 - Docs: [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
 

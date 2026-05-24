@@ -4,12 +4,11 @@ ChronosLOB ships a paper experiment runner that turns a user-supplied
 local FI-2010-style file into a validated experiment artefact directory.
 The runner is the predictive-quality evidence stream above the FI-2010
 benchmark preparation step: it reuses preparation outputs, runs the
-classical benchmark suite and writes the standard artefacts defined by
-the experiment artefact contract.
+requested classical and neural baselines and writes the standard
+artefacts defined by the experiment artefact contract.
 
-The runner does not download data, does not perform any network call,
-does not train neural models in this phase and does not invent
-benchmark evidence from synthetic fixtures.
+The runner does not download data, does not perform any network call
+and does not invent benchmark evidence from synthetic fixtures.
 
 ## What The Runner Does
 
@@ -23,9 +22,10 @@ benchmark evidence from synthetic fixtures.
 4. Reloads the local file through the same FI-2010 loader configuration
    so that feature and label rows align with the preparation summary.
 5. Builds a deterministic temporal train/validation/test split.
-6. Fits the requested classical models on the training rows only and
-   evaluates them on the held-out test split. Per-model train-only
-   standardisation is applied where required by the model.
+6. Fits the requested models on the training rows only and evaluates
+   them on the held-out test split. Per-model train-only
+   standardisation or train-only tokenisation state is applied where
+   required by the model.
 7. Writes the standard artefact set: `config.yaml`,
    `data_manifest.json`, `results.json`, `predictions.csv`,
    `model_card.md`, `confusion_matrix.json` and `runner_summary.json`.
@@ -41,24 +41,31 @@ streams are tracked under later phases of the empirical upgrade plan.
 
 ## Currently Supported Models
 
-Phase D establishes a classical benchmark suite. The supported short
-model names — used in `--models`, the config file and tests — are:
+Phase E supports the classical benchmark suite plus two neural paper
+runner baselines. The supported short model names used in `--models`,
+the config file and tests are:
 
 - `majority` (always required) — deterministic majority-class baseline.
 - `logistic` — `LogisticRegression` from scikit-learn on a train-only
   `TrainOnlyStandardScaler` projection of the feature matrix.
 - `ridge` — `RidgeClassifier` on train-only standardised features.
-  Does not emit calibrated class probabilities; calibration metrics
+  Does not emit class probabilities; calibration metrics
   for this model are omitted in `results.json`.
 - `elastic_net` — `LogisticRegression` with the elastic-net penalty
   (`saga` solver) on train-only standardised features.
 - `random_forest` — `RandomForestClassifier` on raw features.
 - `gradient_boosting` — `GradientBoostingClassifier` on raw features.
+- `deeplob_style` - compact DeepLOB-style CNN-LSTM baseline over
+  split-contained FI-2010 windows. This is not an exact reproduction
+  of the original architecture.
+- `transformer` - supervised transformer baseline over deterministic
+  snapshot-derived token windows.
 
 Names are case-folded to lower-case before lookup. Other model
-families — DeepLOB-style, transformer and self-supervised transformer —
-remain explicitly out of scope for the classical benchmark suite and
-are tracked under Phase E.
+families are unsupported unless they appear in the registry. The
+self-supervised transformer path is not registered in this phase
+because the paper runner does not yet implement genuine train-only
+pretraining and supervised fine-tuning.
 
 If `--models` is omitted, the runner defaults to `majority`. The
 `majority` baseline must be present in any explicit selection so that
@@ -145,13 +152,13 @@ separate via the `evidence_streams` field:
   `class_count_train` and `class_count_test`.
 - Calibration metrics include `brier_score`, `log_loss`,
   `expected_calibration_error` and `mean_confidence`, and are emitted
-  only for models that produce calibrated class probabilities. Models
+  only for models that produce class probabilities. Models
   without `predict_proba` (currently `ridge`) record no calibration
   metrics.
 - Execution-aware metrics are not computed in this phase.
 
 The `evidence_streams.execution` field is therefore set to
-`["not_computed"]` for the classical benchmark suite. This is an
+`["not_computed"]` for the paper benchmark suite. This is an
 explicit placeholder until Phase F adds execution-sensitivity
 artefacts.
 
@@ -186,11 +193,24 @@ python -m chronoslob.cli run-paper-experiment \
   --overwrite
 ```
 
-`runs/` is in `.gitignore`, so smoke outputs are not committed. The
-tiny fixture is too small for tree-based models in a strict comparison
-setting; the smoke command therefore exercises `majority` and
-`logistic`, while the heavier models are unit-tested through the
-registry.
+`runs/` is in `.gitignore`, so smoke outputs are not committed. A CPU
+neural smoke run can be exercised with:
+
+```bash
+python -m chronoslob.cli run-paper-experiment \
+  --config configs/experiments/fi2010_midprice_h10.yaml \
+  --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv \
+  --out runs/paper_experiment_neural_smoke \
+  --models majority,deeplob_style,transformer \
+  --overwrite
+```
+
+The neural settings used by this command are controlled by the
+`neural_settings` section of
+`configs/experiments/fi2010_midprice_h10.yaml`, including lookback,
+batch size, epoch count, learning rate, model sizes and `device: cpu`.
+The fixture remains a synthetic smoke run only; it is not benchmark
+evidence.
 
 ## Supplying A Real Local FI-2010 Path
 
@@ -202,7 +222,7 @@ python -m chronoslob.cli run-paper-experiment \
   --config configs/experiments/fi2010_midprice_h10.yaml \
   --data-path /local/path/to/fi2010_normalised.csv \
   --out runs/fi2010_midprice_h10 \
-  --models majority,logistic,ridge,elastic_net,random_forest,gradient_boosting \
+  --models majority,logistic,ridge,elastic_net,random_forest,gradient_boosting,deeplob_style,transformer \
   --overwrite
 ```
 
@@ -230,8 +250,10 @@ model card emitted for any fixture run states this explicitly.
 
 ## Out Of Scope For This Phase
 
-- DeepLOB-style, transformer and SSL-pretrained transformer
-  experiments. These are Phase E.
+- SSL-pretrained transformer experiments inside `run-paper-experiment`.
+  The model name is left out of the supported registry until
+  train-only pretraining and supervised fine-tuning are implemented
+  end to end.
 - Calibration evidence stream as a stored artefact (reliability bins,
   recomputed ECE). The runner records `brier_score`, `log_loss`,
   `expected_calibration_error` and `mean_confidence` in `results.json`

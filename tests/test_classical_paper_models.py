@@ -52,6 +52,8 @@ def test_registry_lists_all_phase_d_model_names() -> None:
 def test_registry_specs_reference_supported_baseline_model_types() -> None:
     for name in SUPPORTED_PAPER_MODELS:
         spec = get_paper_model_spec(name)
+        if spec.model_family != "classical":
+            continue
         assert spec.model_type in SUPPORTED_BASELINE_MODEL_TYPES, spec.model_type
 
 

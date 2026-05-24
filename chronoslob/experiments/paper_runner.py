@@ -2,22 +2,22 @@
 
 This module turns a user-supplied local FI-2010-style file into a
 validated experiment artefact directory. It composes the existing
-benchmark preparation logic, classical baseline infrastructure and
+benchmark preparation logic, baseline infrastructure and
 artefact contract so that one CLI invocation produces a complete,
-validated experiment record covering several classical baselines.
+validated experiment record covering classical and neural baselines.
 
 The runner is deliberately scoped:
 
-* It runs the classical paper model registry (see
-  :mod:`chronoslob.experiments.model_registry`) and never trains
-  DeepLOB-style, transformer or self-supervised models.
+* It runs the paper model registry (see
+  :mod:`chronoslob.experiments.model_registry`) including classical
+  baselines plus traceable DeepLOB-style and transformer neural paths.
 * It writes only the required artefacts plus row-level predictions and
   a confusion-matrix artefact.
 * It never downloads data, never fits preprocessing or model-selection
   choices on validation or test data and never performs network calls.
 
-The classical benchmark suite is the predictive-quality evidence
-stream. Calibration evidence (reliability bins, ECE recomputation
+The benchmark suite is the predictive-quality evidence stream.
+Calibration evidence (reliability bins, ECE recomputation
 from stored predictions), execution-sensitivity evidence and plot
 generation remain tracked under later phases.
 """
@@ -57,6 +57,7 @@ from chronoslob.experiments.model_registry import (
     get_paper_model_spec,
     normalise_paper_model_names,
 )
+from chronoslob.experiments.neural_adapters import run_neural_paper_model
 from chronoslob.experiments.schemas import (
     EvidenceStreams,
     ExperimentConfigSummary,
@@ -93,7 +94,7 @@ __all__ = [
 
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
-PAPER_RUNNER_VERSION = "phase-d/paper-experiment-runner/v2"
+PAPER_RUNNER_VERSION = "phase-e/paper-experiment-runner/v1"
 
 _FIXTURE_PATH_MARKERS = ("tests", "fixtures")
 
@@ -132,6 +133,7 @@ class PaperModelOutcome(BaseModel):
     confusion_matrix: dict[str, Any]
     n_test_rows: int
     emits_probabilities: bool
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("model_name", "model_type", "split")
     @classmethod
@@ -501,6 +503,26 @@ def _expected_calibration_error(
     return ece
 
 
+def _multiclass_brier_score(
+    *,
+    y_true: Sequence[Any],
+    probabilities: np.ndarray,
+    labels: Sequence[Any],
+) -> float:
+    if probabilities.ndim != 2:
+        raise ValueError("probabilities must be 2D for Brier score")
+    if probabilities.shape[0] != len(y_true):
+        raise ValueError("probability row count must match y_true")
+    label_to_index = {label: position for position, label in enumerate(labels)}
+    one_hot = np.zeros_like(probabilities, dtype=float)
+    for row_position, label in enumerate(y_true):
+        class_index = label_to_index.get(label)
+        if class_index is None:
+            continue
+        one_hot[row_position, class_index] = 1.0
+    return float(np.mean(np.sum((probabilities - one_hot) ** 2, axis=1)))
+
+
 def _confusion_matrix_payload(
     outcomes: Sequence[PaperModelOutcome],
 ) -> dict[str, Any]:
@@ -545,13 +567,14 @@ def _write_model_card(
     artefacts: Mapping[str, str],
     code_commit: str | None,
     split_counts: Mapping[str, int],
+    neural_settings: Mapping[str, Any],
 ) -> None:
     lines: list[str] = []
     lines.append(f"# Model Card: {config.experiment_name}")
     lines.append("")
     if is_fixture:
         lines.append(
-            "Status: synthetic fixture smoke run of the classical "
+            "Status: synthetic fixture smoke run of the paper "
             "benchmark suite. This artefact set exercises the paper "
             "experiment runner on a tiny synthetic fixture and is not "
             "benchmark evidence, market evidence or execution evidence.",
@@ -559,7 +582,7 @@ def _write_model_card(
     else:
         lines.append(
             "Status: locally executed paper experiment run of the "
-            "classical benchmark suite. Inspect the data manifest, "
+            "benchmark suite. Inspect the data manifest, "
             "split summary and limitations before treating the metrics "
             "as benchmark evidence.",
         )
@@ -628,6 +651,35 @@ def _write_model_card(
     else:
         lines.append("  - none")
     lines.append("")
+    lines.append("## Neural Settings")
+    lines.append("")
+    neural_keys = (
+        "supported_models",
+        "lookback",
+        "transformer_window_length",
+        "batch_size",
+        "max_epochs",
+        "learning_rate",
+        "weight_decay",
+        "gradient_clip_norm",
+        "device",
+        "deterministic",
+        "dropout",
+        "deeplob_conv_channels",
+        "deeplob_lstm_hidden_size",
+        "deeplob_use_batch_norm",
+        "transformer_field_embedding_dim",
+        "transformer_model_dim",
+        "transformer_num_heads",
+        "transformer_num_layers",
+        "transformer_feedforward_dim",
+        "transformer_max_levels_per_side",
+    )
+    for key in neural_keys:
+        if key in neural_settings:
+            value = neural_settings[key]
+            lines.append(f"- {key}: `{value}`")
+    lines.append("")
     lines.append("## Metric Groups")
     lines.append("")
     lines.append("- predictive metrics emitted:")
@@ -677,10 +729,10 @@ def _write_model_card(
     lines.append("## Limitations")
     lines.append("")
     lines.append(
-        "- This phase exposes only the classical benchmark suite "
-        "(`majority`, `logistic`, `ridge`, `elastic_net`, "
-        "`random_forest`, `gradient_boosting`). DeepLOB-style, "
-        "transformer and self-supervised variants remain out of scope.",
+        "- This phase supports `majority`, `logistic`, `ridge`, "
+        "`elastic_net`, `random_forest`, `gradient_boosting`, "
+        "`deeplob_style` and `transformer`. The DeepLOB-style path is "
+        "not an exact external-paper reproduction.",
     )
     lines.append(
         "- Calibration evidence (reliability bins, recomputed ECE), "
@@ -829,7 +881,13 @@ def _evaluate_model(
     model.fit(train_x, train_labels)
     predictions = np.asarray(model.predict(inference_x))
     proba_raw = model.predict_proba(inference_x)
-    proba = np.asarray(proba_raw, dtype=float) if proba_raw is not None else None
+    proba: np.ndarray | None = None
+    if proba_raw is not None:
+        proba = _align_probabilities_to_labels(
+            np.asarray(proba_raw, dtype=float),
+            model_classes=_model_known_classes(model),
+            target_labels=all_labels,
+        )
 
     metrics = compute_classification_metrics(
         y_true=test_labels.tolist(),
@@ -848,6 +906,12 @@ def _evaluate_model(
     metric_subset["class_count_test"] = float(class_count_test)
     if proba is not None:
         confidences = proba.max(axis=1)
+        if "brier_score" not in metric_subset:
+            metric_subset["brier_score"] = _multiclass_brier_score(
+                y_true=test_labels.tolist(),
+                probabilities=proba,
+                labels=all_labels,
+            )
         metric_subset["mean_confidence"] = float(confidences.mean())
         metric_subset["expected_calibration_error"] = float(
             _expected_calibration_error(
@@ -879,6 +943,47 @@ def _evaluate_model(
         emits_probabilities=spec.emits_probabilities and proba is not None,
     )
     return outcome, rows
+
+
+def _evaluate_neural_model(
+    *,
+    spec: PaperModelSpec,
+    frame: pd.DataFrame,
+    config: FI2010BenchmarkConfig,
+    data_path: Path,
+    split: SplitIndices,
+    feature_columns: Sequence[str],
+    all_labels: Sequence[Any],
+    class_count_train: int,
+    class_count_test: int,
+    test_timestamps: Sequence[str] | None,
+) -> tuple[PaperModelOutcome, list[dict[str, Any]]]:
+    """Fit one neural paper model and produce its outcome and prediction rows."""
+    result = run_neural_paper_model(
+        model_name=spec.name,
+        frame=frame,
+        config=config,
+        data_path=data_path,
+        split=split,
+        feature_columns=feature_columns,
+        all_labels=all_labels,
+        class_count_train=class_count_train,
+        class_count_test=class_count_test,
+        test_timestamps=test_timestamps,
+        settings=config.neural_settings,
+    )
+    outcome = PaperModelOutcome(
+        model_name=result.model_name,
+        model_type=result.model_type,
+        split="test",
+        horizon=config.horizon,
+        metrics=result.metrics,
+        confusion_matrix=result.confusion_matrix,
+        n_test_rows=result.n_test_rows,
+        emits_probabilities=True,
+        metadata=result.metadata,
+    )
+    return outcome, result.prediction_rows
 
 
 # ---------------------------------------------------------------------------
@@ -1038,21 +1143,39 @@ def run_paper_experiment(
     for model_token in requested_models:
         spec = get_paper_model_spec(model_token)
         try:
-            outcome, rows = _evaluate_model(
-                spec=spec,
-                seed=config.seed,
-                train_features_raw=train_features.x,
-                test_features_raw=test_features.x,
-                train_labels=train_target.y,
-                test_labels=test_target.y,
-                all_labels=all_labels,
-                class_count_train=class_count_train,
-                class_count_test=class_count_test,
-                test_indices=split.test,
-                horizon=config.horizon,
-                test_timestamps=test_timestamps,
-            )
-        except (ValueError, RuntimeError, TypeError) as exc:
+            if spec.model_family == "classical":
+                outcome, rows = _evaluate_model(
+                    spec=spec,
+                    seed=config.seed,
+                    train_features_raw=train_features.x,
+                    test_features_raw=test_features.x,
+                    train_labels=train_target.y,
+                    test_labels=test_target.y,
+                    all_labels=all_labels,
+                    class_count_train=class_count_train,
+                    class_count_test=class_count_test,
+                    test_indices=split.test,
+                    horizon=config.horizon,
+                    test_timestamps=test_timestamps,
+                )
+            elif spec.model_family == "neural":
+                outcome, rows = _evaluate_neural_model(
+                    spec=spec,
+                    frame=combined_frame,
+                    config=config,
+                    data_path=resolved_data_path,
+                    split=split,
+                    feature_columns=feature_columns,
+                    all_labels=all_labels,
+                    class_count_train=class_count_train,
+                    class_count_test=class_count_test,
+                    test_timestamps=test_timestamps,
+                )
+            else:
+                raise ValueError(
+                    f"unsupported paper model family {spec.model_family!r}"
+                )
+        except (ImportError, ValueError, RuntimeError, TypeError) as exc:
             if spec.name in REQUIRED_PAPER_MODELS:
                 raise
             skipped.append(
@@ -1146,6 +1269,7 @@ def run_paper_experiment(
         artefacts=artefacts,
         code_commit=code_commit,
         split_counts=split_counts,
+        neural_settings=config.neural_settings.model_dump(mode="json"),
     )
 
     runner_summary_payload: dict[str, Any] = {
@@ -1167,6 +1291,12 @@ def run_paper_experiment(
         "data_source_kind": data_source_kind,
         "environment": _build_environment_payload(),
         "split_counts": split_counts,
+        "neural_settings": config.neural_settings.model_dump(mode="json"),
+        "model_metadata": {
+            outcome.model_name: outcome.metadata
+            for outcome in outcomes
+            if outcome.metadata
+        },
     }
     (resolved_out_dir / "runner_summary.json").write_text(
         stable_json_dumps(runner_summary_payload),

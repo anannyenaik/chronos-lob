@@ -295,17 +295,31 @@ them.
 Purpose: run DeepLOB-style, transformer and traceable SSL-pretrained
 transformer variants under the same artefact contract.
 
-Files likely to be added or modified: `chronoslob/training/torch_experiment.py`,
-`chronoslob/training/transformer_experiment.py`,
-`chronoslob/training/ssl_experiment.py`, `chronoslob/training/paper_experiment.py`,
-`configs/experiments/fi2010_neural_benchmarks.yaml`,
-`tests/test_fi2010_neural_benchmarks.py`.
+Status: partially implemented in the paper experiment runner. The runner now
+supports `deeplob_style` and `transformer` alongside the classical suite,
+with CPU-safe config-driven settings, train-only preprocessing or
+tokenisation state, split-contained windows, row-level predictions and the
+same validated artefact contract. `ssl_transformer` remains deferred and is
+not registered until a genuine train-only pretraining plus supervised
+fine-tuning path exists.
 
-CLI command expected: `python -m chronoslob.cli run-fi2010-neural-benchmarks --config configs/experiments/fi2010_neural_benchmarks.yaml`.
+Files added or modified: `chronoslob/experiments/neural_adapters.py`,
+`chronoslob/experiments/model_registry.py`,
+`chronoslob/experiments/paper_runner.py`,
+`chronoslob/experiments/fi2010_benchmark.py`,
+`configs/experiments/fi2010_midprice_h10.yaml`,
+`tests/test_neural_paper_models.py`, `docs/PAPER_EXPERIMENTS.md`,
+`docs/CLI_REFERENCE.md`, `docs/EXPERIMENT_EVIDENCE_INDEX.md` and
+`docs/REPRODUCIBILITY.md`.
 
-Tests expected: small deterministic smoke runs, model-config serialisation,
-checkpoint metadata, prediction export and explicit pretraining provenance when
-SSL is used.
+CLI command: `python -m chronoslob.cli run-paper-experiment --config
+configs/experiments/fi2010_midprice_h10.yaml --data-path PATH --out PATH
+[--models majority[,deeplob_style,transformer]] [--overwrite]`.
+
+Tests expected: small deterministic smoke runs, neural model registry checks,
+split-contained window policy checks, model-config metadata, prediction export,
+finite probabilities and clear skipped-model reasons when a neural model cannot
+run on the supplied data.
 
 Strict non-goals: do not call the transformer SSL-pretrained unless the
 pretraining artefact exists, and do not claim an exact external-paper

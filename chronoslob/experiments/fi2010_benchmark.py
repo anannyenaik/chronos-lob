@@ -13,6 +13,7 @@ Those belong to the later paper experiment runner phase.
 
 from __future__ import annotations
 
+import math
 import shutil
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
@@ -42,6 +43,7 @@ __all__ = [
     "FI2010PreparationResult",
     "FI2010PreparationSummary",
     "LabelSummary",
+    "PaperNeuralSettings",
     "SplitSummary",
     "ValidationSummary",
     "load_benchmark_config",
@@ -313,6 +315,128 @@ class FI2010PreparationSummary(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class PaperNeuralSettings(BaseModel):
+    """Config-driven settings for neural paper-runner baselines."""
+
+    model_config = _MODEL_CONFIG
+
+    supported_models: tuple[str, ...] = ("deeplob_style", "transformer")
+    planned_models: tuple[str, ...] = ("ssl_transformer",)
+    lookback: int = 1
+    transformer_window_length: int = 4
+    batch_size: int = 4
+    max_epochs: int = 1
+    learning_rate: float = 1e-3
+    weight_decay: float = 0.0
+    gradient_clip_norm: float | None = 1.0
+    device: str = "cpu"
+    deterministic: bool = True
+    dropout: float = 0.0
+    deeplob_conv_channels: int = 4
+    deeplob_lstm_hidden_size: int = 8
+    deeplob_use_batch_norm: bool = False
+    transformer_field_embedding_dim: int = 4
+    transformer_model_dim: int = 16
+    transformer_num_heads: int = 2
+    transformer_num_layers: int = 1
+    transformer_feedforward_dim: int = 32
+    transformer_max_levels_per_side: int = 2
+
+    @field_validator("supported_models", "planned_models")
+    @classmethod
+    def _validate_model_names(cls, value: Sequence[str]) -> tuple[str, ...]:
+        cleaned: list[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                raise ValueError("neural model names must be non-empty strings")
+            normalised = item.strip().lower()
+            if normalised != item.strip():
+                raise ValueError("neural model names must be lower-case")
+            cleaned.append(normalised)
+        if len(set(cleaned)) != len(cleaned):
+            raise ValueError("neural model names must not contain duplicates")
+        return tuple(cleaned)
+
+    @field_validator(
+        "lookback",
+        "transformer_window_length",
+        "batch_size",
+        "max_epochs",
+        "deeplob_conv_channels",
+        "deeplob_lstm_hidden_size",
+        "transformer_field_embedding_dim",
+        "transformer_model_dim",
+        "transformer_num_heads",
+        "transformer_num_layers",
+        "transformer_feedforward_dim",
+        "transformer_max_levels_per_side",
+    )
+    @classmethod
+    def _validate_positive_int(cls, value: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("neural integer settings must be integers")
+        if value <= 0:
+            raise ValueError("neural integer settings must be positive")
+        return value
+
+    @field_validator("learning_rate")
+    @classmethod
+    def _validate_learning_rate(cls, value: float) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("learning_rate must be a finite number")
+        numeric = float(value)
+        if not math.isfinite(numeric) or numeric <= 0.0:
+            raise ValueError("learning_rate must be positive")
+        return numeric
+
+    @field_validator("weight_decay")
+    @classmethod
+    def _validate_weight_decay(cls, value: float) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("weight_decay must be a finite number")
+        numeric = float(value)
+        if not math.isfinite(numeric) or numeric < 0.0:
+            raise ValueError("weight_decay must be non-negative")
+        return numeric
+
+    @field_validator("gradient_clip_norm")
+    @classmethod
+    def _validate_gradient_clip_norm(cls, value: float | None) -> float | None:
+        if value is None:
+            return None
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("gradient_clip_norm must be a finite number or null")
+        numeric = float(value)
+        if not math.isfinite(numeric) or numeric <= 0.0:
+            raise ValueError("gradient_clip_norm must be positive when provided")
+        return numeric
+
+    @field_validator("dropout")
+    @classmethod
+    def _validate_dropout(cls, value: float) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("dropout must be a finite number")
+        numeric = float(value)
+        if not math.isfinite(numeric) or numeric < 0.0 or numeric >= 1.0:
+            raise ValueError("dropout must satisfy 0 <= dropout < 1")
+        return numeric
+
+    @field_validator("device")
+    @classmethod
+    def _validate_device(cls, value: str) -> str:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("device must be a non-empty string")
+        return value.strip().lower()
+
+    @model_validator(mode="after")
+    def _validate_transformer_heads(self) -> PaperNeuralSettings:
+        if self.transformer_model_dim % self.transformer_num_heads != 0:
+            raise ValueError(
+                "transformer_model_dim must be divisible by transformer_num_heads"
+            )
+        return self
+
+
 class FI2010BenchmarkConfig(BaseModel):
     """Validated FI-2010 benchmark preparation configuration."""
 
@@ -339,6 +463,9 @@ class FI2010BenchmarkConfig(BaseModel):
     models_planned: tuple[str, ...] = ()
     metrics_planned: tuple[str, ...] = ()
     execution_assumptions_planned: dict[str, Any] = Field(default_factory=dict)
+    neural_settings: PaperNeuralSettings = Field(
+        default_factory=PaperNeuralSettings
+    )
 
     @field_validator(
         "experiment_name",

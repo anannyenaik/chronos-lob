@@ -208,7 +208,7 @@ def test_unsupported_model_name_raises_clear_error(tmp_path: Path) -> None:
             config_path=CONFIG_PATH,
             data_path=TINY_FIXTURE_PATH,
             out_dir=output_dir,
-            models=["transformer"],
+            models=["ssl_transformer"],
         )
     assert not output_dir.exists() or not any(output_dir.iterdir())
 
@@ -282,8 +282,9 @@ def test_supported_models_constant_includes_classical_suite(tmp_path: Path) -> N
         "gradient_boosting",
     ):
         assert required in SUPPORTED_PAPER_MODELS, required
+    assert "deeplob_style" in SUPPORTED_PAPER_MODELS
+    assert "transformer" in SUPPORTED_PAPER_MODELS
     assert "deeplob" not in SUPPORTED_PAPER_MODELS
-    assert "transformer" not in SUPPORTED_PAPER_MODELS
     assert "ssl_transformer" not in SUPPORTED_PAPER_MODELS
 
 
@@ -367,7 +368,7 @@ def test_cli_command_rejects_unsupported_model(tmp_path: Path) -> None:
             "--out",
             str(output_dir),
             "--models",
-            "transformer",
+            "ssl_transformer",
             "--overwrite",
         ],
         cwd=project_root(),

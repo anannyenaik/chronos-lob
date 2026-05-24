@@ -1,18 +1,18 @@
-"""Classical model registry for the paper experiment runner.
+"""Model registry for the paper experiment runner.
 
 This module is the single source of truth for the short model names
 exposed via ``--models`` on ``run-paper-experiment``. Each entry maps a
 short, lower-case name to:
 
-* the underlying classical baseline model type (used to build a
-  :class:`BaselineModelConfig`),
+* the runner family (classical or neural),
+* the underlying model type,
 * whether the model requires train-only feature standardisation,
 * whether the model is expected to emit class probabilities, and
 * a short human-readable description.
 
-The registry is intentionally kept small and conservative. Stronger
-families (DeepLOB-style, transformer, self-supervised) are out of scope
-for the classical paper benchmark suite and are handled elsewhere.
+The registry is intentionally kept small and conservative. ``ssl_transformer``
+is not registered until a genuine train-only pretraining plus supervised
+fine-tuning path is available in the paper runner.
 """
 
 from __future__ import annotations
@@ -36,13 +36,14 @@ __all__ = [
 
 @dataclass(frozen=True)
 class PaperModelSpec:
-    """Registry entry for one classical paper-runner model."""
+    """Registry entry for one paper-runner model."""
 
     name: str
     model_type: str
     requires_standardisation: bool
     emits_probabilities: bool
     description: str
+    model_family: str = "classical"
 
 
 _REGISTRY: tuple[PaperModelSpec, ...] = (
@@ -105,6 +106,29 @@ _REGISTRY: tuple[PaperModelSpec, ...] = (
             "Gradient-boosting classifier on raw features; "
             "scaling is not required."
         ),
+    ),
+    PaperModelSpec(
+        name="deeplob_style",
+        model_type="deeplob_style",
+        requires_standardisation=True,
+        emits_probabilities=True,
+        description=(
+            "Compact DeepLOB-style CNN-LSTM baseline over train-only "
+            "standardised FI-2010 windows. This is not an exact "
+            "reproduction of the original architecture."
+        ),
+        model_family="neural",
+    ),
+    PaperModelSpec(
+        name="transformer",
+        model_type="market_transformer",
+        requires_standardisation=False,
+        emits_probabilities=True,
+        description=(
+            "Supervised transformer baseline over deterministic "
+            "snapshot-derived token windows fitted without test-row input."
+        ),
+        model_family="neural",
     ),
 )
 
@@ -181,6 +205,11 @@ def normalise_paper_model_names(
 def build_paper_baseline_config(name: str, *, seed: int) -> BaselineModelConfig:
     """Build a :class:`BaselineModelConfig` for the registry ``name``."""
     spec = get_paper_model_spec(name)
+    if spec.model_family != "classical":
+        raise ValueError(
+            f"paper model {spec.name!r} is not a classical baseline and "
+            "does not have a BaselineModelConfig"
+        )
     return BaselineModelConfig(
         name=spec.name,
         model_type=spec.model_type,
