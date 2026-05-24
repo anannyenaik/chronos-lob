@@ -70,6 +70,15 @@ python -m chronoslob.cli run-execution-validation-smoke
 python -m chronoslob.cli run-robustness-analysis-smoke
 ```
 
+## FI-2010 Benchmark Preparation
+
+Real FI-2010 data is not committed to the repository and is never
+downloaded automatically. See
+[FI2010_BENCHMARK.md](FI2010_BENCHMARK.md) for the local-only
+preparation step that produces a data manifest, label distribution
+summary and temporal split summary from a user-supplied file before
+any future paper experiment run.
+
 ## Evidence Archive
 
 A local evidence archive of inventories, current command outputs and

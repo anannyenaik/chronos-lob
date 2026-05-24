@@ -1,0 +1,62 @@
+# FI-2010 mid-price direction benchmark preparation configuration.
+#
+# This config drives the FI-2010 benchmark preparation layer. The
+# repository does not ship FI-2010 data. The local_data_path field below
+# is a documentation example and must be supplied via --data-path on the
+# CLI or replaced with a real local FI-2010-style file. This is not a
+# trained benchmark experiment; it is a preparation step that produces
+# data manifest, label summary, split summary and validation summary
+# artefacts.
+
+experiment_name: fi2010_midprice_h10
+dataset_name: FI-2010
+task_name: midprice_direction
+horizon: 10
+split_name: temporal
+seed: 0
+
+local_data_path: <path-to-local-fi2010-file>
+output_dir: experiments/fi2010_midprice_h10
+
+label_name: label_10
+label_columns:
+  - label_10
+  - label_50
+  - label_100
+timestamp_column: timestamp
+split_column: split
+price_level_count: 10
+
+train_fraction: 0.7
+validation_fraction: 0.15
+test_fraction: 0.15
+
+# The following sections are recorded for the later paper experiment
+# runner. They are not consumed by the preparation step.
+models_planned:
+  - majority_class
+  - logistic_regression
+  - random_forest
+  - deeplob
+  - transformer
+  - ssl_transformer
+
+metrics_planned:
+  - macro_f1
+  - accuracy
+  - brier_score
+  - expected_calibration_error
+  - turnover
+  - cost_aware_signal
+
+execution_assumptions_planned:
+  fee_bps: 0.5
+  spread_cost_bps: 0.5
+  execution_mode: passive_hybrid
+  latency_rows: 1
+
+notes: |
+  Preparation is local-only. The repository does not download FI-2010
+  and does not ship FI-2010 data. The tiny FI-2010-like fixture under
+  tests/fixtures/fi2010 exists only to exercise the preparation
+  plumbing and does not represent the canonical benchmark.

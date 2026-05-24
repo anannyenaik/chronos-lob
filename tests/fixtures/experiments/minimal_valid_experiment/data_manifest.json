@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-01-01T00:00:00Z",
+  "dataset_name": "synthetic_contract_fixture",
+  "dataset_variant": "minimal",
+  "event_count": 3,
+  "feature_count": 2,
+  "horizon": 10,
+  "label_name": "synthetic_midprice_direction",
+  "notes": "Synthetic contract fixture for validation tests only.",
+  "row_count": 3,
+  "source_kind": "synthetic_fixture",
+  "source_path": "tests/fixtures/experiments/minimal_valid_experiment",
+  "split_name": "synthetic_contract_split"
+}

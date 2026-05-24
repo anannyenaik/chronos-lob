@@ -231,6 +231,137 @@ def _inspect_report_archive_impl(
     return 0 if present_count == len(statuses) else 1
 
 
+def _inspect_experiment_artifacts_impl(*, experiment: Path) -> int:
+    """Inspect an experiment directory against the artefact contract."""
+    from chronoslob.experiments.artifacts import (
+        expected_experiment_artifacts,
+        validate_experiment_directory,
+    )
+
+    expectations = expected_experiment_artifacts(include_plots=True)
+    report = validate_experiment_directory(experiment, include_plots=True)
+    expected_by_kind = {expectation.path: expectation for expectation in expectations}
+
+    print("ChronosLOB experiment artefact inspection")
+    print(f"  experiment:       {experiment}")
+    print(f"  valid:            {'yes' if report.is_valid else 'no'}")
+    print(f"  missing required: {len(report.missing_required)}")
+    print(f"  optional present: {len(report.present_optional)}")
+
+    print("  required artefacts:")
+    for status in report.artefact_statuses:
+        if not status.required:
+            continue
+        state = "present" if status.exists else "missing"
+        if status.message.startswith("invalid schema"):
+            state = "invalid"
+        print(f"    {status.path}: {state}; {status.message}")
+
+    print("  optional artefacts:")
+    for status in report.artefact_statuses:
+        if status.required:
+            continue
+        expectation = expected_by_kind.get(status.path)
+        if expectation is None:
+            candidates = status.path
+        else:
+            candidates = " or ".join(expectation.candidate_paths)
+        state = "present" if status.exists else "missing"
+        print(f"    {candidates}: {state}; {status.message}")
+
+    if report.warnings:
+        print("  warnings:")
+        for warning in report.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:         none")
+
+    print("  training run:     none")
+    print("  outputs:          not written")
+    print("  network calls:    none performed")
+    return 0
+
+
+def _prepare_fi2010_benchmark_impl(
+    *,
+    config_path: Path,
+    data_path: Path,
+    out: Path,
+) -> int:
+    """Run the local-only FI-2010 benchmark preparation."""
+    from chronoslob.data.validation import DataValidationError
+    from chronoslob.experiments.fi2010_benchmark import (
+        load_benchmark_config,
+        prepare_fi2010_benchmark,
+    )
+
+    resolved_config_path = Path(config_path)
+    try:
+        config = load_benchmark_config(resolved_config_path)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"Failed to load benchmark config: {exc}", file=sys.stderr)
+        return 1
+
+    try:
+        result = prepare_fi2010_benchmark(
+            config,
+            data_path=Path(data_path),
+            output_dir=Path(out),
+            config_source_path=resolved_config_path,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except DataValidationError as exc:
+        print(f"FI-2010 validation failed: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 benchmark preparation failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 benchmark preparation")
+    print(f"  config:              {resolved_config_path}")
+    print(f"  data path:           {result.summary.data_path}")
+    print(f"  output directory:    {result.summary.output_dir}")
+    print(f"  experiment name:     {result.summary.experiment_name}")
+    print(f"  dataset name:        {result.summary.dataset_name}")
+    print(f"  task name:           {result.summary.task_name}")
+    print(f"  horizon:             {result.summary.horizon}")
+    print(f"  split name:          {result.summary.split_name}")
+    print(f"  label name:          {result.summary.label_name}")
+    print(f"  rows:                {result.split_summary.n_rows}")
+    print(f"  train rows:          {result.split_summary.n_train}")
+    print(f"  validation rows:     {result.split_summary.n_validation}")
+    print(f"  test rows:           {result.split_summary.n_test}")
+    print(f"  distinct labels:     {len(result.label_summary.distinct_classes)}")
+    print(
+        "  fi2010 validation:   "
+        f"ok={result.validation_summary.fi2010_validation_ok} "
+        f"errors={result.validation_summary.fi2010_error_count} "
+        f"warnings={result.validation_summary.fi2010_warning_count}"
+    )
+    print(
+        "  label validation:    "
+        f"ok={result.validation_summary.label_validation_ok} "
+        f"errors={result.validation_summary.label_error_count} "
+        f"warnings={result.validation_summary.label_warning_count}"
+    )
+    print("  artefacts written:")
+    for path in result.written_files:
+        print(f"    {path}")
+    if result.summary.warnings:
+        print("  warnings:")
+        for warning in result.summary.warnings:
+            print(f"    - {warning}")
+    print("  results.json:        not written (preparation only)")
+    print("  predictions:         not written (preparation only)")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _is_synthetic_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return "tests" in parts and "fixtures" in parts
@@ -1782,7 +1913,9 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-analysis|run-robustness-analysis-smoke|"
             "inspect-binance-replay|run-project-audit|"
             "inspect-release-readiness|"
-            "build-report-archive|inspect-report-archive] [...]"
+            "build-report-archive|inspect-report-archive|"
+            "inspect-experiment-artifacts|"
+            "prepare-fi2010-benchmark] [...]"
         )
         return 0
 
@@ -1836,6 +1969,32 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--output", type=Path, default=Path("reports/report_archive"))
         parsed = parser.parse_args(args[1:])
         return _inspect_report_archive_impl(output=parsed.output)
+    if command == "inspect-experiment-artifacts":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-experiment-artifacts",
+            description="Inspect an experiment directory against the artefact contract.",
+        )
+        parser.add_argument("--experiment", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_experiment_artifacts_impl(experiment=parsed.experiment)
+    if command == "prepare-fi2010-benchmark":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob prepare-fi2010-benchmark",
+            description=(
+                "Prepare a local-only FI-2010 benchmark input from a "
+                "user-supplied data file. No data is downloaded and no "
+                "model results are produced."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--data-path", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _prepare_fi2010_benchmark_impl(
+            config_path=parsed.config,
+            data_path=parsed.data_path,
+            out=parsed.out,
+        )
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -2395,6 +2554,26 @@ if typer is not None:
         "--include-smoke-training",
         help="Also capture short synthetic smoke-training commands.",
     )
+    _EXPERIMENT_ARTIFACTS_EXPERIMENT_OPTION = typer.Option(
+        ...,
+        "--experiment",
+        help="Path to the experiment directory to inspect.",
+    )
+    _PREPARE_FI2010_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 benchmark preparation YAML config.",
+    )
+    _PREPARE_FI2010_DATA_PATH_OPTION = typer.Option(
+        ...,
+        "--data-path",
+        help="Local FI-2010-style file path supplied by the user.",
+    )
+    _PREPARE_FI2010_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for FI-2010 preparation artefacts.",
+    )
 
     def run_project_audit(
         root: Path | None = _AUDIT_ROOT_OPTION,
@@ -2432,6 +2611,28 @@ if typer is not None:
     ) -> None:
         """Inspect expected report archive files without writing."""
         exit_code = _inspect_report_archive_impl(output=output)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_experiment_artifacts(
+        experiment: Path = _EXPERIMENT_ARTIFACTS_EXPERIMENT_OPTION,
+    ) -> None:
+        """Inspect an experiment directory against the artefact contract."""
+        exit_code = _inspect_experiment_artifacts_impl(experiment=experiment)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def prepare_fi2010_benchmark(
+        config: Path = _PREPARE_FI2010_CONFIG_OPTION,
+        data_path: Path = _PREPARE_FI2010_DATA_PATH_OPTION,
+        out: Path = _PREPARE_FI2010_OUT_OPTION,
+    ) -> None:
+        """Prepare a local-only FI-2010 benchmark input."""
+        exit_code = _prepare_fi2010_benchmark_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+        )
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -3501,6 +3702,20 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def prepare_fi2010_benchmark(
+        config: Path,
+        data_path: Path,
+        out: Path,
+    ) -> None:
+        """Prepare a local-only FI-2010 benchmark input."""
+        exit_code = _prepare_fi2010_benchmark_impl(
+            config_path=config,
+            data_path=data_path,
+            out=out,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
@@ -3509,6 +3724,7 @@ if typer is not None:
     app.command("inspect-release-readiness")(inspect_release_readiness)
     app.command("build-report-archive")(build_report_archive)
     app.command("inspect-report-archive")(inspect_report_archive)
+    app.command("inspect-experiment-artifacts")(inspect_experiment_artifacts)
     app.command("inspect-event-log")(inspect_event_log)
     app.command("inspect-event-tokens")(inspect_event_tokens)
     app.command("event-log-to-features")(event_log_to_features)
@@ -3535,6 +3751,7 @@ if typer is not None:
     app.command("inspect-analysis")(inspect_analysis)
     app.command("run-robustness-analysis-smoke")(run_robustness_analysis_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
+    app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
 else:
 
     def app() -> int:

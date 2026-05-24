@@ -64,6 +64,13 @@ python -m chronoslob.cli <command> [options]
 | `inspect-analysis`                   | Print transfer, regime, ablation and sensitivity support.         |
 | `run-robustness-analysis-smoke`      | Run deterministic synthetic robustness-analysis diagnostics.      |
 
+## Experiment Artefacts
+
+| Command                                                              | Description                                                        |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `inspect-experiment-artifacts --experiment PATH`                     | Inspect an experiment directory against the artefact contract.     |
+| `prepare-fi2010-benchmark --config PATH --data-path PATH --out PATH` | Prepare a local-only FI-2010 benchmark input (no model run).       |
+
 ## Audit and Evidence Archive
 
 | Command                                          | Description                                                            |

@@ -107,6 +107,21 @@ or reproducing the platform.
 - Reports:
   [transfer_regime_ablation_analysis](../reports/transfer_regime_ablation_analysis.md)
 
+## Experiment Artefact Contract
+
+- Modules: `chronoslob/experiments/`
+- Tests: `tests/test_experiment_artifact_contract.py`
+- CLI: `inspect-experiment-artifacts`
+- Docs: [EXPERIMENT_ARTIFACT_CONTRACT](EXPERIMENT_ARTIFACT_CONTRACT.md)
+
+## FI-2010 Benchmark Preparation
+
+- Modules: `chronoslob/experiments/fi2010_benchmark.py`
+- Configs: `configs/experiments/fi2010_midprice_h10.yaml`
+- Tests: `tests/test_fi2010_benchmark_preparation.py`
+- CLI: `prepare-fi2010-benchmark`
+- Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md)
+
 ## Reproducibility and Audit
 
 - Modules: `chronoslob/utils/audit.py`,

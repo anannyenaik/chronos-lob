@@ -1,0 +1,9 @@
+experiment_name: synthetic_contract_fixture
+task_name: midprice_direction
+horizon: 10
+split_name: synthetic_contract_split
+seed: 7
+models:
+  - synthetic_contract_model
+primary_metric: macro_f1
+notes: Synthetic contract fixture for validation tests only.
