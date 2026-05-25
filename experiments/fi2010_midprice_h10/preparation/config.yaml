@@ -12,7 +12,7 @@ experiment_name: fi2010_midprice_h10
 dataset_name: FI-2010
 task_name: midprice_direction
 horizon: 10
-split_name: temporal
+split_name: official_column
 seed: 0
 
 local_data_path: <path-to-local-fi2010-file>
@@ -34,6 +34,13 @@ train_fraction: 0.7
 validation_fraction: 0.15
 test_fraction: 0.15
 
+split:
+  method: official_column
+  split_column: split
+  validation_fraction_within_train: 0.15
+  train_value: train
+  test_value: test
+
 # The following sections are recorded for the paper experiment runner
 # and are not consumed by the preparation step. They describe the
 # supported benchmark suite and the wider model roadmap; not every
@@ -50,6 +57,7 @@ neural_settings:
   supported_models:
     - deeplob_style
     - transformer
+    - matrix_transformer
   planned_models:
     - ssl_transformer
   lookback: 1
@@ -81,6 +89,7 @@ models_planned:
   - gradient_boosting
   - deeplob_style
   - transformer
+  - matrix_transformer
   - ssl_transformer
 
 metrics_planned:
@@ -129,5 +138,5 @@ execution_sensitivity:
 notes: |
   Preparation is local-only. The repository does not download FI-2010
   and does not ship FI-2010 data. The tiny FI-2010-like fixture under
-  tests/fixtures/fi2010 exists only to exercise the preparation
-  plumbing and does not represent the canonical benchmark.
+  tests/fixtures/fi2010 exists only to exercise the preparation path
+  and does not represent the canonical benchmark.

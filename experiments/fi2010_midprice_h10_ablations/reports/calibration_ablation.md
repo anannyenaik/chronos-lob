@@ -37,20 +37,24 @@ Vary only the calibration bin count used to compute reliability evidence from st
 
 | ablation | model | metric | value | source |
 | --- | --- | --- | --- | --- |
-| calibration_bins_5 | majority | accuracy | 0.628615 | experiments/calibration_bins_5 |
-| calibration_bins_5 | majority | macro_f1 | 0.257321 | experiments/calibration_bins_5 |
-| calibration_bins_5 | logistic | accuracy | 0.623310 | experiments/calibration_bins_5 |
-| calibration_bins_5 | logistic | macro_f1 | 0.351469 | experiments/calibration_bins_5 |
-| calibration_bins_5 | deeplob_style | accuracy | 0.567174 | experiments/calibration_bins_5 |
-| calibration_bins_5 | deeplob_style | macro_f1 | 0.352432 | experiments/calibration_bins_5 |
-| calibration_bins_10 | majority | accuracy | 0.628615 | experiments/calibration_bins_10 |
-| calibration_bins_10 | majority | macro_f1 | 0.257321 | experiments/calibration_bins_10 |
-| calibration_bins_10 | logistic | accuracy | 0.623310 | experiments/calibration_bins_10 |
-| calibration_bins_10 | logistic | macro_f1 | 0.351469 | experiments/calibration_bins_10 |
-| calibration_bins_10 | deeplob_style | accuracy | 0.567174 | experiments/calibration_bins_10 |
-| calibration_bins_10 | deeplob_style | macro_f1 | 0.352432 | experiments/calibration_bins_10 |
+| calibration_bins_5 | majority | accuracy | 0.591166 | experiments/calibration_bins_5 |
+| calibration_bins_5 | majority | macro_f1 | 0.247687 | experiments/calibration_bins_5 |
+| calibration_bins_5 | logistic | accuracy | 0.594343 | experiments/calibration_bins_5 |
+| calibration_bins_5 | logistic | macro_f1 | 0.332821 | experiments/calibration_bins_5 |
+| calibration_bins_5 | deeplob_style | accuracy | 0.591895 | experiments/calibration_bins_5 |
+| calibration_bins_5 | deeplob_style | macro_f1 | 0.252138 | experiments/calibration_bins_5 |
+| calibration_bins_5 | transformer | accuracy | 0.488931 | experiments/calibration_bins_5 |
+| calibration_bins_5 | transformer | macro_f1 | 0.430628 | experiments/calibration_bins_5 |
+| calibration_bins_10 | majority | accuracy | 0.591166 | experiments/calibration_bins_10 |
+| calibration_bins_10 | majority | macro_f1 | 0.247687 | experiments/calibration_bins_10 |
+| calibration_bins_10 | logistic | accuracy | 0.594343 | experiments/calibration_bins_10 |
+| calibration_bins_10 | logistic | macro_f1 | 0.332821 | experiments/calibration_bins_10 |
+| calibration_bins_10 | deeplob_style | accuracy | 0.591895 | experiments/calibration_bins_10 |
+| calibration_bins_10 | deeplob_style | macro_f1 | 0.252138 | experiments/calibration_bins_10 |
+| calibration_bins_10 | transformer | accuracy | 0.488931 | experiments/calibration_bins_10 |
+| calibration_bins_10 | transformer | macro_f1 | 0.430628 | experiments/calibration_bins_10 |
 
 ## Warnings And Limitations
 
-- Ablation rows do not claim profitability, tradable alpha or live execution. Execution-aware values are simplified proxy assumptions.
+- Ablation rows do not present trading or live-execution claims. Execution-aware values are simplified proxy assumptions.
 - Aggregated values come directly from stored child-experiment artefacts and are not edited after the run.

@@ -4,7 +4,7 @@ Phase 14 adds supervised multi-task fine-tuning infrastructure for tokenised
 market microstructure sequences. It is designed to test whether a shared
 transformer representation can support multiple leakage-safe short-horizon
 market-state forecasting heads. It is not an execution system and does not
-claim alpha, tradability or profitability.
+claim tradability or trading performance.
 
 ## Design
 
@@ -61,12 +61,12 @@ tensor shapes before loading. Checkpoint loading and persistence are deferred.
 `run_multitask_smoke_from_event_log` tokenises a local synthetic canonical
 event-log fixture, builds token windows, constructs supervised targets from the
 existing label pipeline where practical, and uses a deterministic volatility
-regime mapping for smoke plumbing. It then trains a tiny CPU model for one
+regime mapping for the smoke path. It then trains a tiny CPU model for one
 epoch by default.
 
-The smoke losses and accuracies are synthetic plumbing diagnostics only. They
-are not benchmark results, market evidence, cost-adjusted signal quality, alpha
-evidence, or execution-aware validation.
+The smoke losses and accuracies are synthetic diagnostics only. They
+are not benchmark results, market evidence, cost-adjusted signal quality or
+execution-aware validation.
 
 ## Leakage Controls
 
@@ -91,7 +91,7 @@ Calibration and uncertainty analysis are intentionally left for Phase 15.
 ## Limitations
 
 The current smoke path is intentionally tiny and synthetic. It validates
-plumbing, tensor shapes, loss computation, missing-label handling and CPU
+tensor shapes, loss computation, missing-label handling and CPU
 training only. It does not estimate performance under regime shift, fees,
 latency, market impact, partial fills or venue rules. Any future reported
 result must come from a reproducible experiment artefact with documented

@@ -37,20 +37,24 @@ Vary only the neural lookback window. Classical baselines do not consume windows
 
 | ablation | model | metric | value | source |
 | --- | --- | --- | --- | --- |
-| lookback_2 | majority | accuracy | 0.628615 | experiments/lookback_2 |
-| lookback_2 | majority | macro_f1 | 0.257321 | experiments/lookback_2 |
-| lookback_2 | logistic | accuracy | 0.623310 | experiments/lookback_2 |
-| lookback_2 | logistic | macro_f1 | 0.351469 | experiments/lookback_2 |
-| lookback_2 | deeplob_style | accuracy | 0.682585 | experiments/lookback_2 |
-| lookback_2 | deeplob_style | macro_f1 | 0.499404 | experiments/lookback_2 |
-| lookback_4 | majority | accuracy | 0.628615 | experiments/lookback_4 |
-| lookback_4 | majority | macro_f1 | 0.257321 | experiments/lookback_4 |
-| lookback_4 | logistic | accuracy | 0.623310 | experiments/lookback_4 |
-| lookback_4 | logistic | macro_f1 | 0.351469 | experiments/lookback_4 |
-| lookback_4 | deeplob_style | accuracy | 0.673029 | experiments/lookback_4 |
-| lookback_4 | deeplob_style | macro_f1 | 0.470084 | experiments/lookback_4 |
+| lookback_2 | majority | accuracy | 0.591166 | experiments/lookback_2 |
+| lookback_2 | majority | macro_f1 | 0.247687 | experiments/lookback_2 |
+| lookback_2 | logistic | accuracy | 0.594343 | experiments/lookback_2 |
+| lookback_2 | logistic | macro_f1 | 0.332821 | experiments/lookback_2 |
+| lookback_2 | deeplob_style | accuracy | 0.623607 | experiments/lookback_2 |
+| lookback_2 | deeplob_style | macro_f1 | 0.496699 | experiments/lookback_2 |
+| lookback_2 | transformer | accuracy | 0.488931 | experiments/lookback_2 |
+| lookback_2 | transformer | macro_f1 | 0.430628 | experiments/lookback_2 |
+| lookback_4 | majority | accuracy | 0.591166 | experiments/lookback_4 |
+| lookback_4 | majority | macro_f1 | 0.247687 | experiments/lookback_4 |
+| lookback_4 | logistic | accuracy | 0.594343 | experiments/lookback_4 |
+| lookback_4 | logistic | macro_f1 | 0.332821 | experiments/lookback_4 |
+| lookback_4 | deeplob_style | accuracy | 0.635021 | experiments/lookback_4 |
+| lookback_4 | deeplob_style | macro_f1 | 0.477384 | experiments/lookback_4 |
+| lookback_4 | transformer | accuracy | 0.488931 | experiments/lookback_4 |
+| lookback_4 | transformer | macro_f1 | 0.430628 | experiments/lookback_4 |
 
 ## Warnings And Limitations
 
-- Ablation rows do not claim profitability, tradable alpha or live execution. Execution-aware values are simplified proxy assumptions.
+- Ablation rows do not present trading or live-execution claims. Execution-aware values are simplified proxy assumptions.
 - Aggregated values come directly from stored child-experiment artefacts and are not edited after the run.

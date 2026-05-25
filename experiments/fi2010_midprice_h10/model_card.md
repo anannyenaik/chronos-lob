@@ -8,25 +8,28 @@ Status: locally executed paper experiment run of the benchmark suite. Inspect th
 - task: `midprice_direction`
 - horizon: 10
 - label column: `label_10`
-- split: `temporal` (temporal train/validation/test)
+- split: `official_column`
 - seed: 0
-- code commit: `b6bff37842b84a1abacd8c9da0ca4d8a07ab33f2`
+- code commit: `6fb2fbb5ab1f67a16ce1890a4a9c66b6d0f43c97`
 - runner version: `phase-e/paper-experiment-runner/v1`
 
 ## Data
 
 - dataset: `FI-2010`
 - data source kind: `local_file`
-- local source path: `data\processed\fi2010\fold1_combined.csv`
+- local source path: `data/processed/fi2010/fold1_combined.csv`
 - source SHA-256: `91aef9f1923dfd87955dd5838f709ca198d8ae903cfd6baeb029fe827a0539d0`
 
 ## Split Design
 
 - total rows loaded: 77909
-- train rows: 54536
-- validation rows: 11687
-- test rows: 11686
-- split is constructed by the deterministic temporal splitter; no shuffling, no stratification and no test-row use during preprocessing or model fitting.
+- split method: `official_column`
+- split column: `split`
+- official train/test rows: 39512 / 38397
+- train rows: 33585
+- validation rows: 5927
+- test rows: 38397
+- official test rows are held out from preprocessing, model fitting, validation and model-selection decisions; validation is carved from the tail of official train rows.
 
 ## Models
 
@@ -38,20 +41,18 @@ Status: locally executed paper experiment run of the benchmark suite. Inspect th
   - `deeplob_style`
   - `transformer`
 - successfully run:
-  - `majority` (type `majority_class`) on the `test` split with 11686 test rows
-  - `logistic` (type `logistic_regression`) on the `test` split with 11686 test rows
-  - `random_forest` (type `random_forest`) on the `test` split with 11686 test rows
-  - `gradient_boosting` (type `gradient_boosting`) on the `test` split with 11686 test rows
-  - `deeplob_style` (type `deeplob_style`) on the `test` split with 11686 test rows
+  - `majority` (type `majority_class`) on the `test` split with 38397 test rows
+  - `logistic` (type `logistic_regression`) on the `test` split with 38397 test rows
+  - `random_forest` (type `random_forest`) on the `test` split with 38397 test rows
+  - `gradient_boosting` (type `gradient_boosting`) on the `test` split with 38397 test rows
+  - `deeplob_style` (type `deeplob_style`) on the `test` split with 38397 test rows
+  - `transformer` (type `normalised_matrix_transformer`) on the `test` split with 38394 test rows
 - skipped:
-  - `transformer`: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
+  - none
 
 ## Neural Settings
 
-- supported_models: `['deeplob_style', 'transformer']`
+- supported_models: `['deeplob_style', 'transformer', 'matrix_transformer']`
 - lookback: `1`
 - transformer_window_length: `4`
 - batch_size: `4`
@@ -123,24 +124,26 @@ quantity
 ## Calibration Evidence
 
 - reliability bins computed from held-out test predictions and written to `calibration_bins.csv`.
-- models with calibration bins: `majority`, `logistic`, `random_forest`, `gradient_boosting`, `deeplob_style`
+- models with calibration bins: `majority`, `logistic`, `random_forest`, `gradient_boosting`, `deeplob_style`, `transformer`
 - calibration artefacts are derived from stored prediction rows; no calibrator is fitted on test data.
 
 ## Execution-Aware Sensitivity
 
 - cost-aware signal sensitivity rows are computed from stored prediction rows under explicit simple assumptions and are written to `execution_sensitivity.csv`.
-- models with sensitivity rows: `majority`, `logistic`, `random_forest`, `gradient_boosting`, `deeplob_style`
-- this is a simplified proxy analysis, not a production backtest, and does not claim tradable profitability or live execution.
+- models with sensitivity rows: `majority`, `logistic`, `random_forest`, `gradient_boosting`, `deeplob_style`, `transformer`
+- this is a simplified proxy analysis, not an execution result for live markets.
 
 ## Leakage Controls
 
-- Train, validation and test indices come from the deterministic temporal splitter; no random or stratified shuffling is used.
+- Train, validation and test indices come from the configured split policy; no random or stratified shuffling is used.
 - Per-model train-only feature standardisation is applied for models that require it; standardisation statistics are never fit on validation or test rows.
 - No model-selection choice, calibrator, bucket boundary or threshold is fitted on validation or test rows in this phase.
 - Label, split and timestamp columns are excluded from the feature matrix.
 
 ## Limitations
 
-- This phase supports `majority`, `logistic`, `ridge`, `elastic_net`, `random_forest`, `gradient_boosting`, `deeplob_style` and `transformer`. The DeepLOB-style path is not an exact external-paper reproduction.
-- Plot generation remains tracked under a later phase; this runner emits calibration and execution-sensitivity evidence as CSV artefacts only.
-- Reported numbers are run-specific and must not be interpreted as profitability, deployability or live-trading evidence.
+- Supported model names in this phase: `majority`, `logistic`, `ridge`, `elastic_net`, `random_forest`, `gradient_boosting`, `deeplob_style`, `transformer` and `matrix_transformer`.
+- `transformer` and `matrix_transformer` use the supervised normalised FI-2010 matrix path.
+- The DeepLOB-style path is not an exact external-paper reproduction.
+- Plot artefacts are generated only from stored experiment artefacts.
+- Reported numbers are run-specific and must not be interpreted as trading or execution-system evidence.

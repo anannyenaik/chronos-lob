@@ -17,6 +17,10 @@ from chronoslob.experiments.artifacts import (
     load_results,
     validate_experiment_directory,
 )
+from chronoslob.experiments.fi2010_benchmark import (
+    build_benchmark_split,
+    load_benchmark_config,
+)
 from chronoslob.experiments.paper_runner import (
     PAPER_RUNNER_VERSION,
     SUPPORTED_PAPER_MODELS,
@@ -391,12 +395,58 @@ def test_runner_summary_records_split_counts(tmp_path: Path) -> None:
     total = counts["n_train"] + counts["n_validation"] + counts["n_test"]
     assert total == counts["n_rows"]
     assert counts["n_test"] >= 1
+    assert counts["split_method"] == "official_column"
+    assert payload["split_method"] == "official_column"
+    assert payload["split_summary"]["split_method"] == "official_column"
     assert "requested_models" in payload
     assert "models_run" in payload
     assert "skipped_models" in payload
     assert "predictive_metric_names" in payload
     assert "calibration_metric_names" in payload
     assert payload["data_source_kind"] == "local_file"
+
+
+def test_official_column_split_keeps_test_rows_out_of_training() -> None:
+    config = load_benchmark_config(CONFIG_PATH)
+    frame = pd.read_csv(TINY_FIXTURE_PATH)
+
+    split = build_benchmark_split(config, frame)
+
+    official_train = frame.index[frame["split"] == "train"].tolist()
+    official_test = frame.index[frame["split"] == "test"].tolist()
+    assert split.test == official_test
+    assert set(split.train).isdisjoint(official_test)
+    assert set(split.validation).isdisjoint(official_test)
+    assert set(split.train).issubset(official_train)
+    assert set(split.validation).issubset(official_train)
+    assert split.validation == official_train[-len(split.validation) :]
+
+
+def test_train_only_preprocessing_metadata_excludes_official_test_rows(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "paper_experiment_official_split"
+
+    run_paper_experiment(
+        config_path=CONFIG_PATH,
+        data_path=TINY_FIXTURE_PATH,
+        out_dir=output_dir,
+        models=["majority", "logistic"],
+        overwrite=True,
+    )
+
+    frame = pd.read_csv(TINY_FIXTURE_PATH)
+    official_test = set(frame.index[frame["split"] == "test"].tolist())
+    payload = _read_json(output_dir / "runner_summary.json")
+    standardisation = payload["model_metadata"]["logistic"]["standardisation"]
+    fit_rows = set(
+        range(
+            int(standardisation["fit_row_start"]),
+            int(standardisation["fit_row_end"]) + 1,
+        )
+    )
+    assert standardisation["fit_split"] == "train"
+    assert fit_rows.isdisjoint(official_test)
 
 
 def test_confusion_matrix_json_lists_one_entry_per_model(tmp_path: Path) -> None:

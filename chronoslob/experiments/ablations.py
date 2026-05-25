@@ -7,7 +7,7 @@ It composes the paper experiment runner rather than duplicating training
 logic and writes a small aggregate summary plus concise markdown reports.
 
 The runner is local-only, deterministic and never downloads data, makes
-a network call or fabricates ablation conclusions. SSL-pretraining
+a network call or invents ablation conclusions. SSL-pretraining
 ablations are recorded as skipped because the paper runner does not yet
 support a traceable SSL pretraining and fine-tuning path.
 """
@@ -770,12 +770,12 @@ _REPORT_INTRO_BY_TYPE: dict[str, str] = {
     "cost_bps": (
         "Vary only the per-trade cost assumption used by the simplified "
         "execution-aware sensitivity analysis; everything else is held fixed. "
-        "These are explicit proxy assumptions, not production execution results."
+        "These are explicit proxy assumptions, not live-execution results."
     ),
     "latency_steps": (
         "Vary only the row-step latency assumption used by the simplified "
         "execution-aware sensitivity analysis; everything else is held fixed. "
-        "These are explicit proxy assumptions, not production execution results."
+        "These are explicit proxy assumptions, not live-execution results."
     ),
     "horizon": (
         "Vary only the prediction horizon and matching label column. Labels "
@@ -932,8 +932,8 @@ def _render_typed_report(
             "benchmark evidence."
         )
     lines.append(
-        "- Ablation rows do not claim profitability, tradable alpha or live "
-        "execution. Execution-aware values are simplified proxy assumptions."
+        "- Ablation rows do not present trading or live-execution claims. "
+        "Execution-aware values are simplified proxy assumptions."
     )
     lines.append(
         "- Aggregated values come directly from stored child-experiment "
@@ -988,8 +988,8 @@ def _render_ssl_report(*, is_fixture: bool) -> str:
     lines.append("- " + _SSL_SKIP_REASON)
     lines.append(
         "- `ssl_transformer` is intentionally not registered in the paper "
-        "runner model registry, and the ablation runner does not fabricate "
-        "SSL results."
+        "runner model registry, and the ablation runner does not report "
+        "SSL results without a run."
     )
     lines.append("")
     lines.append("## Requirements Before Enabling")

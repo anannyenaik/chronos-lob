@@ -94,6 +94,17 @@ def _unsupported_claim_terms() -> tuple[str, ...]:
     )
 
 
+def _process_doc_terms() -> tuple[str, ...]:
+    return (
+        "plumbing",
+        _words("fake", "metrics"),
+        _words("placeholder", "metrics"),
+        _words("placeholder", "results"),
+        "fabricated",
+        _words(_compact("mas", "ter"), _compact("pro", "mpt")),
+    )
+
+
 def _iter_public_text_files(root: Path) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
@@ -140,6 +151,21 @@ def test_public_text_has_no_internal_workflow_or_positioning_terms() -> None:
     for path in _iter_public_text_files(root):
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
         for term in terms:
+            if term.lower() in text:
+                issues.append(f"{path.relative_to(root)}: {term}")
+
+    assert issues == []
+
+
+def test_public_markdown_has_no_process_artifact_terms() -> None:
+    root = project_root()
+    issues: list[str] = []
+
+    for path in _iter_public_text_files(root):
+        if path.suffix.lower() not in {".md", ".mmd"}:
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore").lower()
+        for term in _process_doc_terms():
             if term.lower() in text:
                 issues.append(f"{path.relative_to(root)}: {term}")
 

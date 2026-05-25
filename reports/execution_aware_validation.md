@@ -3,7 +3,7 @@
 This report documents the simplified execution-aware validation layer for
 ChronosLOB. The goal is to measure whether prediction-like signals retain
 cost-adjusted signal quality after explicit execution assumptions are applied.
-It is not live execution infrastructure, not a production backtest and not a
+It is not live execution infrastructure, not an execution result for live markets and not a
 deployment claim.
 
 ## Why Forecasting Metrics Are Not Enough

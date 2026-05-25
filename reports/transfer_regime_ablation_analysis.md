@@ -148,7 +148,7 @@ direction:
 
 Predictive and execution names do not overlap. The layer refuses to
 accept records containing forbidden combined-score fields such as
-`combined_score`, `magic_score`, `alpha_score`, `tradability_score` or
+`combined_score`, `magic_score`, `edge_score`, `tradability_score` or
 `sharpe`. This is deliberate. Mixing predictive quality and execution
 quality into a single number hides the gap between statistical
 predictability and execution-aware signal quality, which is the
@@ -171,7 +171,7 @@ records and sensitivity points. Every record carries
 `is_synthetic=True`. The CLI command
 `run-robustness-analysis-smoke` and the YAML config
 `configs/experiments/robustness_analysis_smoke.yaml` both label the run
-as plumbing. The synthetic records are not market evidence, signal
+as synthetic. The synthetic records are not market evidence, signal
 evidence, tradability evidence or live performance.
 
 The smoke layer exists only to verify that the analysis machinery runs

@@ -40,26 +40,32 @@ Restrict the feature matrix to a column-name pattern group; preprocessing stays 
 
 | ablation | model | metric | value | source |
 | --- | --- | --- | --- | --- |
-| feature_top_of_book | majority | accuracy | 0.628615 | experiments/feature_top_of_book |
-| feature_top_of_book | majority | macro_f1 | 0.257321 | experiments/feature_top_of_book |
-| feature_top_of_book | logistic | accuracy | 0.628615 | experiments/feature_top_of_book |
-| feature_top_of_book | logistic | macro_f1 | 0.257321 | experiments/feature_top_of_book |
-| feature_top_of_book | deeplob_style | accuracy | 0.628615 | experiments/feature_top_of_book |
-| feature_top_of_book | deeplob_style | macro_f1 | 0.257321 | experiments/feature_top_of_book |
-| feature_depth_liquidity | majority | accuracy | 0.628615 | experiments/feature_depth_liquidity |
-| feature_depth_liquidity | majority | macro_f1 | 0.257321 | experiments/feature_depth_liquidity |
-| feature_depth_liquidity | logistic | accuracy | 0.628615 | experiments/feature_depth_liquidity |
-| feature_depth_liquidity | logistic | macro_f1 | 0.257321 | experiments/feature_depth_liquidity |
-| feature_depth_liquidity | deeplob_style | accuracy | 0.628615 | experiments/feature_depth_liquidity |
-| feature_depth_liquidity | deeplob_style | macro_f1 | 0.257321 | experiments/feature_depth_liquidity |
-| baseline | majority | accuracy | 0.628615 | experiments/baseline |
-| baseline | majority | macro_f1 | 0.257321 | experiments/baseline |
-| baseline | logistic | accuracy | 0.623310 | experiments/baseline |
-| baseline | logistic | macro_f1 | 0.351469 | experiments/baseline |
-| baseline | deeplob_style | accuracy | 0.567174 | experiments/baseline |
-| baseline | deeplob_style | macro_f1 | 0.352432 | experiments/baseline |
+| feature_top_of_book | majority | accuracy | 0.591166 | experiments/feature_top_of_book |
+| feature_top_of_book | majority | macro_f1 | 0.247687 | experiments/feature_top_of_book |
+| feature_top_of_book | logistic | accuracy | 0.591166 | experiments/feature_top_of_book |
+| feature_top_of_book | logistic | macro_f1 | 0.247687 | experiments/feature_top_of_book |
+| feature_top_of_book | deeplob_style | accuracy | 0.591166 | experiments/feature_top_of_book |
+| feature_top_of_book | deeplob_style | macro_f1 | 0.247687 | experiments/feature_top_of_book |
+| feature_top_of_book | transformer | accuracy | 0.587618 | experiments/feature_top_of_book |
+| feature_top_of_book | transformer | macro_f1 | 0.459897 | experiments/feature_top_of_book |
+| feature_depth_liquidity | majority | accuracy | 0.591166 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | majority | macro_f1 | 0.247687 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | logistic | accuracy | 0.590697 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | logistic | macro_f1 | 0.249057 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | deeplob_style | accuracy | 0.591166 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | deeplob_style | macro_f1 | 0.247687 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | transformer | accuracy | 0.570896 | experiments/feature_depth_liquidity |
+| feature_depth_liquidity | transformer | macro_f1 | 0.331414 | experiments/feature_depth_liquidity |
+| baseline | majority | accuracy | 0.591166 | experiments/baseline |
+| baseline | majority | macro_f1 | 0.247687 | experiments/baseline |
+| baseline | logistic | accuracy | 0.594343 | experiments/baseline |
+| baseline | logistic | macro_f1 | 0.332821 | experiments/baseline |
+| baseline | deeplob_style | accuracy | 0.591895 | experiments/baseline |
+| baseline | deeplob_style | macro_f1 | 0.252138 | experiments/baseline |
+| baseline | transformer | accuracy | 0.488931 | experiments/baseline |
+| baseline | transformer | macro_f1 | 0.430628 | experiments/baseline |
 
 ## Warnings And Limitations
 
-- Ablation rows do not claim profitability, tradable alpha or live execution. Execution-aware values are simplified proxy assumptions.
+- Ablation rows do not present trading or live-execution claims. Execution-aware values are simplified proxy assumptions.
 - Aggregated values come directly from stored child-experiment artefacts and are not edited after the run.

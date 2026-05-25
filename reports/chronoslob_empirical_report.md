@@ -4,10 +4,10 @@
 
 This empirical report summarises stored artefacts for `fi2010_midprice_h10` on task `midprice_direction`.
 It covers predictive results, calibration results, execution-aware sensitivity, ablation results and systems benchmarks where those artefacts were supplied.
-The target research question is whether self-supervised order-book representations can improve short-horizon market-state forecasting.
+The target research question is whether order-book representations can improve short-horizon market-state forecasting.
 Evidence is bounded by leakage-safe validation, calibration analysis and explicit execution assumptions.
-This report only records evidence present on disk and does not claim profitability, deployability or live trading.
-Successful model entries in the main experiment: majority, logistic, random_forest, gradient_boosting, deeplob_style.
+This report only records evidence present on disk and does not present trading or execution-system claims.
+Successful model entries in the main experiment: majority, logistic, random_forest, gradient_boosting, deeplob_style, transformer.
 
 ## 1. Dataset and provenance
 
@@ -29,8 +29,8 @@ Successful model entries in the main experiment: majority, logistic, random_fore
 
 Limitations recorded in provenance: Preparation is local-only. The repository does not download FI-2010
 and does not ship FI-2010 data. The tiny FI-2010-like fixture under
-tests/fixtures/fi2010 exists only to exercise the preparation
-plumbing and does not represent the canonical benchmark.
+tests/fixtures/fi2010 exists only to exercise the preparation path
+and does not represent the canonical benchmark.
 
 ## 2. Label construction
 
@@ -50,16 +50,28 @@ Leakage details: label construction is reported from the config snapshot and pre
 
 | field | value |
 | --- | --- |
-| split design | temporal |
+| split design | official_column |
+| split method | official_column |
+| split column | split |
+| official train rows | 39512 |
+| official test rows | 38397 |
+| official train start/end | 0 to 39511 |
+| official test start/end | 39512 to 77908 |
+| validation fraction within official train | 0.15 |
 | total rows | 77909 |
-| train rows | 54536 |
-| validation rows | 11687 |
-| test rows | 11686 |
-| train start/end | 0 to 54535 |
-| validation start/end | 54536 to 66222 |
-| test start/end | 66223 to 77908 |
+| train rows | 33585 |
+| validation rows | 5927 |
+| test rows | 38397 |
+| train start/end | 0 to 33584 |
+| validation start/end | 33585 to 39511 |
+| test start/end | 39512 to 77908 |
 
-Stored model metadata records train-only preprocessing or tokenisation for: deeplob_style standardisation, deeplob_style split-contained windows.
+Stored model metadata records train-only preprocessing or tokenisation for:
+- `deeplob_style standardisation`
+- `deeplob_style split-contained windows`
+- `logistic standardisation`
+- `transformer standardisation`
+- `transformer split-contained windows`
 The experiment directory passed the required artefact validation contract before this report was written.
 
 ## 4. Models
@@ -67,10 +79,11 @@ The experiment directory passed the required artefact validation contract before
 | field | value |
 | --- | --- |
 | requested models | majority, logistic, random_forest, gradient_boosting, deeplob_style, transformer |
-| successful models | majority, logistic, random_forest, gradient_boosting, deeplob_style |
-| skipped models | transformer: ValidationError: 1 validation error for OrderBookLevel quantity   Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]     For further information visit https://errors.pydantic.dev/2.13/v/value_error |
+| successful models | majority, logistic, random_forest, gradient_boosting, deeplob_style, transformer |
+| skipped models | none |
 
 `deeplob_style` is reported as a compact DeepLOB-style supervised baseline in the stored runner metadata, not as an exact external-paper reproduction.
+`transformer` and `matrix_transformer` are supervised transformer baselines over the normalised FI-2010 matrix path; raw order-book schemas remain strict and are not used to coerce z-score rows.
 `ssl_transformer` is present only as planned or skipped metadata; no SSL model result is reported here.
 
 ## 5. Predictive results
@@ -79,31 +92,33 @@ The table below is populated only from `results.json`; missing metrics are marke
 
 | model | split | horizon | accuracy | macro F1 | test count | class count test | warnings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| majority | test | 10 | 0.628615 | 0.257321 | 11686 | 3 | none |
-| logistic | test | 10 | 0.62331 | 0.351469 | 11686 | 3 | none |
-| random_forest | test | 10 | 0.63161 | 0.409803 | 11686 | 3 | none |
-| gradient_boosting | test | 10 | 0.645131 | 0.442036 | 11686 | 3 | none |
-| deeplob_style | test | 10 | 0.567174 | 0.352432 | 11686 | 3 | none |
+| majority | test | 10 | 0.591166 | 0.247687 | 38397 | 3 | none |
+| logistic | test | 10 | 0.594343 | 0.332821 | 38397 | 3 | none |
+| random_forest | test | 10 | 0.598015 | 0.443623 | 38397 | 3 | none |
+| gradient_boosting | test | 10 | 0.606714 | 0.459992 | 38397 | 3 | none |
+| deeplob_style | test | 10 | 0.591895 | 0.252138 | 38397 | 3 | none |
+| transformer | test | 10 | 0.488931 | 0.430628 | 38394 | 3 | none |
 
-![Confusion matrix](experiments/fi2010_midprice_h10/plots/confusion_matrix.png)
+![Confusion matrix](../experiments/fi2010_midprice_h10/plots/confusion_matrix.png)
 
 ## 6. Calibration results
 
-`calibration_bins.csv` is present with 50 rows.
+`calibration_bins.csv` is present with 60 rows.
 
 | model | split | ECE | Brier score | mean confidence | calibration rows | positive bins |
 | --- | --- | --- | --- | --- | --- | --- |
-| majority | test | 0.0256743 | 0.536689 | 0.602941 | 10 | 1 |
-| logistic | test | 0.0411109 | 0.518987 | 0.587467 | 10 | 7 |
-| random_forest | test | 0.0965356 | 0.521308 | 0.535226 | 10 | 7 |
-| gradient_boosting | test | 0.031549 | 0.482168 | 0.61879 | 10 | 6 |
-| deeplob_style | test | 0.136053 | 0.58772 | 0.431122 | 10 | 4 |
+| majority | test | 0.0428968 | 0.569683 | 0.634063 | 10 | 1 |
+| logistic | test | 0.0168629 | 0.542817 | 0.600126 | 10 | 7 |
+| random_forest | test | 0.0671087 | 0.537216 | 0.532865 | 10 | 7 |
+| gradient_boosting | test | 0.0131143 | 0.519799 | 0.5978 | 10 | 7 |
+| deeplob_style | test | 0.0502806 | 0.544184 | 0.642176 | 10 | 6 |
+| transformer | test | 0.13484 | 0.618301 | 0.623771 | 10 | 7 |
 
-![Reliability curve](experiments/fi2010_midprice_h10/plots/reliability_curve.png)
+![Reliability curve](../experiments/fi2010_midprice_h10/plots/reliability_curve.png)
 
 ## 7. Execution-aware sensitivity
 
-`execution_sensitivity.csv` is present with 60 rows.
+`execution_sensitivity.csv` is present with 72 rows.
 
 | field | value |
 | --- | --- |
@@ -114,15 +129,16 @@ The table below is populated only from `results.json`; missing metrics are marke
 
 | model | rows | thresholds | cost bps | latency steps | max eligible | net proxy min | net proxy max |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| deeplob_style | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 11676 | -20.6589 | 0 |
-| gradient_boosting | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 11676 | -5.37553 | -0.0381572 |
-| logistic | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 11676 | -6.51566 | -0.428625 |
-| majority | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 11676 | -5.43746 | 0 |
-| random_forest | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 11676 | -5.40135 | 0.0608286 |
+| deeplob_style | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19588 | 8.07911 | 31.8754 |
+| gradient_boosting | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19588 | 8.06006 | 44.1651 |
+| logistic | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19588 | 9.35863 | 54.4514 |
+| majority | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19588 | 0 | 14.1198 |
+| random_forest | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19588 | 4.98478 | 199.927 |
+| transformer | 12 | 0, 0.5, 0.6, 0.7 | 0, 1, 5 | 0 | 19585 | -11.5076 | 5.67986 |
 
-![Cost sensitivity](experiments/fi2010_midprice_h10/plots/cost_sensitivity.png)
+![Cost sensitivity](../experiments/fi2010_midprice_h10/plots/cost_sensitivity.png)
 
-These rows are proxy sensitivity under explicit assumptions, not a production backtest or execution system for deployment.
+These rows are proxy sensitivity under explicit assumptions, not a live or deployment-ready execution system.
 
 ## 8. Ablations and robustness
 
@@ -145,146 +161,85 @@ Ablation report paths:
 
 | ablation | status | model | metric | value | source or warning |
 | --- | --- | --- | --- | --- | --- |
-| baseline | run | majority | accuracy | 0.6286154372753723 | experiments/baseline |
-| baseline | run | majority | macro_f1 | 0.25732100322264256 | experiments/baseline |
-| baseline | run | majority | expected_calibration_error | 0.025674260804784077 | experiments/baseline |
-| baseline | run | logistic | accuracy | 0.6233099435221633 | experiments/baseline |
-| baseline | run | logistic | macro_f1 | 0.35146855037871383 | experiments/baseline |
-| baseline | run | logistic | expected_calibration_error | 0.041110897222318726 | experiments/baseline |
-| baseline | run | deeplob_style | accuracy | 0.5671743967140168 | experiments/baseline |
-| baseline | run | deeplob_style | macro_f1 | 0.35243154257775067 | experiments/baseline |
-| baseline | run | deeplob_style | expected_calibration_error | 0.13605281684589038 | experiments/baseline |
-| calibration_bins_5 | run | majority | accuracy | 0.6286154372753723 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | majority | macro_f1 | 0.25732100322264256 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | majority | expected_calibration_error | 0.025674260804784077 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | logistic | accuracy | 0.6233099435221633 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | logistic | macro_f1 | 0.35146855037871383 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | logistic | expected_calibration_error | 0.041110897222318726 | experiments/calibration_bins_5 |
-| calibration_bins_5 | run | deeplob_style | accuracy | 0.5671743967140168 | experiments/calibration_bins_5 |
+| baseline | run | majority | accuracy | 0.5911659765085814 | experiments/baseline |
+| baseline | run | majority | macro_f1 | 0.24768670071144863 | experiments/baseline |
+| baseline | run | majority | expected_calibration_error | 0.042896849157638695 | experiments/baseline |
+| baseline | run | logistic | accuracy | 0.594343308070943 | experiments/baseline |
+| baseline | run | logistic | macro_f1 | 0.33282132091497396 | experiments/baseline |
+| baseline | run | logistic | expected_calibration_error | 0.016862852538349342 | experiments/baseline |
+| baseline | run | deeplob_style | accuracy | 0.5918952001458447 | experiments/baseline |
+| baseline | run | deeplob_style | macro_f1 | 0.25213778820428207 | experiments/baseline |
+| baseline | run | deeplob_style | expected_calibration_error | 0.050280577884349024 | experiments/baseline |
+| baseline | run | transformer | accuracy | 0.48893056206698965 | experiments/baseline |
+| baseline | run | transformer | macro_f1 | 0.43062799091074866 | experiments/baseline |
+| baseline | run | transformer | expected_calibration_error | 0.13484028587059801 | experiments/baseline |
+| calibration_bins_5 | run | majority | accuracy | 0.5911659765085814 | experiments/calibration_bins_5 |
+| calibration_bins_5 | run | majority | macro_f1 | 0.24768670071144863 | experiments/calibration_bins_5 |
+| calibration_bins_5 | run | majority | expected_calibration_error | 0.042896849157638695 | experiments/calibration_bins_5 |
+| calibration_bins_5 | run | logistic | accuracy | 0.594343308070943 | experiments/calibration_bins_5 |
 
 SSL pretraining ablation status:
 - `ssl_pretraining_ablation`: skipped; no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry
 
 ## 9. Systems benchmarks
 
-Systems benchmark directory: not supplied.
+| field | value |
+| --- | --- |
+| benchmark set | standard |
+| benchmarks run | loader_throughput, feature_generation_speed, experiment_runner_timing, inference_latency, memory_profile |
+| benchmarks skipped | not available |
+| models requested | majority, logistic |
+| data source kind | local_file |
+| data row count | 77909 |
+| platform | Windows-10-10.0.19045-SP0 |
+
+| benchmark | status | metric | value | unit | rows | warning |
+| --- | --- | --- | --- | --- | --- | --- |
+| loader_throughput | run | elapsed_seconds | 2.083211699999083 | seconds | 77909 | not available |
+| loader_throughput | run | rows_per_second | 37398.5034742433 | rows/second | 77909 | not available |
+| feature_generation_speed | run | elapsed_seconds | 0.15663839999979245 | seconds | 77909 | feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used |
+| feature_generation_speed | run | rows_per_second | 497381.2296352825 | rows/second | 77909 | feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used |
+| feature_generation_speed | run | features_per_second | 71622897.06748067 | feature_values/second | 77909 | feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used |
+| experiment_runner_timing | run | elapsed_seconds | 12.561897899999167 | seconds | 76794 | not available |
+| experiment_runner_timing | run | prediction_rows | 76794.0 | rows | 76794 | not available |
+| experiment_runner_timing | run | artefact_count | 15.0 | files | 76794 | not available |
+| inference_latency | run | elapsed_seconds | 0.4091441000018676 | seconds | 191970 | not available |
+| inference_latency | run | latency_ms_per_window | 0.002131291868530852 | ms/window | 191970 | not available |
+| memory_profile | run | peak_memory_mb | 87.12832260131836 | MiB | 77909 | not available |
 
 ## 10. Failure cases and warnings
 
-- optional artefact missing: plots/regime_breakdown.png
-- requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- regime breakdown skipped: no genuine regime-breakdown data is available in stored artefacts; not fabricating regimes from row numbers or timestamps
-- ablation 'baseline': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'calibration_bins_5': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'cost_0bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'cost_1bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'calibration_bins_10': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'latency_0': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'latency_1': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'horizon_50': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'lookback_2': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'lookback_4': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'feature_top_of_book': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'feature_imbalance' skipped: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']
-- ablation 'feature_depth_liquidity': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel
-quantity
-  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]
-    For further information visit https://errors.pydantic.dev/2.13/v/value_error
-- ablation 'baseline': optional artefact missing: plots/reliability_curve.png
-- ablation 'baseline': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'baseline': optional artefact missing: plots/confusion_matrix.png
-- ablation 'baseline': optional artefact missing: plots/regime_breakdown.png
-- ablation 'calibration_bins_5': optional artefact missing: plots/reliability_curve.png
-- ablation 'calibration_bins_5': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'calibration_bins_5': optional artefact missing: plots/confusion_matrix.png
-- ablation 'calibration_bins_5': optional artefact missing: plots/regime_breakdown.png
-- ablation 'cost_0bps': optional artefact missing: plots/reliability_curve.png
-- ablation 'cost_0bps': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'cost_0bps': optional artefact missing: plots/confusion_matrix.png
-- ablation 'cost_0bps': optional artefact missing: plots/regime_breakdown.png
-- ablation 'cost_1bps': optional artefact missing: plots/reliability_curve.png
-- ablation 'cost_1bps': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'cost_1bps': optional artefact missing: plots/confusion_matrix.png
-- ablation 'cost_1bps': optional artefact missing: plots/regime_breakdown.png
-- ablation 'ssl_pretraining_ablation': no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry
-- ablation 'calibration_bins_10': optional artefact missing: plots/reliability_curve.png
-- ablation 'calibration_bins_10': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'calibration_bins_10': optional artefact missing: plots/confusion_matrix.png
-- ablation 'calibration_bins_10': optional artefact missing: plots/regime_breakdown.png
-- ablation 'latency_0': optional artefact missing: plots/reliability_curve.png
-- ablation 'latency_0': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'latency_0': optional artefact missing: plots/confusion_matrix.png
-- ablation 'latency_0': optional artefact missing: plots/regime_breakdown.png
-- ablation 'latency_1': optional artefact missing: plots/reliability_curve.png
-- ablation 'latency_1': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'latency_1': optional artefact missing: plots/confusion_matrix.png
-- ablation 'latency_1': optional artefact missing: plots/regime_breakdown.png
-- ablation 'horizon_50': optional artefact missing: plots/reliability_curve.png
-- ablation 'horizon_50': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'horizon_50': optional artefact missing: plots/confusion_matrix.png
-- ablation 'horizon_50': optional artefact missing: plots/regime_breakdown.png
-- ablation 'lookback_2': optional artefact missing: plots/reliability_curve.png
-- ablation 'lookback_2': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'lookback_2': optional artefact missing: plots/confusion_matrix.png
-- ablation 'lookback_2': optional artefact missing: plots/regime_breakdown.png
-- ablation 'lookback_4': optional artefact missing: plots/reliability_curve.png
-- ablation 'lookback_4': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'lookback_4': optional artefact missing: plots/confusion_matrix.png
-- ablation 'lookback_4': optional artefact missing: plots/regime_breakdown.png
-- ablation 'feature_top_of_book': optional artefact missing: plots/reliability_curve.png
-- ablation 'feature_top_of_book': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'feature_top_of_book': optional artefact missing: plots/confusion_matrix.png
-- ablation 'feature_top_of_book': optional artefact missing: plots/regime_breakdown.png
-- ablation 'feature_imbalance': ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']
-- ablation 'feature_depth_liquidity': optional artefact missing: plots/reliability_curve.png
-- ablation 'feature_depth_liquidity': optional artefact missing: plots/cost_sensitivity.png
-- ablation 'feature_depth_liquidity': optional artefact missing: plots/confusion_matrix.png
-- ablation 'feature_depth_liquidity': optional artefact missing: plots/regime_breakdown.png
-- ablation row ssl_pretraining_ablation: no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry
-- ablation row feature_imbalance: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']
+Warning summary:
+
+| warning group | occurrences |
+| --- | --- |
+| optional plot artefact missing: plots/regime_breakdown.png | 13 |
+| regime breakdown plot skipped because no genuine regime data exists | 1 |
+| feature-pattern ablation matched no columns | 3 |
+| optional plot artefact missing: plots/reliability_curve.png | 12 |
+| optional plot artefact missing: plots/cost_sensitivity.png | 12 |
+| optional plot artefact missing: plots/confusion_matrix.png | 12 |
+| SSL pretraining remains unsupported in the paper runner | 2 |
+| feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used | 2 |
+
+Detailed warning appendix:
+
+- optional plot artefact missing: plots/regime_breakdown.png: 13 occurrence(s).
+- regime breakdown skipped: no genuine regime-breakdown data is available in stored artefacts; regime evidence is not derived from row numbers or timestamps
+- feature-pattern ablation matched no columns: 3 occurrence(s).
+  Representative detail: ablation 'feature_imbalance' skipped: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']
+- optional plot artefact missing: plots/reliability_curve.png: 12 occurrence(s).
+- optional plot artefact missing: plots/cost_sensitivity.png: 12 occurrence(s).
+- optional plot artefact missing: plots/confusion_matrix.png: 12 occurrence(s).
+- SSL pretraining remains unsupported in the paper runner: 2 occurrence(s).
+- feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used: 2 occurrence(s).
 
 ## 11. Limitations
 
 - Real benchmark evidence depends on a user-supplied local FI-2010-style file.
 - FI-2010 is a fixed historical benchmark and may not represent other instruments, venues or regimes.
 - Execution-aware sensitivity is a simplified proxy analysis with explicit costs and latency assumptions.
-- There is no live trading, broker integration or order placement in this report.
+- There is no broker integration or order placement in this report.
 - There is no production market impact model.
 - SSL results are absent unless a stored SSL model result is genuinely present in the supplied artefacts.
 
@@ -311,5 +266,9 @@ python -m chronoslob.cli run-paper-ablations --config configs/experiments/fi2010
 ```
 
 ```bash
-python -m chronoslob.cli build-paper-report --experiment experiments/fi2010_midprice_h10 --ablations experiments/fi2010_midprice_h10_ablations --out reports/chronoslob_empirical_report.md --overwrite
+python -m chronoslob.cli run-system-benchmarks --config configs/experiments/fi2010_midprice_h10.yaml --data-path data/processed/fi2010/fold1_combined.csv --out experiments/fi2010_midprice_h10_systems --benchmark-set standard --models majority,logistic --overwrite
+```
+
+```bash
+python -m chronoslob.cli build-paper-report --experiment experiments/fi2010_midprice_h10 --ablations experiments/fi2010_midprice_h10_ablations --systems experiments/fi2010_midprice_h10_systems --out reports/chronoslob_empirical_report.md --overwrite
 ```

@@ -12,7 +12,7 @@ experiment_name: fi2010_midprice_h10
 dataset_name: FI-2010
 task_name: midprice_direction
 horizon: 10
-split_name: temporal
+split_name: official_column
 seed: 0
 
 local_data_path: <path-to-local-fi2010-file>
@@ -24,8 +24,8 @@ label_columns:
   - label_50
   - label_100
 # The canonical FI-2010 file does not include a timestamp column.
-# Setting this to null tells the preparation step to use row order for
-# the temporal split, matching the published benchmark.
+# Setting this to null tells the preparation step to preserve row order
+# within the configured split partitions.
 timestamp_column: null
 split_column: split
 price_level_count: 10
@@ -33,6 +33,13 @@ price_level_count: 10
 train_fraction: 0.7
 validation_fraction: 0.15
 test_fraction: 0.15
+
+split:
+  method: official_column
+  split_column: split
+  validation_fraction_within_train: 0.15
+  train_value: train
+  test_value: test
 
 # The following sections are recorded for the paper experiment runner
 # and are not consumed by the preparation step. They describe the
@@ -50,6 +57,7 @@ neural_settings:
   supported_models:
     - deeplob_style
     - transformer
+    - matrix_transformer
   planned_models:
     - ssl_transformer
   lookback: 1
@@ -81,6 +89,7 @@ models_planned:
   - gradient_boosting
   - deeplob_style
   - transformer
+  - matrix_transformer
   - ssl_transformer
 
 metrics_planned:
@@ -129,5 +138,5 @@ execution_sensitivity:
 notes: |
   Preparation is local-only. The repository does not download FI-2010
   and does not ship FI-2010 data. The tiny FI-2010-like fixture under
-  tests/fixtures/fi2010 exists only to exercise the preparation
-  plumbing and does not represent the canonical benchmark.
+  tests/fixtures/fi2010 exists only to exercise the preparation path
+  and does not represent the canonical benchmark.

@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-05-25T16:03:25.133258Z",
+  "created_at": "2026-05-25T18:34:32.665454Z",
   "dataset_name": "FI-2010",
   "dataset_variant": "midprice_direction_h10",
   "dataset_version": null,
@@ -7,10 +7,10 @@
   "feature_count": 144,
   "horizon": 10,
   "label_name": "label_10",
-  "notes": "Preparation is local-only. The repository does not download FI-2010\nand does not ship FI-2010 data. The tiny FI-2010-like fixture under\ntests/fixtures/fi2010 exists only to exercise the preparation\nplumbing and does not represent the canonical benchmark.",
+  "notes": "Preparation is local-only. The repository does not download FI-2010\nand does not ship FI-2010 data. The tiny FI-2010-like fixture under\ntests/fixtures/fi2010 exists only to exercise the preparation path\nand does not represent the canonical benchmark.",
   "row_count": 77909,
   "source_kind": "local_file",
   "source_path": "data\\processed\\fi2010\\fold1_combined.csv",
   "source_sha256": "91aef9f1923dfd87955dd5838f709ca198d8ae903cfd6baeb029fe827a0539d0",
-  "split_name": "temporal"
+  "split_name": "official_column"
 }

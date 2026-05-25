@@ -11,11 +11,12 @@ from __future__ import annotations
 import csv
 import json
 import math
+import os
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -591,8 +592,8 @@ def _render_abstract(data: _ReportData) -> list[str]:
         "artefacts were supplied."
     )
     lines.append(
-        "The target research question is whether self-supervised order-book "
-        "representations can improve short-horizon market-state forecasting."
+        "The target research question is whether order-book representations "
+        "can improve short-horizon market-state forecasting."
     )
     lines.append(
         "Evidence is bounded by leakage-safe validation, calibration analysis "
@@ -600,7 +601,7 @@ def _render_abstract(data: _ReportData) -> list[str]:
     )
     lines.append(
         "This report only records evidence present on disk and does not "
-        "claim profitability, deployability or live trading."
+        "present trading or execution-system claims."
     )
     lines.append(
         f"Successful model entries in the main experiment: {_format_list(models_run)}."
@@ -676,12 +677,42 @@ def _render_labels(data: _ReportData) -> list[str]:
 
 def _render_validation(data: _ReportData) -> list[str]:
     runner = data.runner_summary or {}
-    split = data.split_summary or _mapping_value(runner.get("split_counts")) or {}
+    split = (
+        data.split_summary
+        or _mapping_value(runner.get("split_summary"))
+        or _mapping_value(runner.get("split_counts"))
+        or {}
+    )
     metadata = _mapping_value(runner.get("model_metadata")) or {}
     train_only_entries = _train_only_metadata(metadata)
+    split_method = split.get("split_method") or runner.get("split_method")
     lines = ["## 3. Leakage controls and temporal validation", ""]
     rows = [
         ("split design", runner.get("split_name") or data.results.config_summary.split_name),
+        ("split method", split_method),
+        ("split column", split.get("split_column")),
+        ("official train rows", split.get("official_train_rows")),
+        ("official test rows", split.get("official_test_rows")),
+        (
+            "official train start/end",
+            _range_text(
+                split,
+                "official_train_start_index",
+                "official_train_end_index",
+            ),
+        ),
+        (
+            "official test start/end",
+            _range_text(
+                split,
+                "official_test_start_index",
+                "official_test_end_index",
+            ),
+        ),
+        (
+            "validation fraction within official train",
+            split.get("validation_fraction_within_train"),
+        ),
         ("total rows", split.get("n_rows")),
         ("train rows", split.get("n_train")),
         ("validation rows", split.get("n_validation")),
@@ -697,10 +728,10 @@ def _render_validation(data: _ReportData) -> list[str]:
     lines.append("")
     if train_only_entries:
         lines.append(
-            "Stored model metadata records train-only preprocessing or tokenisation for: "
-            + _format_list(train_only_entries)
-            + "."
+            "Stored model metadata records train-only preprocessing or tokenisation for:"
         )
+        for entry in train_only_entries:
+            lines.append(f"- `{entry}`")
     else:
         lines.append(
             "Train-only preprocessing detail is not available in stored metadata for "
@@ -738,6 +769,17 @@ def _render_models(data: _ReportData) -> list[str]:
             "`deeplob_style` is reported as a compact DeepLOB-style supervised "
             "baseline in the stored runner metadata, not as an exact external-paper "
             "reproduction."
+        )
+    if (
+        "transformer" in successful
+        or "transformer" in requested
+        or "matrix_transformer" in successful
+        or "matrix_transformer" in requested
+    ):
+        lines.append(
+            "`transformer` and `matrix_transformer` are supervised transformer "
+            "baselines over the normalised FI-2010 matrix path; raw order-book "
+            "schemas remain strict and are not used to coerce z-score rows."
         )
     if "ssl_transformer" in requested or "ssl_transformer" in planned:
         has_ssl_result = any(
@@ -931,7 +973,7 @@ def _render_execution(data: _ReportData) -> list[str]:
         lines.append("")
     lines.append(
         "These rows are proxy sensitivity under explicit assumptions, not a "
-        "production backtest or execution system for deployment."
+        "live or deployment-ready execution system."
     )
     lines.append("")
     return lines
@@ -1036,11 +1078,33 @@ def _render_systems(data: _ReportData) -> list[str]:
 
 def _render_warnings(data: _ReportData) -> list[str]:
     lines = ["## 10. Failure cases and warnings", ""]
-    if data.warnings:
-        for warning in data.warnings:
-            lines.append(f"- {_format_text(warning)}")
-    else:
+    if not data.warnings:
         lines.append("- none")
+        lines.append("")
+        return lines
+
+    grouped = _group_warnings(data.warnings)
+    lines.append("Warning summary:")
+    lines.append("")
+    lines.extend(
+        _markdown_table(
+            ["warning group", "occurrences"],
+            [[group["label"], group["count"]] for group in grouped],
+        )
+    )
+    lines.append("")
+    lines.append("Detailed warning appendix:")
+    lines.append("")
+    for group in grouped:
+        count = cast(int, group["count"])
+        label = str(group["label"])
+        examples = [str(item) for item in cast(list[str], group["examples"])]
+        if count == 1 and examples:
+            lines.append(f"- {_format_text(examples[0])}")
+            continue
+        lines.append(f"- {label}: {count} occurrence(s).")
+        if bool(group["show_examples"]) and examples:
+            lines.append(f"  Representative detail: {_format_text(examples[0])}")
     lines.append("")
     return lines
 
@@ -1053,7 +1117,7 @@ def _render_limitations(data: _ReportData) -> list[str]:
         "instruments, venues or regimes.",
         "Execution-aware sensitivity is a simplified proxy analysis with explicit "
         "costs and latency assumptions.",
-        "There is no live trading, broker integration or order placement in this report.",
+        "There is no broker integration or order placement in this report.",
         "There is no production market impact model.",
         "SSL results are absent unless a stored SSL model result is genuinely "
         "present in the supplied artefacts.",
@@ -1392,6 +1456,64 @@ def _collect_structured_warnings(
             )
 
 
+def _warning_group_label(warning: str) -> tuple[str, bool]:
+    lowered = warning.casefold()
+    if (
+        "feature_generation_speed measured normalised fi-2010 matrix feature throughput"
+        in lowered
+        and "raw order-book snapshot reconstruction was not used" in lowered
+    ):
+        return (
+            "feature_generation_speed measured normalised FI-2010 matrix "
+            "feature throughput; raw order-book snapshot reconstruction was "
+            "not used",
+            False,
+        )
+    if "optional artefact missing: plots/" in lowered:
+        marker = "optional artefact missing: "
+        start = lowered.find(marker)
+        if start >= 0:
+            path = warning[start + len(marker) :].split()[0]
+            return f"optional plot artefact missing: {path}", False
+        return "optional plot artefacts missing", False
+    if "orderbooklevel" in lowered and "quantity must be non-negative" in lowered:
+        return (
+            "raw OrderBookLevel conversion rejected normalised negative quantities",
+            True,
+        )
+    if "no traceable runner support for ssl" in lowered:
+        return "SSL pretraining remains unsupported in the paper runner", False
+    if "feature_patterns produced no matching feature columns" in lowered:
+        return "feature-pattern ablation matched no columns", True
+    if "regime breakdown skipped" in lowered:
+        return "regime breakdown plot skipped because no genuine regime data exists", False
+    return _shorten(warning, limit=180), True
+
+
+def _group_warnings(warnings: Sequence[str]) -> list[dict[str, object]]:
+    grouped: dict[str, dict[str, object]] = {}
+    order: list[str] = []
+    for raw in warnings:
+        text = _format_text(raw)
+        if not text or text == _UNAVAILABLE:
+            continue
+        label, show_examples = _warning_group_label(text)
+        if label not in grouped:
+            grouped[label] = {
+                "label": label,
+                "count": 0,
+                "examples": [],
+                "show_examples": show_examples,
+            }
+            order.append(label)
+        item = grouped[label]
+        item["count"] = int(cast(int, item["count"])) + 1
+        examples = cast(list[str], item["examples"])
+        if text not in examples:
+            examples.append(text)
+    return [grouped[label] for label in order]
+
+
 # ---------------------------------------------------------------------------
 # Formatting helpers
 # ---------------------------------------------------------------------------
@@ -1555,9 +1677,10 @@ def _plot_markdown(data: _ReportData, path: Path, *, alt: str) -> str:
 
 def _relative_markdown_path(path: Path, *, base: Path) -> str:
     try:
-        return path.resolve().relative_to(base.resolve()).as_posix()
-    except ValueError:
+        relative = os.path.relpath(path.resolve(), start=base.resolve())
+    except (OSError, ValueError):
         return _display_path(path)
+    return Path(relative).as_posix()
 
 
 def _safe_source_path(value: str) -> str:

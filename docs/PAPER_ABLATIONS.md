@@ -55,7 +55,7 @@ Cost-sensitivity ablations override
 `execution_sensitivity.cost_bps`. Latency-sensitivity ablations
 override `execution_sensitivity.latency_steps`. These are simplified
 proxy assumptions recorded in `execution_sensitivity.csv`; they are
-not production execution results.
+not live-execution results.
 
 Horizon ablations override `horizon` and the matching `label_name`
 where the supplied FI-2010-style file has that label column.
@@ -101,8 +101,7 @@ directories, depending on which ablations run successfully.
 
 Skipped ablations appear in `ablation_summary.json`,
 `ablation_results.csv`, `ablation_manifest.json` and the relevant
-Markdown report, but they do not get fabricated child experiment
-directories.
+Markdown report, but they do not get child experiment directories.
 
 ## Smoke Command
 

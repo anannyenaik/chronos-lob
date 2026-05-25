@@ -8,6 +8,9 @@ not available or skipped.
 
 The report builder does not run models, build plots, download data or create
 metrics that are absent from the supplied artefact directories.
+It also normalises the Markdown structure it writes: headings, paragraphs,
+tables and code fences are separated by blank lines so the report renders
+cleanly on GitHub.
 
 ## Inputs
 
@@ -88,14 +91,17 @@ The generated report contains:
 
 - dataset and provenance
 - label construction
-- leakage controls and temporal validation
+- leakage controls, official split-aware evaluation details and temporal
+  validation metadata where applicable
 - models
 - predictive results
 - calibration results
 - execution-aware sensitivity and cost-aware signal quality
 - ablations and robustness
 - systems benchmarks
-- warnings
+- a warning summary plus a detailed warning appendix, with repeated
+  optional-plot and unsupported-SSL warnings grouped rather than repeated
+  inline
 - limitations
 - reproducibility commands
 

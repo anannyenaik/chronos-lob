@@ -121,12 +121,24 @@ _REGISTRY: tuple[PaperModelSpec, ...] = (
     ),
     PaperModelSpec(
         name="transformer",
-        model_type="market_transformer",
-        requires_standardisation=False,
+        model_type="normalised_matrix_transformer",
+        requires_standardisation=True,
         emits_probabilities=True,
         description=(
-            "Supervised transformer baseline over deterministic "
-            "snapshot-derived token windows fitted without test-row input."
+            "Supervised transformer baseline over normalised FI-2010 "
+            "matrix windows. The paper-runner path does not construct raw "
+            "order-book snapshots from z-score values."
+        ),
+        model_family="neural",
+    ),
+    PaperModelSpec(
+        name="matrix_transformer",
+        model_type="normalised_matrix_transformer",
+        requires_standardisation=True,
+        emits_probabilities=True,
+        description=(
+            "Explicit alias for the supervised normalised FI-2010 matrix "
+            "transformer baseline."
         ),
         model_family="neural",
     ),

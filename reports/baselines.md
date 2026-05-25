@@ -47,7 +47,7 @@ coefficient and balanced accuracy. Binary Brier score and log loss are reported
 only when compatible probabilities are available.
 
 These are forecasting diagnostics. They are not evidence of tradable signal
-quality, execution performance or cost-adjusted alpha. Classification quality and
+quality, execution performance or cost-aware signal quality. Classification quality and
 tradability remain separate research questions.
 
 ## Smoke Tests

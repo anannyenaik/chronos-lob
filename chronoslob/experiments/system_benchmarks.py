@@ -1,10 +1,10 @@
 """Local systems benchmark orchestration for ChronosLOB.
 
-The systems benchmark suite measures research-platform plumbing under
-explicit local conditions. It records loader throughput, feature-generation
-speed, paper-runner wall-clock timing, tiny CPU inference latency and a
-Python-level resource profile. Measurements from bundled fixtures are labelled
-as smoke measurements only and are not benchmark evidence.
+The systems benchmark suite measures research-platform behaviour under explicit
+local conditions. It records loader throughput, feature-generation speed,
+paper-runner wall-clock timing, tiny CPU inference latency and a Python-level
+resource profile. Measurements from bundled fixtures are labelled as smoke
+measurements only and are not benchmark evidence.
 """
 
 from __future__ import annotations
@@ -32,15 +32,17 @@ from chronoslob.data.schemas import ensure_utc_datetime
 from chronoslob.experiments.artifacts import validate_experiment_directory
 from chronoslob.experiments.fi2010_benchmark import (
     FI2010BenchmarkConfig,
+    build_benchmark_split,
+    effective_split_column,
     load_benchmark_config,
 )
 from chronoslob.experiments.manifests import sha256_file, stable_json_dumps
 from chronoslob.experiments.model_registry import normalise_paper_model_names
 from chronoslob.experiments.paper_runner import run_paper_experiment
-from chronoslob.features.pipeline import (
-    FeaturePipelineConfig,
-    build_feature_frame_from_fi2010,
-    validate_feature_frame,
+from chronoslob.features.pipeline import validate_feature_frame
+from chronoslob.models.matrix_transformer import (
+    MatrixTransformerConfig,
+    create_matrix_transformer,
 )
 from chronoslob.models.preprocessing import select_feature_columns
 from chronoslob.training.experiment import get_git_commit
@@ -297,7 +299,7 @@ def _load_dataset(config: FI2010BenchmarkConfig, data_path: Path) -> FI2010Datas
     fi2010_config = FI2010Config(
         path=data_path,
         timestamp_column=config.timestamp_column,
-        split_column=config.split_column,
+        split_column=effective_split_column(config),
         label_columns=list(config.label_columns),
         price_level_count=config.price_level_count,
     )
@@ -360,24 +362,54 @@ def _run_loader_throughput(
     return metrics, dataset, warnings
 
 
+def _build_matrix_feature_frame(
+    dataset: FI2010Dataset,
+    config: FI2010BenchmarkConfig,
+) -> tuple[pd.DataFrame, list[str]]:
+    """Build a feature frame directly from FI-2010 numeric matrix columns."""
+    frame = dataset.frame
+    timestamps = _timestamps_for_frame(frame, config=config).reset_index(drop=True)
+    feature_columns = list(dataset.feature_columns)
+    metadata_frame = pd.DataFrame(
+        {
+            "timestamp": timestamps,
+            "symbol": [dataset.config.symbol] * len(frame),
+        }
+    )
+    matrix_frame = pd.DataFrame(
+        {
+            column: frame[column].reset_index(drop=True)
+            for column in feature_columns
+        }
+    )
+    feature_frame = pd.concat([metadata_frame, matrix_frame], axis=1)
+    feature_frame.attrs["feature_mode"] = "normalised_fi2010_matrix"
+    return feature_frame, feature_columns
+
+
 def _run_feature_generation_speed(
     *,
     benchmark_set: str,
     dataset: FI2010Dataset,
+    config: FI2010BenchmarkConfig,
 ) -> tuple[list[SystemBenchmarkMetric], pd.DataFrame, list[str]]:
     benchmark_name = "feature_generation_speed"
-    warnings: list[str] = []
-    timed = _timed_call(
-        lambda: build_feature_frame_from_fi2010(
-            dataset,
-            FeaturePipelineConfig(),
-        )
-    )
-    feature_frame = timed.value
+    warnings: list[str] = [
+        "feature_generation_speed measured normalised FI-2010 matrix feature "
+        "throughput; raw order-book snapshot reconstruction was not used"
+    ]
+    timed = _timed_call(lambda: _build_matrix_feature_frame(dataset, config))
+    feature_frame, matrix_feature_columns = timed.value
     if not isinstance(feature_frame, pd.DataFrame):
-        raise TypeError("feature pipeline returned an unexpected object")
+        raise TypeError("matrix feature preparation returned an unexpected object")
+    if not isinstance(matrix_feature_columns, list):
+        raise TypeError("matrix feature preparation returned invalid feature columns")
 
-    validation = validate_feature_frame(feature_frame, allow_nan=True)
+    validation = validate_feature_frame(
+        feature_frame,
+        feature_columns=matrix_feature_columns,
+        allow_nan=True,
+    )
     if not validation.ok:
         warnings.append("feature frame validation reported issues")
 
@@ -397,7 +429,8 @@ def _run_feature_generation_speed(
             metric_value=timed.elapsed_seconds,
             metric_unit="seconds",
             rows=rows_processed,
-            source="chronoslob.features.pipeline.build_feature_frame_from_fi2010",
+            source="normalised_fi2010_matrix_feature_frame",
+            warning=warnings[0],
         ),
         _metric(
             benchmark_name=benchmark_name,
@@ -406,7 +439,8 @@ def _run_feature_generation_speed(
             metric_value=float(rows_processed),
             metric_unit="rows",
             rows=rows_processed,
-            source="chronoslob.features.pipeline.build_feature_frame_from_fi2010",
+            source="normalised_fi2010_matrix_feature_frame",
+            warning=warnings[0],
         ),
         _metric(
             benchmark_name=benchmark_name,
@@ -415,7 +449,8 @@ def _run_feature_generation_speed(
             metric_value=float(features_generated),
             metric_unit="feature_values",
             rows=rows_processed,
-            source="chronoslob.features.pipeline.build_feature_frame_from_fi2010",
+            source="normalised_fi2010_matrix_feature_frame",
+            warning=warnings[0],
         ),
     ]
     row_throughput = _safe_divide(float(rows_processed), timed.elapsed_seconds)
@@ -428,7 +463,8 @@ def _run_feature_generation_speed(
                 metric_value=row_throughput,
                 metric_unit="rows/second",
                 rows=rows_processed,
-                source="chronoslob.features.pipeline.build_feature_frame_from_fi2010",
+                source="normalised_fi2010_matrix_feature_frame",
+                warning=warnings[0],
             )
         )
     feature_throughput = _safe_divide(float(features_generated), timed.elapsed_seconds)
@@ -441,7 +477,8 @@ def _run_feature_generation_speed(
                 metric_value=feature_throughput,
                 metric_unit="feature_values/second",
                 rows=rows_processed,
-                source="chronoslob.features.pipeline.build_feature_frame_from_fi2010",
+                source="normalised_fi2010_matrix_feature_frame",
+                warning=warnings[0],
             )
         )
     return metrics, feature_frame, warnings
@@ -571,14 +608,19 @@ def _raw_sequence_frames(
     frame = dataset.frame
     timestamps = _timestamps_for_frame(frame, config=config).reset_index(drop=True)
     feature_columns = list(dataset.feature_columns)
-    feature_frame = pd.DataFrame(
+    metadata_frame = pd.DataFrame(
         {
             "timestamp": timestamps,
             "symbol": [dataset.config.symbol] * len(frame),
         }
     )
-    for column in feature_columns:
-        feature_frame[column] = frame[column].reset_index(drop=True)
+    matrix_frame = pd.DataFrame(
+        {
+            column: frame[column].reset_index(drop=True)
+            for column in feature_columns
+        }
+    )
+    feature_frame = pd.concat([metadata_frame, matrix_frame], axis=1)
 
     label_frame = pd.DataFrame(
         {
@@ -600,7 +642,6 @@ def _run_inference_latency(
     try:
         import torch
 
-        from chronoslob.models.deeplob import DeepLOBConfig, create_deeplob_model
         from chronoslob.training.datasets import (
             SequenceDataset,
             SequenceWindowConfig,
@@ -613,7 +654,7 @@ def _run_inference_latency(
             _skipped_metric(
                 benchmark_name=benchmark_name,
                 benchmark_set=benchmark_set,
-                source="deeplob_forward",
+                source="normalised_matrix_transformer_forward",
                 warning=reason,
             )
         ], [reason]
@@ -624,7 +665,7 @@ def _run_inference_latency(
             _skipped_metric(
                 benchmark_name=benchmark_name,
                 benchmark_set=benchmark_set,
-                source="deeplob_forward",
+                source="normalised_matrix_transformer_forward",
                 warning=reason,
             )
         ], [reason]
@@ -637,12 +678,30 @@ def _run_inference_latency(
                 _skipped_metric(
                     benchmark_name=benchmark_name,
                     benchmark_set=benchmark_set,
-                    source="deeplob_forward",
+                    source="normalised_matrix_transformer_forward",
                     warning=reason,
                 )
             ], [reason]
 
-        lookback = min(max(1, int(config.neural_settings.lookback)), len(feature_frame))
+        split = build_benchmark_split(config, dataset.frame)
+        candidate_indices = split.test or split.train
+        if not candidate_indices:
+            reason = "no split-contained rows are available for inference timing"
+            return [
+                _skipped_metric(
+                    benchmark_name=benchmark_name,
+                    benchmark_set=benchmark_set,
+                    source="normalised_matrix_transformer_forward",
+                    warning=reason,
+                )
+            ], [reason]
+        lookback = max(
+            1,
+            min(
+                int(config.neural_settings.transformer_window_length),
+                len(candidate_indices),
+            ),
+        )
         sequence_config = SequenceWindowConfig(
             lookback=lookback,
             target_column=config.label_name,
@@ -654,14 +713,18 @@ def _run_inference_latency(
             label_frame=label_frame,
             config=sequence_config,
             feature_columns=list(feature_columns),
+            allowed_target_indices=list(candidate_indices),
         )
         if len(sequence_dataset) == 0:
-            reason = "sequence dataset produced no windows for inference timing"
+            reason = (
+                "matrix transformer sequence dataset produced no split-contained "
+                "windows for inference timing"
+            )
             return [
                 _skipped_metric(
                     benchmark_name=benchmark_name,
                     benchmark_set=benchmark_set,
-                    source="deeplob_forward",
+                    source="normalised_matrix_transformer_forward",
                     warning=reason,
                 )
             ], [reason]
@@ -670,15 +733,17 @@ def _run_inference_latency(
             set_torch_deterministic(config.seed)
         windows = [sequence_dataset[index]["x"] for index in range(len(sequence_dataset))]
         batch = torch.stack(windows, dim=0).to("cpu")
-        model_config = DeepLOBConfig(
+        model_config = MatrixTransformerConfig(
             input_features=sequence_dataset.n_features,
             n_classes=max(2, sequence_dataset.n_classes),
-            conv_channels=config.neural_settings.deeplob_conv_channels,
-            lstm_hidden_size=config.neural_settings.deeplob_lstm_hidden_size,
+            model_dim=config.neural_settings.transformer_model_dim,
+            num_heads=config.neural_settings.transformer_num_heads,
+            num_layers=config.neural_settings.transformer_num_layers,
+            feedforward_dim=config.neural_settings.transformer_feedforward_dim,
             dropout=0.0,
-            use_batch_norm=False,
+            max_sequence_length=lookback,
         )
-        model = create_deeplob_model(model_config).to("cpu")
+        model = create_matrix_transformer(model_config).to("cpu")
         model.eval()
         repetitions = 5
         with torch.no_grad():
@@ -700,7 +765,7 @@ def _run_inference_latency(
                 _skipped_metric(
                     benchmark_name=benchmark_name,
                     benchmark_set=benchmark_set,
-                    source="deeplob_forward",
+                    source="normalised_matrix_transformer_forward",
                     warning=reason,
                 )
             ], [reason]
@@ -713,8 +778,8 @@ def _run_inference_latency(
                 metric_value=float(windows_measured),
                 metric_unit="windows",
                 rows=windows_measured,
-                models=["deeplob_style"],
-                source="deeplob_forward",
+                models=["matrix_transformer"],
+                source="normalised_matrix_transformer_forward",
             ),
             _metric(
                 benchmark_name=benchmark_name,
@@ -723,8 +788,8 @@ def _run_inference_latency(
                 metric_value=timed.elapsed_seconds,
                 metric_unit="seconds",
                 rows=windows_measured,
-                models=["deeplob_style"],
-                source="deeplob_forward",
+                models=["matrix_transformer"],
+                source="normalised_matrix_transformer_forward",
             ),
             _metric(
                 benchmark_name=benchmark_name,
@@ -733,8 +798,8 @@ def _run_inference_latency(
                 metric_value=latency,
                 metric_unit="seconds/window",
                 rows=windows_measured,
-                models=["deeplob_style"],
-                source="deeplob_forward",
+                models=["matrix_transformer"],
+                source="normalised_matrix_transformer_forward",
             ),
             _metric(
                 benchmark_name=benchmark_name,
@@ -743,8 +808,8 @@ def _run_inference_latency(
                 metric_value=latency * 1_000.0,
                 metric_unit="ms/window",
                 rows=windows_measured,
-                models=["deeplob_style"],
-                source="deeplob_forward",
+                models=["matrix_transformer"],
+                source="normalised_matrix_transformer_forward",
             ),
         ]
         return metrics, []
@@ -754,7 +819,7 @@ def _run_inference_latency(
             _skipped_metric(
                 benchmark_name=benchmark_name,
                 benchmark_set=benchmark_set,
-                source="deeplob_forward",
+                source="normalised_matrix_transformer_forward",
                 warning=reason,
             )
         ], [reason]
@@ -764,6 +829,7 @@ def _run_memory_profile(
     *,
     benchmark_set: str,
     dataset: FI2010Dataset,
+    config: FI2010BenchmarkConfig,
 ) -> tuple[list[SystemBenchmarkMetric], list[str]]:
     benchmark_name = "memory_profile"
     if tracemalloc.is_tracing():
@@ -779,7 +845,7 @@ def _run_memory_profile(
 
     try:
         tracemalloc.start()
-        _ = build_feature_frame_from_fi2010(dataset, FeaturePipelineConfig())
+        _ = _build_matrix_feature_frame(dataset, config)
         _, peak = tracemalloc.get_traced_memory()
     except (RuntimeError, ValueError, TypeError, OSError) as exc:
         reason = f"tracemalloc memory profile skipped: {type(exc).__name__}: {exc}"
@@ -806,7 +872,7 @@ def _run_memory_profile(
             metric_value=float(peak_bytes),
             metric_unit="bytes",
             rows=rows,
-            source="tracemalloc_feature_generation",
+            source="tracemalloc_matrix_feature_generation",
         ),
         _metric(
             benchmark_name=benchmark_name,
@@ -815,7 +881,7 @@ def _run_memory_profile(
             metric_value=peak_mb,
             metric_unit="MiB",
             rows=rows,
-            source="tracemalloc_feature_generation",
+            source="tracemalloc_matrix_feature_generation",
         ),
         _metric(
             benchmark_name=benchmark_name,
@@ -824,7 +890,7 @@ def _run_memory_profile(
             metric_value=1.0,
             metric_unit="feature_generation_section",
             rows=rows,
-            source="tracemalloc_feature_generation",
+            source="tracemalloc_matrix_feature_generation",
         ),
     ], []
 
@@ -941,15 +1007,17 @@ def _write_reports(
             ),
             [
                 "Throughput is local to the recorded machine, Python environment and input file.",
-                "Fixture timings validate plumbing only and must not be compared with real runs.",
+                "Fixture timings validate code paths only and must not be compared with real runs.",
             ],
         ),
         "feature_generation_speed": (
             "Feature-Generation Speed",
-            "Measure past-only feature-frame construction on the loaded FI-2010 data.",
+            "Measure normalised FI-2010 matrix feature-frame preparation.",
             (
-                "The benchmark calls the existing feature pipeline once on the "
-                "loaded FI-2010 dataset and reports rows and generated feature values."
+                "The benchmark prepares a numeric FI-2010 matrix feature frame "
+                "directly from the loaded dataset and reports rows and generated "
+                "feature values. Raw order-book snapshots are not reconstructed "
+                "from normalised values."
             ),
             [
                 "Feature semantics are unchanged; labels are not introduced as features.",
@@ -973,9 +1041,9 @@ def _write_reports(
             "Inference Latency",
             "Measure tiny CPU neural forward-pass latency per window.",
             (
-                "The benchmark builds a small DeepLOB-style model and split-local "
-                "sequence windows using existing dataset utilities, then times repeated "
-                "CPU forward passes with gradients disabled."
+                "The benchmark builds a small supervised matrix transformer and "
+                "split-local sequence windows using existing dataset utilities, "
+                "then times repeated CPU forward passes with gradients disabled."
             ),
             [
                 "The model is not trained for this benchmark section.",
@@ -986,8 +1054,9 @@ def _write_reports(
             "Memory Profile",
             "Measure a Python-level peak memory profile for feature generation.",
             (
-                "The benchmark runs feature generation under `tracemalloc` and records "
-                "the peak traced Python allocation for that section."
+                "The benchmark runs normalised matrix feature preparation under "
+                "`tracemalloc` and records the peak traced Python allocation for "
+                "that section."
             ),
             [
                 "`tracemalloc` does not capture every native allocation made by extensions.",
@@ -1158,6 +1227,7 @@ def run_system_benchmarks(
     feature_metrics, _, feature_warnings = _run_feature_generation_speed(
         benchmark_set=benchmark_set_name,
         dataset=dataset,
+        config=config,
     )
     results.extend(feature_metrics)
     warnings.extend(feature_warnings)
@@ -1188,6 +1258,7 @@ def run_system_benchmarks(
     memory_metrics, memory_warnings = _run_memory_profile(
         benchmark_set=benchmark_set_name,
         dataset=dataset,
+        config=config,
     )
     results.extend(memory_metrics)
     warnings.extend(memory_warnings)

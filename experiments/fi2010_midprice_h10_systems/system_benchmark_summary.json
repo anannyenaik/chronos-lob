@@ -1,0 +1,275 @@
+{
+  "benchmark_set": "standard",
+  "benchmarks_run": [
+    "loader_throughput",
+    "feature_generation_speed",
+    "experiment_runner_timing",
+    "inference_latency",
+    "memory_profile"
+  ],
+  "benchmarks_skipped": [],
+  "child_experiments": {
+    "paper_runner_timing": "child_experiments/paper_runner_timing"
+  },
+  "config_path": "configs\\experiments\\fi2010_midprice_h10.yaml",
+  "created_at": "2026-05-25T19:30:53.297913Z",
+  "data_path": "data\\processed\\fi2010\\fold1_combined.csv",
+  "models_requested": [
+    "majority",
+    "logistic"
+  ],
+  "output_dir": "experiments\\fi2010_midprice_h10_systems",
+  "reports_written": [
+    "reports/loader_throughput.md",
+    "reports/feature_generation_speed.md",
+    "reports/experiment_runner_timing.md",
+    "reports/inference_latency.md",
+    "reports/memory_profile.md"
+  ],
+  "results": [
+    {
+      "benchmark_name": "loader_throughput",
+      "benchmark_set": "standard",
+      "metric_name": "elapsed_seconds",
+      "metric_unit": "seconds",
+      "metric_value": 2.083211699999083,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "chronoslob.data.fi2010.load_fi2010",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "loader_throughput",
+      "benchmark_set": "standard",
+      "metric_name": "rows_loaded",
+      "metric_unit": "rows",
+      "metric_value": 77909.0,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "chronoslob.data.fi2010.load_fi2010",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "loader_throughput",
+      "benchmark_set": "standard",
+      "metric_name": "rows_per_second",
+      "metric_unit": "rows/second",
+      "metric_value": 37398.5034742433,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "chronoslob.data.fi2010.load_fi2010",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "feature_generation_speed",
+      "benchmark_set": "standard",
+      "metric_name": "elapsed_seconds",
+      "metric_unit": "seconds",
+      "metric_value": 0.15663839999979245,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "normalised_fi2010_matrix_feature_frame",
+      "status": "run",
+      "warning": "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+    },
+    {
+      "benchmark_name": "feature_generation_speed",
+      "benchmark_set": "standard",
+      "metric_name": "rows_processed",
+      "metric_unit": "rows",
+      "metric_value": 77909.0,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "normalised_fi2010_matrix_feature_frame",
+      "status": "run",
+      "warning": "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+    },
+    {
+      "benchmark_name": "feature_generation_speed",
+      "benchmark_set": "standard",
+      "metric_name": "features_generated",
+      "metric_unit": "feature_values",
+      "metric_value": 11218896.0,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "normalised_fi2010_matrix_feature_frame",
+      "status": "run",
+      "warning": "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+    },
+    {
+      "benchmark_name": "feature_generation_speed",
+      "benchmark_set": "standard",
+      "metric_name": "rows_per_second",
+      "metric_unit": "rows/second",
+      "metric_value": 497381.2296352825,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "normalised_fi2010_matrix_feature_frame",
+      "status": "run",
+      "warning": "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+    },
+    {
+      "benchmark_name": "feature_generation_speed",
+      "benchmark_set": "standard",
+      "metric_name": "features_per_second",
+      "metric_unit": "feature_values/second",
+      "metric_value": 71622897.06748067,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "normalised_fi2010_matrix_feature_frame",
+      "status": "run",
+      "warning": "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+    },
+    {
+      "benchmark_name": "experiment_runner_timing",
+      "benchmark_set": "standard",
+      "metric_name": "elapsed_seconds",
+      "metric_unit": "seconds",
+      "metric_value": 12.561897899999167,
+      "models": "majority,logistic",
+      "rows": 76794,
+      "source": "chronoslob.experiments.paper_runner.run_paper_experiment",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "experiment_runner_timing",
+      "benchmark_set": "standard",
+      "metric_name": "models_requested",
+      "metric_unit": "models",
+      "metric_value": 2.0,
+      "models": "majority,logistic",
+      "rows": 76794,
+      "source": "chronoslob.experiments.paper_runner.run_paper_experiment",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "experiment_runner_timing",
+      "benchmark_set": "standard",
+      "metric_name": "models_run",
+      "metric_unit": "models",
+      "metric_value": 2.0,
+      "models": "majority,logistic",
+      "rows": 76794,
+      "source": "chronoslob.experiments.paper_runner.run_paper_experiment",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "experiment_runner_timing",
+      "benchmark_set": "standard",
+      "metric_name": "prediction_rows",
+      "metric_unit": "rows",
+      "metric_value": 76794.0,
+      "models": "majority,logistic",
+      "rows": 76794,
+      "source": "chronoslob.experiments.paper_runner.run_paper_experiment",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "experiment_runner_timing",
+      "benchmark_set": "standard",
+      "metric_name": "artefact_count",
+      "metric_unit": "files",
+      "metric_value": 15.0,
+      "models": "majority,logistic",
+      "rows": 76794,
+      "source": "chronoslob.experiments.paper_runner.run_paper_experiment",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "inference_latency",
+      "benchmark_set": "standard",
+      "metric_name": "windows_measured",
+      "metric_unit": "windows",
+      "metric_value": 191970.0,
+      "models": "matrix_transformer",
+      "rows": 191970,
+      "source": "normalised_matrix_transformer_forward",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "inference_latency",
+      "benchmark_set": "standard",
+      "metric_name": "elapsed_seconds",
+      "metric_unit": "seconds",
+      "metric_value": 0.4091441000018676,
+      "models": "matrix_transformer",
+      "rows": 191970,
+      "source": "normalised_matrix_transformer_forward",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "inference_latency",
+      "benchmark_set": "standard",
+      "metric_name": "latency_seconds_per_window",
+      "metric_unit": "seconds/window",
+      "metric_value": 2.131291868530852e-06,
+      "models": "matrix_transformer",
+      "rows": 191970,
+      "source": "normalised_matrix_transformer_forward",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "inference_latency",
+      "benchmark_set": "standard",
+      "metric_name": "latency_ms_per_window",
+      "metric_unit": "ms/window",
+      "metric_value": 0.002131291868530852,
+      "models": "matrix_transformer",
+      "rows": 191970,
+      "source": "normalised_matrix_transformer_forward",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "memory_profile",
+      "benchmark_set": "standard",
+      "metric_name": "peak_memory_bytes",
+      "metric_unit": "bytes",
+      "metric_value": 91360668.0,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "tracemalloc_matrix_feature_generation",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "memory_profile",
+      "benchmark_set": "standard",
+      "metric_name": "peak_memory_mb",
+      "metric_unit": "MiB",
+      "metric_value": 87.12832260131836,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "tracemalloc_matrix_feature_generation",
+      "status": "run",
+      "warning": "none"
+    },
+    {
+      "benchmark_name": "memory_profile",
+      "benchmark_set": "standard",
+      "metric_name": "section_measured",
+      "metric_unit": "feature_generation_section",
+      "metric_value": 1.0,
+      "models": "not_applicable",
+      "rows": 77909,
+      "source": "tracemalloc_matrix_feature_generation",
+      "status": "run",
+      "warning": "none"
+    }
+  ],
+  "runner_version": "phase-i/system-benchmark-runner/v1",
+  "warnings": [
+    "feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used"
+  ]
+}

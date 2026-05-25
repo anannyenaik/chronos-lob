@@ -27,6 +27,7 @@ ENV/
 Thumbs.db
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 
@@ -45,19 +46,23 @@ data/raw/
 data/processed/
 data/external/
 .local_data/
+BenchmarkDatasets*.zip
+data/raw/fi2010/
+data/processed/fi2010/
 runs/
 outputs/
 checkpoints/
 wandb/
 mlruns/
 # Ignore large prediction artefacts but allow the rest of the real
-# FI-2010 evidence directory to be tracked alongside the empirical
-# report. The intermediate ablation experiments tree is dominated by
-# per-ablation predictions, so it is ignored as a whole.
+# FI-2010 evidence directories to be tracked alongside the empirical
+# report. The intermediate ablation and systems child experiment trees
+# are dominated by regenerable predictions, so they are ignored as a
+# whole.
 experiments/fi2010_midprice_h10/predictions.csv
 experiments/fi2010_midprice_h10/predictions.parquet
 experiments/fi2010_midprice_h10_ablations/experiments/
-experiments/fi2010_midprice_h10_systems/
+experiments/fi2010_midprice_h10_systems/child_experiments/
 experiments/paper_experiment_*/
 experiments/paper_ablation_*/
 experiments/system_benchmark_*/

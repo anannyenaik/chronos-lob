@@ -33,14 +33,16 @@ Vary only the prediction horizon and matching label column. Labels are regenerat
 
 | ablation | model | metric | value | source |
 | --- | --- | --- | --- | --- |
-| horizon_50 | majority | accuracy | 0.352473 | experiments/horizon_50 |
-| horizon_50 | majority | macro_f1 | 0.173742 | experiments/horizon_50 |
-| horizon_50 | logistic | accuracy | 0.451652 | experiments/horizon_50 |
-| horizon_50 | logistic | macro_f1 | 0.450695 | experiments/horizon_50 |
-| horizon_50 | deeplob_style | accuracy | 0.399966 | experiments/horizon_50 |
-| horizon_50 | deeplob_style | macro_f1 | 0.321383 | experiments/horizon_50 |
+| horizon_50 | majority | accuracy | 0.305987 | experiments/horizon_50 |
+| horizon_50 | majority | macro_f1 | 0.156197 | experiments/horizon_50 |
+| horizon_50 | logistic | accuracy | 0.441936 | experiments/horizon_50 |
+| horizon_50 | logistic | macro_f1 | 0.439456 | experiments/horizon_50 |
+| horizon_50 | deeplob_style | accuracy | 0.409589 | experiments/horizon_50 |
+| horizon_50 | deeplob_style | macro_f1 | 0.399014 | experiments/horizon_50 |
+| horizon_50 | transformer | accuracy | 0.487602 | experiments/horizon_50 |
+| horizon_50 | transformer | macro_f1 | 0.472320 | experiments/horizon_50 |
 
 ## Warnings And Limitations
 
-- Ablation rows do not claim profitability, tradable alpha or live execution. Execution-aware values are simplified proxy assumptions.
+- Ablation rows do not present trading or live-execution claims. Execution-aware values are simplified proxy assumptions.
 - Aggregated values come directly from stored child-experiment artefacts and are not edited after the run.

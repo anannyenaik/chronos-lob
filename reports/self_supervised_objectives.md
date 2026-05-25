@@ -4,8 +4,8 @@ Phase 13 adds self-supervised pretraining objectives on top of the
 Phase 11 tokenisation layer and the Phase 12 transformer encoder. It is
 strictly pretraining infrastructure: it implements no supervised market
 labels, no calibration, no execution simulation, no backtesting and no
-benchmark or alpha claim. Smoke training paths use synthetic event-log
-fixtures and the produced losses are a plumbing check, not market
+benchmark claim. Smoke training paths use synthetic event-log
+fixtures and the produced losses are a code-path check, not market
 evidence.
 
 ## Purpose
@@ -137,7 +137,7 @@ values from this run only verify that:
 They do not measure any market quantity. They cannot be used to compare
 models, to support trading decisions, or to claim that the architecture
 forecasts prices, returns, volatility, spread or fill outcomes. No
-alpha, Sharpe, profitability or execution viability is implied.
+Sharpe, trading performance or execution viability is implied.
 
 ## Limitations and Next Steps
 

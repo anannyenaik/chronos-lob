@@ -23,6 +23,13 @@ CONFIG_PATH = project_root() / "configs" / "experiments" / "fi2010_midprice_h10.
 TINY_FIXTURE_PATH = (
     project_root() / "tests" / "fixtures" / "fi2010" / "tiny_fi2010_like.csv"
 )
+NORMALISED_SPLIT_FIXTURE_PATH = (
+    project_root()
+    / "tests"
+    / "fixtures"
+    / "fi2010"
+    / "tiny_fi2010_normalised_split.csv"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -269,3 +276,58 @@ def test_system_benchmark_outputs_stay_under_requested_directory(
 
     assert {path.name for path in tmp_path.iterdir()} == {"requested_output"}
     assert (output_dir / "child_experiments" / "paper_runner_timing").is_dir()
+
+
+def test_system_benchmark_runs_matrix_mode_on_normalised_fixture(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "system_benchmark_matrix"
+
+    summary = run_system_benchmarks(
+        config_path=CONFIG_PATH,
+        data_path=NORMALISED_SPLIT_FIXTURE_PATH,
+        out_dir=output_dir,
+        benchmark_set="smoke",
+        models=["majority", "logistic"],
+        overwrite=True,
+    )
+
+    assert "feature_generation_speed" in summary.benchmarks_run
+    assert "memory_profile" in summary.benchmarks_run
+    results = pd.read_csv(output_dir / "system_benchmark_results.csv")
+    feature_rows = results[results["benchmark_name"] == "feature_generation_speed"]
+    assert not feature_rows.empty
+    assert (
+        feature_rows["source"] == "normalised_fi2010_matrix_feature_frame"
+    ).all()
+    assert "matrix_transformer" in set(
+        results.loc[
+            results["benchmark_name"] == "inference_latency",
+            "models",
+        ]
+    )
+
+
+def test_system_benchmark_matrix_mode_avoids_raw_snapshot_construction(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from chronoslob.data import fi2010
+
+    def _raise_if_constructed(*args: object, **kwargs: object) -> object:
+        raise AssertionError("raw OrderBookLevel construction was called")
+
+    monkeypatch.setattr(fi2010, "OrderBookLevel", _raise_if_constructed)
+    output_dir = tmp_path / "system_benchmark_no_snapshots"
+
+    summary = run_system_benchmarks(
+        config_path=CONFIG_PATH,
+        data_path=NORMALISED_SPLIT_FIXTURE_PATH,
+        out_dir=output_dir,
+        benchmark_set="smoke",
+        models=["majority", "logistic"],
+        overwrite=True,
+    )
+
+    assert "feature_generation_speed" in summary.benchmarks_run
+    assert "memory_profile" in summary.benchmarks_run

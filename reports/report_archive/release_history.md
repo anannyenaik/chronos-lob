@@ -12,7 +12,7 @@ Summary of implementation milestones in this repository.
 | Validation protocols | temporal, walk-forward and purged or embargoed splitters. |
 | Classical baselines | baseline interfaces, metrics and train-only preprocessing. |
 | Torch data layer | PyTorch sequence-window datasets and loaders. |
-| DeepLOB-style path | supervised CNN-LSTM baseline plumbing. |
+| DeepLOB-style path | supervised CNN-LSTM baseline path. |
 | Book reconstruction | offline Binance-style order book reconstruction. |
 | Event logs | canonical JSONL storage and replay-to-feature/label integration. |
 | Tokenisation | deterministic event tokenisation and transformer inputs. |

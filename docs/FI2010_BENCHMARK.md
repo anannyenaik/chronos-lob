@@ -11,17 +11,16 @@ layout, manual download steps, checksum and size verification, the
 fixture smoke runs and real benchmark runs.
 
 This document describes the preparation step only. It is not a model
-runner. The later paper experiment runner phase will consume the
-artefacts produced here to train models and write final benchmark
-results.
+runner. The paper experiment runner consumes the artefacts produced here
+to train models and write benchmark results.
 
 ## What The Preparation Step Does
 
 `prepare-fi2010-benchmark` loads a local FI-2010-style file through the
 existing loader, validates it through the existing FI-2010 validator,
 constructs a horizon-10 mid-price direction label distribution from the
-existing benchmark labels, computes a deterministic temporal
-train/validation/test split summary and writes a small set of
+existing benchmark labels, computes a deterministic split summary and
+writes a small set of
 preparation artefacts to a chosen output directory.
 
 It writes:
@@ -35,7 +34,9 @@ It writes:
 - `label_summary.json`: distinct label classes, per-class counts and
   per-class proportions for the configured target column.
 - `split_summary.json`: train/validation/test row counts and contiguous
-  index bounds produced by the temporal splitter.
+  index bounds. For the real combined FI-2010 fold this records the
+  official train/test split and the internal validation tail carved
+  from official train rows.
 - `validation_summary.json`: combined FI-2010 dataset validation and
   label-frame validation status.
 - `config.yaml`: a copy of the source config so the preparation output
@@ -58,15 +59,24 @@ It writes:
 
 The default preparation config lives at
 `configs/experiments/fi2010_midprice_h10.yaml`. The `local_data_path`
-field is a placeholder: it must be supplied by the user at the command
-line via `--data-path`, or the config field must be replaced with a
-real local path before any future paper experiment run.
+field is a template value: supply the real local file with
+`--data-path`, or replace the config field before a paper experiment
+run.
+
+The config now supports two split methods. The generic temporal method
+keeps the earlier row-order train/validation/test behaviour. The
+`official_column` method is used for the real FI-2010 combined CSV:
+rows with `split=train` form the official training partition, validation
+is carved from the tail of that partition only, and rows with
+`split=test` form the held-out test partition. Official test rows are
+not used for preprocessing, fitting, validation or model-selection
+decisions.
 
 ## Smoke Command
 
 The bundled FI-2010-like fixture under `tests/fixtures/fi2010` exists
-only to exercise the preparation plumbing. It is not the canonical
-benchmark and does not represent benchmark performance.
+only to exercise the preparation path. It is not the canonical benchmark
+and does not represent benchmark performance.
 
 ```bash
 python -m chronoslob.cli prepare-fi2010-benchmark \
@@ -89,17 +99,16 @@ The validator at `inspect-experiment-artifacts` will report missing
 required artefacts when run against a preparation directory because
 `results.json` and `model_card.md` are intentionally absent.
 
-## Future Use
+## Use In Paper Experiments
 
-The paper experiment runner phase will:
+The paper experiment runner:
 
 - consume `data_manifest.json` and `split_summary.json` as part of the
   experiment provenance,
-- train the model list referenced in the config under the same
-  temporal split,
+- train the model list referenced in the config under the same split
+  policy,
 - write `results.json`, `predictions.*`, `model_card.md` and other
-  evidence artefacts into the same output directory once the run
-  completes.
+  evidence artefacts into the selected output directory.
 
 ## Limitations Of FI-2010 As A Benchmark
 

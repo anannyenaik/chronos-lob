@@ -30,6 +30,10 @@ from chronoslob.experiments.fi2010_benchmark import (
     PaperNeuralSettings,
 )
 from chronoslob.models.deeplob import DeepLOBConfig, create_deeplob_model
+from chronoslob.models.matrix_transformer import (
+    MatrixTransformerConfig,
+    create_matrix_transformer,
+)
 from chronoslob.models.preprocessing import (
     TrainOnlyStandardScaler,
     build_target_vector,
@@ -222,14 +226,19 @@ def _build_sequence_frames(
     feature_columns: Sequence[str],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     timestamps = _timestamps_for_rows(frame, config=config).reset_index(drop=True)
-    feature_frame = pd.DataFrame(
+    metadata_frame = pd.DataFrame(
         {
             "timestamp": timestamps,
             "symbol": ["FI2010"] * len(frame),
         }
     )
-    for column in feature_columns:
-        feature_frame[column] = frame[column].reset_index(drop=True)
+    matrix_frame = pd.DataFrame(
+        {
+            column: frame[column].reset_index(drop=True)
+            for column in feature_columns
+        }
+    )
+    feature_frame = pd.concat([metadata_frame, matrix_frame], axis=1)
 
     label_frame = pd.DataFrame(
         {
@@ -336,6 +345,22 @@ def _make_sequence_dataset(
             raise ValueError(reason)
         return None, reason
     return dataset, None
+
+
+def _effective_matrix_window_length(
+    *,
+    configured_window_length: int,
+    split: SplitIndices,
+) -> int:
+    """Return a split-contained window length for small smoke partitions."""
+    partition_lengths = [
+        len(split.train),
+        len(split.test),
+    ]
+    usable_lengths = [length for length in partition_lengths if length > 0]
+    if not usable_lengths:
+        raise ValueError("matrix transformer requires train and test rows")
+    return max(1, min(int(configured_window_length), min(usable_lengths)))
 
 
 def _validate_probabilities(probabilities: np.ndarray) -> np.ndarray:
@@ -627,6 +652,167 @@ def _run_deeplob_style(
     return _result_from_evaluation(
         model_name="deeplob_style",
         model_type="deeplob_style",
+        evaluation=evaluation,
+        row_indices=row_indices,
+        class_to_index=class_mapping,
+        all_labels=all_labels,
+        class_count_train=class_count_train,
+        class_count_test=class_count_test,
+        test_timestamps=test_timestamps,
+        metadata=metadata,
+    )
+
+
+def _run_matrix_transformer(
+    *,
+    model_name: str,
+    frame: pd.DataFrame,
+    config: FI2010BenchmarkConfig,
+    split: SplitIndices,
+    feature_columns: Sequence[str],
+    all_labels: Sequence[Any],
+    class_count_train: int,
+    class_count_test: int,
+    test_timestamps: Sequence[str] | None,
+    settings: PaperNeuralSettings,
+) -> NeuralPaperModelResult:
+    _require_torch()
+    feature_frame, label_frame = _build_sequence_frames(
+        frame,
+        config=config,
+        feature_columns=feature_columns,
+    )
+    scaled_feature_frame, scaler_metadata = _standardise_feature_frame(
+        feature_frame,
+        feature_columns=feature_columns,
+        train_indices=split.train,
+    )
+    class_mapping = _train_class_mapping(frame, config=config, split=split)
+    effective_window_length = _effective_matrix_window_length(
+        configured_window_length=settings.transformer_window_length,
+        split=split,
+    )
+    train_dataset, _ = _make_sequence_dataset(
+        feature_frame=scaled_feature_frame,
+        label_frame=label_frame,
+        config=config,
+        feature_columns=feature_columns,
+        lookback=effective_window_length,
+        class_to_index=class_mapping,
+        allowed_indices=split.train,
+        partition_name="train",
+        required=True,
+    )
+    assert train_dataset is not None
+    validation_dataset, validation_skip = _make_sequence_dataset(
+        feature_frame=scaled_feature_frame,
+        label_frame=label_frame,
+        config=config,
+        feature_columns=feature_columns,
+        lookback=effective_window_length,
+        class_to_index=class_mapping,
+        allowed_indices=split.validation,
+        partition_name="validation",
+        required=False,
+    )
+    test_dataset, _ = _make_sequence_dataset(
+        feature_frame=scaled_feature_frame,
+        label_frame=label_frame,
+        config=config,
+        feature_columns=feature_columns,
+        lookback=effective_window_length,
+        class_to_index=class_mapping,
+        allowed_indices=split.test,
+        partition_name="test",
+        required=True,
+    )
+    assert test_dataset is not None
+
+    loader_config = DataLoaderConfig(
+        batch_size=settings.batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=0,
+    )
+    train_loader = create_sequence_dataloader(train_dataset, loader_config)
+    validation_loader = (
+        create_sequence_dataloader(validation_dataset, loader_config)
+        if validation_dataset is not None
+        else None
+    )
+    test_loader = create_sequence_dataloader(test_dataset, loader_config)
+    model_config = MatrixTransformerConfig(
+        input_features=train_dataset.n_features,
+        n_classes=len(class_mapping),
+        model_dim=settings.transformer_model_dim,
+        num_heads=settings.transformer_num_heads,
+        num_layers=settings.transformer_num_layers,
+        feedforward_dim=settings.transformer_feedforward_dim,
+        dropout=settings.dropout,
+        max_sequence_length=effective_window_length,
+    )
+    training_config = TorchTrainingConfig(
+        epochs=settings.max_epochs,
+        learning_rate=settings.learning_rate,
+        weight_decay=settings.weight_decay,
+        gradient_clip_norm=settings.gradient_clip_norm,
+        device=settings.device,
+        seed=config.seed,
+    )
+    if settings.deterministic:
+        set_torch_deterministic(config.seed)
+    model = create_matrix_transformer(model_config)
+    history = fit_torch_classifier(
+        model,
+        train_loader,
+        validation_loader,
+        training_config,
+    )
+    evaluation = evaluate_torch_classifier(
+        model,
+        test_loader,
+        device=settings.device,
+        labels=sorted(class_mapping.values()),
+    )
+    row_indices = [sample.target_index for sample in test_dataset.sample_indices]
+    metadata: dict[str, Any] = {
+        "neural_family": "normalised_fi2010_matrix_transformer",
+        "baseline_kind": "supervised transformer baseline",
+        "matrix_path": "normalised FI-2010 matrix path",
+        "raw_snapshot_construction": False,
+        "sample_counts": {
+            "train": len(train_dataset),
+            "validation": 0
+            if validation_dataset is None
+            else len(validation_dataset),
+            "test": len(test_dataset),
+        },
+        "window_policy": {
+            "configured_window_length": int(settings.transformer_window_length),
+            "effective_window_length": int(effective_window_length),
+            "require_contiguous_indices": True,
+            "windows_stay_inside_split": True,
+        },
+        "validation_skip_reason": validation_skip,
+        "training_history": [
+            {
+                "epoch": int(item.epoch),
+                "train_loss": float(item.train_loss),
+                "validation_loss": (
+                    None
+                    if item.validation_loss is None
+                    else float(item.validation_loss)
+                ),
+            }
+            for item in history
+        ],
+        "model_parameter_count": int(model.n_parameters()),
+        "class_mapping": {str(label): int(index) for label, index in class_mapping.items()},
+        "standardisation": scaler_metadata,
+    }
+    return _result_from_evaluation(
+        model_name=model_name,
+        model_type="normalised_matrix_transformer",
         evaluation=evaluation,
         row_indices=row_indices,
         class_to_index=class_mapping,
@@ -1035,12 +1221,13 @@ def run_neural_paper_model(
             test_timestamps=test_timestamps,
             settings=settings,
         )
-    if cleaned == "transformer":
-        return _run_transformer(
+    if cleaned in {"transformer", "matrix_transformer"}:
+        return _run_matrix_transformer(
+            model_name=cleaned,
             frame=frame,
             config=config,
-            data_path=data_path,
             split=split,
+            feature_columns=feature_columns,
             all_labels=all_labels,
             class_count_train=class_count_train,
             class_count_test=class_count_test,
@@ -1049,5 +1236,5 @@ def run_neural_paper_model(
         )
     raise ValueError(
         f"unsupported neural paper model {model_name!r}; supported: "
-        "['deeplob_style', 'transformer']"
+        "['deeplob_style', 'transformer', 'matrix_transformer']"
     )

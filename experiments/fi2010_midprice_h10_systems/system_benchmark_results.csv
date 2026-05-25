@@ -1,0 +1,21 @@
+benchmark_name,benchmark_set,status,metric_name,metric_value,metric_unit,rows,models,source,warning
+loader_throughput,standard,run,elapsed_seconds,2.083211699999083,seconds,77909,not_applicable,chronoslob.data.fi2010.load_fi2010,none
+loader_throughput,standard,run,rows_loaded,77909.0,rows,77909,not_applicable,chronoslob.data.fi2010.load_fi2010,none
+loader_throughput,standard,run,rows_per_second,37398.5034742433,rows/second,77909,not_applicable,chronoslob.data.fi2010.load_fi2010,none
+feature_generation_speed,standard,run,elapsed_seconds,0.15663839999979245,seconds,77909,not_applicable,normalised_fi2010_matrix_feature_frame,feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used
+feature_generation_speed,standard,run,rows_processed,77909.0,rows,77909,not_applicable,normalised_fi2010_matrix_feature_frame,feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used
+feature_generation_speed,standard,run,features_generated,11218896.0,feature_values,77909,not_applicable,normalised_fi2010_matrix_feature_frame,feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used
+feature_generation_speed,standard,run,rows_per_second,497381.2296352825,rows/second,77909,not_applicable,normalised_fi2010_matrix_feature_frame,feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used
+feature_generation_speed,standard,run,features_per_second,71622897.06748067,feature_values/second,77909,not_applicable,normalised_fi2010_matrix_feature_frame,feature_generation_speed measured normalised FI-2010 matrix feature throughput; raw order-book snapshot reconstruction was not used
+experiment_runner_timing,standard,run,elapsed_seconds,12.561897899999167,seconds,76794,"majority,logistic",chronoslob.experiments.paper_runner.run_paper_experiment,none
+experiment_runner_timing,standard,run,models_requested,2.0,models,76794,"majority,logistic",chronoslob.experiments.paper_runner.run_paper_experiment,none
+experiment_runner_timing,standard,run,models_run,2.0,models,76794,"majority,logistic",chronoslob.experiments.paper_runner.run_paper_experiment,none
+experiment_runner_timing,standard,run,prediction_rows,76794.0,rows,76794,"majority,logistic",chronoslob.experiments.paper_runner.run_paper_experiment,none
+experiment_runner_timing,standard,run,artefact_count,15.0,files,76794,"majority,logistic",chronoslob.experiments.paper_runner.run_paper_experiment,none
+inference_latency,standard,run,windows_measured,191970.0,windows,191970,matrix_transformer,normalised_matrix_transformer_forward,none
+inference_latency,standard,run,elapsed_seconds,0.4091441000018676,seconds,191970,matrix_transformer,normalised_matrix_transformer_forward,none
+inference_latency,standard,run,latency_seconds_per_window,2.131291868530852e-06,seconds/window,191970,matrix_transformer,normalised_matrix_transformer_forward,none
+inference_latency,standard,run,latency_ms_per_window,0.002131291868530852,ms/window,191970,matrix_transformer,normalised_matrix_transformer_forward,none
+memory_profile,standard,run,peak_memory_bytes,91360668.0,bytes,77909,not_applicable,tracemalloc_matrix_feature_generation,none
+memory_profile,standard,run,peak_memory_mb,87.12832260131836,MiB,77909,not_applicable,tracemalloc_matrix_feature_generation,none
+memory_profile,standard,run,section_measured,1.0,feature_generation_section,77909,not_applicable,tracemalloc_matrix_feature_generation,none

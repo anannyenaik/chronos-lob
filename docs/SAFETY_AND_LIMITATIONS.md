@@ -1,8 +1,8 @@
 # Safety and Limitations
 
 ChronosLOB is research software for limit order book modelling. It is
-not financial advice, not live trading infrastructure and not a
-production execution system. This document is the single, canonical
+not financial advice, not live trading infrastructure and not an
+execution system for live markets. This document is the single, canonical
 statement of scope. Other documents stay focused on technical content
 and refer here for boundaries.
 
@@ -30,8 +30,10 @@ signal quality are reported as separate evidence streams.
 
 ## Modelling Limitations
 
-- Implemented baselines, transformer encoders and self-supervised
-  objectives are infrastructure. No benchmark performance is claimed.
+- Benchmark metrics are run-specific and depend on the recorded dataset,
+  split, config, seed and local environment.
+- Implemented self-supervised objectives are infrastructure; the paper
+  runner does not currently report an SSL model result.
 - Forecast accuracy, calibration error and confidence-filtering
   diagnostics do not in themselves characterise tradability.
 
@@ -43,8 +45,8 @@ latency, turnover, passive fill proxies, adverse-selection labels and
 simple risk constraints.
 
 It does not model live trading, broker or exchange integration,
-venue-specific queue priority, production-grade partial fills,
-production queue dynamics, market impact or portfolio optimisation.
+venue-specific queue priority, live partial fills, queue dynamics,
+market impact or portfolio optimisation.
 Any future execution-aware result must state these assumptions.
 
 ## Reporting Discipline

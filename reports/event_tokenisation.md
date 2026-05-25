@@ -102,7 +102,7 @@ This phase deliberately does not implement:
 - calibration;
 - execution simulation;
 - backtesting;
-- fake metrics or result artefacts.
+- unsupported metrics or result artefacts.
 
 ## Known Limitations
 

@@ -2,7 +2,7 @@
 
 Phase 12 adds a small supervised transformer encoder over the field-wise
 token batches prepared in Phase 11. It is strictly an architecture and
-plumbing phase: no self-supervised pretraining, masked event modelling,
+integration phase: no self-supervised pretraining, masked event modelling,
 next-event prediction, calibration, execution simulation, backtesting or
 market-signal claim is implemented here.
 
@@ -121,7 +121,7 @@ log, tokenises it with Phase 11 defaults, builds fixed-length windows,
 generates synthetic labels and trains the encoder for one epoch on CPU.
 Both the CLI smoke command (`python -m chronoslob.cli run-transformer-smoke`)
 and the in-process API surface a clear `notes` field stating that the
-labels are synthetic plumbing only.
+labels are synthetic only.
 
 ## Why Smoke Labels Are Synthetic
 
@@ -129,9 +129,9 @@ The smoke labels are derived from `(sample_index + last_real_token_side_id) mod 
 This rule is deterministic and trivially separable so the encoder can be
 exercised end to end without depending on any real label engine. The
 smoke metric reported (loss, optional accuracy) measures only that the
-plumbing is wired correctly; it is not a forecast quality measurement.
+training path is wired correctly; it is not a forecast quality measurement.
 
-## Why This Is Not an Alpha or Backtest Result
+## Why This Is Not A Backtest Result
 
 * No real market labels are used.
 * No execution model, slippage, queue position or fill probability is

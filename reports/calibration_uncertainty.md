@@ -81,10 +81,10 @@ Calibration should respect the same leakage-safe discipline as model training:
 
 ## Scope and Limitations
 
-The synthetic smoke command is a reproducible plumbing check. It creates local
+The synthetic smoke command is a reproducible code-path check. It creates local
 synthetic logits and labels, fits temperature scaling on the first synthetic
 subset and evaluates on a separate synthetic subset. The outputs are not
-benchmark results, market evidence, alpha claims, Sharpe claims or tradability
+benchmark results, market evidence, Sharpe claims or tradability
 claims.
 
 Phase 15 does not implement execution simulation, transaction-cost modelling,

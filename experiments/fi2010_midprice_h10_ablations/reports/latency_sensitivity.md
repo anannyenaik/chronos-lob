@@ -4,7 +4,7 @@ Ablation type: `latency_steps`
 
 ## Purpose
 
-Vary only the row-step latency assumption used by the simplified execution-aware sensitivity analysis; everything else is held fixed. These are explicit proxy assumptions, not production execution results.
+Vary only the row-step latency assumption used by the simplified execution-aware sensitivity analysis; everything else is held fixed. These are explicit proxy assumptions, not live-execution results.
 
 ## What Changed
 
@@ -37,20 +37,24 @@ Vary only the row-step latency assumption used by the simplified execution-aware
 
 | ablation | model | metric | value | source |
 | --- | --- | --- | --- | --- |
-| latency_0 | majority | accuracy | 0.628615 | experiments/latency_0 |
-| latency_0 | majority | macro_f1 | 0.257321 | experiments/latency_0 |
-| latency_0 | logistic | accuracy | 0.623310 | experiments/latency_0 |
-| latency_0 | logistic | macro_f1 | 0.351469 | experiments/latency_0 |
-| latency_0 | deeplob_style | accuracy | 0.567174 | experiments/latency_0 |
-| latency_0 | deeplob_style | macro_f1 | 0.352432 | experiments/latency_0 |
-| latency_1 | majority | accuracy | 0.628615 | experiments/latency_1 |
-| latency_1 | majority | macro_f1 | 0.257321 | experiments/latency_1 |
-| latency_1 | logistic | accuracy | 0.623310 | experiments/latency_1 |
-| latency_1 | logistic | macro_f1 | 0.351469 | experiments/latency_1 |
-| latency_1 | deeplob_style | accuracy | 0.567174 | experiments/latency_1 |
-| latency_1 | deeplob_style | macro_f1 | 0.352432 | experiments/latency_1 |
+| latency_0 | majority | accuracy | 0.591166 | experiments/latency_0 |
+| latency_0 | majority | macro_f1 | 0.247687 | experiments/latency_0 |
+| latency_0 | logistic | accuracy | 0.594343 | experiments/latency_0 |
+| latency_0 | logistic | macro_f1 | 0.332821 | experiments/latency_0 |
+| latency_0 | deeplob_style | accuracy | 0.591895 | experiments/latency_0 |
+| latency_0 | deeplob_style | macro_f1 | 0.252138 | experiments/latency_0 |
+| latency_0 | transformer | accuracy | 0.488931 | experiments/latency_0 |
+| latency_0 | transformer | macro_f1 | 0.430628 | experiments/latency_0 |
+| latency_1 | majority | accuracy | 0.591166 | experiments/latency_1 |
+| latency_1 | majority | macro_f1 | 0.247687 | experiments/latency_1 |
+| latency_1 | logistic | accuracy | 0.594343 | experiments/latency_1 |
+| latency_1 | logistic | macro_f1 | 0.332821 | experiments/latency_1 |
+| latency_1 | deeplob_style | accuracy | 0.591895 | experiments/latency_1 |
+| latency_1 | deeplob_style | macro_f1 | 0.252138 | experiments/latency_1 |
+| latency_1 | transformer | accuracy | 0.488931 | experiments/latency_1 |
+| latency_1 | transformer | macro_f1 | 0.430628 | experiments/latency_1 |
 
 ## Warnings And Limitations
 
-- Ablation rows do not claim profitability, tradable alpha or live execution. Execution-aware values are simplified proxy assumptions.
+- Ablation rows do not present trading or live-execution claims. Execution-aware values are simplified proxy assumptions.
 - Aggregated values come directly from stored child-experiment artefacts and are not edited after the run.

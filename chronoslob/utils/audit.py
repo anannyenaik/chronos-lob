@@ -299,6 +299,14 @@ _PUBLIC_RELEASE_WORDING_GROUPS: Mapping[str, tuple[str, ...]] = {
         _words("AI", "trading", "bot"),
         *DEFAULT_FORBIDDEN_CLAIM_PHRASES,
     ),
+    "public_doc_process": (
+        "plumbing",
+        _words("fake", "metrics"),
+        _words("placeholder", "metrics"),
+        _words("placeholder", "results"),
+        "fabricated",
+        _words(_compact("mas", "ter"), _compact("pro", "mpt")),
+    ),
 }
 _README_REQUIRED_LINK_TARGETS = (
     "docs/REPRODUCIBILITY.md",
@@ -775,9 +783,15 @@ def check_public_release_wording(
         text = _read_text(file_path)
         if text is None:
             continue
+        relative = _relative_to_root(resolved_root, file_path)
         for line_index, line in enumerate(text.splitlines()):
             lowered_line = line.lower()
             for group, phrase, lowered_phrase in phrase_entries:
+                if group == "public_doc_process" and file_path.suffix.lower() not in {
+                    ".md",
+                    ".mmd",
+                }:
+                    continue
                 if lowered_phrase not in lowered_line:
                     continue
                 issues.append(
@@ -785,7 +799,7 @@ def check_public_release_wording(
                         check_name="public_release_wording",
                         status=AuditStatus.FAIL,
                         message=f"Public-release wording issue in {group}.",
-                        path=_relative_to_root(resolved_root, file_path),
+                        path=relative,
                         line_number=line_index + 1,
                         matched_text=phrase,
                     )

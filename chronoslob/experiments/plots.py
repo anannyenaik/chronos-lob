@@ -7,10 +7,9 @@ PNG plots inside an experiment directory.
 The plot builder is deliberately scoped:
 
 * It reads only artefacts that were already written by the paper runner.
-* It never refits a model, never invents missing data and never fabricates
-  metrics or labels.
+* It never refits a model and never invents missing data, metrics or labels.
 * When an optional plot input is missing or invalid it records a clear
-  warning and skips that plot rather than writing a placeholder image.
+  warning and skips that plot rather than writing a substitute image.
 * Regime breakdown plots are only generated when genuine regime data is
   present in the stored artefacts; otherwise the plot is skipped.
 
@@ -448,7 +447,7 @@ def _has_regime_breakdown(experiment_dir: Path) -> tuple[bool, str | None]:
 
     We treat the breakdown as available only when an explicit regime
     field is present in stored artefacts. We never infer a regime from
-    a row number, a timestamp slice or a fabricated bucket.
+    a row number, a timestamp slice or a derived bucket.
     """
     predictions_path = experiment_dir / "predictions.csv"
     if predictions_path.is_file():
@@ -494,8 +493,8 @@ def _build_regime_breakdown(
     if not has_data:
         return False, (
             "regime breakdown skipped: no genuine regime-breakdown data is "
-            "available in stored artefacts; not fabricating regimes from row "
-            "numbers or timestamps"
+            "available in stored artefacts; regime evidence is not derived "
+            "from row numbers or timestamps"
         )
 
     predictions_path = experiment_dir / "predictions.csv"

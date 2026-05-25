@@ -47,8 +47,8 @@ plot is generated from a specific stored artefact:
   `execution_sensitivity.csv`.
 - `plots/confusion_matrix.png` is derived from `confusion_matrix.json`.
 - `plots/regime_breakdown.png` is only generated when genuine regime
-  data is available in stored artefacts; otherwise the plot is
-  skipped with a clear warning and is not fabricated.
+  data is available in stored artefacts; otherwise the plot is skipped
+  with a clear warning.
 
 A `plot_summary.json` artefact written next to the experiment root
 records the experiment directory, builder version, plots written,

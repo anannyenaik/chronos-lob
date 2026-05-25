@@ -22,13 +22,25 @@ execution-aware validation.
 - Transfer, regime, ablation and sensitivity analysis utilities.
 - Local audit, release-readiness inspection and evidence-archive
   builder.
+- Real FI-2010 fold-1 evidence under official split-aware evaluation,
+  including predictive metrics, calibration bins, execution-aware
+  sensitivity, ablations and local systems measurements.
+- Normalised FI-2010 matrix support for the supervised transformer
+  paper-runner path.
 
-## Experimental Utilities
+## Current Evidence
 
-Some utilities are deliberately minimal and intended as building blocks:
-the experiment registry, the adverse-selection summary and the
-sensitivity-curve helpers expose deterministic infrastructure and are
-expected to grow as real experiment runs accumulate.
+The committed FI-2010 artefacts live under
+[`experiments/fi2010_midprice_h10/`](../experiments/fi2010_midprice_h10/),
+[`experiments/fi2010_midprice_h10_ablations/`](../experiments/fi2010_midprice_h10_ablations/)
+and
+[`experiments/fi2010_midprice_h10_systems/`](../experiments/fi2010_midprice_h10_systems/).
+The generated artefact report is
+[`reports/chronoslob_empirical_report.md`](../reports/chronoslob_empirical_report.md).
+
+The current main experiment includes majority, logistic, random forest,
+gradient boosting, DeepLOB-style and normalised-matrix transformer baselines.
+`ssl_transformer` is not reported as a model result.
 
 ## Data Assumptions
 
@@ -45,14 +57,16 @@ expected to grow as real experiment runs accumulate.
 - Execution-aware validation is a simplified research simulation. It
   does not model venue-specific queue priority, production-grade
   partial-fill behaviour or market impact.
-- Robustness analysis utilities organise supplied experiment records;
-  they do not produce evidence on their own.
+- The current FI-2010 evidence covers fold 1 only.
+- `ssl_transformer` remains unsupported in the paper runner.
+- Robustness analysis beyond stored ablations requires additional
+  documented experiment records.
 - See [SAFETY_AND_LIMITATIONS.md](SAFETY_AND_LIMITATIONS.md) for the
   full scope statement.
 
 ## Next
 
-Empirical experiments on real and locally hosted datasets with
-documented provenance, temporal splits, seeds and stored outputs. From
-those runs the predictive, calibration and execution-aware validation
-streams can be reported as separate evidence.
+Future work is focused on broader FI-2010 folds, a traceable SSL
+pretraining/fine-tuning runner, additional limit order book dataset
+adapters where data access allows, richer execution modelling and genuine
+regime analysis.

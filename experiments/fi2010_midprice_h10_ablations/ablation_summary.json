@@ -49,7 +49,7 @@
     "lookback_2": "experiments/lookback_2",
     "lookback_4": "experiments/lookback_4"
   },
-  "created_at": "2026-05-25T16:59:55.120763Z",
+  "created_at": "2026-05-25T18:43:27.956419Z",
   "data_path": "data\\processed\\fi2010\\fold1_combined.csv",
   "data_source_kind": "local_file",
   "is_fixture": false,
@@ -81,8 +81,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -98,8 +97,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -117,8 +115,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -136,8 +133,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -164,8 +160,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -183,8 +178,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -202,8 +196,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -220,8 +213,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -237,8 +229,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -254,8 +245,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -276,8 +266,7 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     },
     {
@@ -312,25 +301,12 @@
         "optional artefact missing: plots/reliability_curve.png",
         "optional artefact missing: plots/cost_sensitivity.png",
         "optional artefact missing: plots/confusion_matrix.png",
-        "optional artefact missing: plots/regime_breakdown.png",
-        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+        "optional artefact missing: plots/regime_breakdown.png"
       ]
     }
   ],
   "runner_version": "phase-h/paper-ablation-runner/v1",
   "warnings": [
-    "ablation 'baseline': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'calibration_bins_5': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'cost_0bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'cost_1bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'calibration_bins_10': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'latency_0': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'latency_1': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'horizon_50': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'lookback_2': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'lookback_4': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'feature_top_of_book': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
-    "ablation 'feature_imbalance' skipped: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']",
-    "ablation 'feature_depth_liquidity': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    "ablation 'feature_imbalance' skipped: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']"
   ]
 }

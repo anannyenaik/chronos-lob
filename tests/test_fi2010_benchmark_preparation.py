@@ -101,7 +101,7 @@ def test_data_manifest_validates_under_experiment_schema(tmp_path: Path) -> None
     assert manifest.dataset_name == "FI-2010"
     assert manifest.label_name == "label_10"
     assert manifest.horizon == 10
-    assert manifest.split_name == "temporal"
+    assert manifest.split_name == "official_column"
     assert manifest.source_kind == "local_file"
     assert manifest.row_count == 6
     assert manifest.source_sha256 is not None
@@ -117,7 +117,11 @@ def test_split_summary_counts_are_consistent(tmp_path: Path) -> None:
     n_rows = int(summary["n_rows"])
     assert summary["n_train"] + summary["n_validation"] + summary["n_test"] == n_rows
     assert n_rows == 6
-    assert summary["split_name"] == "temporal"
+    assert summary["split_name"] == "official_column"
+    assert summary["split_method"] == "official_column"
+    assert summary["official_train_rows"] == 4
+    assert summary["official_test_rows"] == 2
+    assert summary["n_test"] == 2
 
 
 def test_label_summary_has_finite_serialisable_distribution(tmp_path: Path) -> None:

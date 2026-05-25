@@ -47,11 +47,16 @@ paper-runner output and is validated under the experiment artefact contract.
 
 - `loader_throughput`: elapsed seconds, rows loaded and rows per second.
 - `feature_generation_speed`: elapsed seconds, rows processed, generated
-  feature values and local throughput.
+  feature values and local throughput. For normalised FI-2010 matrix
+  inputs this measures matrix feature preparation and is labelled as
+  such; it does not reconstruct raw order-book snapshots from z-score
+  rows.
 - `experiment_runner_timing`: elapsed seconds, models requested, models run,
   prediction rows and artefact count.
 - `inference_latency`: tiny CPU forward-pass windows, elapsed seconds and
-  inference latency per window when PyTorch is available.
+  inference latency per window when PyTorch is available. The standard
+  FI-2010 path uses the normalised matrix transformer forward pass when
+  available.
 - `memory_profile`: `tracemalloc` peak bytes and MiB for feature generation
   where the measurement can be isolated.
 
@@ -68,6 +73,12 @@ FI-2010 benchmark path.
 Local benchmark measurements require an explicit local FI-2010-style file
 and should be interpreted only with `environment.json`, input provenance,
 the selected benchmark set and the model list.
+
+Raw order-book schemas remain strict. The systems benchmark does not
+construct `OrderBookSnapshot` objects from z-score-normalised FI-2010
+rows; matrix-mode rows are measured through the normalised FI-2010 matrix
+path, and raw snapshot reconstruction is only appropriate for raw,
+non-negative order-book quantities.
 
 ## Smoke Command
 

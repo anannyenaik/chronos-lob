@@ -139,4 +139,4 @@ out of scope:
 This reconstruction layer is an engineering and research demonstration
 that ChronosLOB can handle event-stream data deterministically. It is
 not a trading system, does not produce trading signals and does not
-imply any profitability or deployable execution capability.
+imply any trading performance or live execution capability.

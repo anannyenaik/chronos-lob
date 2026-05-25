@@ -1,6 +1,7 @@
 # ChronosLOB
 
-**A research-engineering platform for leakage-safe limit order book representation learning, calibrated forecasting and execution-aware validation.**
+**Research software for leakage-safe limit order book representation learning,
+calibrated forecasting and execution-aware sensitivity analysis.**
 
 [![CI](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml/badge.svg)](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
@@ -8,80 +9,51 @@
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
 
-ChronosLOB is a research platform for limit order book representation
-learning, market-state forecasting, calibration and execution-aware
-validation. It provides data validation, feature and label construction,
-temporal splits, classical and neural baselines, transformer-based
-representation learning, uncertainty analysis, execution-aware validation
-and robustness analysis.
+ChronosLOB is a research platform for limit order book representation learning,
+market-state forecasting, calibration and execution-aware validation. It turns
+locally supplied limit order book benchmark files into auditable experiment
+artefacts: configs, data manifests, split summaries, model metrics,
+calibration tables, execution-aware sensitivity rows, ablations, plots and
+local systems measurements.
 
 ChronosLOB is research and engineering infrastructure. It is not financial
 advice and it is not live trading infrastructure.
 
-## Why ChronosLOB
+## Current Evidence
 
-Most public order-book research collapses distinct questions into one number:
-is the forecast accurate, is the forecast trustworthy, and does the forecast
-remain useful after explicit execution assumptions? ChronosLOB keeps these as
-separate evidence streams.
+The repository now includes a real FI-2010 fold-1 evidence set built from the
+official NoAuction ZScore train/test files after local verification and
+conversion. The run uses official split-aware evaluation from the combined
+CSV `split` column, with validation carved only from official train rows.
 
-The platform is built around four commitments:
+The committed FI-2010 fold-1 run includes majority, logistic, random forest,
+gradient boosting, DeepLOB-style and normalised-matrix transformer baselines.
+In the current artefacts, gradient boosting is the strongest model by macro-F1,
+while the transformer path runs through the normalised FI-2010 matrix
+representation. `ssl_transformer` is not supported by the paper runner and is
+not reported as a model result.
 
-- Leakage-safe feature construction, labels, splitters and train-only fitting.
-- Calibration and uncertainty analysis as first-class evaluation concerns.
-- Explicit cost, latency, turnover, fill and risk assumptions.
-- Reproducible experiment records with configs, seeds, code versions and
-  stored outputs.
+Supported evidence streams:
 
-Forecast accuracy is never treated as proof of tradability. Synthetic fixture
-outputs are plumbing checks only and are not benchmark results, market evidence
-or execution evidence.
+- predictive metrics from `results.json`
+- calibration evidence from `calibration_bins.csv`
+- execution-aware sensitivity from `execution_sensitivity.csv`
+- controlled ablations under `experiments/fi2010_midprice_h10_ablations/`
+- local systems measurements under `experiments/fi2010_midprice_h10_systems/`
 
-## Architecture
+Primary references:
 
-ChronosLOB is organised as a layered research stack. Each layer has clear
-contracts, tests and CLI entry points so components can be inspected or replaced
-without breaking leakage boundaries.
+- [FI-2010 benchmark preparation](docs/FI2010_BENCHMARK.md)
+- [Paper experiment runner](docs/PAPER_EXPERIMENTS.md)
+- [Paper ablations](docs/PAPER_ABLATIONS.md)
+- [Systems benchmarks](docs/SYSTEM_BENCHMARKS.md)
+- [Empirical artefact report](reports/chronoslob_empirical_report.md)
+- [FI-2010 model card](experiments/fi2010_midprice_h10/model_card.md)
+- [Experiment evidence index](docs/EXPERIMENT_EVIDENCE_INDEX.md)
 
-```text
-audit and reproducibility
-robustness analysis
-execution-aware validation
-calibration and uncertainty
-representation learning
-baselines and sequence models
-temporal validation
-feature and label engineering
-data contracts and validation
-```
-
-| Layer | Responsibility | Key modules |
-| --- | --- | --- |
-| Data contracts | FI-2010-style loading, event records, schemas, fixtures. | [data](chronoslob/data/), [book](chronoslob/book/) |
-| Features | Past-only microstructure features and regime indicators. | [features](chronoslob/features/) |
-| Labels | Future-window labels and leakage guards. | [labels](chronoslob/labels/) |
-| Temporal validation | Temporal, walk-forward, purged and embargoed splitters. | [splitters](chronoslob/training/splitters.py) |
-| Baselines | Classical baselines, DeepLOB-style plumbing and datasets. | [models](chronoslob/models/) |
-| Representation learning | Tokenisation, transformer encoder, SSL and multi-task heads. | [training](chronoslob/training/) |
-| Calibration | Temperature scaling, calibration error and abstention. | [calibration](chronoslob/models/calibration.py) |
-| Execution validation | Fees, spread costs, latency, turnover and risk constraints. | [backtest](chronoslob/backtest/) |
-| Robustness analysis | Transfer, regime, ablation and sensitivity summaries. | [analysis](chronoslob/analysis/) |
-| Audit | Release-readiness checks and technical evidence archive. | [utils](chronoslob/utils/) |
-
-## Highlights
-
-- Predictive quality, calibration quality and cost-aware signal quality are
-  reported separately.
-- Past-only features, future-window labels and train-only preprocessing are
-  covered by dedicated leakage tests.
-- Canonical event logs support deterministic tokenisation and transformer
-  inputs.
-- Self-supervised objectives and multi-task fine-tuning are implemented as
-  tested infrastructure.
-- Execution-aware validation keeps fees, spread, latency, turnover and risk
-  assumptions explicit.
-- Local audit tooling checks public release wording, required files, synthetic
-  labelling and unsupported claims.
+The numbers are run-specific benchmark artefacts. Forecast quality, calibration
+quality and execution-aware sensitivity are reported separately and should not
+be collapsed into a trading or deployment claim.
 
 ## Installation
 
@@ -103,116 +75,90 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev,torch]"
 ```
 
-The `torch` extra is optional for installation, but it is required for the full
-test suite and neural model smoke paths.
+The `torch` extra is required for the full test suite and neural smoke paths.
 
 ## Quick Start
 
-Run the core local validation path:
+Run the local health and release checks:
 
 ```bash
 python -m chronoslob.cli doctor
 python -m chronoslob.cli inspect-release-readiness
 python -m chronoslob.cli run-project-audit --strict
+```
+
+Exercise the tiny bundled fixture:
+
+```bash
+python -m chronoslob.cli inspect-fi2010 \
+  --path tests/fixtures/fi2010/tiny_fi2010_like.csv
+
+python -m chronoslob.cli run-paper-experiment \
+  --config configs/experiments/fi2010_midprice_h10.yaml \
+  --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv \
+  --out runs/paper_experiment_smoke \
+  --models majority,logistic \
+  --overwrite \
+  --build-plots
+```
+
+Fixture outputs validate code paths only. They are not FI-2010 benchmark
+evidence.
+
+Run the full local validation suite:
+
+```bash
 python -m pytest
 python -m compileall -q chronoslob tests
 python -m ruff check .
 python -m mypy chronoslob
 ```
 
-Inspect local fixtures and model plumbing:
-
-```bash
-python -c "import chronoslob; print(chronoslob.__version__)"
-python -m chronoslob.cli inspect-fi2010 --path tests/fixtures/fi2010/tiny_fi2010_like.csv
-python -m chronoslob.cli inspect-event-log --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
-python -m chronoslob.cli inspect-transformer
-python -m chronoslob.cli inspect-calibration
-python -m chronoslob.cli inspect-execution-validation
-```
-
-Run synthetic smoke paths:
-
-```bash
-python -m chronoslob.cli run-baseline-smoke --path tests/fixtures/fi2010/tiny_fi2010_like.csv
-python -m chronoslob.cli run-transformer-smoke --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
-python -m chronoslob.cli run-ssl-smoke --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
-python -m chronoslob.cli run-multitask-smoke --path tests/fixtures/event_logs/synthetic_snapshots.jsonl
-python -m chronoslob.cli run-calibration-smoke
-python -m chronoslob.cli run-execution-validation-smoke
-python -m chronoslob.cli run-robustness-analysis-smoke
-```
-
 The full command inventory lives in the [CLI reference](docs/CLI_REFERENCE.md).
+
+## Real FI-2010 Reproduction
+
+Raw FI-2010 data is not committed and is never downloaded automatically. To
+reproduce the real evidence, download the official archive locally, keep it
+under `data/raw/fi2010/`, convert the selected official `.txt` files into a
+loader-ready CSV under `data/processed/fi2010/`, then run the paper experiment,
+ablation suite, systems benchmarks and report builder.
+
+The acquisition and conversion sequence is documented in
+[FI2010_DATA_ACQUISITION.md](docs/FI2010_DATA_ACQUISITION.md), and the
+end-to-end command flow is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
 
 ## Repository Layout
 
 ```text
-chronoslob/
-  data/       FI-2010 loader, event store, schemas and validators
-  book/       Local order book, replay and reconstruction
-  features/   Microprice, imbalance, order flow, volatility and regimes
-  labels/     Mid-price, spread, volatility, fill and leakage checks
-  models/     Baselines, DeepLOB, transformer, SSL, multi-task, calibration
-  training/   Splitters, datasets, dataloaders, experiments and metrics
-  backtest/   Costs, execution, latency, turnover, risk and validation
-  analysis/   Transfer, regimes, ablations, sensitivity and summaries
-  utils/      Seeding, paths, logging, audit and archive utilities
-
-configs/      YAML configs for data, models and experiments
-docs/         CLI, reproducibility, status, evidence and safety docs
-reports/      Per-component technical reports and evidence archive
-tests/        Deterministic tests and synthetic fixtures
+chronoslob/  data, features, labels, models, training, backtest and analysis
+configs/     YAML configs for data, models and experiments
+docs/        CLI, reproducibility, benchmark, evidence and safety docs
+reports/     Technical reports and generated empirical artefact report
+experiments/ Stored FI-2010 evidence artefacts
+tests/       Deterministic tests and tiny synthetic fixtures
 ```
-
-## Data Policy
-
-No real exchange data, licensed data, private data, API keys or credentials are
-committed. Fixtures under [tests/fixtures](tests/fixtures/) are tiny synthetic
-files used only to exercise code paths. Users supply any real FI-2010 or public
-venue data locally, outside version control.
-
-See [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) for the data provenance
-and validation contract.
 
 ## Documentation
 
 | Document | Purpose |
 | --- | --- |
 | [CLI reference](docs/CLI_REFERENCE.md) | Commands and options. |
-| [Reproducibility](docs/REPRODUCIBILITY.md) | Validation, data provenance and evidence archives. |
-| [Project status](docs/PROJECT_STATUS.md) | Implemented scope and future work. |
-| [Safety and limitations](docs/SAFETY_AND_LIMITATIONS.md) | Scope boundaries and modelling caveats. |
-| [Experiment evidence index](docs/EXPERIMENT_EVIDENCE_INDEX.md) | Experiment artefact registry. |
-| [Roadmap](ROADMAP.md) | Completed work, planned work and out-of-scope items. |
+| [Reproducibility](docs/REPRODUCIBILITY.md) | Local validation and real-data reproduction flow. |
+| [Project status](docs/PROJECT_STATUS.md) | Implemented scope and current limitations. |
+| [Safety and limitations](docs/SAFETY_AND_LIMITATIONS.md) | Canonical scope boundary. |
+| [Roadmap](ROADMAP.md) | Completed milestone and future work. |
 | [Contributing](CONTRIBUTING.md) | Development workflow and contribution standards. |
 
-Per-component reports live under [reports](reports/).
+## Data Policy
 
-## Engineering Standards
+No real exchange data, licensed data, private data, API keys or credentials are
+committed. Tiny files under [tests/fixtures](tests/fixtures/) are synthetic and
+exist only to exercise deterministic code paths.
 
-| Concern | Enforced by |
-| --- | --- |
-| Style | `ruff` |
-| Types | `mypy` |
-| Tests | `pytest` |
-| Determinism | central seeding utilities and manifests |
-| Leakage controls | no-look-ahead and train-only fitting tests |
-| Release hygiene | `inspect-release-readiness` and `run-project-audit --strict` |
+## Licence
 
-## Roadmap
-
-ChronosLOB's infrastructure layer is implemented and tested. The active
-research workstream is empirical: running documented experiments on locally
-provided datasets with provenance-tracked data, temporal splits, seeds and
-stored outputs. Predictive, calibration and execution-aware streams should be
-reported as separate evidence, not as a single headline number.
-
-See [ROADMAP.md](ROADMAP.md) for full detail.
-
-## License
-
-Released under the [MIT License](LICENSE).
+Released under the [MIT Licence](LICENSE).
 
 ## Citation
 

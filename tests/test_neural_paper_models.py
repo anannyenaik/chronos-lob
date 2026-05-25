@@ -28,6 +28,13 @@ CONFIG_PATH = project_root() / "configs" / "experiments" / "fi2010_midprice_h10.
 TINY_FIXTURE_PATH = (
     project_root() / "tests" / "fixtures" / "fi2010" / "tiny_fi2010_like.csv"
 )
+NORMALISED_SPLIT_FIXTURE_PATH = (
+    project_root()
+    / "tests"
+    / "fixtures"
+    / "fi2010"
+    / "tiny_fi2010_normalised_split.csv"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -100,7 +107,7 @@ def _assert_neural_model_ran_or_skipped_clearly(
 
 
 def test_registry_recognises_supported_neural_models() -> None:
-    for name in ("deeplob_style", "transformer"):
+    for name in ("deeplob_style", "transformer", "matrix_transformer"):
         assert name in SUPPORTED_PAPER_MODELS
         spec = get_paper_model_spec(name)
         assert spec.name == name
@@ -163,6 +170,7 @@ def test_combined_neural_smoke_outputs_model_card_and_metadata(
     assert runner_summary["neural_settings"]["supported_models"] == [
         "deeplob_style",
         "transformer",
+        "matrix_transformer",
     ]
     assert "ssl_transformer" not in SUPPORTED_PAPER_MODELS
 
@@ -183,7 +191,12 @@ def test_combined_neural_smoke_outputs_model_card_and_metadata(
             == "train"
         )
     if "transformer" in model_metadata:
-        assert model_metadata["transformer"]["tokenisation_fit_split"] == "train"
+        assert model_metadata["transformer"]["standardisation"]["fit_split"] == "train"
+        assert (
+            model_metadata["transformer"]["matrix_path"]
+            == "normalised FI-2010 matrix path"
+        )
+        assert model_metadata["transformer"]["raw_snapshot_construction"] is False
 
     model_card = (output_dir / "model_card.md").read_text(encoding="utf-8")
     lowered = model_card.lower()
@@ -240,3 +253,56 @@ def test_neural_cli_smoke_validates_under_inspector(tmp_path: Path) -> None:
 
     assert inspected.returncode == 0, inspected.stderr
     assert "valid:            yes" in inspected.stdout
+
+
+def test_matrix_transformer_runs_on_normalised_split_fixture(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "paper_experiment_matrix_transformer"
+
+    summary = run_paper_experiment(
+        config_path=CONFIG_PATH,
+        data_path=NORMALISED_SPLIT_FIXTURE_PATH,
+        out_dir=output_dir,
+        models=["majority", "matrix_transformer"],
+        overwrite=True,
+    )
+
+    assert "matrix_transformer" in summary.models_run
+    predictions = pd.read_csv(output_dir / "predictions.csv")
+    model_rows = predictions[predictions["model_name"] == "matrix_transformer"]
+    assert not model_rows.empty
+    _assert_probability_rows_are_valid(model_rows)
+    runner_summary = _read_json(output_dir / "runner_summary.json")
+    metadata = runner_summary["model_metadata"]["matrix_transformer"]
+    assert metadata["raw_snapshot_construction"] is False
+    assert metadata["window_policy"]["windows_stay_inside_split"] is True
+    assert metadata["standardisation"]["fit_split"] == "train"
+
+
+def test_transformer_matrix_path_does_not_construct_raw_order_book_levels(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from chronoslob.data import fi2010
+
+    def _raise_if_constructed(*args: object, **kwargs: object) -> object:
+        raise AssertionError("raw OrderBookLevel construction was called")
+
+    monkeypatch.setattr(fi2010, "OrderBookLevel", _raise_if_constructed)
+    output_dir = tmp_path / "paper_experiment_transformer_matrix"
+
+    summary = run_paper_experiment(
+        config_path=CONFIG_PATH,
+        data_path=NORMALISED_SPLIT_FIXTURE_PATH,
+        out_dir=output_dir,
+        models=["majority", "transformer"],
+        overwrite=True,
+    )
+
+    assert "transformer" in summary.models_run
+    runner_summary = _read_json(output_dir / "runner_summary.json")
+    assert (
+        runner_summary["model_metadata"]["transformer"]["matrix_path"]
+        == "normalised FI-2010 matrix path"
+    )

@@ -4,6 +4,26 @@ This index maps research themes to the modules, configs, tests and CLI
 commands that implement them. It is a navigation aid for anyone reading
 or reproducing the platform.
 
+## Real FI-2010 Evidence Map
+
+- Acquisition and conversion:
+  [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
+- Benchmark preparation:
+  [FI2010_BENCHMARK](FI2010_BENCHMARK.md)
+- Main paper experiment:
+  [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md) and
+  [`experiments/fi2010_midprice_h10/`](../experiments/fi2010_midprice_h10/)
+- Ablations:
+  [PAPER_ABLATIONS](PAPER_ABLATIONS.md) and
+  [`experiments/fi2010_midprice_h10_ablations/`](../experiments/fi2010_midprice_h10_ablations/)
+- Systems benchmarks:
+  [SYSTEM_BENCHMARKS](SYSTEM_BENCHMARKS.md) and
+  [`experiments/fi2010_midprice_h10_systems/`](../experiments/fi2010_midprice_h10_systems/)
+- Generated artefact report:
+  [`reports/chronoslob_empirical_report.md`](../reports/chronoslob_empirical_report.md)
+- Model card:
+  [`experiments/fi2010_midprice_h10/model_card.md`](../experiments/fi2010_midprice_h10/model_card.md)
+
 ## Data and Order Book
 
 - Modules: `chronoslob/data/`, `chronoslob/book/`
@@ -84,7 +104,7 @@ or reproducing the platform.
 - CLI: `inspect-calibration`, `run-paper-experiment`
 - Reports:
   [calibration_uncertainty](../reports/calibration_uncertainty.md)
-- Phase F artefact: `calibration_bins.csv` (reliability bins built
+- FI-2010 artefact: `calibration_bins.csv` (reliability bins built
   from held-out test predictions).
 
 ## Execution-Aware Validation
@@ -102,7 +122,7 @@ or reproducing the platform.
 - CLI: `inspect-execution-validation`, `run-paper-experiment`
 - Reports:
   [execution_aware_validation](../reports/execution_aware_validation.md)
-- Phase F artefact: `execution_sensitivity.csv` (cost-aware signal
+- FI-2010 artefact: `execution_sensitivity.csv` (cost-aware signal
   quality rows under explicit cost assumptions; not a production
   backtest).
 
@@ -136,12 +156,15 @@ or reproducing the platform.
   `convert-fi2010-official`
 - Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md),
   [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
+- Split support: generic temporal split and official split-aware
+  evaluation from the combined CSV `split` column.
 
 ## Paper Experiment Runner
 
 - Modules: `chronoslob/experiments/paper_runner.py`,
   `chronoslob/experiments/model_registry.py`,
   `chronoslob/experiments/neural_adapters.py`,
+  `chronoslob/models/matrix_transformer.py`,
   `chronoslob/experiments/evidence.py`,
   `chronoslob/experiments/plots.py`
 - Configs: `configs/experiments/fi2010_midprice_h10.yaml`
@@ -154,7 +177,9 @@ or reproducing the platform.
 - CLI: `run-paper-experiment`, `build-paper-plots`,
   `inspect-paper-experiment`
 - Docs: [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
-- Phase G artefacts: `plots/reliability_curve.png`,
+- Matrix path: `transformer` and `matrix_transformer` use the
+  normalised FI-2010 matrix path; raw order-book schemas remain strict.
+- FI-2010 plot artefacts: `plots/reliability_curve.png`,
   `plots/cost_sensitivity.png`, `plots/confusion_matrix.png`,
   optionally `plots/regime_breakdown.png` (only when genuine regime
   data is available in stored artefacts) and `plot_summary.json`.
@@ -168,7 +193,7 @@ or reproducing the platform.
 - CLI: `run-paper-ablations`
 - Docs: [PAPER_ABLATIONS](PAPER_ABLATIONS.md),
   [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md)
-- Phase H artefacts: `ablation_summary.json`,
+- FI-2010 ablation artefacts: `ablation_summary.json`,
   `ablation_results.csv`, `ablation_manifest.json`, per-ablation
   Markdown reports and child paper experiment directories only for
   ablations that genuinely run. Skipped ablations, including SSL
@@ -182,11 +207,14 @@ or reproducing the platform.
 - Tests: `tests/test_system_benchmarks.py`
 - CLI: `run-system-benchmarks`, `inspect-system-benchmarks`
 - Docs: [SYSTEM_BENCHMARKS](SYSTEM_BENCHMARKS.md)
-- Phase I artefacts: `system_benchmark_summary.json`,
+- FI-2010 systems artefacts: `system_benchmark_summary.json`,
   `system_benchmark_results.csv`, `environment.json`, per-category
   Markdown reports and a validated child paper experiment for runner
   timing. Smoke fixture timings are labelled as smoke measurements and
   are not benchmark evidence.
+- Normalised FI-2010 support: feature throughput and inference latency
+  can run in matrix mode without reconstructing raw order-book snapshots
+  from z-score rows.
 
 ## Paper Report Builder
 
@@ -196,14 +224,19 @@ or reproducing the platform.
 - Tests: `tests/test_paper_report_builder.py`
 - CLI: `build-paper-report`, `inspect-paper-report`
 - Docs: [PAPER_REPORTS](PAPER_REPORTS.md)
-- Phase J artefacts: a Markdown empirical report plus
+- Report artefacts: a Markdown empirical report plus
   `<report_stem>_summary.json`, both generated from stored paper experiment,
   ablation and systems benchmark artefacts. Fixture or smoke inputs remain
   labelled as smoke reports and are not benchmark evidence.
+- Formatting: headings, tables and code fences are emitted as separate
+  Markdown blocks, and repeated warnings are grouped into a summary plus
+  detailed appendix.
 - Real-data evidence: `reports/chronoslob_empirical_report.md` and
   `reports/chronoslob_empirical_report_summary.json` are built from the
   paper experiment under `experiments/fi2010_midprice_h10/` and the
-  ablation suite under `experiments/fi2010_midprice_h10_ablations/`
+  ablation suite under `experiments/fi2010_midprice_h10_ablations/`,
+  with systems measurements under
+  `experiments/fi2010_midprice_h10_systems/`,
   on the official FI-2010 NoAuction ZScore fold 1 file pair documented
   in [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md).
 

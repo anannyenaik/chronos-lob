@@ -144,6 +144,49 @@ def test_report_contains_required_sections_and_stored_evidence(
     assert "not benchmark evidence" in text.lower()
 
 
+def test_report_markdown_blocks_are_separated(
+    smoke_dirs: dict[str, Path],
+) -> None:
+    report_path = smoke_dirs["base"] / "markdown_spacing_report.md"
+    build_paper_report(
+        experiment_dir=smoke_dirs["experiment"],
+        ablation_dir=smoke_dirs["ablations"],
+        systems_dir=smoke_dirs["systems"],
+        out_path=report_path,
+        overwrite=True,
+    )
+
+    lines = report_path.read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
+        if not line.startswith("## "):
+            continue
+        assert line.strip() == line
+        assert line.count("## ") == 1
+        if index + 1 < len(lines):
+            assert lines[index + 1] == ""
+    text = "\n".join(lines)
+    assert "\n\n| field | value |\n" in text
+    assert "\n\n```bash\n" in text
+
+
+def test_warning_summary_groups_repeated_warning_text(
+    smoke_dirs: dict[str, Path],
+) -> None:
+    report_path = smoke_dirs["base"] / "warning_summary_report.md"
+    build_paper_report(
+        experiment_dir=smoke_dirs["experiment"],
+        ablation_dir=smoke_dirs["ablations"],
+        systems_dir=smoke_dirs["systems"],
+        out_path=report_path,
+        overwrite=True,
+    )
+
+    text = report_path.read_text(encoding="utf-8")
+    assert "Warning summary:" in text
+    assert "Detailed warning appendix:" in text
+    assert "SSL pretraining remains unsupported" in text
+
+
 def test_report_handles_missing_optional_inputs(
     smoke_dirs: dict[str, Path],
 ) -> None:
@@ -170,9 +213,9 @@ def test_report_limitations_do_not_overclaim(smoke_dirs: dict[str, Path]) -> Non
     )
 
     lowered = report_path.read_text(encoding="utf-8").lower()
-    assert "no live trading" in lowered
+    assert "execution-system claims" in lowered
     assert "no production market impact model" in lowered
-    assert "production backtest" in lowered
+    assert "deployment-ready execution system" in lowered
     for forbidden in (
         _phrase("profitable", "strategy"),
         _phrase("market", "beating"),

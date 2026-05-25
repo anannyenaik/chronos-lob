@@ -16,10 +16,8 @@ The runner is deliberately scoped:
 * It never downloads data, never fits preprocessing or model-selection
   choices on validation or test data and never performs network calls.
 
-The benchmark suite is the predictive-quality evidence stream.
-Calibration evidence (reliability bins, ECE recomputation
-from stored predictions), execution-sensitivity evidence and plot
-generation remain tracked under later phases.
+The benchmark suite writes predictive, calibration, execution-sensitivity and
+optional plot evidence from stored artefacts.
 """
 
 from __future__ import annotations
@@ -59,6 +57,10 @@ from chronoslob.experiments.evidence import (
 from chronoslob.experiments.fi2010_benchmark import (
     FI2010BenchmarkConfig,
     FI2010PreparationResult,
+    build_benchmark_split,
+    effective_split_column,
+    effective_split_name,
+    effective_split_summary,
     load_benchmark_config,
     prepare_fi2010_benchmark,
 )
@@ -96,8 +98,6 @@ from chronoslob.training.metrics import (
 )
 from chronoslob.training.splitters import (
     SplitIndices,
-    TemporalSplitConfig,
-    temporal_train_validation_test_split,
 )
 
 __all__ = [
@@ -270,7 +270,7 @@ def _build_combined_frame(
     fi2010_config = FI2010Config(
         path=data_path,
         timestamp_column=config.timestamp_column,
-        split_column=config.split_column,
+        split_column=effective_split_column(config),
         label_columns=list(config.label_columns),
         price_level_count=config.price_level_count,
     )
@@ -338,18 +338,10 @@ def _safe_prepare_in_subdir(
 
 def _build_split(
     *,
-    n_rows: int,
     config: FI2010BenchmarkConfig,
+    frame: pd.DataFrame,
 ) -> SplitIndices:
-    split_config = TemporalSplitConfig(
-        train_fraction=config.train_fraction,
-        validation_fraction=config.validation_fraction,
-        test_fraction=config.test_fraction,
-        min_train_size=1,
-        min_validation_size=1,
-        min_test_size=0,
-    )
-    return temporal_train_validation_test_split(n_rows, split_config)
+    return build_benchmark_split(config, frame)
 
 
 def _select_metric_subset(metric_dict: Mapping[str, Any]) -> dict[str, float]:
@@ -631,7 +623,7 @@ def _write_model_card(
     execution_metric_names: Sequence[str],
     artefacts: Mapping[str, str],
     code_commit: str | None,
-    split_counts: Mapping[str, int],
+    split_counts: Mapping[str, Any],
     neural_settings: Mapping[str, Any],
     calibration_models: Sequence[str],
     execution_models: Sequence[str],
@@ -662,7 +654,7 @@ def _write_model_card(
     lines.append(f"- task: `{config.task_name}`")
     lines.append(f"- horizon: {config.horizon}")
     lines.append(f"- label column: `{config.label_name}`")
-    lines.append(f"- split: `{config.split_name}` (temporal train/validation/test)")
+    lines.append(f"- split: `{effective_split_name(config)}`")
     lines.append(f"- seed: {seed}")
     if code_commit:
         lines.append(f"- code commit: `{code_commit}`")
@@ -678,7 +670,7 @@ def _write_model_card(
     if is_fixture:
         lines.append(
             "- fixture flag: this path lives under `tests/fixtures/` and "
-            "is a synthetic FI-2010-like file used only for plumbing "
+            "is a synthetic FI-2010-like file used only for fixture "
             "checks.",
         )
     lines.append("")
@@ -688,15 +680,31 @@ def _write_model_card(
     train_rows = int(split_counts.get("n_train", 0))
     validation_rows = int(split_counts.get("n_validation", 0))
     test_rows = int(split_counts.get("n_test", 0))
+    split_method = str(split_counts.get("split_method", effective_split_name(config)))
     lines.append(f"- total rows loaded: {total_rows}")
+    lines.append(f"- split method: `{split_method}`")
+    if split_method == "official_column":
+        lines.append(f"- split column: `{split_counts.get('split_column')}`")
+        lines.append(
+            "- official train/test rows: "
+            f"{split_counts.get('official_train_rows')} / "
+            f"{split_counts.get('official_test_rows')}"
+        )
     lines.append(f"- train rows: {train_rows}")
     lines.append(f"- validation rows: {validation_rows}")
     lines.append(f"- test rows: {test_rows}")
-    lines.append(
-        "- split is constructed by the deterministic temporal splitter; "
-        "no shuffling, no stratification and no test-row use during "
-        "preprocessing or model fitting.",
-    )
+    if split_method == "official_column":
+        lines.append(
+            "- official test rows are held out from preprocessing, model "
+            "fitting, validation and model-selection decisions; validation "
+            "is carved from the tail of official train rows.",
+        )
+    else:
+        lines.append(
+            "- split is constructed by the deterministic temporal splitter; "
+            "no shuffling, no stratification and no test-row use during "
+            "preprocessing or model fitting.",
+        )
     lines.append("")
     lines.append("## Models")
     lines.append("")
@@ -816,9 +824,8 @@ def _write_model_card(
             + ", ".join(f"`{name}`" for name in execution_models)
         )
         lines.append(
-            "- this is a simplified proxy analysis, not a production "
-            "backtest, and does not claim tradable profitability or "
-            "live execution."
+            "- this is a simplified proxy analysis, not an execution "
+            "result for live markets."
         )
     elif execution_warning is not None:
         lines.append(f"- not produced this run: {execution_warning}")
@@ -830,8 +837,8 @@ def _write_model_card(
     lines.append("## Leakage Controls")
     lines.append("")
     lines.append(
-        "- Train, validation and test indices come from the deterministic "
-        "temporal splitter; no random or stratified shuffling is used.",
+        "- Train, validation and test indices come from the configured "
+        "split policy; no random or stratified shuffling is used.",
     )
     lines.append(
         "- Per-model train-only feature standardisation is applied for "
@@ -850,24 +857,30 @@ def _write_model_card(
     lines.append("## Limitations")
     lines.append("")
     lines.append(
-        "- This phase supports `majority`, `logistic`, `ridge`, "
-        "`elastic_net`, `random_forest`, `gradient_boosting`, "
-        "`deeplob_style` and `transformer`. The DeepLOB-style path is "
-        "not an exact external-paper reproduction.",
+        "- Supported model names in this phase: `majority`, `logistic`, "
+        "`ridge`, `elastic_net`, `random_forest`, `gradient_boosting`, "
+        "`deeplob_style`, `transformer` and `matrix_transformer`.",
     )
     lines.append(
-        "- Plot generation remains tracked under a later phase; this "
-        "runner emits calibration and execution-sensitivity evidence "
-        "as CSV artefacts only.",
+        "- `transformer` and `matrix_transformer` use the supervised "
+        "normalised FI-2010 matrix path.",
+    )
+    lines.append(
+        "- The DeepLOB-style path is not an exact external-paper "
+        "reproduction.",
+    )
+    lines.append(
+        "- Plot artefacts are generated only from stored experiment "
+        "artefacts when `--build-plots` or `build-paper-plots` is used.",
     )
     lines.append(
         "- Reported numbers are run-specific and must not be interpreted "
-        "as profitability, deployability or live-trading evidence.",
+        "as trading or execution-system evidence.",
     )
     if is_fixture:
         lines.append(
             "- The data source is a synthetic fixture; metrics describe "
-            "fixture plumbing only and are not benchmark evidence.",
+            "fixture behaviour only and are not benchmark evidence.",
         )
     lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -920,7 +933,7 @@ def _build_results(
         experiment_name=config.experiment_name,
         task_name=config.task_name,
         horizon=config.horizon,
-        split_name=config.split_name,
+        split_name=effective_split_name(config),
         seed=config.seed,
         model_names=[outcome.model_name for outcome in outcomes],
         primary_metric=primary_metric,
@@ -1010,6 +1023,7 @@ def _evaluate_model(
     all_labels: Sequence[Any],
     class_count_train: int,
     class_count_test: int,
+    train_indices: Sequence[int],
     test_indices: Sequence[int],
     horizon: int,
     test_timestamps: Sequence[str] | None,
@@ -1025,9 +1039,17 @@ def _evaluate_model(
         scaler = TrainOnlyStandardScaler()
         train_x = scaler.fit_transform(train_features_raw)
         inference_x = scaler.transform(test_features_raw)
+        standardisation_metadata: dict[str, Any] | None = {
+            "fit_split": "train",
+            "fit_row_count": len(train_indices),
+            "fit_row_start": int(train_indices[0]) if train_indices else None,
+            "fit_row_end": int(train_indices[-1]) if train_indices else None,
+            "feature_count": int(train_features_raw.shape[1]),
+        }
     else:
         train_x = train_features_raw
         inference_x = test_features_raw
+        standardisation_metadata = None
 
     model.fit(train_x, train_labels)
     predictions = np.asarray(model.predict(inference_x))
@@ -1092,6 +1114,11 @@ def _evaluate_model(
         confusion_matrix=confusion,
         n_test_rows=len(test_labels),
         emits_probabilities=spec.emits_probabilities and proba is not None,
+        metadata={
+            "standardisation": standardisation_metadata,
+        }
+        if standardisation_metadata is not None
+        else {},
     )
     return outcome, rows
 
@@ -1236,8 +1263,9 @@ def run_paper_experiment(
     extra_exclude: list[str] = []
     if config.timestamp_column is not None:
         extra_exclude.append(config.timestamp_column)
-    if config.split_column is not None:
-        extra_exclude.append(config.split_column)
+    split_column = effective_split_column(config)
+    if split_column is not None:
+        extra_exclude.append(split_column)
 
     feature_columns = _feature_columns_from_frame(
         combined_frame,
@@ -1268,12 +1296,17 @@ def run_paper_experiment(
         feature_columns = filtered_columns
 
     n_rows = len(combined_frame)
-    split = _build_split(n_rows=n_rows, config=config)
+    split = _build_split(config=config, frame=combined_frame)
+    split_summary = effective_split_summary(
+        config=config,
+        frame=combined_frame,
+        indices=split,
+    )
     if split.n_train == 0:
-        raise ValueError("temporal split produced no training rows")
+        raise ValueError("paper experiment split produced no training rows")
     if split.n_test == 0:
         raise ValueError(
-            "temporal split produced no test rows; "
+            "paper experiment split produced no test rows; "
             "the fixture or config is too small for evaluation",
         )
 
@@ -1331,6 +1364,7 @@ def run_paper_experiment(
                     all_labels=all_labels,
                     class_count_train=class_count_train,
                     class_count_test=class_count_test,
+                    train_indices=split.train,
                     test_indices=split.test,
                     horizon=config.horizon,
                     test_timestamps=test_timestamps,
@@ -1561,7 +1595,12 @@ def run_paper_experiment(
         "n_train": split.n_train,
         "n_validation": split.n_validation,
         "n_test": split.n_test,
+        "split_method": split_summary.split_method,
+        "split_column": split_summary.split_column,
+        "official_train_rows": split_summary.official_train_rows,
+        "official_test_rows": split_summary.official_test_rows,
     }
+    split_summary_payload = split_summary.model_dump(mode="json")
     model_card_path = resolved_out_dir / "model_card.md"
     _write_model_card(
         path=model_card_path,
@@ -1626,7 +1665,8 @@ def run_paper_experiment(
         "experiment_name": config.experiment_name,
         "task_name": config.task_name,
         "horizon": config.horizon,
-        "split_name": config.split_name,
+        "split_name": effective_split_name(config),
+        "split_method": split_summary.split_method,
         "data_path": str(resolved_data_path),
         "output_dir": str(resolved_out_dir),
         "requested_models": list(requested_models),
@@ -1642,6 +1682,7 @@ def run_paper_experiment(
         "data_source_kind": data_source_kind,
         "environment": _build_environment_payload(),
         "split_counts": split_counts,
+        "split_summary": split_summary_payload,
         "neural_settings": config.neural_settings.model_dump(mode="json"),
         "evidence": evidence_summary,
         "model_metadata": {
@@ -1691,7 +1732,7 @@ def run_paper_experiment(
         experiment_name=config.experiment_name,
         task_name=config.task_name,
         horizon=config.horizon,
-        split_name=config.split_name,
+        split_name=effective_split_name(config),
         data_path=str(resolved_data_path),
         output_dir=str(resolved_out_dir),
         requested_models=list(requested_models),

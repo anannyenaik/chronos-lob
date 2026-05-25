@@ -31,7 +31,7 @@ Document the SSL pretraining status explicitly so an unsupported model family is
 
 - reason: no traceable runner support for SSL pretraining/fine-tuning yet
 - no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry
-- `ssl_transformer` is intentionally not registered in the paper runner model registry, and the ablation runner does not fabricate SSL results.
+- `ssl_transformer` is intentionally not registered in the paper runner model registry, and the ablation runner does not report SSL results without a run.
 
 ## Requirements Before Enabling
 
