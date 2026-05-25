@@ -1,0 +1,11 @@
+{
+  "fi2010_error_count": 0,
+  "fi2010_validation_ok": true,
+  "fi2010_warning_count": 0,
+  "label_error_count": 0,
+  "label_validation_ok": true,
+  "label_warning_count": 0,
+  "notes": [
+    "no timestamp column configured; temporal split is row-order only"
+  ]
+}

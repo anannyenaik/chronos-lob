@@ -1,0 +1,144 @@
+{
+  "models": [
+    {
+      "horizon": 10,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          0,
+          2311,
+          0
+        ],
+        [
+          0,
+          7346,
+          0
+        ],
+        [
+          0,
+          2029,
+          0
+        ]
+      ],
+      "model_name": "majority",
+      "model_type": "majority_class",
+      "split": "test"
+    },
+    {
+      "horizon": 10,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          105,
+          2026,
+          180
+        ],
+        [
+          102,
+          6886,
+          358
+        ],
+        [
+          71,
+          1665,
+          293
+        ]
+      ],
+      "model_name": "logistic",
+      "model_type": "logistic_regression",
+      "split": "test"
+    },
+    {
+      "horizon": 10,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          372,
+          1699,
+          240
+        ],
+        [
+          403,
+          6683,
+          260
+        ],
+        [
+          247,
+          1456,
+          326
+        ]
+      ],
+      "model_name": "random_forest",
+      "model_type": "random_forest",
+      "split": "test"
+    },
+    {
+      "horizon": 10,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          403,
+          1569,
+          339
+        ],
+        [
+          297,
+          6673,
+          376
+        ],
+        [
+          227,
+          1339,
+          463
+        ]
+      ],
+      "model_name": "gradient_boosting",
+      "model_type": "gradient_boosting",
+      "split": "test"
+    },
+    {
+      "horizon": 10,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          949,
+          1362,
+          0
+        ],
+        [
+          1667,
+          5679,
+          0
+        ],
+        [
+          956,
+          1073,
+          0
+        ]
+      ],
+      "model_name": "deeplob_style",
+      "model_type": "deeplob_style",
+      "split": "test"
+    }
+  ]
+}

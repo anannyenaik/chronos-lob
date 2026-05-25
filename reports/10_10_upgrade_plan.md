@@ -509,6 +509,60 @@ handling, CLI coverage and clear omission of unavailable metrics.
 Strict non-goals: do not hand-write benchmark tables, invent missing metrics or
 edit generated reports to improve narrative fit.
 
+### Phase J.5: Real-data acquisition runbook
+
+Purpose: provide a safe local path for obtaining and verifying the official
+FI-2010 archive without committing raw data and without embedding network
+calls in the package.
+
+Status: implemented as a manual runbook plus two narrow local utilities. The
+runbook at `docs/FI2010_DATA_ACQUISITION.md` documents the official Etsin
+landing page, expected ignored layout (`data/raw/fi2010/` and
+`data/processed/fi2010/`), the manual download path, byte-size and SHA-256
+verification commands, conversion to the existing loader convention and a
+clear distinction between fixture smoke runs and real benchmark runs. Two
+companion CLI commands operate on user-supplied local files only:
+`verify-fi2010-local --data-path PATH` streams a layout and checksum
+inspection, and `convert-fi2010-official --input PATH --output PATH
+[--split train|test] [--overwrite]` converts a single official `.txt` matrix
+into a header-bearing CSV file. Neither command performs any network call,
+neither modifies the source file, and the official archive itself is not
+fetched programmatically because the publisher issues per-session download
+tokens through its own UI.
+
+Files added or modified: `chronoslob/data/fi2010_official.py`,
+`chronoslob/data/__init__.py`, `chronoslob/cli.py`,
+`tests/test_fi2010_official_adapter.py`,
+`docs/FI2010_DATA_ACQUISITION.md`, `docs/FI2010_BENCHMARK.md`,
+`docs/REPRODUCIBILITY.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md`, `reports/10_10_upgrade_plan.md` and
+`.gitignore`.
+
+Real-data milestone status: the archive has been downloaded, verified
+against the publisher's byte size and SHA-256, extracted locally and
+the official NoAuction ZScore fold 1 train/test pair has been
+converted and combined into a single loader-ready CSV. The paper
+experiment has run on that combined CSV with `majority`, `logistic`,
+`random_forest`, `gradient_boosting` and `deeplob_style`; the
+`transformer` model was skipped because the existing strict
+`OrderBookLevel` schema rejects the negative quantities that follow
+from the official z-score normalisation. Real ablations have run for
+ten ablations and skipped `ssl_pretraining_ablation` and
+`feature_imbalance` with their original reasons. Systems benchmarks
+could not be run on the z-score normalised file because the standard
+benchmark path constructs `OrderBookSnapshot` instances and the same
+non-negative-quantity constraint blocks the feature pipeline; this is
+documented in the empirical report rather than worked around by
+weakening the schema. The empirical report at
+`reports/chronoslob_empirical_report.md` is the canonical real-data
+evidence summary; predictions and ablation child experiment trees are
+ignored because of size and are deterministically reproducible from
+the commands in the report.
+
+Strict non-goals: do not embed downloader code in the package, do not add
+broker credentials, do not fabricate benchmark numbers in advance of a real
+run and do not commit raw FI-2010 data.
+
 ### Phase K: Final public documentation update
 
 Purpose: update public docs only after real artefacts exist and pass the

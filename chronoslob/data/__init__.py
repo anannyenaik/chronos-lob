@@ -31,6 +31,15 @@ from chronoslob.data.fi2010 import (
     infer_fi2010_columns,
     load_fi2010,
 )
+from chronoslob.data.fi2010_official import (
+    OFFICIAL_FI2010_LABEL_HORIZONS,
+    OFFICIAL_FI2010_ROW_COUNT,
+    OfficialFI2010ConversionReport,
+    OfficialFI2010InspectionReport,
+    build_official_fi2010_column_names,
+    convert_official_fi2010_to_csv,
+    inspect_official_fi2010_file,
+)
 from chronoslob.data.manifests import (
     EventLogManifest,
     create_event_log_manifest,
@@ -64,6 +73,8 @@ from chronoslob.data.validation import (
 
 __all__ = [
     "DEFAULT_EVENT_LOG_SCHEMA_VERSION",
+    "OFFICIAL_FI2010_LABEL_HORIZONS",
+    "OFFICIAL_FI2010_ROW_COUNT",
     "BinanceDepthLevel",
     "BinanceDepthSnapshot",
     "BinanceDiffDepthEvent",
@@ -84,15 +95,20 @@ __all__ = [
     "MarketDataRecord",
     "MetadataDict",
     "MetadataScalar",
+    "OfficialFI2010ConversionReport",
+    "OfficialFI2010InspectionReport",
     "OrderBookLevel",
     "OrderBookSnapshot",
     "Side",
+    "build_official_fi2010_column_names",
     "build_snapshot_from_row",
+    "convert_official_fi2010_to_csv",
     "create_event_log_manifest",
     "deserialise_event_log_record",
     "ensure_utc_datetime",
     "filter_event_log_records",
     "infer_fi2010_columns",
+    "inspect_official_fi2010_file",
     "is_finite_number",
     "iter_event_log_jsonl",
     "load_binance_diff_events_jsonl",

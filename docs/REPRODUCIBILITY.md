@@ -78,10 +78,32 @@ python -m chronoslob.cli build-paper-report --experiment runs/paper_experiment_p
 
 Real FI-2010 data is not committed to the repository and is never
 downloaded automatically. See
+[FI2010_DATA_ACQUISITION.md](FI2010_DATA_ACQUISITION.md) for the
+runbook covering the official Fairdata/Etsin source, the ignored local
+layout, manual download, verification and conversion. Once a converted
+CSV file exists under `data/processed/fi2010/`, see
 [FI2010_BENCHMARK.md](FI2010_BENCHMARK.md) for the local-only
 preparation step that produces a data manifest, label distribution
-summary and temporal split summary from a user-supplied file before
-any future paper experiment run.
+summary and temporal split summary from the user-supplied file before
+any paper experiment run.
+
+The companion `verify-fi2010-local --data-path PATH` command performs a
+streaming layout and checksum inspection without loading the matrix
+into memory, and `convert-fi2010-official --input PATH --output PATH
+[--split train|test] [--overwrite]` converts a single official `.txt`
+matrix into a header-bearing CSV file matching the existing loader
+convention. Both commands operate on user-supplied local files and
+never perform network calls.
+
+A real run of the paper experiment on the official FI-2010 NoAuction
+ZScore fold 1 train/test pair, the resulting ablation suite and the
+generated empirical report are checked in at
+[`experiments/fi2010_midprice_h10/`](../experiments/fi2010_midprice_h10/),
+[`experiments/fi2010_midprice_h10_ablations/`](../experiments/fi2010_midprice_h10_ablations/)
+and [`reports/chronoslob_empirical_report.md`](../reports/chronoslob_empirical_report.md).
+Predictions files and ablation child experiment directories are
+ignored because of size and can be regenerated deterministically with
+the commands in section 12 of the report.
 
 ## Paper Experiment Runner
 

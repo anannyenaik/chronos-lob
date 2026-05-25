@@ -1,0 +1,21 @@
+{
+  "class_counts": {
+    "1": 15483,
+    "2": 47639,
+    "3": 14787
+  },
+  "class_proportions": {
+    "1": 0.1987318538294677,
+    "2": 0.611469791680037,
+    "3": 0.1897983544904953
+  },
+  "distinct_classes": [
+    "1",
+    "2",
+    "3"
+  ],
+  "horizon": 10,
+  "label_name": "label_10",
+  "label_source": "fi2010_existing_labels",
+  "row_count": 77909
+}

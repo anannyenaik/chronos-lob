@@ -1,0 +1,16 @@
+{
+  "n_rows": 77909,
+  "n_test": 11686,
+  "n_train": 54536,
+  "n_validation": 11687,
+  "split_name": "temporal",
+  "test_end_index": 77908,
+  "test_fraction": 0.15,
+  "test_start_index": 66223,
+  "train_end_index": 54535,
+  "train_fraction": 0.7,
+  "train_start_index": 0,
+  "validation_end_index": 66222,
+  "validation_fraction": 0.15,
+  "validation_start_index": 54536
+}

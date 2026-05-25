@@ -4,6 +4,11 @@ ChronosLOB supports preparation of an FI-2010 mid-price direction
 benchmark experiment from a user-supplied local file. The repository
 does not ship FI-2010 data and does not download it. Users are
 responsible for obtaining and licensing any benchmark copy they use.
+See [FI2010_DATA_ACQUISITION.md](FI2010_DATA_ACQUISITION.md) for the
+runbook covering the official Fairdata/Etsin source, the ignored local
+layout, manual download steps, checksum and size verification, the
+`.txt` matrix to CSV conversion path and the difference between tiny
+fixture smoke runs and real benchmark runs.
 
 This document describes the preparation step only. It is not a model
 runner. The later paper experiment runner phase will consume the

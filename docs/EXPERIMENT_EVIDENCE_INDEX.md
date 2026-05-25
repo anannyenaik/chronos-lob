@@ -127,11 +127,15 @@ or reproducing the platform.
 
 ## FI-2010 Benchmark Preparation
 
-- Modules: `chronoslob/experiments/fi2010_benchmark.py`
+- Modules: `chronoslob/experiments/fi2010_benchmark.py`,
+  `chronoslob/data/fi2010_official.py`
 - Configs: `configs/experiments/fi2010_midprice_h10.yaml`
-- Tests: `tests/test_fi2010_benchmark_preparation.py`
-- CLI: `prepare-fi2010-benchmark`
-- Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md)
+- Tests: `tests/test_fi2010_benchmark_preparation.py`,
+  `tests/test_fi2010_official_adapter.py`
+- CLI: `prepare-fi2010-benchmark`, `verify-fi2010-local`,
+  `convert-fi2010-official`
+- Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md),
+  [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
 
 ## Paper Experiment Runner
 
@@ -196,6 +200,12 @@ or reproducing the platform.
   `<report_stem>_summary.json`, both generated from stored paper experiment,
   ablation and systems benchmark artefacts. Fixture or smoke inputs remain
   labelled as smoke reports and are not benchmark evidence.
+- Real-data evidence: `reports/chronoslob_empirical_report.md` and
+  `reports/chronoslob_empirical_report_summary.json` are built from the
+  paper experiment under `experiments/fi2010_midprice_h10/` and the
+  ablation suite under `experiments/fi2010_midprice_h10_ablations/`
+  on the official FI-2010 NoAuction ZScore fold 1 file pair documented
+  in [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md).
 
 ## Reproducibility and Audit
 

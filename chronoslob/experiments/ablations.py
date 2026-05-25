@@ -789,10 +789,9 @@ _REPORT_INTRO_BY_TYPE: dict[str, str] = {
         "models are included."
     ),
     "feature_group": (
-        "Restrict the feature matrix to a deterministic column-name pattern "
-        "group. Preprocessing remains fit on train rows only. The runner "
-        "fails the run cleanly when too few matching columns exist. The "
-        "`all` feature group is represented by the baseline child experiment."
+        "Restrict the feature matrix to a column-name pattern group; "
+        "preprocessing stays fit on train rows only. The runner fails cleanly "
+        "when too few columns match; the `all` group is the baseline child."
     ),
 }
 

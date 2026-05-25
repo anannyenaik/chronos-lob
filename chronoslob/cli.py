@@ -362,6 +362,92 @@ def _prepare_fi2010_benchmark_impl(
     return 0
 
 
+def _verify_fi2010_local_impl(*, data_path: Path) -> int:
+    """Safely inspect a local FI-2010 file and report its layout."""
+    from chronoslob.data.fi2010_official import inspect_official_fi2010_file
+
+    candidate = Path(data_path)
+    try:
+        report = inspect_official_fi2010_file(candidate)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 verification failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 local verification")
+    print(f"  path:              {report.path}")
+    print(f"  byte size:         {report.byte_size}")
+    print(f"  sha256:            {report.sha256}")
+    print(f"  row count:         {report.row_count}")
+    print(f"  column count:      {report.column_count}")
+    print(f"  official layout:   {report.is_official_layout}")
+    print(f"  label horizons:    {list(report.label_horizons)}")
+    if report.label_class_counts:
+        print("  label class counts:")
+        for label_name, counts in report.label_class_counts.items():
+            rendered = ", ".join(f"{cls}={count}" for cls, count in counts.items())
+            print(f"    {label_name}: {rendered if rendered else '(empty)'}")
+    if report.issues:
+        print("  issues:")
+        for issue in report.issues:
+            print(f"    - {issue}")
+    else:
+        print("  issues:            none")
+    print("  network calls:     none performed")
+    print("  outputs:           not written")
+    if report.is_official_layout:
+        print(
+            "  next step:         run convert-fi2010-official to produce a "
+            "loader-ready CSV",
+        )
+    return 0 if not report.issues else 1
+
+
+def _convert_fi2010_official_impl(
+    *,
+    input_path: Path,
+    output_path: Path,
+    split_label: str | None,
+    overwrite: bool,
+) -> int:
+    """Convert a single official FI-2010 ``.txt`` matrix into a loader-ready CSV."""
+    from chronoslob.data.fi2010_official import convert_official_fi2010_to_csv
+
+    try:
+        report = convert_official_fi2010_to_csv(
+            input_path=Path(input_path),
+            output_path=Path(output_path),
+            split_label=split_label,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Output already exists: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, IsADirectoryError) as exc:
+        print(f"FI-2010 conversion failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 official-format conversion")
+    print(f"  input:             {report.input_path}")
+    print(f"  output:            {report.output_path}")
+    print(f"  samples written:   {report.n_samples}")
+    print(f"  feature columns:   {report.n_features}")
+    print(f"  label columns:     {report.n_labels}")
+    print(f"  label horizons:    {list(report.label_horizons)}")
+    if report.split_label is not None:
+        print(f"  split column:      {report.split_label}")
+    else:
+        print("  split column:      not written")
+    print(f"  bytes written:     {report.bytes_written}")
+    print("  network calls:     none performed")
+    return 0
+
+
 def _run_paper_experiment_impl(
     *,
     config_path: Path,
@@ -2616,6 +2702,8 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-report-archive|inspect-report-archive|"
             "inspect-experiment-artifacts|"
             "prepare-fi2010-benchmark|"
+            "verify-fi2010-local|"
+            "convert-fi2010-official|"
             "run-paper-experiment|"
             "run-paper-ablations|"
             "run-system-benchmarks|"
@@ -2702,6 +2790,47 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             config_path=parsed.config,
             data_path=parsed.data_path,
             out=parsed.out,
+        )
+    if command == "verify-fi2010-local":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob verify-fi2010-local",
+            description=(
+                "Inspect a local FI-2010 ``.txt`` matrix safely without "
+                "loading it into memory."
+            ),
+        )
+        parser.add_argument("--data-path", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _verify_fi2010_local_impl(data_path=parsed.data_path)
+    if command == "convert-fi2010-official":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob convert-fi2010-official",
+            description=(
+                "Convert one official FI-2010 ``.txt`` matrix into a "
+                "header-bearing CSV file matching the existing FI-2010 "
+                "loader convention."
+            ),
+        )
+        parser.add_argument("--input", dest="input_path", type=Path, required=True)
+        parser.add_argument("--output", dest="output_path", type=Path, required=True)
+        parser.add_argument(
+            "--split",
+            dest="split_label",
+            type=str,
+            default=None,
+            help="Optional split label written to a 'split' column (train or test).",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output file if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _convert_fi2010_official_impl(
+            input_path=parsed.input_path,
+            output_path=parsed.output_path,
+            split_label=parsed.split_label,
+            overwrite=bool(parsed.overwrite),
         )
     if command == "run-paper-experiment":
         parser = argparse.ArgumentParser(
@@ -3497,6 +3626,34 @@ if typer is not None:
         "--out",
         help="Output directory for FI-2010 preparation artefacts.",
     )
+    _VERIFY_FI2010_DATA_PATH_OPTION = typer.Option(
+        ...,
+        "--data-path",
+        help="Path to the local FI-2010 file to inspect.",
+    )
+    _CONVERT_FI2010_INPUT_OPTION = typer.Option(
+        ...,
+        "--input",
+        help="Path to a single official FI-2010 .txt matrix file.",
+    )
+    _CONVERT_FI2010_OUTPUT_OPTION = typer.Option(
+        ...,
+        "--output",
+        help="Destination CSV path for the converted FI-2010 file.",
+    )
+    _CONVERT_FI2010_SPLIT_OPTION = typer.Option(
+        None,
+        "--split",
+        help=(
+            "Optional split label written to a 'split' column "
+            "(train or test)."
+        ),
+    )
+    _CONVERT_FI2010_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output file if it already exists.",
+    )
     _RUN_PAPER_EXPERIMENT_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -3703,6 +3860,30 @@ if typer is not None:
             config_path=config,
             data_path=data_path,
             out=out,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def verify_fi2010_local(
+        data_path: Path = _VERIFY_FI2010_DATA_PATH_OPTION,
+    ) -> None:
+        """Inspect a local FI-2010 file safely without loading it."""
+        exit_code = _verify_fi2010_local_impl(data_path=data_path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def convert_fi2010_official(
+        input_path: Path = _CONVERT_FI2010_INPUT_OPTION,
+        output_path: Path = _CONVERT_FI2010_OUTPUT_OPTION,
+        split: str | None = _CONVERT_FI2010_SPLIT_OPTION,
+        overwrite: bool = _CONVERT_FI2010_OVERWRITE_OPTION,
+    ) -> None:
+        """Convert a single official FI-2010 .txt matrix into a loader-ready CSV."""
+        exit_code = _convert_fi2010_official_impl(
+            input_path=input_path,
+            output_path=output_path,
+            split_label=split,
+            overwrite=overwrite,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -4906,6 +5087,28 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def verify_fi2010_local(data_path: Path) -> None:
+        """Inspect a local FI-2010 file safely without loading it."""
+        exit_code = _verify_fi2010_local_impl(data_path=data_path)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def convert_fi2010_official(
+        input_path: Path,
+        output_path: Path,
+        split: str | None = None,
+        overwrite: bool = False,
+    ) -> None:
+        """Convert a single official FI-2010 .txt matrix into a loader-ready CSV."""
+        exit_code = _convert_fi2010_official_impl(
+            input_path=input_path,
+            output_path=output_path,
+            split_label=split,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def run_paper_experiment(
         config: Path,
         data_path: Path,
@@ -5055,6 +5258,8 @@ if typer is not None:
     app.command("run-robustness-analysis-smoke")(run_robustness_analysis_smoke)
     app.command("inspect-binance-replay")(inspect_binance_replay)
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
+    app.command("verify-fi2010-local")(verify_fi2010_local)
+    app.command("convert-fi2010-official")(convert_fi2010_official)
     app.command("run-paper-experiment")(run_paper_experiment)
     app.command("run-paper-ablations")(run_paper_ablations)
     app.command("run-system-benchmarks")(run_system_benchmarks)

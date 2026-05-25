@@ -1,0 +1,181 @@
+{
+  "config_summary": {
+    "code_commit": "b6bff37842b84a1abacd8c9da0ca4d8a07ab33f2",
+    "created_at": "2026-05-25T16:03:21.603688Z",
+    "experiment_name": "fi2010_midprice_h10",
+    "horizon": 10,
+    "model_names": [
+      "majority",
+      "logistic",
+      "random_forest",
+      "gradient_boosting",
+      "deeplob_style"
+    ],
+    "primary_metric": "macro_f1",
+    "seed": 0,
+    "split_name": "temporal",
+    "task_name": "midprice_direction"
+  },
+  "created_at": "2026-05-25T16:03:21.603688Z",
+  "evidence_streams": {
+    "calibration": [
+      "log_loss",
+      "brier_score",
+      "mean_confidence",
+      "expected_calibration_error",
+      "calibration_bins"
+    ],
+    "execution": [
+      "gross_signal_return_proxy",
+      "net_signal_return_proxy",
+      "turnover_proxy",
+      "hit_rate_proxy"
+    ],
+    "predictive": [
+      "accuracy",
+      "macro_f1",
+      "weighted_f1",
+      "matthews_corrcoef",
+      "balanced_accuracy",
+      "n_samples",
+      "class_count_train",
+      "class_count_test"
+    ],
+    "robustness": [],
+    "systems": []
+  },
+  "experiment_name": "fi2010_midprice_h10",
+  "model_results": [
+    {
+      "artefacts": {
+        "calibration_bins": "calibration_bins.csv",
+        "confusion_matrix": "confusion_matrix.json",
+        "execution_sensitivity": "execution_sensitivity.csv",
+        "predictions": "predictions.csv"
+      },
+      "horizon": 10,
+      "metrics": {
+        "accuracy": 0.6286154372753723,
+        "balanced_accuracy": 0.3333333333333333,
+        "brier_score": 0.5366889220539707,
+        "class_count_test": 3.0,
+        "class_count_train": 3.0,
+        "expected_calibration_error": 0.025674260804784077,
+        "log_loss": 0.9180419332042239,
+        "macro_f1": 0.25732100322264256,
+        "matthews_corrcoef": 0.0,
+        "mean_confidence": 0.6029411764705882,
+        "n_samples": 11686.0,
+        "weighted_f1": 0.4852678648828168
+      },
+      "model_name": "majority",
+      "split": "test",
+      "warnings": []
+    },
+    {
+      "artefacts": {
+        "calibration_bins": "calibration_bins.csv",
+        "confusion_matrix": "confusion_matrix.json",
+        "execution_sensitivity": "execution_sensitivity.csv",
+        "predictions": "predictions.csv"
+      },
+      "horizon": 10,
+      "metrics": {
+        "accuracy": 0.6233099435221633,
+        "balanced_accuracy": 0.37574062520651225,
+        "brier_score": 0.5189866466149302,
+        "class_count_test": 3.0,
+        "class_count_train": 3.0,
+        "expected_calibration_error": 0.041110897222318726,
+        "log_loss": 0.8904304019275787,
+        "macro_f1": 0.35146855037871383,
+        "matthews_corrcoef": 0.1217722835157405,
+        "mean_confidence": 0.5874669568363994,
+        "n_samples": 11686.0,
+        "weighted_f1": 0.5346427959541316
+      },
+      "model_name": "logistic",
+      "split": "test",
+      "warnings": []
+    },
+    {
+      "artefacts": {
+        "calibration_bins": "calibration_bins.csv",
+        "confusion_matrix": "confusion_matrix.json",
+        "execution_sensitivity": "execution_sensitivity.csv",
+        "predictions": "predictions.csv"
+      },
+      "horizon": 10,
+      "metrics": {
+        "accuracy": 0.6316104740715386,
+        "balanced_accuracy": 0.4104621197585981,
+        "brier_score": 0.5213083176228384,
+        "class_count_test": 3.0,
+        "class_count_train": 3.0,
+        "expected_calibration_error": 0.09653555876112783,
+        "log_loss": 0.8972327633638358,
+        "macro_f1": 0.40980339141595473,
+        "matthews_corrcoef": 0.18854682374419035,
+        "mean_confidence": 0.535225522875018,
+        "n_samples": 11686.0,
+        "weighted_f1": 0.5727428256049883
+      },
+      "model_name": "random_forest",
+      "split": "test",
+      "warnings": []
+    },
+    {
+      "artefacts": {
+        "calibration_bins": "calibration_bins.csv",
+        "confusion_matrix": "confusion_matrix.json",
+        "execution_sensitivity": "execution_sensitivity.csv",
+        "predictions": "predictions.csv"
+      },
+      "horizon": 10,
+      "metrics": {
+        "accuracy": 0.6451309258942324,
+        "balanced_accuracy": 0.4369867089830282,
+        "brier_score": 0.4821679101776375,
+        "class_count_test": 3.0,
+        "class_count_train": 3.0,
+        "expected_calibration_error": 0.031548986272582305,
+        "log_loss": 0.8350125527289173,
+        "macro_f1": 0.44203565222755,
+        "matthews_corrcoef": 0.23645243993171028,
+        "mean_confidence": 0.6187897094793163,
+        "n_samples": 11686.0,
+        "weighted_f1": 0.5949876422765267
+      },
+      "model_name": "gradient_boosting",
+      "split": "test",
+      "warnings": []
+    },
+    {
+      "artefacts": {
+        "calibration_bins": "calibration_bins.csv",
+        "confusion_matrix": "confusion_matrix.json",
+        "execution_sensitivity": "execution_sensitivity.csv",
+        "predictions": "predictions.csv"
+      },
+      "horizon": 10,
+      "metrics": {
+        "accuracy": 0.5671743967140168,
+        "balanced_accuracy": 0.3945728413951921,
+        "brier_score": 0.5877204413734426,
+        "class_count_test": 3.0,
+        "class_count_train": 3.0,
+        "expected_calibration_error": 0.13605281684589038,
+        "log_loss": 0.9880791335262586,
+        "macro_f1": 0.35243154257775067,
+        "matthews_corrcoef": 0.1473504491981849,
+        "mean_confidence": 0.4311215798681263,
+        "n_samples": 11686.0,
+        "weighted_f1": 0.5256265549301775
+      },
+      "model_name": "deeplob_style",
+      "split": "test",
+      "warnings": []
+    }
+  ],
+  "task_name": "midprice_direction"
+}

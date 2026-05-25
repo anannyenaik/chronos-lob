@@ -592,9 +592,15 @@ def _render_abstract(data: _ReportData) -> list[str]:
     )
     lines.append(
         "The target research question is whether self-supervised order-book "
-        "representations can improve short-horizon market-state forecasting "
-        "after leakage-safe validation, calibration analysis and explicit "
-        "execution assumptions; this report only records evidence present on disk."
+        "representations can improve short-horizon market-state forecasting."
+    )
+    lines.append(
+        "Evidence is bounded by leakage-safe validation, calibration analysis "
+        "and explicit execution assumptions."
+    )
+    lines.append(
+        "This report only records evidence present on disk and does not "
+        "claim profitability, deployability or live trading."
     )
     lines.append(
         f"Successful model entries in the main experiment: {_format_list(models_run)}."

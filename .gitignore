@@ -44,12 +44,20 @@ Thumbs.db
 data/raw/
 data/processed/
 data/external/
+.local_data/
 runs/
 outputs/
 checkpoints/
 wandb/
 mlruns/
-experiments/fi2010_midprice_h10/
+# Ignore large prediction artefacts but allow the rest of the real
+# FI-2010 evidence directory to be tracked alongside the empirical
+# report. The intermediate ablation experiments tree is dominated by
+# per-ablation predictions, so it is ignored as a whole.
+experiments/fi2010_midprice_h10/predictions.csv
+experiments/fi2010_midprice_h10/predictions.parquet
+experiments/fi2010_midprice_h10_ablations/experiments/
+experiments/fi2010_midprice_h10_systems/
 experiments/paper_experiment_*/
 experiments/paper_ablation_*/
 experiments/system_benchmark_*/

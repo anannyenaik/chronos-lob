@@ -1,0 +1,23 @@
+{
+  "artefacts": {
+    "config": "config.yaml",
+    "data_manifest": "data_manifest.json",
+    "label_summary": "label_summary.json",
+    "split_summary": "split_summary.json",
+    "validation_summary": "validation_summary.json"
+  },
+  "created_at": "2026-05-25T16:03:25.133258Z",
+  "data_path": "data\\processed\\fi2010\\fold1_combined.csv",
+  "dataset_name": "FI-2010",
+  "experiment_name": "fi2010_midprice_h10",
+  "horizon": 10,
+  "label_name": "label_10",
+  "output_dir": "experiments\\fi2010_midprice_h10\\preparation",
+  "preparation_version": "phase-b/fi2010-benchmark-preparation/v1",
+  "seed": 0,
+  "split_name": "temporal",
+  "task_name": "midprice_direction",
+  "warnings": [
+    "no timestamp column configured; temporal split uses row order only"
+  ]
+}

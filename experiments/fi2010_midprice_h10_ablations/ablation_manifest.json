@@ -1,0 +1,508 @@
+{
+  "ablation_set": "standard",
+  "ablations_requested": [
+    "baseline",
+    "calibration_bins_5",
+    "cost_0bps",
+    "cost_1bps",
+    "ssl_pretraining_ablation",
+    "calibration_bins_10",
+    "latency_0",
+    "latency_1",
+    "horizon_50",
+    "lookback_2",
+    "lookback_4",
+    "feature_top_of_book",
+    "feature_imbalance",
+    "feature_depth_liquidity"
+  ],
+  "ablations_run": [
+    "baseline",
+    "calibration_bins_5",
+    "cost_0bps",
+    "cost_1bps",
+    "calibration_bins_10",
+    "latency_0",
+    "latency_1",
+    "horizon_50",
+    "lookback_2",
+    "lookback_4",
+    "feature_top_of_book",
+    "feature_depth_liquidity"
+  ],
+  "ablations_skipped": [
+    "ssl_pretraining_ablation",
+    "feature_imbalance"
+  ],
+  "base_config": "configs\\experiments\\fi2010_midprice_h10.yaml",
+  "child_experiments": {
+    "baseline": "experiments/baseline",
+    "calibration_bins_10": "experiments/calibration_bins_10",
+    "calibration_bins_5": "experiments/calibration_bins_5",
+    "cost_0bps": "experiments/cost_0bps",
+    "cost_1bps": "experiments/cost_1bps",
+    "feature_depth_liquidity": "experiments/feature_depth_liquidity",
+    "feature_top_of_book": "experiments/feature_top_of_book",
+    "horizon_50": "experiments/horizon_50",
+    "latency_0": "experiments/latency_0",
+    "latency_1": "experiments/latency_1",
+    "lookback_2": "experiments/lookback_2",
+    "lookback_4": "experiments/lookback_4"
+  },
+  "created_at": "2026-05-25T16:59:55.120763+00:00",
+  "data_path": "data\\processed\\fi2010\\fold1_combined.csv",
+  "data_source_kind": "local_file",
+  "is_fixture": false,
+  "models_requested": [
+    "majority",
+    "logistic",
+    "deeplob_style",
+    "transformer"
+  ],
+  "output_dir": "experiments\\fi2010_midprice_h10_ablations",
+  "reports_written": [
+    "reports/calibration_ablation.md",
+    "reports/cost_sensitivity.md",
+    "reports/feature_group_ablation.md",
+    "reports/horizon_ablation.md",
+    "reports/latency_sensitivity.md",
+    "reports/lookback_window_ablation.md",
+    "reports/ssl_pretraining_ablation.md"
+  ],
+  "results": [
+    {
+      "ablation_type": "baseline",
+      "experiment_dir": "experiments/baseline",
+      "name": "baseline",
+      "parameters": {},
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "calibration_bins",
+      "experiment_dir": "experiments/calibration_bins_5",
+      "name": "calibration_bins_5",
+      "parameters": {
+        "calibration.n_bins": 5
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "cost_bps",
+      "experiment_dir": "experiments/cost_0bps",
+      "name": "cost_0bps",
+      "parameters": {
+        "execution_sensitivity.cost_bps": [
+          0.0
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "cost_bps",
+      "experiment_dir": "experiments/cost_1bps",
+      "name": "cost_1bps",
+      "parameters": {
+        "execution_sensitivity.cost_bps": [
+          1.0
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "ssl_pretraining",
+      "experiment_dir": null,
+      "name": "ssl_pretraining_ablation",
+      "parameters": {},
+      "reason": "no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry",
+      "status": "skipped",
+      "warnings": [
+        "no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry"
+      ]
+    },
+    {
+      "ablation_type": "calibration_bins",
+      "experiment_dir": "experiments/calibration_bins_10",
+      "name": "calibration_bins_10",
+      "parameters": {
+        "calibration.n_bins": 10
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "latency_steps",
+      "experiment_dir": "experiments/latency_0",
+      "name": "latency_0",
+      "parameters": {
+        "execution_sensitivity.latency_steps": [
+          0
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "latency_steps",
+      "experiment_dir": "experiments/latency_1",
+      "name": "latency_1",
+      "parameters": {
+        "execution_sensitivity.latency_steps": [
+          1
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "horizon",
+      "experiment_dir": "experiments/horizon_50",
+      "name": "horizon_50",
+      "parameters": {
+        "horizon": 50,
+        "label_name": "label_50"
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "lookback",
+      "experiment_dir": "experiments/lookback_2",
+      "name": "lookback_2",
+      "parameters": {
+        "neural_settings.lookback": 2
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "lookback",
+      "experiment_dir": "experiments/lookback_4",
+      "name": "lookback_4",
+      "parameters": {
+        "neural_settings.lookback": 4
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "feature_group",
+      "experiment_dir": "experiments/feature_top_of_book",
+      "name": "feature_top_of_book",
+      "parameters": {
+        "feature_patterns": [
+          "bid_price_1",
+          "ask_price_1",
+          "bid_quantity_1",
+          "ask_quantity_1"
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    },
+    {
+      "ablation_type": "feature_group",
+      "experiment_dir": null,
+      "name": "feature_imbalance",
+      "parameters": {
+        "feature_patterns": [
+          "*imbalance*",
+          "*microprice*"
+        ]
+      },
+      "reason": "ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']",
+      "status": "skipped",
+      "warnings": [
+        "ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']"
+      ]
+    },
+    {
+      "ablation_type": "feature_group",
+      "experiment_dir": "experiments/feature_depth_liquidity",
+      "name": "feature_depth_liquidity",
+      "parameters": {
+        "feature_patterns": [
+          "bid_quantity_*",
+          "ask_quantity_*"
+        ]
+      },
+      "reason": null,
+      "status": "run",
+      "warnings": [
+        "optional artefact missing: plots/reliability_curve.png",
+        "optional artefact missing: plots/cost_sensitivity.png",
+        "optional artefact missing: plots/confusion_matrix.png",
+        "optional artefact missing: plots/regime_breakdown.png",
+        "requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+      ]
+    }
+  ],
+  "runner_version": "phase-h/paper-ablation-runner/v1",
+  "specs": [
+    {
+      "ablation_type": "baseline",
+      "always_skip": false,
+      "description": "Reference run with no parameter changes; serves as the comparison anchor for the other ablations.",
+      "name": "baseline",
+      "parameters": {},
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "calibration_bins",
+      "always_skip": false,
+      "description": "Reliability bins computed with 5 bins instead of the configured default.",
+      "name": "calibration_bins_5",
+      "parameters": {
+        "calibration.n_bins": 5
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "cost_bps",
+      "always_skip": false,
+      "description": "Execution-aware sensitivity reported with a single 0 bps cost level so the net signal proxy equals the gross proxy.",
+      "name": "cost_0bps",
+      "parameters": {
+        "execution_sensitivity.cost_bps": [
+          0.0
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "cost_bps",
+      "always_skip": false,
+      "description": "Execution-aware sensitivity reported with a single 1 bps cost level under explicit cost assumptions.",
+      "name": "cost_1bps",
+      "parameters": {
+        "execution_sensitivity.cost_bps": [
+          1.0
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "ssl_pretraining",
+      "always_skip": true,
+      "description": "SSL pretraining + fine-tuning ablation status report; always skipped because the paper runner does not yet support a traceable SSL training path.",
+      "name": "ssl_pretraining_ablation",
+      "parameters": {},
+      "requires_neural_model": false,
+      "skip_reason": "no traceable runner support for SSL pretraining/fine-tuning yet; ssl_transformer is not registered in the paper-runner model registry"
+    },
+    {
+      "ablation_type": "calibration_bins",
+      "always_skip": false,
+      "description": "Reliability bins computed with 10 bins so the bin resolution can be compared against coarser settings.",
+      "name": "calibration_bins_10",
+      "parameters": {
+        "calibration.n_bins": 10
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "latency_steps",
+      "always_skip": false,
+      "description": "Execution-aware sensitivity with a single 0-row latency assumption.",
+      "name": "latency_0",
+      "parameters": {
+        "execution_sensitivity.latency_steps": [
+          0
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "latency_steps",
+      "always_skip": false,
+      "description": "Execution-aware sensitivity with a 1-row latency assumption: realised proxy returns are pessimistically shifted by one row.",
+      "name": "latency_1",
+      "parameters": {
+        "execution_sensitivity.latency_steps": [
+          1
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "horizon",
+      "always_skip": false,
+      "description": "Horizon override to 50 with label column label_50; labels are regenerated by the runner from the supplied frame and the temporal split is preserved.",
+      "name": "horizon_50",
+      "parameters": {
+        "horizon": 50,
+        "label_name": "label_50"
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "lookback",
+      "always_skip": false,
+      "description": "Neural lookback window of 2 rows; applies only to neural paper-runner models that consume windows.",
+      "name": "lookback_2",
+      "parameters": {
+        "neural_settings.lookback": 2
+      },
+      "requires_neural_model": true,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "lookback",
+      "always_skip": false,
+      "description": "Neural lookback window of 4 rows; applies only to neural paper-runner models that consume windows.",
+      "name": "lookback_4",
+      "parameters": {
+        "neural_settings.lookback": 4
+      },
+      "requires_neural_model": true,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "feature_group",
+      "always_skip": false,
+      "description": "Feature subset restricted to top-of-book price and quantity columns through deterministic column-name patterns; preprocessing remains fit on train rows only.",
+      "name": "feature_top_of_book",
+      "parameters": {
+        "feature_patterns": [
+          "bid_price_1",
+          "ask_price_1",
+          "bid_quantity_1",
+          "ask_quantity_1"
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "feature_group",
+      "always_skip": false,
+      "description": "Feature subset restricted to imbalance and microprice columns through column-name patterns. Skipped when too few matching columns exist on the supplied data.",
+      "name": "feature_imbalance",
+      "parameters": {
+        "feature_patterns": [
+          "*imbalance*",
+          "*microprice*"
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    },
+    {
+      "ablation_type": "feature_group",
+      "always_skip": false,
+      "description": "Feature subset restricted to depth and liquidity columns (bid/ask quantity levels) through column-name patterns.",
+      "name": "feature_depth_liquidity",
+      "parameters": {
+        "feature_patterns": [
+          "bid_quantity_*",
+          "ask_quantity_*"
+        ]
+      },
+      "requires_neural_model": false,
+      "skip_reason": null
+    }
+  ],
+  "warnings": [
+    "ablation 'baseline': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'calibration_bins_5': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'cost_0bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'cost_1bps': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'calibration_bins_10': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'latency_0': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'latency_1': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'horizon_50': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'lookback_2': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'lookback_4': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'feature_top_of_book': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error",
+    "ablation 'feature_imbalance' skipped: ValueError: paper experiment feature_patterns produced no matching feature columns; patterns: ['*imbalance*', '*microprice*']",
+    "ablation 'feature_depth_liquidity': requested model 'transformer' was skipped: ValidationError: 1 validation error for OrderBookLevel\nquantity\n  Value error, quantity must be non-negative; got -0.47933132 [type=value_error, input_value=-0.47933132, input_type=float]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+  ]
+}
