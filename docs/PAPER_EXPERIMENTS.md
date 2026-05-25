@@ -404,6 +404,20 @@ new files. Fixture smoke runs remain explicitly labelled as not
 benchmark evidence. Real benchmark evidence requires a local FI-2010
 path and stored artefacts produced by this runner.
 
+## Empirical Report Builder
+
+`build-paper-report` turns a completed paper experiment directory into
+a structured empirical report, optionally adding stored ablation and
+systems benchmark artefacts. The command validates the required
+experiment artefact contract, reads existing JSON/CSV/Markdown files
+and writes a Markdown report plus `<report_stem>_summary.json`.
+
+The report builder does not train models or generate plots. Missing
+optional artefacts are marked as not available or skipped. Fixture
+reports should stay under ignored paths such as `runs/`; see
+[PAPER_REPORTS.md](PAPER_REPORTS.md) for the smoke command and local
+FI-2010 usage pattern.
+
 ## Out Of Scope For This Phase
 
 - SSL-pretrained transformer experiments inside `run-paper-experiment`.

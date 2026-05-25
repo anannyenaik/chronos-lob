@@ -138,3 +138,11 @@ Neural models can be included explicitly, for example
 `majority,deeplob_style,transformer`, but the suite does not force
 long neural runs by default. The repository does not ship FI-2010 data
 and does not download it.
+
+## Use In Empirical Reports
+
+`build-paper-report` can include a completed ablation directory through
+`--ablations PATH`. The report uses `ablation_summary.json`,
+`ablation_results.csv`, `ablation_manifest.json` and any stored ablation
+Markdown reports. Run and skipped ablations are both shown; skipped SSL
+pretraining status remains a status record, not a model result.

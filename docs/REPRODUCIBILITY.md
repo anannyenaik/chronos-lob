@@ -68,8 +68,10 @@ python -m chronoslob.cli run-multitask-smoke --path tests/fixtures/event_logs/sy
 python -m chronoslob.cli run-calibration-smoke
 python -m chronoslob.cli run-execution-validation-smoke
 python -m chronoslob.cli run-robustness-analysis-smoke
+python -m chronoslob.cli run-paper-experiment --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/paper_experiment_plots_smoke --models majority,logistic,deeplob_style,transformer --overwrite --build-plots
 python -m chronoslob.cli run-paper-ablations --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/paper_ablation_smoke --models majority,logistic --ablation-set smoke --overwrite
 python -m chronoslob.cli run-system-benchmarks --config configs/experiments/fi2010_midprice_h10.yaml --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv --out runs/system_benchmark_smoke --benchmark-set smoke --models majority,logistic --overwrite
+python -m chronoslob.cli build-paper-report --experiment runs/paper_experiment_plots_smoke --ablations runs/paper_ablation_smoke --systems runs/system_benchmark_smoke --out runs/chronoslob_empirical_report_smoke.md --overwrite
 ```
 
 ## FI-2010 Benchmark Preparation
@@ -146,6 +148,15 @@ Smoke runs on the bundled FI-2010-like fixture validate infrastructure
 only and are not benchmark evidence. See
 [SYSTEM_BENCHMARKS.md](SYSTEM_BENCHMARKS.md) for the output layout,
 smoke command and local FI-2010 usage pattern.
+
+Phase J adds `build-paper-report` for evidence-backed empirical reports.
+The command reads stored paper experiment artefacts and optional ablation
+and systems directories, then writes a Markdown report plus
+`<report_stem>_summary.json`. Missing optional artefacts are marked as
+not available or skipped. Fixture smoke reports should stay under ignored
+paths such as `runs/`; a report under `reports/` should be based on real
+local benchmark artefacts. See [PAPER_REPORTS.md](PAPER_REPORTS.md) for
+the smoke command and local FI-2010 usage pattern.
 
 ## Evidence Archive
 

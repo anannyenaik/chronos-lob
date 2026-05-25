@@ -76,6 +76,8 @@ python -m chronoslob.cli <command> [options]
 | `inspect-system-benchmarks --benchmark PATH`                         | Print a concise, read-only summary of a systems benchmark directory. |
 | `build-paper-plots --experiment PATH [--overwrite]`                  | Generate paper experiment plots (`plots/reliability_curve.png`, `plots/cost_sensitivity.png`, `plots/confusion_matrix.png`, and `plots/regime_breakdown.png` when genuine regime data is present) from the artefacts stored inside a completed paper experiment directory. |
 | `inspect-paper-experiment --experiment PATH`                         | Print a concise, read-only summary of a paper experiment directory (validation status, evidence streams, prediction/calibration/execution row counts, plot inventory, fixture flag). |
+| `build-paper-report --experiment PATH [--ablations PATH] [--systems PATH] --out PATH [--overwrite]` | Build a structured empirical report from stored paper experiment, ablation and systems benchmark artefacts. Missing optional artefacts are marked unavailable or skipped. |
+| `inspect-paper-report --report PATH`                                 | Inspect a generated empirical report and its companion summary JSON. |
 
 ## Audit and Evidence Archive
 

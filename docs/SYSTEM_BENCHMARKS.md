@@ -116,3 +116,11 @@ The repository does not ship FI-2010 data and does not fetch it.
 - The suite records systems measurements only; forecast quality, calibration
   quality and execution-assumption evidence remain in the paper experiment
   artefacts.
+
+## Use In Empirical Reports
+
+`build-paper-report` can include a completed systems benchmark directory through
+`--systems PATH`. The report uses `system_benchmark_summary.json`,
+`system_benchmark_results.csv`, `environment.json` and stored systems reports
+where present. Smoke fixture measurements remain labelled as smoke
+measurements and are not benchmark evidence.

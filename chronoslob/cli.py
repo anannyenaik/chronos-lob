@@ -971,6 +971,97 @@ def _inspect_paper_experiment_impl(*, experiment: Path) -> int:
     return 0
 
 
+def _build_paper_report_impl(
+    *,
+    experiment: Path,
+    out: Path,
+    ablations: Path | None,
+    systems: Path | None,
+    overwrite: bool,
+) -> int:
+    """Build an empirical report from stored paper artefacts."""
+    from chronoslob.experiments.reporting import build_paper_report
+
+    try:
+        summary = build_paper_report(
+            experiment_dir=Path(experiment),
+            out_path=Path(out),
+            ablation_dir=Path(ablations) if ablations is not None else None,
+            systems_dir=Path(systems) if systems is not None else None,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (IsADirectoryError, NotADirectoryError) as exc:
+        print(f"Path error: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Paper report build failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB empirical report builder")
+    print(f"  report path:        {summary.report_path}")
+    print(f"  summary path:       {summary.summary_path}")
+    print(f"  sections written:   {len(summary.sections_written)}")
+    for section in summary.sections_written:
+        print(f"    - {section}")
+    print(f"  artefacts used:     {len(summary.artefacts_used)}")
+    print(f"  warnings:           {len(summary.warnings)}")
+    for warning in summary.warnings:
+        print(f"    - {warning}")
+    print(
+        "  fixture/smoke run:  "
+        f"{'yes' if summary.fixture_or_smoke_run else 'no'}"
+    )
+    print("  network calls:      none performed")
+    return 0
+
+
+def _inspect_paper_report_impl(*, report: Path) -> int:
+    """Inspect a generated empirical report and summary JSON."""
+    import json as _json
+
+    from chronoslob.experiments.reporting import inspect_paper_report
+
+    try:
+        inspection = inspect_paper_report(Path(report))
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except IsADirectoryError as exc:
+        print(f"Path error: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, _json.JSONDecodeError) as exc:
+        print(f"Paper report inspection failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB empirical report inspection")
+    print(f"  report path:          {inspection.report_path}")
+    if inspection.summary_path is None:
+        print("  summary JSON path:    not found")
+    else:
+        print(f"  summary JSON path:    {inspection.summary_path}")
+    print(f"  sections detected:    {len(inspection.sections_detected)}")
+    for section in inspection.sections_detected:
+        print(f"    - {section}")
+    print(f"  artefacts used count: {inspection.artefacts_used_count}")
+    print(f"  warnings count:       {inspection.warnings_count}")
+    if inspection.fixture_or_smoke_run is None:
+        print("  fixture/smoke flag:   unknown")
+    else:
+        print(
+            "  fixture/smoke flag:   "
+            f"{'yes' if inspection.fixture_or_smoke_run else 'no'}"
+        )
+    print("  outputs:              not written")
+    print("  network calls:        none performed")
+    return 0
+
+
 def _is_synthetic_fixture_path(path: Path) -> bool:
     parts = {part.lower() for part in path.parts}
     return "tests" in parts and "fixtures" in parts
@@ -2530,7 +2621,9 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "run-system-benchmarks|"
             "inspect-system-benchmarks|"
             "build-paper-plots|"
-            "inspect-paper-experiment] [...]"
+            "inspect-paper-experiment|"
+            "build-paper-report|"
+            "inspect-paper-report] [...]"
         )
         return 0
 
@@ -2792,6 +2885,39 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--experiment", type=Path, required=True)
         parsed = parser.parse_args(args[1:])
         return _inspect_paper_experiment_impl(experiment=parsed.experiment)
+    if command == "build-paper-report":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-paper-report",
+            description=(
+                "Build an empirical Markdown report from stored paper "
+                "experiment, ablation and systems artefacts."
+            ),
+        )
+        parser.add_argument("--experiment", type=Path, required=True)
+        parser.add_argument("--ablations", type=Path, default=None)
+        parser.add_argument("--systems", type=Path, default=None)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the report and summary JSON if they already exist.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _build_paper_report_impl(
+            experiment=parsed.experiment,
+            ablations=parsed.ablations,
+            systems=parsed.systems,
+            out=parsed.out,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "inspect-paper-report":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-paper-report",
+            description="Inspect a generated empirical report and summary JSON.",
+        )
+        parser.add_argument("--report", type=Path, required=True)
+        parsed = parser.parse_args(args[1:])
+        return _inspect_paper_report_impl(report=parsed.report)
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -3489,6 +3615,36 @@ if typer is not None:
         "--experiment",
         help="Path to a paper experiment artefact directory.",
     )
+    _BUILD_PAPER_REPORT_EXPERIMENT_OPTION = typer.Option(
+        ...,
+        "--experiment",
+        help="Path to a completed paper experiment artefact directory.",
+    )
+    _BUILD_PAPER_REPORT_ABLATIONS_OPTION = typer.Option(
+        None,
+        "--ablations",
+        help="Optional path to a completed paper ablation directory.",
+    )
+    _BUILD_PAPER_REPORT_SYSTEMS_OPTION = typer.Option(
+        None,
+        "--systems",
+        help="Optional path to a completed systems benchmark directory.",
+    )
+    _BUILD_PAPER_REPORT_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Markdown report path to write.",
+    )
+    _BUILD_PAPER_REPORT_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the report and summary JSON if they already exist.",
+    )
+    _INSPECT_PAPER_REPORT_REPORT_OPTION = typer.Option(
+        ...,
+        "--report",
+        help="Path to a generated empirical report Markdown file.",
+    )
 
     def run_project_audit(
         root: Path | None = _AUDIT_ROOT_OPTION,
@@ -3641,6 +3797,32 @@ if typer is not None:
     ) -> None:
         """Print a concise paper experiment artefact summary."""
         exit_code = _inspect_paper_experiment_impl(experiment=experiment)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_paper_report(
+        experiment: Path = _BUILD_PAPER_REPORT_EXPERIMENT_OPTION,
+        ablations: Path | None = _BUILD_PAPER_REPORT_ABLATIONS_OPTION,
+        systems: Path | None = _BUILD_PAPER_REPORT_SYSTEMS_OPTION,
+        out: Path = _BUILD_PAPER_REPORT_OUT_OPTION,
+        overwrite: bool = _BUILD_PAPER_REPORT_OVERWRITE_OPTION,
+    ) -> None:
+        """Build an empirical report from stored artefacts."""
+        exit_code = _build_paper_report_impl(
+            experiment=experiment,
+            ablations=ablations,
+            systems=systems,
+            out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_paper_report(
+        report: Path = _INSPECT_PAPER_REPORT_REPORT_OPTION,
+    ) -> None:
+        """Inspect a generated empirical report summary."""
+        exit_code = _inspect_paper_report_impl(report=report)
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -4813,6 +4995,30 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def build_paper_report(
+        experiment: Path,
+        ablations: Path | None = None,
+        systems: Path | None = None,
+        out: Path = Path("runs/chronoslob_empirical_report_smoke.md"),
+        overwrite: bool = False,
+    ) -> None:
+        """Build an empirical report from stored artefacts."""
+        exit_code = _build_paper_report_impl(
+            experiment=experiment,
+            ablations=ablations,
+            systems=systems,
+            out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_paper_report(report: Path) -> None:
+        """Inspect a generated empirical report summary."""
+        exit_code = _inspect_paper_report_impl(report=report)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
 
 if typer is not None:
     app.command()(version)
@@ -4855,6 +5061,8 @@ if typer is not None:
     app.command("inspect-system-benchmarks")(inspect_system_benchmarks)
     app.command("build-paper-plots")(build_paper_plots)
     app.command("inspect-paper-experiment")(inspect_paper_experiment)
+    app.command("build-paper-report")(build_paper_report)
+    app.command("inspect-paper-report")(inspect_paper_report)
 else:
 
     def app() -> int:

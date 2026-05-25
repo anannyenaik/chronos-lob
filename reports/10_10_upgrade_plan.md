@@ -483,14 +483,28 @@ recorded in the artefacts or present systems metrics as forecast quality.
 Purpose: build a concise empirical report directly from validated experiment
 artefacts.
 
-Files likely to be added or modified: `chronoslob/utils/empirical_report.py`,
-`chronoslob/cli.py`, `reports/report_archive/README.md`,
-`tests/test_empirical_report_builder.py`.
+Status: implemented as an evidence-backed paper report builder under
+`chronoslob/experiments/reporting.py`. The builder validates the supplied
+paper experiment directory, reads stored experiment, ablation and systems
+benchmark artefacts and writes a Markdown empirical report plus
+`<report_stem>_summary.json`. Missing optional artefacts are marked as not
+available or skipped, and fixture or smoke inputs are labelled as smoke
+reports rather than benchmark evidence.
 
-CLI command expected: `python -m chronoslob.cli build-empirical-report --experiment experiments/fi2010_midprice_h10`.
+Files added or modified: `chronoslob/experiments/reporting.py`,
+`chronoslob/experiments/__init__.py`, `chronoslob/cli.py`,
+`tests/test_paper_report_builder.py`, `docs/PAPER_REPORTS.md`,
+`docs/PAPER_EXPERIMENTS.md`, `docs/PAPER_ABLATIONS.md`,
+`docs/SYSTEM_BENCHMARKS.md`, `docs/CLI_REFERENCE.md`,
+`docs/EXPERIMENT_EVIDENCE_INDEX.md` and `docs/REPRODUCIBILITY.md`.
+
+CLI commands added: `python -m chronoslob.cli build-paper-report --experiment
+PATH [--ablations PATH] [--systems PATH] --out PATH [--overwrite]` and
+`python -m chronoslob.cli inspect-paper-report --report PATH`.
 
 Tests expected: generated Markdown from artefacts only, table consistency with
-`results.json`, plot-link validation and clear omission of unavailable metrics.
+`results.json`, summary JSON creation, overwrite protection, optional-input
+handling, CLI coverage and clear omission of unavailable metrics.
 
 Strict non-goals: do not hand-write benchmark tables, invent missing metrics or
 edit generated reports to improve narrative fit.

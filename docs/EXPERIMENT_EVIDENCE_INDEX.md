@@ -184,6 +184,19 @@ or reproducing the platform.
   timing. Smoke fixture timings are labelled as smoke measurements and
   are not benchmark evidence.
 
+## Paper Report Builder
+
+- Modules: `chronoslob/experiments/reporting.py`
+- Configs: uses stored experiment config snapshots from completed paper
+  experiment directories.
+- Tests: `tests/test_paper_report_builder.py`
+- CLI: `build-paper-report`, `inspect-paper-report`
+- Docs: [PAPER_REPORTS](PAPER_REPORTS.md)
+- Phase J artefacts: a Markdown empirical report plus
+  `<report_stem>_summary.json`, both generated from stored paper experiment,
+  ablation and systems benchmark artefacts. Fixture or smoke inputs remain
+  labelled as smoke reports and are not benchmark evidence.
+
 ## Reproducibility and Audit
 
 - Modules: `chronoslob/utils/audit.py`,

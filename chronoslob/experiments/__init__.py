@@ -51,6 +51,13 @@ from chronoslob.experiments.paper_runner import (
     PaperModelSkip,
     run_paper_experiment,
 )
+from chronoslob.experiments.reporting import (
+    PAPER_REPORT_BUILDER_VERSION,
+    PaperReportInspection,
+    PaperReportSummary,
+    build_paper_report,
+    inspect_paper_report,
+)
 from chronoslob.experiments.schemas import (
     ArtifactKind,
     DataManifest,
@@ -75,6 +82,7 @@ from chronoslob.experiments.system_benchmarks import (
 __all__ = [
     "DEFAULT_PAPER_MODELS",
     "PAPER_ABLATION_VERSION",
+    "PAPER_REPORT_BUILDER_VERSION",
     "PAPER_RUNNER_VERSION",
     "REQUIRED_PAPER_MODELS",
     "SUPPORTED_ABLATION_SETS",
@@ -103,6 +111,8 @@ __all__ = [
     "PaperModelSkip",
     "PaperModelSpec",
     "PaperNeuralSettings",
+    "PaperReportInspection",
+    "PaperReportSummary",
     "SourceKind",
     "SplitSummary",
     "SystemBenchmarkMetric",
@@ -112,8 +122,10 @@ __all__ = [
     "build_directory_manifest",
     "build_local_file_manifest",
     "build_paper_baseline_config",
+    "build_paper_report",
     "expected_experiment_artifacts",
     "get_paper_model_spec",
+    "inspect_paper_report",
     "list_supported_paper_models",
     "load_benchmark_config",
     "load_data_manifest",
