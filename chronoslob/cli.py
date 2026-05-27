@@ -1833,6 +1833,72 @@ def _build_paper_report_impl(
     return 0
 
 
+def _build_final_empirical_report_impl(
+    *,
+    classical: Path,
+    neural: Path,
+    uncertainty: Path,
+    out: Path,
+    ablations: Path | None,
+    execution: Path | None,
+    external: Path | None,
+    overwrite: bool,
+) -> int:
+    """Build the final empirical report from stored FI-2010 artefacts."""
+    from chronoslob.experiments.final_report import build_final_empirical_report
+
+    try:
+        summary = build_final_empirical_report(
+            classical_dir=Path(classical),
+            neural_dir=Path(neural),
+            uncertainty_dir=Path(uncertainty),
+            ablation_dir=Path(ablations) if ablations is not None else None,
+            execution_dir=Path(execution) if execution is not None else None,
+            external_dir=Path(external) if external is not None else None,
+            out_path=Path(out),
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (IsADirectoryError, NotADirectoryError) as exc:
+        print(f"Path error: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Final empirical report build failed: {exc}", file=sys.stderr)
+        return 1
+
+    best_classical = summary.headline_metrics.get("best_classical", {})
+    best_neural = summary.headline_metrics.get("best_neural", {})
+    print("ChronosLOB final empirical report builder")
+    print(f"  report path:       {summary.report_path}")
+    print(f"  summary path:      {summary.summary_path}")
+    print(f"  git commit:        {summary.git_commit or 'not available'}")
+    if isinstance(best_classical, Mapping):
+        print(
+            "  best classical:    "
+            f"{best_classical.get('model_name', 'not available')} "
+            f"macro-F1={best_classical.get('macro_f1_mean', 'not available')}"
+        )
+    if isinstance(best_neural, Mapping):
+        print(
+            "  best neural:       "
+            f"{best_neural.get('model_name', 'not available')} "
+            f"macro-F1={best_neural.get('macro_f1_mean', 'not available')}"
+        )
+    print(f"  sections written:  {len(summary.sections_written)}")
+    print(f"  input files hashed:{len(summary.input_file_hashes)}")
+    print(f"  skipped/missing:   {len(summary.skipped_sections) + len(summary.missing_sections)}")
+    print(f"  warnings:          {len(summary.warnings)}")
+    for warning in summary.warnings:
+        print(f"    - {warning}")
+    print("  network calls:     none performed")
+    return 0
+
+
 def _inspect_paper_report_impl(*, report: Path) -> int:
     """Inspect a generated empirical report and summary JSON."""
     import json as _json
@@ -3445,6 +3511,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-paper-plots|"
             "inspect-paper-experiment|"
             "build-paper-report|"
+            "build-final-empirical-report|"
             "inspect-paper-report] [...]"
         )
         return 0
@@ -4245,6 +4312,37 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             experiment=parsed.experiment,
             ablations=parsed.ablations,
             systems=parsed.systems,
+            out=parsed.out,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "build-final-empirical-report":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-final-empirical-report",
+            description=(
+                "Build the final empirical Markdown report from stored FI-2010 "
+                "artefacts."
+            ),
+        )
+        parser.add_argument("--classical", type=Path, required=True)
+        parser.add_argument("--neural", type=Path, required=True)
+        parser.add_argument("--uncertainty", type=Path, required=True)
+        parser.add_argument("--ablations", type=Path, default=None)
+        parser.add_argument("--execution", type=Path, default=None)
+        parser.add_argument("--external", type=Path, default=None)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the report and summary JSON if they already exist.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _build_final_empirical_report_impl(
+            classical=parsed.classical,
+            neural=parsed.neural,
+            uncertainty=parsed.uncertainty,
+            ablations=parsed.ablations,
+            execution=parsed.execution,
+            external=parsed.external,
             out=parsed.out,
             overwrite=bool(parsed.overwrite),
         )
@@ -5327,6 +5425,46 @@ if typer is not None:
         "--overwrite",
         help="Replace the report and summary JSON if they already exist.",
     )
+    _BUILD_FINAL_REPORT_CLASSICAL_OPTION = typer.Option(
+        ...,
+        "--classical",
+        help="Path to multi-fold classical FI-2010 artefacts.",
+    )
+    _BUILD_FINAL_REPORT_NEURAL_OPTION = typer.Option(
+        ...,
+        "--neural",
+        help="Path to reduced-scope neural FI-2010 artefacts.",
+    )
+    _BUILD_FINAL_REPORT_UNCERTAINTY_OPTION = typer.Option(
+        ...,
+        "--uncertainty",
+        help="Path to FI-2010 uncertainty artefacts.",
+    )
+    _BUILD_FINAL_REPORT_ABLATIONS_OPTION = typer.Option(
+        None,
+        "--ablations",
+        help="Optional path to FI-2010 ablation artefacts.",
+    )
+    _BUILD_FINAL_REPORT_EXECUTION_OPTION = typer.Option(
+        None,
+        "--execution",
+        help="Optional path to FI-2010 execution proxy artefacts.",
+    )
+    _BUILD_FINAL_REPORT_EXTERNAL_OPTION = typer.Option(
+        None,
+        "--external",
+        help="Optional path to external protocol-context artefacts.",
+    )
+    _BUILD_FINAL_REPORT_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Markdown final empirical report path to write.",
+    )
+    _BUILD_FINAL_REPORT_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the report and summary JSON if they already exist.",
+    )
     _INSPECT_PAPER_REPORT_REPORT_OPTION = typer.Option(
         ...,
         "--report",
@@ -5751,6 +5889,30 @@ if typer is not None:
             experiment=experiment,
             ablations=ablations,
             systems=systems,
+            out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_final_empirical_report(
+        classical: Path = _BUILD_FINAL_REPORT_CLASSICAL_OPTION,
+        neural: Path = _BUILD_FINAL_REPORT_NEURAL_OPTION,
+        uncertainty: Path = _BUILD_FINAL_REPORT_UNCERTAINTY_OPTION,
+        ablations: Path | None = _BUILD_FINAL_REPORT_ABLATIONS_OPTION,
+        execution: Path | None = _BUILD_FINAL_REPORT_EXECUTION_OPTION,
+        external: Path | None = _BUILD_FINAL_REPORT_EXTERNAL_OPTION,
+        out: Path = _BUILD_FINAL_REPORT_OUT_OPTION,
+        overwrite: bool = _BUILD_FINAL_REPORT_OVERWRITE_OPTION,
+    ) -> None:
+        """Build the final empirical report from stored FI-2010 artefacts."""
+        exit_code = _build_final_empirical_report_impl(
+            classical=classical,
+            neural=neural,
+            uncertainty=uncertainty,
+            ablations=ablations,
+            execution=execution,
+            external=external,
             out=out,
             overwrite=overwrite,
         )
@@ -7020,6 +7182,30 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def build_final_empirical_report(
+        classical: Path,
+        neural: Path,
+        uncertainty: Path,
+        ablations: Path | None = None,
+        execution: Path | None = None,
+        external: Path | None = None,
+        out: Path = Path("runs/chronoslob_final_empirical_report_smoke.md"),
+        overwrite: bool = False,
+    ) -> None:
+        """Build the final empirical report from stored FI-2010 artefacts."""
+        exit_code = _build_final_empirical_report_impl(
+            classical=classical,
+            neural=neural,
+            uncertainty=uncertainty,
+            ablations=ablations,
+            execution=execution,
+            external=external,
+            out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def inspect_paper_report(report: Path) -> None:
         """Inspect a generated empirical report summary."""
         exit_code = _inspect_paper_report_impl(report=report)
@@ -7079,6 +7265,7 @@ if typer is not None:
     app.command("build-paper-plots")(build_paper_plots)
     app.command("inspect-paper-experiment")(inspect_paper_experiment)
     app.command("build-paper-report")(build_paper_report)
+    app.command("build-final-empirical-report")(build_final_empirical_report)
     app.command("inspect-paper-report")(inspect_paper_report)
 else:
 

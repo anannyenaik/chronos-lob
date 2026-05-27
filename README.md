@@ -1,59 +1,82 @@
 # ChronosLOB
 
-**Research software for leakage-safe limit order book representation learning,
-calibrated forecasting and execution-aware sensitivity analysis.**
+**ChronosLOB is a research platform for limit order book representation
+learning, market-state forecasting, calibration and execution-aware
+validation.**
 
-[![CI](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml/badge.svg)](https://github.com/anannyenaik/chronos-lob/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](http://mypy-lang.org/)
+It is research software, not financial advice and not live trading
+infrastructure.
 
-ChronosLOB is a research platform for limit order book representation learning,
-market-state forecasting, calibration and execution-aware validation. It turns
-locally supplied limit order book benchmark files into auditable experiment
-artefacts: configs, data manifests, split summaries, model metrics,
-calibration tables, execution-aware sensitivity rows, ablations, plots and
-local systems measurements.
+## Result Snapshot
 
-ChronosLOB is research and engineering infrastructure. It is not financial
-advice and it is not live trading infrastructure.
+| Field | Current evidence |
+| --- | --- |
+| Dataset | FI-2010 NoAuction Z-score, folds 1-5 |
+| Split protocol | Official train/test split, validation carved from train |
+| Best classical | `gradient_boosting`, test macro-F1 `0.4654 ± 0.0039` |
+| Reduced-scope neural | `matrix_transformer`, test macro-F1 `0.7337 ± 0.0280` |
+| Neural caveat | Single-seed, lookback 20, reduced-scope supervised neural evidence |
+| Execution | Proxy diagnostics only, not a backtest |
+| SSL | No SSL result claimed |
+| External comparison | Protocol context only, no ranking claim |
 
-## Current Evidence
+## Final Report Command
 
-The repository now includes a real FI-2010 fold-1 evidence set built from the
-official NoAuction ZScore train/test files after local verification and
-conversion. The run uses official split-aware evaluation from the combined
-CSV `split` column, with validation carved only from official train rows.
+```bash
+python -m chronoslob.cli build-final-empirical-report \
+  --classical experiments/fi2010_multifold_classical \
+  --neural experiments/fi2010_multifold_neural \
+  --uncertainty experiments/fi2010_uncertainty \
+  --ablations experiments/fi2010_brutal_ablations \
+  --execution experiments/fi2010_execution_v2 \
+  --external experiments/fi2010_external_context \
+  --out reports/chronoslob_final_empirical_report.md \
+  --overwrite
+```
 
-The committed FI-2010 fold-1 run includes majority, logistic, random forest,
-gradient boosting, DeepLOB-style and normalised-matrix transformer baselines.
-In the current artefacts, gradient boosting is the strongest model by macro-F1,
-while the transformer path runs through the normalised FI-2010 matrix
-representation. `ssl_transformer` is not supported by the paper runner and is
-not reported as a model result.
+## Main Reproduction Path
 
-Supported evidence streams:
+Follow [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md). After local
+FI-2010 acquisition and conversion, the main path is
+`prepare-fi2010-multifold` -> `run-fi2010-multifold-classical` ->
+`run-fi2010-neural-benchmark` with the reduced-scope settings ->
+`analyse-fi2010-uncertainty` -> `run-fi2010-brutal-ablations` ->
+`run-fi2010-execution-v2` -> review `experiments/fi2010_external_context/` ->
+`build-final-empirical-report`.
 
-- predictive metrics from `results.json`
-- calibration evidence from `calibration_bins.csv`
-- execution-aware sensitivity from `execution_sensitivity.csv`
-- controlled ablations under `experiments/fi2010_midprice_h10_ablations/`
-- local systems measurements under `experiments/fi2010_midprice_h10_systems/`
+Raw and processed FI-2010 files stay in ignored local directories under
+`data/raw/fi2010/` and `data/processed/fi2010/`.
 
-Primary references:
+## What This Proves
 
-- [FI-2010 benchmark preparation](docs/FI2010_BENCHMARK.md)
-- [Paper experiment runner](docs/PAPER_EXPERIMENTS.md)
-- [Paper ablations](docs/PAPER_ABLATIONS.md)
-- [Systems benchmarks](docs/SYSTEM_BENCHMARKS.md)
-- [Empirical artefact report](reports/chronoslob_empirical_report.md)
-- [FI-2010 model card](experiments/fi2010_midprice_h10/model_card.md)
-- [Experiment evidence index](docs/EXPERIMENT_EVIDENCE_INDEX.md)
+- Reproducible multi-fold FI-2010 evaluation.
+- Leakage-safe split handling.
+- Calibrated forecasting diagnostics.
+- Execution-aware proxy stress testing.
+- Uncertainty, ablations and traceable artefacts.
 
-The numbers are run-specific benchmark artefacts. Forecast quality, calibration
-quality and execution-aware sensitivity are reported separately and should not
-be collapsed into a trading or deployment claim.
+## What This Does Not Prove
+
+- Live tradability.
+- Profitability.
+- Production execution quality.
+- State-of-the-art ranking.
+- SSL effectiveness.
+- Generalisation to other markets without further tests.
+
+## Evidence Map
+
+| Evidence | Path |
+| --- | --- |
+| Final empirical report | [reports/chronoslob_final_empirical_report.md](reports/chronoslob_final_empirical_report.md) |
+| Multi-fold classical results | [experiments/fi2010_multifold_classical/](experiments/fi2010_multifold_classical/) |
+| Reduced-scope neural results | [experiments/fi2010_multifold_neural/](experiments/fi2010_multifold_neural/) |
+| Statistical uncertainty | [experiments/fi2010_uncertainty/](experiments/fi2010_uncertainty/) |
+| Brutal ablations | [experiments/fi2010_brutal_ablations/](experiments/fi2010_brutal_ablations/) |
+| Execution-aware proxy diagnostics | [experiments/fi2010_execution_v2/](experiments/fi2010_execution_v2/) |
+| External benchmark context artefacts | [experiments/fi2010_external_context/](experiments/fi2010_external_context/) |
+| External benchmark context doc | [docs/FI2010_EXTERNAL_BENCHMARKS.md](docs/FI2010_EXTERNAL_BENCHMARKS.md) |
+| Final report builder doc | [docs/FINAL_EMPIRICAL_REPORT.md](docs/FINAL_EMPIRICAL_REPORT.md) |
 
 ## Installation
 
@@ -77,56 +100,20 @@ python -m pip install -e ".[dev,torch]"
 
 The `torch` extra is required for the full test suite and neural smoke paths.
 
-## Quick Start
-
-Run the local health and release checks:
+## Validation
 
 ```bash
 python -m chronoslob.cli doctor
 python -m chronoslob.cli inspect-release-readiness
 python -m chronoslob.cli run-project-audit --strict
-```
-
-Exercise the tiny bundled fixture:
-
-```bash
-python -m chronoslob.cli inspect-fi2010 \
-  --path tests/fixtures/fi2010/tiny_fi2010_like.csv
-
-python -m chronoslob.cli run-paper-experiment \
-  --config configs/experiments/fi2010_midprice_h10.yaml \
-  --data-path tests/fixtures/fi2010/tiny_fi2010_like.csv \
-  --out runs/paper_experiment_smoke \
-  --models majority,logistic \
-  --overwrite \
-  --build-plots
-```
-
-Fixture outputs validate code paths only. They are not FI-2010 benchmark
-evidence.
-
-Run the full local validation suite:
-
-```bash
 python -m pytest
 python -m compileall -q chronoslob tests
 python -m ruff check .
 python -m mypy chronoslob
 ```
 
-The full command inventory lives in the [CLI reference](docs/CLI_REFERENCE.md).
-
-## Real FI-2010 Reproduction
-
-Raw FI-2010 data is not committed and is never downloaded automatically. To
-reproduce the real evidence, download the official archive locally, keep it
-under `data/raw/fi2010/`, convert the selected official `.txt` files into a
-loader-ready CSV under `data/processed/fi2010/`, then run the paper experiment,
-ablation suite, systems benchmarks and report builder.
-
-The acquisition and conversion sequence is documented in
-[FI2010_DATA_ACQUISITION.md](docs/FI2010_DATA_ACQUISITION.md), and the
-end-to-end command flow is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+Fixture outputs validate code paths only. They are not FI-2010 benchmark
+evidence.
 
 ## Repository Layout
 
@@ -134,7 +121,7 @@ end-to-end command flow is in [REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
 chronoslob/  data, features, labels, models, training, backtest and analysis
 configs/     YAML configs for data, models and experiments
 docs/        CLI, reproducibility, benchmark, evidence and safety docs
-reports/     Technical reports and generated empirical artefact report
+reports/     Technical reports and generated empirical artefact reports
 experiments/ Stored FI-2010 evidence artefacts
 tests/       Deterministic tests and tiny synthetic fixtures
 ```
@@ -145,6 +132,8 @@ tests/       Deterministic tests and tiny synthetic fixtures
 | --- | --- |
 | [CLI reference](docs/CLI_REFERENCE.md) | Commands and options. |
 | [Reproducibility](docs/REPRODUCIBILITY.md) | Local validation and real-data reproduction flow. |
+| [Final empirical report](docs/FINAL_EMPIRICAL_REPORT.md) | Report inputs, command and claim boundaries. |
+| [Experiment evidence index](docs/EXPERIMENT_EVIDENCE_INDEX.md) | Map from claims to artefacts and tests. |
 | [Project status](docs/PROJECT_STATUS.md) | Implemented scope and current limitations. |
 | [Safety and limitations](docs/SAFETY_AND_LIMITATIONS.md) | Canonical scope boundary. |
 | [Roadmap](ROADMAP.md) | Completed milestone and future work. |

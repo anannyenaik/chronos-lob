@@ -23,11 +23,27 @@ or reproducing the platform.
 
 ## Real FI-2010 Evidence Map
 
+- Final generated empirical report:
+  [`reports/chronoslob_final_empirical_report.md`](../reports/chronoslob_final_empirical_report.md)
+  built by [FINAL_EMPIRICAL_REPORT](FINAL_EMPIRICAL_REPORT.md)
+- Multi-fold classical evidence:
+  [`experiments/fi2010_multifold_classical/`](../experiments/fi2010_multifold_classical/)
+- Reduced-scope supervised neural evidence:
+  [`experiments/fi2010_multifold_neural/`](../experiments/fi2010_multifold_neural/)
+- Statistical uncertainty:
+  [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/)
+- Brutal ablations:
+  [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/)
+- Execution-aware proxy diagnostics:
+  [`experiments/fi2010_execution_v2/`](../experiments/fi2010_execution_v2/)
+- External benchmark context:
+  [FI2010_EXTERNAL_BENCHMARKS](FI2010_EXTERNAL_BENCHMARKS.md) and
+  [`experiments/fi2010_external_context/`](../experiments/fi2010_external_context/)
 - Acquisition and conversion:
   [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
 - Benchmark preparation:
   [FI2010_BENCHMARK](FI2010_BENCHMARK.md)
-- Main paper experiment:
+- Fold-1 paper experiment:
   [PAPER_EXPERIMENTS](PAPER_EXPERIMENTS.md) and
   [`experiments/fi2010_midprice_h10/`](../experiments/fi2010_midprice_h10/)
 - Ablations:

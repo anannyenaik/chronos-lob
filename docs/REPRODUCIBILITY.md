@@ -3,6 +3,13 @@
 ChronosLOB is designed as a local, reproducible research artefact. This page
 records the canonical validation and FI-2010 reproduction flow.
 
+The current public result path is the multi-fold FI-2010 flow: local
+acquisition and conversion, `prepare-fi2010-multifold`,
+`run-fi2010-multifold-classical`, the reduced-scope
+`run-fi2010-neural-benchmark`, `analyse-fi2010-uncertainty`,
+`run-fi2010-brutal-ablations`, `run-fi2010-execution-v2`, external context
+review and `build-final-empirical-report`.
+
 The empirical study contract for FI-2010 is defined in
 [RESEARCH_PROTOCOL.md](RESEARCH_PROTOCOL.md). The multi-fold study config
 that the protocol commits to is at
@@ -290,6 +297,21 @@ python -m chronoslob.cli inspect-paper-experiment \
 
 python -m chronoslob.cli inspect-experiment-artifacts \
   --experiment experiments/fi2010_midprice_h10
+```
+
+To build the final traceable FI-2010 empirical report from the committed
+multi-fold artefacts:
+
+```bash
+python -m chronoslob.cli build-final-empirical-report \
+  --classical experiments/fi2010_multifold_classical \
+  --neural experiments/fi2010_multifold_neural \
+  --uncertainty experiments/fi2010_uncertainty \
+  --ablations experiments/fi2010_brutal_ablations \
+  --execution experiments/fi2010_execution_v2 \
+  --external experiments/fi2010_external_context \
+  --out reports/chronoslob_final_empirical_report.md \
+  --overwrite
 ```
 
 ## Full Local Validation

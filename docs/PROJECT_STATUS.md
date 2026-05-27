@@ -22,25 +22,28 @@ execution-aware validation.
 - Transfer, regime, ablation and sensitivity analysis utilities.
 - Local audit, release-readiness inspection and evidence-archive
   builder.
-- Real FI-2010 fold-1 evidence under official split-aware evaluation,
-  including predictive metrics, calibration bins, execution-aware
-  sensitivity, ablations and local systems measurements.
+- Real FI-2010 multi-fold classical evidence and reduced-scope supervised
+  neural evidence under official split-aware evaluation, with calibration,
+  uncertainty, ablation and execution-aware proxy diagnostics.
 - Normalised FI-2010 matrix support for the supervised transformer
   paper-runner path.
 
 ## Current Evidence
 
-The committed FI-2010 artefacts live under
-[`experiments/fi2010_midprice_h10/`](../experiments/fi2010_midprice_h10/),
-[`experiments/fi2010_midprice_h10_ablations/`](../experiments/fi2010_midprice_h10_ablations/)
-and
-[`experiments/fi2010_midprice_h10_systems/`](../experiments/fi2010_midprice_h10_systems/).
-The generated artefact report is
-[`reports/chronoslob_empirical_report.md`](../reports/chronoslob_empirical_report.md).
+The current FI-2010 artefacts live under
+[`experiments/fi2010_multifold_classical/`](../experiments/fi2010_multifold_classical/),
+[`experiments/fi2010_multifold_neural/`](../experiments/fi2010_multifold_neural/),
+[`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/),
+[`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/),
+[`experiments/fi2010_execution_v2/`](../experiments/fi2010_execution_v2/) and
+[`experiments/fi2010_external_context/`](../experiments/fi2010_external_context/).
+The generated final report is
+[`reports/chronoslob_final_empirical_report.md`](../reports/chronoslob_final_empirical_report.md).
 
-The current main experiment includes majority, logistic, random forest,
-gradient boosting, DeepLOB-style and normalised-matrix transformer baselines.
-`ssl_transformer` is not reported as a model result.
+The strongest stored classical row is `gradient_boosting`; the strongest
+stored reduced-scope supervised neural row is `matrix_transformer`.
+Neural evidence is single-seed and lookback 20. `ssl_transformer` is not
+reported as a model result.
 
 ## Data Assumptions
 
@@ -57,16 +60,17 @@ gradient boosting, DeepLOB-style and normalised-matrix transformer baselines.
 - Execution-aware validation is a simplified research simulation. It
   does not model venue-specific queue priority, production-grade
   partial-fill behaviour or market impact.
-- The current FI-2010 evidence covers fold 1 only.
+- Reduced-scope neural evidence is not multi-seed and does not cover the full
+  configured grid.
 - `ssl_transformer` remains unsupported in the paper runner.
-- Robustness analysis beyond stored ablations requires additional
-  documented experiment records.
+- Generalisation beyond FI-2010 requires additional documented experiment
+  records.
 - See [SAFETY_AND_LIMITATIONS.md](SAFETY_AND_LIMITATIONS.md) for the
   full scope statement.
 
 ## Next
 
-Future work is focused on broader FI-2010 folds, a traceable SSL
-pretraining/fine-tuning runner, additional limit order book dataset
-adapters where data access allows, richer execution modelling and genuine
-regime analysis.
+Future work is focused on broader neural evidence, a traceable SSL
+pretraining/fine-tuning runner, additional limit order book dataset adapters
+where data access allows, richer execution modelling and genuine regime
+analysis.

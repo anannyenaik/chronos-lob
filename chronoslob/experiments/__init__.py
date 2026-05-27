@@ -53,6 +53,11 @@ from chronoslob.experiments.fi2010_neural_runner import (
     FI2010NeuralBenchmarkSummary,
     run_fi2010_neural_benchmark,
 )
+from chronoslob.experiments.final_report import (
+    FINAL_EMPIRICAL_REPORT_BUILDER_VERSION,
+    FinalEmpiricalReportSummary,
+    build_final_empirical_report,
+)
 from chronoslob.experiments.manifests import (
     build_directory_manifest,
     build_local_file_manifest,
@@ -151,6 +156,7 @@ __all__ = [
     "FI2010_MULTIFOLD_CLASSICAL_VERSION",
     "FI2010_NEURAL_RUNNER_VERSION",
     "FI2010_UNCERTAINTY_VERSION",
+    "FINAL_EMPIRICAL_REPORT_BUILDER_VERSION",
     "NEURAL_BENCHMARK_ARTEFACTS",
     "PAPER_ABLATION_VERSION",
     "PAPER_REPORT_BUILDER_VERSION",
@@ -179,6 +185,7 @@ __all__ = [
     "FI2010NeuralBenchmarkSummary",
     "FI2010PreparationResult",
     "FI2010PreparationSummary",
+    "FinalEmpiricalReportSummary",
     "LabelSummary",
     "ModelResult",
     "MultifoldClassicalConfig",
@@ -212,6 +219,7 @@ __all__ = [
     "bootstrap_mean_confidence_interval",
     "build_ablation_specs",
     "build_directory_manifest",
+    "build_final_empirical_report",
     "build_local_file_manifest",
     "build_paper_baseline_config",
     "build_paper_report",

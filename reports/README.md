@@ -7,6 +7,9 @@ module or layer.
 Empirical results must trace to a versioned config, data source, seed,
 code commit where available and stored output artefacts.
 
+Start with `reports/chronoslob_final_empirical_report.md` for the current
+multi-fold FI-2010 evidence snapshot and claim boundaries.
+
 The [FI-2010 empirical release note](10_10_upgrade_plan.md) records the
 current evidence status and remaining research work.
 
@@ -36,3 +39,9 @@ official split-aware evaluation, the normalised FI-2010 matrix path for
 the supervised transformer baseline, grouped warnings, every skip with
 its reason and every optional artefact that was omitted. It does not
 present trading or execution-system claims.
+
+`reports/chronoslob_final_empirical_report.md` is generated from the
+stored multi-fold FI-2010 classical, reduced-scope neural, uncertainty,
+ablation, execution-proxy and external-context artefacts. Its companion
+summary JSON records input paths, file hashes, headline metrics, warnings
+and skipped or missing sections.

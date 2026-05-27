@@ -24,19 +24,23 @@ calibration and execution-aware evaluation.
 - Reproducibility infrastructure: typed configs, deterministic smoke checks,
   release-readiness inspection, strict audit checks and experiment artefact
   validation.
-- Real FI-2010 fold-1 empirical evidence on the official NoAuction ZScore
-  train/test pair, using official split-aware evaluation.
+- Real FI-2010 multi-fold classical evidence on the official NoAuction ZScore
+  folds 1-5, using official split-aware evaluation.
+- Reduced-scope supervised neural FI-2010 evidence across folds 1-5, with a
+  single-seed and lookback-20 caveat.
 - Normalised FI-2010 matrix support for the supervised transformer paper-runner
   path, without weakening raw order-book schema validation.
-- FI-2010 calibration artefacts, execution-aware sensitivity rows, plots,
-  controlled ablations and local systems benchmark artefacts.
-- An evidence-backed empirical artefact report generated from stored FI-2010
-  experiment, ablation and systems benchmark outputs.
+- FI-2010 calibration artefacts, statistical uncertainty, brutal ablations,
+  execution-aware proxy diagnostics and external benchmark protocol context.
+- A final empirical report generated from stored multi-fold FI-2010 classical,
+  reduced-scope neural, uncertainty, ablation, execution-proxy and
+  external-context artefacts.
 
 ## In Progress and Next
 
-- Broaden FI-2010 coverage beyond the current fold-1 evidence set while keeping
-  official split-aware evaluation and train-only preprocessing intact.
+- Broaden neural evidence beyond the current reduced-scope single-seed,
+  lookback-20 run while keeping official split-aware evaluation and train-only
+  preprocessing intact.
 - Add a genuine SSL pretraining and supervised fine-tuning runner before
   reporting any `ssl_transformer` result.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when
@@ -46,8 +50,8 @@ calibration and execution-aware evaluation.
   research boundary clear.
 - Add richer regime analysis based on genuine stored regime features rather
   than row-number or timestamp-derived substitutes.
-- Continue tightening report generation so public tables, plots and summaries
-  are rebuilt directly from stored artefacts.
+- Continue tightening report generation so public tables and summaries are
+  rebuilt directly from stored artefacts.
 
 ## Evaluation Principles
 
