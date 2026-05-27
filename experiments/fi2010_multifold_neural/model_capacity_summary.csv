@@ -1,0 +1,3 @@
+model_name,lookback,run_count,successful_run_count,parameter_count_min,parameter_count_mean,parameter_count_max,status
+deeplob_style,20,5,5,42371,42371.0,42371,ok
+matrix_transformer,20,5,5,77699,77699.0,77699,ok

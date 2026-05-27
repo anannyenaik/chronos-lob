@@ -306,3 +306,24 @@ def test_transformer_matrix_path_does_not_construct_raw_order_book_levels(
         runner_summary["model_metadata"]["transformer"]["matrix_path"]
         == "normalised FI-2010 matrix path"
     )
+
+
+def test_best_epoch_returns_last_is_best_marker() -> None:
+    from chronoslob.experiments.neural_adapters import _best_epoch
+
+    class _Item:
+        def __init__(self, epoch: int, is_best: bool) -> None:
+            self.epoch = epoch
+            self.is_best = is_best
+
+    history = [
+        _Item(1, True),
+        _Item(2, False),
+        _Item(3, True),
+        _Item(4, False),
+        _Item(5, True),
+        _Item(6, False),
+    ]
+
+    assert _best_epoch(history) == 5
+    assert _best_epoch([]) is None

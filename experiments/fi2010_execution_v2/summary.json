@@ -1,0 +1,122 @@
+{
+  "artefacts": {
+    "adverse_selection_summary": "adverse_selection_summary.csv",
+    "confidence_threshold_summary": "confidence_threshold_summary.csv",
+    "cost_latency_surface": "cost_latency_surface.csv",
+    "degradation_summary": "degradation_summary.csv",
+    "execution_assumptions": "execution_assumptions.md",
+    "execution_notes": "execution_notes.md",
+    "execution_v2_results": "execution_v2_results.csv",
+    "fill_assumption_summary": "fill_assumption_summary.csv",
+    "skipped_diagnostics": "skipped_diagnostics.json",
+    "summary": "summary.json",
+    "turnover_summary": "turnover_summary.csv"
+  },
+  "checkpoints_required": false,
+  "claim_boundaries": [
+    "These are simplified proxy diagnostics, not a backtest.",
+    "This is not a live-trading simulation and models no market impact.",
+    "No profitability or live tradability claim is made.",
+    "No foundation-model, leading-benchmark or self-supervised result is claimed.",
+    "Neural superiority over the classical baseline is not asserted."
+  ],
+  "classical_models": [
+    "elastic_net",
+    "gradient_boosting",
+    "logistic",
+    "majority",
+    "random_forest"
+  ],
+  "counts": {
+    "ok_rows": 800,
+    "result_rows": 802,
+    "skipped_diagnostics": 6,
+    "skipped_rows": 2
+  },
+  "created_at": "2026-05-27T11:14:18.793534+00:00",
+  "diagnostics_produced": [
+    "cost_latency_surface",
+    "confidence_threshold",
+    "turnover",
+    "adverse_selection",
+    "fill_assumption",
+    "degradation"
+  ],
+  "diagnostics_skipped": [],
+  "disclaimer": "All execution outputs are simplified proxy diagnostics. This is not a backtest or a live-trading simulation and carries no profitability or tradability claim.",
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "fill_assumption": "full_fill_at_mid_no_queue",
+  "filters": {
+    "confidence_thresholds": null,
+    "cost_bps": null,
+    "latency_steps": null,
+    "models": null
+  },
+  "folds": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "full_predictions_required": false,
+  "git_commit": "cad08334543fb18df3e01f3126af66c2d21e1bcc",
+  "input_artefacts": {
+    "ablations_execution_cost_latency": {
+      "path": "experiments\\fi2010_brutal_ablations\\execution_cost_latency_ablation.csv",
+      "sha256": "beed6a1e458328d06d0c0cbc7c9368150e9730ed5d60da0ea697ade2f03470b4"
+    },
+    "classical_execution_summary": {
+      "path": "experiments\\fi2010_multifold_classical\\execution_summary.csv",
+      "sha256": "e3d6717d7a87ff6d2a6a853589eb49673c1d9c43c43e4a4a3f9c840bc42aaa67"
+    },
+    "classical_results_by_fold": {
+      "path": "experiments\\fi2010_multifold_classical\\results_by_fold.csv",
+      "sha256": "238c1e65d693560ebd7efeb7049519a9ff81575e1a425fb57691962f96f0946a"
+    },
+    "neural_results_by_fold_seed": {
+      "path": "experiments\\fi2010_multifold_neural\\results_by_fold_seed.csv",
+      "sha256": "90e4fe5ffc7e6b1d3addb48bdb44fa8efe303e30d1736177aab9822298185d98"
+    }
+  },
+  "inputs": {
+    "ablations_dir": "experiments\\fi2010_brutal_ablations",
+    "classical_dir": "experiments\\fi2010_multifold_classical",
+    "neural_dir": "experiments\\fi2010_multifold_neural"
+  },
+  "neural_models": [
+    "deeplob_style",
+    "matrix_transformer"
+  ],
+  "package_version": "0.1.0",
+  "proxy_diagnostics": true,
+  "runner_version": "phase-h/fi2010-execution-v2/v1",
+  "scenario": {
+    "confidence_thresholds": [
+      0.0,
+      0.5,
+      0.6,
+      0.7
+    ],
+    "cost_bps": [
+      0.0,
+      0.5,
+      1.0,
+      5.0
+    ],
+    "latency_steps": [
+      0,
+      1
+    ],
+    "reference_cost_bps": 0.0,
+    "reference_latency_steps": 0,
+    "reference_threshold": 0.0,
+    "stress_cost_bps": 5.0,
+    "stress_latency_steps": 1
+  },
+  "warnings": []
+}

@@ -1,0 +1,112 @@
+# FI-2010 benchmark-quality neural run plan.
+#
+# This config is for benchmark-quality neural runs, not smoke tests. It only
+# defines the planned supervised neural benchmark grid; it does not run models,
+# does not claim results and does not enable self-supervised pretraining.
+
+study_name: fi2010_neural_benchmark_quality
+
+dataset:
+  name: FI-2010
+  source: local official NoAuction ZScore fold CSVs prepared by prepare-fi2010-multifold
+  assumptions:
+    - Prepared inputs contain one split-aware combined CSV per official fold.
+    - The split column preserves official train and test membership.
+    - Official test rows are held out from fitting, preprocessing and validation.
+    - Raw and processed FI-2010 files stay in ignored local directories.
+  local_data_only: true
+  raw_data_committed: false
+  processed_csv_committed: false
+
+official_split:
+  split_column: split
+  train_value: train
+  test_value: test
+  validation_fraction_within_train: 0.15
+  validation_source: tail_of_official_train
+  test_usage: final_evaluation_only
+
+folds:
+  - fold_1
+  - fold_2
+  - fold_3
+  - fold_4
+  - fold_5
+
+seeds:
+  - 0
+  - 1
+  - 2
+
+target:
+  horizon: 10
+  label_column: label_10
+
+neural_models:
+  deeplob_style:
+    enabled: true
+    architecture: DeepLOB-style CNN-LSTM over train-standardised FI-2010 windows
+    hidden_sizes: [64]
+    conv_channels: 32
+    lstm_hidden_size: 64
+    use_batch_norm: true
+    dropout: 0.10
+  matrix_transformer:
+    enabled: true
+    architecture: supervised transformer encoder over normalised matrix windows
+    hidden_sizes: [128]
+    model_dim: 64
+    num_heads: 4
+    num_layers: 2
+    feedforward_dim: 128
+    dropout: 0.10
+
+lookbacks:
+  - 20
+  - 50
+  - 100
+
+training:
+  batch_size: 256
+  max_epochs: 75
+  early_stopping_patience: 10
+  early_stopping_metric: validation_macro_f1
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  dropout: 0.10
+
+device_selection: auto
+
+deterministic_seed_handling:
+  enabled: true
+  seed_source: configured_seed_list
+  set_python_numpy_torch: true
+  deterministic_torch_algorithms: true
+
+validation_metric: macro_f1
+
+checkpoint_policy:
+  enabled: false
+  save_best_only: true
+  filename: best_model.pt
+  write_by_default: false
+
+artefacts:
+  output_root: runs/fi2010_neural_benchmark
+  checkpoint_root: checkpoints/fi2010_neural_benchmark
+  summary: summary.json
+  run_plan: run_plan.csv
+  results_by_fold_seed: results_by_fold_seed.csv
+  results_summary: results_summary.csv
+  training_summary: training_summary.csv
+  model_capacity_summary: model_capacity_summary.csv
+  model_failures: model_failures.json
+  write_full_predictions_by_default: false
+  write_checkpoints_by_default: false
+
+mode: benchmark
+benchmark_note: >
+  Benchmark-quality supervised neural configuration, not smoke testing.
+  Use tiny overrides in tests and fixture checks. This config records the
+  intended serious run grid without writing predictions or checkpoints by default.

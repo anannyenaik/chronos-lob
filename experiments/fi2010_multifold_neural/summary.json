@@ -1,0 +1,70 @@
+{
+  "artefacts": {
+    "model_capacity_summary": "model_capacity_summary.csv",
+    "model_failures": "model_failures.json",
+    "results_by_fold_seed": "results_by_fold_seed.csv",
+    "results_summary": "results_summary.csv",
+    "run_plan": "run_plan.csv",
+    "runs": "runs/",
+    "summary": "summary.json",
+    "training_summary": "training_summary.csv"
+  },
+  "checkpoint_policy": {
+    "enabled_for_this_run": false,
+    "write_by_default": false
+  },
+  "checkpoints_written": false,
+  "completed_run_count": 10,
+  "config_mode": "benchmark",
+  "config_path": "configs\\experiments\\fi2010_neural_serious.yaml",
+  "config_sha256": "35caf6974c6608ae5c52581a7a4e8f7475411f8631e80ba35bc52dacf49c68d2",
+  "created_at": "2026-05-26T18:36:31.009448Z",
+  "dataset_name": "FI-2010",
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "execution_mode": "smoke",
+  "failure_count": 0,
+  "folds_completed": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "folds_requested": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "full_benchmark_grid": false,
+  "full_predictions_written": false,
+  "git_commit": "cad08334543fb18df3e01f3126af66c2d21e1bcc",
+  "lookbacks": [
+    20
+  ],
+  "max_epochs": 25,
+  "models_requested": [
+    "deeplob_style",
+    "matrix_transformer"
+  ],
+  "output_dir": "experiments\\fi2010_multifold_neural",
+  "prediction_policy": {
+    "enabled_for_this_run": false,
+    "write_by_default": false
+  },
+  "processed_root": "data\\processed\\fi2010",
+  "run_count": 10,
+  "runner_version": "phase-e/fi2010-neural-runner/v1",
+  "seeds": [
+    0
+  ],
+  "study_name": "fi2010_neural_benchmark_quality",
+  "target_horizon": 10,
+  "task_name": "midprice_direction",
+  "warnings": []
+}

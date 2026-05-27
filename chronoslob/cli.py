@@ -448,6 +448,732 @@ def _convert_fi2010_official_impl(
     return 0
 
 
+def _parse_fold_selection(value: str | None) -> list[int] | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text or text.lower() == "all":
+        return None
+    folds: list[int] = []
+    for token in text.split(","):
+        cleaned = token.strip()
+        if not cleaned:
+            continue
+        try:
+            fold = int(cleaned)
+        except ValueError as exc:
+            raise ValueError(
+                f"--folds must be 'all' or a comma-separated integer list; "
+                f"got {value!r}",
+            ) from exc
+        if fold <= 0:
+            raise ValueError(f"--folds entries must be positive; got {fold}")
+        if fold not in folds:
+            folds.append(fold)
+    if not folds:
+        raise ValueError("--folds must contain at least one positive integer")
+    return folds
+
+
+def _parse_model_selection(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text or text.lower() == "all":
+        return None
+    models = [token.strip() for token in text.split(",") if token.strip()]
+    if not models:
+        raise ValueError("--models must contain at least one model name")
+    return models
+
+
+def _parse_neural_fold_selection(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text or text.lower() == "all":
+        return None
+    folds: list[str] = []
+    for token in text.split(","):
+        cleaned = token.strip().lower()
+        if not cleaned:
+            continue
+        if cleaned.isdigit():
+            cleaned = f"fold_{int(cleaned)}"
+        if not cleaned.startswith("fold_") or not cleaned.removeprefix("fold_").isdigit():
+            raise ValueError(
+                f"--folds must be 'all' or a comma-separated list like fold_1,2; "
+                f"got {value!r}",
+            )
+        if int(cleaned.removeprefix("fold_")) <= 0:
+            raise ValueError("--folds entries must be positive")
+        if cleaned not in folds:
+            folds.append(cleaned)
+    if not folds:
+        raise ValueError("--folds must contain at least one fold")
+    return folds
+
+
+def _parse_int_selection(
+    value: str | None,
+    *,
+    option_name: str,
+    positive: bool,
+) -> list[int] | None:
+    if value is None:
+        return None
+    text = value.strip()
+    if not text or text.lower() == "all":
+        return None
+    values: list[int] = []
+    for token in text.split(","):
+        cleaned = token.strip()
+        if not cleaned:
+            continue
+        try:
+            number = int(cleaned)
+        except ValueError as exc:
+            raise ValueError(f"{option_name} entries must be integers") from exc
+        if positive and number <= 0:
+            raise ValueError(f"{option_name} entries must be positive")
+        if not positive and number < 0:
+            raise ValueError(f"{option_name} entries must be non-negative")
+        if number not in values:
+            values.append(number)
+    if not values:
+        raise ValueError(f"{option_name} must contain at least one value")
+    return values
+
+
+def _inspect_fi2010_neural_plan_impl(
+    *,
+    config_path: Path,
+    folds: list[int] | None,
+    models: Sequence[str] | None,
+) -> int:
+    """Inspect the serious FI-2010 neural benchmark plan without training."""
+    from chronoslob.experiments.neural_benchmarking import (
+        expected_lightweight_artefacts,
+        generate_neural_run_plan,
+        load_neural_benchmark_config,
+        resolve_neural_device,
+    )
+
+    try:
+        config = load_neural_benchmark_config(config_path)
+        plan = generate_neural_run_plan(config, folds=folds, models=models)
+        device = resolve_neural_device(config.device_selection)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, RuntimeError, TypeError, ValueError) as exc:
+        print(f"FI-2010 neural plan inspection failed: {exc}", file=sys.stderr)
+        return 1
+
+    selected_folds = list(dict.fromkeys(item.fold_id for item in plan))
+    selected_models = list(dict.fromkeys(item.model_name for item in plan))
+    selected_lookbacks = list(dict.fromkeys(item.lookback for item in plan))
+    artefacts = expected_lightweight_artefacts(config)
+
+    print("ChronosLOB FI-2010 neural benchmark plan")
+    print(f"  config:                 {config_path}")
+    print(f"  study name:             {config.study_name}")
+    print(f"  mode:                   {config.mode}")
+    print(f"  smoke mode:             {'yes' if config.is_smoke_mode else 'no'}")
+    print(f"  benchmark mode:         {'yes' if config.is_benchmark_mode else 'no'}")
+    print(f"  planned runs:           {len(plan)}")
+    print(f"  folds:                  {selected_folds}")
+    print(f"  seeds:                  {list(config.seeds)}")
+    print(f"  models:                 {selected_models}")
+    print(f"  lookbacks:              {selected_lookbacks}")
+    print(f"  target horizon:         {config.target.horizon}")
+    print(f"  validation metric:      {config.validation_metric}")
+    print(f"  max epochs:             {config.training.max_epochs}")
+    print(f"  early stopping:         {config.training.early_stopping_metric}")
+    print(f"  early stopping patience: {config.training.early_stopping_patience}")
+    print(f"  device policy:          {device.requested}")
+    print(f"  resolved device:        {device.resolved}")
+    print(f"  cuda available:         {'yes' if device.cuda_available else 'no'}")
+    print(f"  output root:            {config.artefacts.output_root}")
+    print(f"  checkpoint root:        {config.artefacts.checkpoint_root}")
+    print("  expected artefacts:")
+    for name, path in artefacts.items():
+        print(f"    {name}: {path}")
+    print(
+        "  full predictions:       "
+        f"{'written' if config.artefacts.write_full_predictions_by_default else 'not written'}"
+    )
+    print(
+        "  checkpoints by default: "
+        f"{'written' if config.artefacts.write_checkpoints_by_default else 'not written'}"
+    )
+    print("  training:               not run")
+    print("  outputs:                not written (inspection only)")
+    print("  network calls:          none performed")
+    return 0
+
+
+def _run_fi2010_neural_benchmark_impl(
+    *,
+    config_path: Path,
+    processed_root: Path,
+    out: Path,
+    folds: Sequence[str] | None,
+    models: Sequence[str] | None,
+    seeds: Sequence[int] | None,
+    lookbacks: Sequence[int] | None,
+    max_epochs: int,
+    overwrite: bool,
+    fail_fast: bool,
+    write_full_predictions: bool,
+    write_checkpoints: bool,
+    allow_full_benchmark: bool,
+) -> int:
+    """Run selected FI-2010 supervised neural benchmark configurations."""
+    from chronoslob.experiments.fi2010_neural_runner import (
+        run_fi2010_neural_benchmark,
+    )
+    from chronoslob.experiments.neural_benchmarking import (
+        SUPPORTED_NEURAL_BENCHMARK_MODELS,
+    )
+
+    try:
+        summary = run_fi2010_neural_benchmark(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root),
+            out_dir=Path(out),
+            folds=folds,
+            models=models,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            max_epochs=max_epochs,
+            overwrite=overwrite,
+            fail_fast=fail_fast,
+            write_full_predictions=write_full_predictions,
+            write_checkpoints=write_checkpoints,
+            allow_full_benchmark=allow_full_benchmark,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
+        print(f"FI-2010 neural benchmark run failed: {exc}", file=sys.stderr)
+        print(
+            "  supported neural models: "
+            + ", ".join(SUPPORTED_NEURAL_BENCHMARK_MODELS),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 neural benchmark runner")
+    print(f"  study name:          {summary.study_name}")
+    print(f"  dataset name:        {summary.dataset_name}")
+    print(f"  task name:           {summary.task_name}")
+    print(f"  horizon:             {summary.target_horizon}")
+    print(f"  config:              {summary.config_path}")
+    print(f"  processed root:      {summary.processed_root}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  execution mode:      {summary.execution_mode}")
+    print(
+        "  benchmark-level:     "
+        f"{'yes' if summary.full_benchmark_grid else 'no'}"
+    )
+    print(f"  folds:               {summary.folds_requested}")
+    print(f"  seeds:               {summary.seeds}")
+    print(f"  models:              {', '.join(summary.models_requested)}")
+    print(f"  lookbacks:           {summary.lookbacks}")
+    print(f"  max epochs:          {summary.max_epochs}")
+    print(f"  planned runs:        {summary.run_count}")
+    print(f"  completed runs:      {summary.completed_run_count}")
+    print(f"  model failures:      {summary.failure_count}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print(
+        "  full predictions:    "
+        f"{'written' if summary.full_predictions_written else 'not written'}"
+    )
+    print(
+        "  checkpoints:         "
+        f"{'written' if summary.checkpoints_written else 'not written'}"
+    )
+    print("  network calls:       none performed")
+    return 0 if summary.failure_count == 0 else 1
+
+
+def _analyse_fi2010_uncertainty_impl(
+    *,
+    classical_dir: Path | None,
+    neural_dir: Path | None,
+    out: Path,
+    baseline_model: str,
+    ci_level: float,
+    bootstrap_iterations: int,
+    bootstrap_seed: int,
+    overwrite: bool,
+) -> int:
+    """Compute uncertainty artefacts from stored multi-fold tables."""
+    from chronoslob.experiments.statistics import (
+        DEFAULT_UNCERTAINTY_METRICS,
+        analyse_fi2010_uncertainty,
+    )
+
+    try:
+        summary = analyse_fi2010_uncertainty(
+            classical_dir=classical_dir,
+            neural_dir=neural_dir,
+            out_dir=out,
+            baseline_model=baseline_model,
+            metrics=DEFAULT_UNCERTAINTY_METRICS,
+            ci_level=ci_level,
+            bootstrap_iterations=bootstrap_iterations,
+            bootstrap_seed=bootstrap_seed,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 uncertainty analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 uncertainty analysis")
+    print(f"  classical input:     {summary.classical_input}")
+    print(f"  neural input:        {summary.neural_input}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  baseline model:      {summary.baseline_model}")
+    print(f"  ci level:            {summary.ci_level}")
+    print(f"  bootstrap iterations: {summary.bootstrap_iterations}")
+    print(f"  bootstrap seed:      {summary.bootstrap_seed}")
+    print(f"  metrics:             {', '.join(summary.metrics)}")
+    print(
+        "  classical models:    "
+        + (", ".join(summary.classical_models) if summary.classical_models else "none")
+    )
+    print(
+        "  neural models:       "
+        + (", ".join(summary.neural_models) if summary.neural_models else "none")
+    )
+    print(
+        "  classical folds:     "
+        + (", ".join(summary.classical_folds) if summary.classical_folds else "none")
+    )
+    print(
+        "  neural folds:        "
+        + (", ".join(summary.neural_folds) if summary.neural_folds else "none")
+    )
+    print(
+        "  neural seeds:        "
+        + (
+            ", ".join(str(value) for value in summary.neural_seeds)
+            if summary.neural_seeds
+            else "none"
+        )
+    )
+    print(
+        "  neural lookbacks:    "
+        + (
+            ", ".join(str(value) for value in summary.neural_lookbacks)
+            if summary.neural_lookbacks
+            else "none"
+        )
+    )
+    print(
+        "  classical seed variance: "
+        f"{'yes' if summary.classical_seed_variance_available else 'no'}"
+    )
+    print(
+        "  neural seed variance:    "
+        f"{'yes' if summary.neural_seed_variance_available else 'no'}"
+    )
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  predictions:         not required")
+    print("  checkpoints:         not required")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _inspect_fi2010_multifold_impl(
+    *,
+    config_path: Path,
+    extracted_root: Path,
+    processed_root: Path | None,
+    folds: list[int] | None,
+) -> int:
+    """Report configured folds and which expected files are present."""
+    from chronoslob.experiments.fi2010_multifold import (
+        inspect_multifold_files,
+        load_multifold_config,
+    )
+
+    try:
+        config = load_multifold_config(config_path)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"Failed to load multi-fold config: {exc}", file=sys.stderr)
+        return 1
+
+    resolved_processed = (
+        Path(processed_root)
+        if processed_root is not None
+        else Path(config.preparation.processed_output_root_placeholder)
+    )
+
+    try:
+        plans = inspect_multifold_files(
+            config,
+            extracted_root=Path(extracted_root),
+            processed_root=resolved_processed,
+            folds=folds,
+        )
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"Multi-fold inspection failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 multi-fold inspection")
+    print(f"  config:              {config_path}")
+    print(f"  study name:          {config.study_name}")
+    print(f"  extracted root:      {extracted_root}")
+    print(f"  processed root:      {resolved_processed}")
+    print(f"  configured folds:    {list(config.folds)}")
+    print(f"  requested folds:     {[plan.fold for plan in plans]}")
+    print("  fold file status:")
+    all_ready = True
+    for plan in plans:
+        ready = "ready" if plan.is_ready else "missing"
+        if not plan.is_ready:
+            all_ready = False
+        print(f"    fold {plan.fold}: {ready}")
+        train_state = "present" if plan.train_present else "MISSING"
+        test_state = "present" if plan.test_present else "MISSING"
+        print(f"      train: {train_state} ({plan.train_path})")
+        print(f"      test:  {test_state} ({plan.test_path})")
+        print(f"      combined output (planned): {plan.combined_output_path}")
+    print("  outputs:             not written (inspection only)")
+    print("  network calls:       none performed")
+    return 0 if all_ready else 1
+
+
+def _prepare_fi2010_multifold_impl(
+    *,
+    config_path: Path,
+    extracted_root: Path,
+    processed_root: Path | None,
+    out: Path,
+    folds: list[int] | None,
+    overwrite: bool,
+) -> int:
+    """Prepare combined CSVs and manifests for the requested folds."""
+    from chronoslob.experiments.fi2010_multifold import (
+        load_multifold_config,
+        prepare_multifold,
+    )
+
+    try:
+        config = load_multifold_config(config_path)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"Failed to load multi-fold config: {exc}", file=sys.stderr)
+        return 1
+
+    resolved_processed = (
+        Path(processed_root)
+        if processed_root is not None
+        else Path(config.preparation.processed_output_root_placeholder)
+    )
+
+    try:
+        result = prepare_multifold(
+            config=config,
+            config_source_path=Path(config_path),
+            extracted_root=Path(extracted_root),
+            processed_root=resolved_processed,
+            output_dir=Path(out),
+            folds=folds,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except NotADirectoryError as exc:
+        print(f"Path is not a directory: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 multi-fold preparation failed: {exc}", file=sys.stderr)
+        return 1
+
+    summary = result.summary
+    print("ChronosLOB FI-2010 multi-fold preparation")
+    print(f"  config:              {config_path}")
+    print(f"  study name:          {summary.study_name}")
+    print(f"  extracted root:      {summary.extracted_dataset_root}")
+    print(f"  processed root:      {summary.processed_output_root}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  configured folds:    {summary.folds_configured}")
+    print(f"  prepared folds:      {summary.folds_prepared}")
+    if summary.folds_skipped:
+        print(f"  skipped folds:       {summary.folds_skipped}")
+    else:
+        print("  skipped folds:       none")
+    for manifest in result.fold_manifests:
+        train_count = manifest.split_counts.get(config.train_value, 0)
+        test_count = manifest.split_counts.get(config.test_value, 0)
+        print(
+            f"    fold {manifest.fold}: rows={manifest.combined_row_count} "
+            f"train={train_count} test={test_count} "
+            f"combined={manifest.combined_csv_absolute_path}"
+        )
+    print(f"  summary path:        {Path(summary.output_dir) / 'summary.json'}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  predictions:         not written (preparation only)")
+    print("  model results:       not written (preparation only)")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _run_fi2010_multifold_classical_impl(
+    *,
+    config_path: Path,
+    processed_root: Path | None,
+    out: Path,
+    models: Sequence[str] | None,
+    folds: list[int] | None,
+    overwrite: bool,
+) -> int:
+    """Run the FI-2010 multi-fold classical benchmark layer."""
+    from chronoslob.experiments.fi2010_multifold_runner import (
+        CLASSICAL_MULTIFOLD_MODELS,
+        run_fi2010_multifold_classical,
+    )
+
+    try:
+        summary = run_fi2010_multifold_classical(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root) if processed_root is not None else None,
+            out_dir=Path(out),
+            models=models,
+            folds=folds,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 multi-fold classical run failed: {exc}", file=sys.stderr)
+        print(
+            "  supported classical models: "
+            + ", ".join(CLASSICAL_MULTIFOLD_MODELS),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 multi-fold classical runner")
+    print(f"  study name:          {summary.study_name}")
+    print(f"  dataset name:        {summary.dataset_name}")
+    print(f"  task name:           {summary.task_name}")
+    print(f"  horizon:             {summary.target_horizon}")
+    print(f"  config:              {summary.config_path}")
+    print(f"  processed root:      {summary.processed_root}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  folds:               {summary.folds_completed}")
+    print(f"  fold count:          {summary.fold_count}")
+    print(f"  models:              {', '.join(summary.models_requested)}")
+    print(f"  model count:         {summary.model_count}")
+    print(f"  seeds:               {summary.seeds}")
+    print(f"  result rows:         {summary.result_rows}")
+    print(f"  model failures:      {summary.failure_count}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print("  full predictions:    not written")
+    print("  network calls:       none performed")
+    return 0 if summary.failure_count == 0 else 1
+
+
+def _run_fi2010_brutal_ablations_impl(
+    *,
+    config_path: Path,
+    neural_config_path: Path | None,
+    processed_root: Path | None,
+    classical_dir: Path | None,
+    neural_dir: Path | None,
+    out: Path,
+    families: str | None,
+    folds: str | None,
+    models: str | None,
+    neural_lookbacks: str | None,
+    max_epochs: int,
+    overwrite: bool,
+    dry_run: bool,
+) -> int:
+    """Run the FI-2010 brutal ablation layer and report a concise summary."""
+    from chronoslob.experiments.fi2010_brutal_ablations import (
+        ABLATION_FAMILIES,
+        run_fi2010_brutal_ablations,
+    )
+
+    try:
+        summary = run_fi2010_brutal_ablations(
+            config_path=config_path,
+            neural_config_path=neural_config_path,
+            processed_root=processed_root,
+            classical_dir=classical_dir,
+            neural_dir=neural_dir,
+            out_dir=out,
+            families=families,
+            folds=folds,
+            models=models,
+            neural_lookbacks=neural_lookbacks,
+            max_epochs=max_epochs,
+            overwrite=overwrite,
+            dry_run=dry_run,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 brutal ablations failed: {exc}", file=sys.stderr)
+        print(
+            "  supported families: " + ", ".join(ABLATION_FAMILIES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 brutal ablations")
+    print(f"  config:              {summary.config_path}")
+    print(f"  neural config:       {summary.neural_config_path}")
+    print(f"  processed root:      {summary.processed_root}")
+    print(f"  classical dir:       {summary.classical_dir}")
+    print(f"  neural dir:          {summary.neural_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  families requested:  {', '.join(summary.families_requested)}")
+    if summary.dry_run:
+        print("  mode:                dry-run (no artefacts written)")
+        print(f"  folds planned:       {', '.join(summary.folds) or 'none'}")
+        print(f"  fit models:          {', '.join(summary.fit_models)}")
+        print("  network calls:       none performed")
+        return 0
+    print(f"  families run:        {', '.join(summary.families_run) or 'none'}")
+    print(f"  families skipped:    {', '.join(summary.families_skipped) or 'none'}")
+    print(f"  folds:               {', '.join(summary.folds) or 'none'}")
+    print(f"  fit models:          {', '.join(summary.fit_models)}")
+    print(f"  feature groups:      {', '.join(summary.feature_groups) or 'none'}")
+    print(f"  result rows:         {summary.result_row_count}")
+    print(f"  ok rows:             {summary.ok_row_count}")
+    print(f"  skipped rows:        {summary.skipped_count}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  full predictions:    not written")
+    print("  checkpoints:         not written")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _run_fi2010_execution_v2_impl(
+    *,
+    classical_dir: Path | None,
+    neural_dir: Path | None,
+    ablations_dir: Path | None,
+    out: Path,
+    models: str | None,
+    cost_bps: str | None,
+    latency_steps: str | None,
+    confidence_thresholds: str | None,
+    overwrite: bool,
+) -> int:
+    """Build FI-2010 execution-aware v2 proxy diagnostics and report a summary."""
+    from chronoslob.experiments.execution_v2 import run_fi2010_execution_v2
+
+    try:
+        summary = run_fi2010_execution_v2(
+            classical_dir=classical_dir,
+            neural_dir=neural_dir,
+            ablations_dir=ablations_dir,
+            out_dir=out,
+            models=models,
+            cost_bps=cost_bps,
+            latency_steps=latency_steps,
+            confidence_thresholds=confidence_thresholds,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 execution v2 failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 execution-aware evaluation v2")
+    print(f"  classical dir:       {summary.classical_dir}")
+    print(f"  neural dir:          {summary.neural_dir}")
+    print(f"  ablations dir:       {summary.ablations_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  classical models:    {', '.join(summary.classical_models) or 'none'}")
+    print(f"  neural models:       {', '.join(summary.neural_models) or 'none'}")
+    print(f"  folds:               {', '.join(summary.folds) or 'none'}")
+    print(f"  result rows:         {summary.result_row_count}")
+    print(f"  ok rows:             {summary.ok_row_count}")
+    print(f"  skipped rows:        {summary.skipped_row_count}")
+    print(f"  diagnostics:         {', '.join(summary.diagnostics_produced) or 'none'}")
+    print(f"  skipped diagnostics: {', '.join(summary.diagnostics_skipped) or 'none'}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  metrics:             proxy diagnostics only; no tradability claim")
+    print("  full predictions:    not required")
+    print("  checkpoints:         not required")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _run_paper_experiment_impl(
     *,
     config_path: Path,
@@ -2704,6 +3430,14 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "prepare-fi2010-benchmark|"
             "verify-fi2010-local|"
             "convert-fi2010-official|"
+            "inspect-fi2010-multifold|"
+            "prepare-fi2010-multifold|"
+            "run-fi2010-multifold-classical|"
+            "run-fi2010-brutal-ablations|"
+            "run-fi2010-execution-v2|"
+            "inspect-fi2010-neural-plan|"
+            "run-fi2010-neural-benchmark|"
+            "analyse-fi2010-uncertainty|"
             "run-paper-experiment|"
             "run-paper-ablations|"
             "run-system-benchmarks|"
@@ -2830,6 +3564,481 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             input_path=parsed.input_path,
             output_path=parsed.output_path,
             split_label=parsed.split_label,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "inspect-fi2010-multifold":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-fi2010-multifold",
+            description=(
+                "Report configured FI-2010 folds and which expected train "
+                "and test source files exist under the supplied extracted "
+                "dataset root. No data is converted and nothing is written."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--extracted-root", type=Path, required=True)
+        parser.add_argument(
+            "--processed-root",
+            type=Path,
+            default=None,
+            help=(
+                "Optional processed CSV root used to report planned "
+                "combined CSV paths. Defaults to the value in the config."
+            ),
+        )
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="all",
+            help="'all' or a comma-separated list of fold integers.",
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            folds = _parse_fold_selection(parsed.folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _inspect_fi2010_multifold_impl(
+            config_path=parsed.config,
+            extracted_root=parsed.extracted_root,
+            processed_root=parsed.processed_root,
+            folds=folds,
+        )
+    if command == "prepare-fi2010-multifold":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob prepare-fi2010-multifold",
+            description=(
+                "Convert configured FI-2010 train and test source files "
+                "into one split-aware combined CSV per fold, plus per-fold "
+                "manifests and a top-level summary. No data is downloaded "
+                "and no model is trained."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--extracted-root", type=Path, required=True)
+        parser.add_argument(
+            "--processed-root",
+            type=Path,
+            default=None,
+            help=(
+                "Local root for the combined CSV outputs. Defaults to the "
+                "value in the config."
+            ),
+        )
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="all",
+            help="'all' or a comma-separated list of fold integers.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help=(
+                "Replace existing combined CSVs, manifests and summary.json."
+            ),
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            folds = _parse_fold_selection(parsed.folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _prepare_fi2010_multifold_impl(
+            config_path=parsed.config,
+            extracted_root=parsed.extracted_root,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            folds=folds,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "run-fi2010-multifold-classical":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-multifold-classical",
+            description=(
+                "Run classical FI-2010 baselines across prepared split-aware "
+                "fold CSV files and write lightweight aggregate artefacts."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument(
+            "--processed-root",
+            type=Path,
+            default=None,
+            help=(
+                "Root containing prepared fold CSV files. Defaults to the "
+                "value in the config."
+            ),
+        )
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--models",
+            type=str,
+            default=None,
+            help=(
+                "Comma-separated classical model list. Defaults to the "
+                "classical list in the config."
+            ),
+        )
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="all",
+            help="'all' or a comma-separated list of fold integers.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            folds = _parse_fold_selection(parsed.folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        model_tokens = None
+        if parsed.models is not None:
+            model_tokens = [
+                token.strip()
+                for token in str(parsed.models).split(",")
+                if token.strip()
+            ]
+        return _run_fi2010_multifold_classical_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            models=model_tokens,
+            folds=folds,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "run-fi2010-brutal-ablations":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-brutal-ablations",
+            description=(
+                "Run the FI-2010 brutal ablation layer across feature groups, "
+                "model class, lookback, horizon, calibration and execution "
+                "families using prepared folds and stored evidence."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--neural-config", type=Path, default=None)
+        parser.add_argument("--processed-root", type=Path, default=None)
+        parser.add_argument("--classical", type=Path, default=None)
+        parser.add_argument("--neural", type=Path, default=None)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--families",
+            type=str,
+            default="all",
+            help=(
+                "'all' or a comma-separated subset of feature_groups,"
+                "model_class,lookback,horizon,calibration,execution."
+            ),
+        )
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="all",
+            help="'all' or a comma-separated list such as fold_1,fold_2.",
+        )
+        parser.add_argument(
+            "--models",
+            type=str,
+            default=None,
+            help=(
+                "Optional comma-separated model filter. Classical names drive "
+                "the fit families; neural names drive the lookback family."
+            ),
+        )
+        parser.add_argument(
+            "--neural-lookbacks",
+            type=str,
+            default=None,
+            help=(
+                "Optional comma-separated neural lookback subset. When given, "
+                "the CPU-expensive lookback sweep is executed."
+            ),
+        )
+        parser.add_argument(
+            "--max-epochs",
+            type=int,
+            default=5,
+            help="Maximum epochs for the optional neural lookback sweep.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Resolve the plan and write nothing.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _run_fi2010_brutal_ablations_impl(
+            config_path=parsed.config,
+            neural_config_path=parsed.neural_config,
+            processed_root=parsed.processed_root,
+            classical_dir=parsed.classical,
+            neural_dir=parsed.neural,
+            out=parsed.out,
+            families=parsed.families,
+            folds=parsed.folds,
+            models=parsed.models,
+            neural_lookbacks=parsed.neural_lookbacks,
+            max_epochs=parsed.max_epochs,
+            overwrite=bool(parsed.overwrite),
+            dry_run=bool(parsed.dry_run),
+        )
+    if command == "run-fi2010-execution-v2":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-execution-v2",
+            description=(
+                "Build FI-2010 execution-aware v2 proxy diagnostics (cost, "
+                "latency, confidence, turnover, adverse-selection, fill and "
+                "degradation) from stored lightweight artefacts."
+            ),
+        )
+        parser.add_argument("--classical", type=Path, default=None)
+        parser.add_argument("--neural", type=Path, default=None)
+        parser.add_argument("--ablations", type=Path, default=None)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--models",
+            type=str,
+            default=None,
+            help="Optional comma-separated model filter.",
+        )
+        parser.add_argument(
+            "--cost-bps",
+            type=str,
+            default=None,
+            help="Optional comma-separated cost (bps) filter such as 0,1,5.",
+        )
+        parser.add_argument(
+            "--latency-steps",
+            type=str,
+            default=None,
+            help="Optional comma-separated latency-step filter such as 0,1.",
+        )
+        parser.add_argument(
+            "--confidence-thresholds",
+            type=str,
+            default=None,
+            help="Optional comma-separated confidence-threshold filter such as 0,0.6.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _run_fi2010_execution_v2_impl(
+            classical_dir=parsed.classical,
+            neural_dir=parsed.neural,
+            ablations_dir=parsed.ablations,
+            out=parsed.out,
+            models=parsed.models,
+            cost_bps=parsed.cost_bps,
+            latency_steps=parsed.latency_steps,
+            confidence_thresholds=parsed.confidence_thresholds,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "inspect-fi2010-neural-plan":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob inspect-fi2010-neural-plan",
+            description=(
+                "Inspect the configured FI-2010 neural benchmark grid. "
+                "No model is trained and no outputs are written."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="all",
+            help="'all' or a comma-separated list of fold integers.",
+        )
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="all",
+            help=(
+                "'all' or a comma-separated neural model list. Supported "
+                "values are deeplob_style and matrix_transformer."
+            ),
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            folds = _parse_fold_selection(parsed.folds)
+            model_tokens = _parse_model_selection(parsed.models)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _inspect_fi2010_neural_plan_impl(
+            config_path=parsed.config,
+            folds=folds,
+            models=model_tokens,
+        )
+    if command == "run-fi2010-neural-benchmark":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-neural-benchmark",
+            description=(
+                "Run selected FI-2010 supervised neural benchmark configurations "
+                "from prepared fold CSV files."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--processed-root", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--folds",
+            type=str,
+            default="fold_1",
+            help="'all' or a comma-separated list such as fold_1,fold_2.",
+        )
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="deeplob_style",
+            help="'all' or a comma-separated neural model list.",
+        )
+        parser.add_argument(
+            "--seeds",
+            type=str,
+            default="0",
+            help="'all' or a comma-separated list of non-negative seeds.",
+        )
+        parser.add_argument(
+            "--lookbacks",
+            type=str,
+            default="20",
+            help="'all' or a comma-separated list of positive lookbacks.",
+        )
+        parser.add_argument(
+            "--max-epochs",
+            type=int,
+            default=1,
+            help="Maximum training epochs. Default is smoke-level.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.add_argument(
+            "--fail-fast",
+            action="store_true",
+            help="Stop at the first run failure.",
+        )
+        parser.add_argument(
+            "--write-full-predictions",
+            action="store_true",
+            help="Write per-run row-level predictions.",
+        )
+        parser.add_argument(
+            "--write-checkpoints",
+            action="store_true",
+            help="Write best-model checkpoints.",
+        )
+        parser.add_argument(
+            "--allow-full-benchmark",
+            action="store_true",
+            help="Allow the complete configured benchmark grid.",
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            neural_folds = _parse_neural_fold_selection(parsed.folds)
+            model_tokens = _parse_model_selection(parsed.models)
+            seeds = _parse_int_selection(
+                parsed.seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            lookbacks = _parse_int_selection(
+                parsed.lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _run_fi2010_neural_benchmark_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            folds=neural_folds,
+            models=model_tokens,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            max_epochs=parsed.max_epochs,
+            overwrite=bool(parsed.overwrite),
+            fail_fast=bool(parsed.fail_fast),
+            write_full_predictions=bool(parsed.write_full_predictions),
+            write_checkpoints=bool(parsed.write_checkpoints),
+            allow_full_benchmark=bool(parsed.allow_full_benchmark),
+        )
+    if command == "analyse-fi2010-uncertainty":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob analyse-fi2010-uncertainty",
+            description=(
+                "Compute uncertainty artefacts (confidence intervals, paired "
+                "fold-level model comparisons, rank stability and a combined "
+                "ranking) from stored FI-2010 multi-fold classical and neural "
+                "result tables. No models are trained and no predictions are "
+                "required."
+            ),
+        )
+        parser.add_argument("--classical", type=Path, default=None)
+        parser.add_argument("--neural", type=Path, default=None)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument(
+            "--baseline",
+            type=str,
+            default="gradient_boosting",
+            help=(
+                "Model used as the baseline in paired fold-level comparisons. "
+                "Defaults to gradient_boosting."
+            ),
+        )
+        parser.add_argument(
+            "--ci-level",
+            type=float,
+            default=0.95,
+            help=(
+                "Two-sided confidence level for the Student-t and percentile "
+                "bootstrap intervals. Defaults to 0.95."
+            ),
+        )
+        parser.add_argument(
+            "--bootstrap-iterations",
+            type=int,
+            default=1000,
+            help="Bootstrap iterations over folds. Defaults to 1000.",
+        )
+        parser.add_argument(
+            "--bootstrap-seed",
+            type=int,
+            default=0,
+            help="Random seed for the bootstrap resampler. Defaults to 0.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _analyse_fi2010_uncertainty_impl(
+            classical_dir=parsed.classical,
+            neural_dir=parsed.neural,
+            out=parsed.out,
+            baseline_model=str(parsed.baseline),
+            ci_level=float(parsed.ci_level),
+            bootstrap_iterations=int(parsed.bootstrap_iterations),
+            bootstrap_seed=int(parsed.bootstrap_seed),
             overwrite=bool(parsed.overwrite),
         )
     if command == "run-paper-experiment":
@@ -3654,6 +4863,327 @@ if typer is not None:
         "--overwrite",
         help="Replace the output file if it already exists.",
     )
+    _MULTIFOLD_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the multi-fold preparation YAML config.",
+    )
+    _MULTIFOLD_EXTRACTED_ROOT_OPTION = typer.Option(
+        ...,
+        "--extracted-root",
+        help=(
+            "Local extracted FI-2010 dataset root (e.g. the "
+            "BenchmarkDatasets/ directory)."
+        ),
+    )
+    _MULTIFOLD_PROCESSED_ROOT_OPTION = typer.Option(
+        None,
+        "--processed-root",
+        help=(
+            "Local processed CSV root. Defaults to the value in the config."
+        ),
+    )
+    _MULTIFOLD_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for the multi-fold preparation artefacts.",
+    )
+    _MULTIFOLD_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or a comma-separated list of fold integers.",
+    )
+    _MULTIFOLD_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help=(
+            "Replace existing combined CSVs, manifests and summary.json."
+        ),
+    )
+    _RUN_MULTIFOLD_CLASSICAL_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 multi-fold YAML config.",
+    )
+    _RUN_MULTIFOLD_CLASSICAL_PROCESSED_ROOT_OPTION = typer.Option(
+        None,
+        "--processed-root",
+        help=(
+            "Root containing prepared fold CSV files. Defaults to the "
+            "value in the config."
+        ),
+    )
+    _RUN_MULTIFOLD_CLASSICAL_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for multi-fold classical artefacts.",
+    )
+    _RUN_MULTIFOLD_CLASSICAL_MODELS_OPTION = typer.Option(
+        None,
+        "--models",
+        help=(
+            "Comma-separated classical model list. Defaults to the "
+            "classical list in the config."
+        ),
+    )
+    _RUN_MULTIFOLD_CLASSICAL_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or a comma-separated list of fold integers.",
+    )
+    _RUN_MULTIFOLD_CLASSICAL_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _NEURAL_PLAN_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 neural benchmark YAML config.",
+    )
+    _NEURAL_PLAN_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or a comma-separated list of fold integers.",
+    )
+    _NEURAL_PLAN_MODELS_OPTION = typer.Option(
+        "all",
+        "--models",
+        help="'all' or a comma-separated neural model list.",
+    )
+    _RUN_NEURAL_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 neural benchmark YAML config.",
+    )
+    _RUN_NEURAL_PROCESSED_ROOT_OPTION = typer.Option(
+        ...,
+        "--processed-root",
+        help="Root containing prepared fold CSV files.",
+    )
+    _RUN_NEURAL_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for neural benchmark artefacts.",
+    )
+    _RUN_NEURAL_FOLDS_OPTION = typer.Option(
+        "fold_1",
+        "--folds",
+        help="'all' or a comma-separated list such as fold_1,fold_2.",
+    )
+    _RUN_NEURAL_MODELS_OPTION = typer.Option(
+        "deeplob_style",
+        "--models",
+        help="'all' or a comma-separated neural model list.",
+    )
+    _RUN_NEURAL_SEEDS_OPTION = typer.Option(
+        "0",
+        "--seeds",
+        help="'all' or a comma-separated list of non-negative seeds.",
+    )
+    _RUN_NEURAL_LOOKBACKS_OPTION = typer.Option(
+        "20",
+        "--lookbacks",
+        help="'all' or a comma-separated list of positive lookbacks.",
+    )
+    _RUN_NEURAL_MAX_EPOCHS_OPTION = typer.Option(
+        1,
+        "--max-epochs",
+        help="Maximum training epochs. Default is smoke-level.",
+    )
+    _RUN_NEURAL_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _RUN_NEURAL_FAIL_FAST_OPTION = typer.Option(
+        False,
+        "--fail-fast",
+        help="Stop at the first run failure.",
+    )
+    _RUN_NEURAL_WRITE_PREDICTIONS_OPTION = typer.Option(
+        False,
+        "--write-full-predictions",
+        help="Write per-run row-level predictions.",
+    )
+    _RUN_NEURAL_WRITE_CHECKPOINTS_OPTION = typer.Option(
+        False,
+        "--write-checkpoints",
+        help="Write best-model checkpoints.",
+    )
+    _RUN_NEURAL_ALLOW_FULL_OPTION = typer.Option(
+        False,
+        "--allow-full-benchmark",
+        help="Allow the complete configured benchmark grid.",
+    )
+    _ANALYSE_UNCERTAINTY_CLASSICAL_OPTION = typer.Option(
+        None,
+        "--classical",
+        help=(
+            "Path to the classical multi-fold artefact directory "
+            "containing results_by_fold.csv."
+        ),
+    )
+    _ANALYSE_UNCERTAINTY_NEURAL_OPTION = typer.Option(
+        None,
+        "--neural",
+        help=(
+            "Path to the neural multi-fold artefact directory containing "
+            "results_by_fold_seed.csv."
+        ),
+    )
+    _ANALYSE_UNCERTAINTY_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for the uncertainty artefacts.",
+    )
+    _ANALYSE_UNCERTAINTY_BASELINE_OPTION = typer.Option(
+        "gradient_boosting",
+        "--baseline",
+        help=(
+            "Baseline model name for paired fold-level comparisons. "
+            "Defaults to gradient_boosting."
+        ),
+    )
+    _ANALYSE_UNCERTAINTY_CI_OPTION = typer.Option(
+        0.95,
+        "--ci-level",
+        help="Two-sided confidence level. Defaults to 0.95.",
+    )
+    _ANALYSE_UNCERTAINTY_BOOTSTRAP_ITER_OPTION = typer.Option(
+        1000,
+        "--bootstrap-iterations",
+        help="Bootstrap iterations over folds. Defaults to 1000.",
+    )
+    _ANALYSE_UNCERTAINTY_BOOTSTRAP_SEED_OPTION = typer.Option(
+        0,
+        "--bootstrap-seed",
+        help="Random seed for the bootstrap resampler. Defaults to 0.",
+    )
+    _ANALYSE_UNCERTAINTY_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _BRUTAL_ABLATIONS_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 multi-fold YAML config.",
+    )
+    _BRUTAL_ABLATIONS_NEURAL_CONFIG_OPTION = typer.Option(
+        None,
+        "--neural-config",
+        help="Path to the neural benchmark YAML config (for the lookback sweep).",
+    )
+    _BRUTAL_ABLATIONS_PROCESSED_ROOT_OPTION = typer.Option(
+        None,
+        "--processed-root",
+        help="Root containing prepared fold CSV files for the fit families.",
+    )
+    _BRUTAL_ABLATIONS_CLASSICAL_OPTION = typer.Option(
+        None,
+        "--classical",
+        help="Stored classical multi-fold artefact directory.",
+    )
+    _BRUTAL_ABLATIONS_NEURAL_OPTION = typer.Option(
+        None,
+        "--neural",
+        help="Stored neural multi-fold artefact directory.",
+    )
+    _BRUTAL_ABLATIONS_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for brutal ablation artefacts.",
+    )
+    _BRUTAL_ABLATIONS_FAMILIES_OPTION = typer.Option(
+        "all",
+        "--families",
+        help=(
+            "'all' or a comma-separated subset of feature_groups,model_class,"
+            "lookback,horizon,calibration,execution."
+        ),
+    )
+    _BRUTAL_ABLATIONS_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or a comma-separated list such as fold_1,fold_2.",
+    )
+    _BRUTAL_ABLATIONS_MODELS_OPTION = typer.Option(
+        None,
+        "--models",
+        help=(
+            "Optional comma-separated model filter. Classical names drive the "
+            "fit families; neural names drive the lookback family."
+        ),
+    )
+    _BRUTAL_ABLATIONS_LOOKBACKS_OPTION = typer.Option(
+        None,
+        "--neural-lookbacks",
+        help=(
+            "Optional comma-separated neural lookback subset. When given, the "
+            "CPU-expensive lookback sweep is executed."
+        ),
+    )
+    _BRUTAL_ABLATIONS_MAX_EPOCHS_OPTION = typer.Option(
+        5,
+        "--max-epochs",
+        help="Maximum epochs for the optional neural lookback sweep.",
+    )
+    _BRUTAL_ABLATIONS_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _BRUTAL_ABLATIONS_DRY_RUN_OPTION = typer.Option(
+        False,
+        "--dry-run",
+        help="Resolve the plan and write nothing.",
+    )
+    _EXECUTION_V2_CLASSICAL_OPTION = typer.Option(
+        None,
+        "--classical",
+        help="Stored classical multi-fold artefact directory.",
+    )
+    _EXECUTION_V2_NEURAL_OPTION = typer.Option(
+        None,
+        "--neural",
+        help="Stored neural multi-fold artefact directory.",
+    )
+    _EXECUTION_V2_ABLATIONS_OPTION = typer.Option(
+        None,
+        "--ablations",
+        help="Stored brutal ablation artefact directory (cross-reference input).",
+    )
+    _EXECUTION_V2_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for execution v2 proxy diagnostics.",
+    )
+    _EXECUTION_V2_MODELS_OPTION = typer.Option(
+        None,
+        "--models",
+        help="Optional comma-separated model filter.",
+    )
+    _EXECUTION_V2_COST_BPS_OPTION = typer.Option(
+        None,
+        "--cost-bps",
+        help="Optional comma-separated cost (bps) filter such as 0,1,5.",
+    )
+    _EXECUTION_V2_LATENCY_OPTION = typer.Option(
+        None,
+        "--latency-steps",
+        help="Optional comma-separated latency-step filter such as 0,1.",
+    )
+    _EXECUTION_V2_THRESHOLDS_OPTION = typer.Option(
+        None,
+        "--confidence-thresholds",
+        help="Optional comma-separated confidence-threshold filter such as 0,0.6.",
+    )
+    _EXECUTION_V2_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
     _RUN_PAPER_EXPERIMENT_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -3883,6 +5413,234 @@ if typer is not None:
             input_path=input_path,
             output_path=output_path,
             split_label=split,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_fi2010_multifold(
+        config: Path = _MULTIFOLD_CONFIG_OPTION,
+        extracted_root: Path = _MULTIFOLD_EXTRACTED_ROOT_OPTION,
+        processed_root: Path | None = _MULTIFOLD_PROCESSED_ROOT_OPTION,
+        folds: str = _MULTIFOLD_FOLDS_OPTION,
+    ) -> None:
+        """Report configured FI-2010 folds and which expected files exist."""
+        try:
+            selection = _parse_fold_selection(folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _inspect_fi2010_multifold_impl(
+            config_path=config,
+            extracted_root=extracted_root,
+            processed_root=processed_root,
+            folds=selection,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def prepare_fi2010_multifold(
+        config: Path = _MULTIFOLD_CONFIG_OPTION,
+        extracted_root: Path = _MULTIFOLD_EXTRACTED_ROOT_OPTION,
+        processed_root: Path | None = _MULTIFOLD_PROCESSED_ROOT_OPTION,
+        out: Path = _MULTIFOLD_OUT_OPTION,
+        folds: str = _MULTIFOLD_FOLDS_OPTION,
+        overwrite: bool = _MULTIFOLD_OVERWRITE_OPTION,
+    ) -> None:
+        """Prepare multi-fold combined CSVs and manifests for the configured folds."""
+        try:
+            selection = _parse_fold_selection(folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _prepare_fi2010_multifold_impl(
+            config_path=config,
+            extracted_root=extracted_root,
+            processed_root=processed_root,
+            out=out,
+            folds=selection,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_multifold_classical(
+        config: Path = _RUN_MULTIFOLD_CLASSICAL_CONFIG_OPTION,
+        processed_root: Path | None = _RUN_MULTIFOLD_CLASSICAL_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_MULTIFOLD_CLASSICAL_OUT_OPTION,
+        models: str | None = _RUN_MULTIFOLD_CLASSICAL_MODELS_OPTION,
+        folds: str = _RUN_MULTIFOLD_CLASSICAL_FOLDS_OPTION,
+        overwrite: bool = _RUN_MULTIFOLD_CLASSICAL_OVERWRITE_OPTION,
+    ) -> None:
+        """Run classical models across prepared FI-2010 fold CSVs."""
+        try:
+            selection = _parse_fold_selection(folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        model_tokens = None
+        if models is not None:
+            model_tokens = [token.strip() for token in models.split(",") if token.strip()]
+        exit_code = _run_fi2010_multifold_classical_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            models=model_tokens,
+            folds=selection,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def inspect_fi2010_neural_plan(
+        config: Path = _NEURAL_PLAN_CONFIG_OPTION,
+        folds: str = _NEURAL_PLAN_FOLDS_OPTION,
+        models: str = _NEURAL_PLAN_MODELS_OPTION,
+    ) -> None:
+        """Inspect the FI-2010 neural benchmark run grid without training."""
+        try:
+            selection = _parse_fold_selection(folds)
+            model_tokens = _parse_model_selection(models)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _inspect_fi2010_neural_plan_impl(
+            config_path=config,
+            folds=selection,
+            models=model_tokens,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_neural_benchmark(
+        config: Path = _RUN_NEURAL_CONFIG_OPTION,
+        processed_root: Path = _RUN_NEURAL_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_NEURAL_OUT_OPTION,
+        folds: str = _RUN_NEURAL_FOLDS_OPTION,
+        models: str = _RUN_NEURAL_MODELS_OPTION,
+        seeds: str = _RUN_NEURAL_SEEDS_OPTION,
+        lookbacks: str = _RUN_NEURAL_LOOKBACKS_OPTION,
+        max_epochs: int = _RUN_NEURAL_MAX_EPOCHS_OPTION,
+        overwrite: bool = _RUN_NEURAL_OVERWRITE_OPTION,
+        fail_fast: bool = _RUN_NEURAL_FAIL_FAST_OPTION,
+        write_full_predictions: bool = _RUN_NEURAL_WRITE_PREDICTIONS_OPTION,
+        write_checkpoints: bool = _RUN_NEURAL_WRITE_CHECKPOINTS_OPTION,
+        allow_full_benchmark: bool = _RUN_NEURAL_ALLOW_FULL_OPTION,
+    ) -> None:
+        """Run selected FI-2010 supervised neural benchmark configurations."""
+        try:
+            fold_tokens = _parse_neural_fold_selection(folds)
+            model_tokens = _parse_model_selection(models)
+            seed_tokens = _parse_int_selection(
+                seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            lookback_tokens = _parse_int_selection(
+                lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _run_fi2010_neural_benchmark_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            folds=fold_tokens,
+            models=model_tokens,
+            seeds=seed_tokens,
+            lookbacks=lookback_tokens,
+            max_epochs=max_epochs,
+            overwrite=overwrite,
+            fail_fast=fail_fast,
+            write_full_predictions=write_full_predictions,
+            write_checkpoints=write_checkpoints,
+            allow_full_benchmark=allow_full_benchmark,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def analyse_fi2010_uncertainty(
+        classical: Path | None = _ANALYSE_UNCERTAINTY_CLASSICAL_OPTION,
+        neural: Path | None = _ANALYSE_UNCERTAINTY_NEURAL_OPTION,
+        out: Path = _ANALYSE_UNCERTAINTY_OUT_OPTION,
+        baseline: str = _ANALYSE_UNCERTAINTY_BASELINE_OPTION,
+        ci_level: float = _ANALYSE_UNCERTAINTY_CI_OPTION,
+        bootstrap_iterations: int = _ANALYSE_UNCERTAINTY_BOOTSTRAP_ITER_OPTION,
+        bootstrap_seed: int = _ANALYSE_UNCERTAINTY_BOOTSTRAP_SEED_OPTION,
+        overwrite: bool = _ANALYSE_UNCERTAINTY_OVERWRITE_OPTION,
+    ) -> None:
+        """Compute uncertainty artefacts from stored multi-fold tables."""
+        exit_code = _analyse_fi2010_uncertainty_impl(
+            classical_dir=classical,
+            neural_dir=neural,
+            out=out,
+            baseline_model=baseline,
+            ci_level=ci_level,
+            bootstrap_iterations=bootstrap_iterations,
+            bootstrap_seed=bootstrap_seed,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_brutal_ablations(
+        config: Path = _BRUTAL_ABLATIONS_CONFIG_OPTION,
+        neural_config: Path | None = _BRUTAL_ABLATIONS_NEURAL_CONFIG_OPTION,
+        processed_root: Path | None = _BRUTAL_ABLATIONS_PROCESSED_ROOT_OPTION,
+        classical: Path | None = _BRUTAL_ABLATIONS_CLASSICAL_OPTION,
+        neural: Path | None = _BRUTAL_ABLATIONS_NEURAL_OPTION,
+        out: Path = _BRUTAL_ABLATIONS_OUT_OPTION,
+        families: str = _BRUTAL_ABLATIONS_FAMILIES_OPTION,
+        folds: str = _BRUTAL_ABLATIONS_FOLDS_OPTION,
+        models: str | None = _BRUTAL_ABLATIONS_MODELS_OPTION,
+        neural_lookbacks: str | None = _BRUTAL_ABLATIONS_LOOKBACKS_OPTION,
+        max_epochs: int = _BRUTAL_ABLATIONS_MAX_EPOCHS_OPTION,
+        overwrite: bool = _BRUTAL_ABLATIONS_OVERWRITE_OPTION,
+        dry_run: bool = _BRUTAL_ABLATIONS_DRY_RUN_OPTION,
+    ) -> None:
+        """Run the FI-2010 brutal ablation families and write artefacts."""
+        exit_code = _run_fi2010_brutal_ablations_impl(
+            config_path=config,
+            neural_config_path=neural_config,
+            processed_root=processed_root,
+            classical_dir=classical,
+            neural_dir=neural,
+            out=out,
+            families=families,
+            folds=folds,
+            models=models,
+            neural_lookbacks=neural_lookbacks,
+            max_epochs=max_epochs,
+            overwrite=overwrite,
+            dry_run=dry_run,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_execution_v2(
+        classical: Path | None = _EXECUTION_V2_CLASSICAL_OPTION,
+        neural: Path | None = _EXECUTION_V2_NEURAL_OPTION,
+        ablations: Path | None = _EXECUTION_V2_ABLATIONS_OPTION,
+        out: Path = _EXECUTION_V2_OUT_OPTION,
+        models: str | None = _EXECUTION_V2_MODELS_OPTION,
+        cost_bps: str | None = _EXECUTION_V2_COST_BPS_OPTION,
+        latency_steps: str | None = _EXECUTION_V2_LATENCY_OPTION,
+        confidence_thresholds: str | None = _EXECUTION_V2_THRESHOLDS_OPTION,
+        overwrite: bool = _EXECUTION_V2_OVERWRITE_OPTION,
+    ) -> None:
+        """Build FI-2010 execution-aware v2 proxy diagnostics from stored artefacts."""
+        exit_code = _run_fi2010_execution_v2_impl(
+            classical_dir=classical,
+            neural_dir=neural,
+            ablations_dir=ablations,
+            out=out,
+            models=models,
+            cost_bps=cost_bps,
+            latency_steps=latency_steps,
+            confidence_thresholds=confidence_thresholds,
             overwrite=overwrite,
         )
         if exit_code != 0:
@@ -5109,6 +6867,52 @@ else:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def inspect_fi2010_multifold(
+        config: Path,
+        extracted_root: Path,
+        processed_root: Path | None = None,
+        folds: str = "all",
+    ) -> None:
+        """Report configured FI-2010 folds and which expected files exist."""
+        try:
+            selection = _parse_fold_selection(folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _inspect_fi2010_multifold_impl(
+            config_path=config,
+            extracted_root=extracted_root,
+            processed_root=processed_root,
+            folds=selection,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def prepare_fi2010_multifold(
+        config: Path,
+        extracted_root: Path,
+        out: Path,
+        processed_root: Path | None = None,
+        folds: str = "all",
+        overwrite: bool = False,
+    ) -> None:
+        """Prepare multi-fold combined CSVs and manifests."""
+        try:
+            selection = _parse_fold_selection(folds)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _prepare_fi2010_multifold_impl(
+            config_path=config,
+            extracted_root=extracted_root,
+            processed_root=processed_root,
+            out=out,
+            folds=selection,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def run_paper_experiment(
         config: Path,
         data_path: Path,
@@ -5260,6 +7064,14 @@ if typer is not None:
     app.command("prepare-fi2010-benchmark")(prepare_fi2010_benchmark)
     app.command("verify-fi2010-local")(verify_fi2010_local)
     app.command("convert-fi2010-official")(convert_fi2010_official)
+    app.command("inspect-fi2010-multifold")(inspect_fi2010_multifold)
+    app.command("prepare-fi2010-multifold")(prepare_fi2010_multifold)
+    app.command("run-fi2010-multifold-classical")(run_fi2010_multifold_classical)
+    app.command("inspect-fi2010-neural-plan")(inspect_fi2010_neural_plan)
+    app.command("run-fi2010-neural-benchmark")(run_fi2010_neural_benchmark)
+    app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
+    app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)
+    app.command("run-fi2010-execution-v2")(run_fi2010_execution_v2)
     app.command("run-paper-experiment")(run_paper_experiment)
     app.command("run-paper-ablations")(run_paper_ablations)
     app.command("run-system-benchmarks")(run_system_benchmarks)

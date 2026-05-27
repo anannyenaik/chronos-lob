@@ -10,6 +10,17 @@ code commit where available and stored output artefacts.
 The [FI-2010 empirical release note](10_10_upgrade_plan.md) records the
 current evidence status and remaining research work.
 
+The [10/10 research protocol note](10_10_research_protocol.md) is the
+implementation-facing companion to the public protocol in
+[docs/RESEARCH_PROTOCOL.md](../docs/RESEARCH_PROTOCOL.md) and records the
+staged multi-fold upgrade contract.
+
+The [statistical uncertainty layer](../docs/STATISTICAL_UNCERTAINTY.md)
+quantifies fold-level variance for the stored multi-fold tables and
+writes diagnostic artefacts under `experiments/fi2010_uncertainty/`.
+It does not retrain any model and does not promote any model beyond
+the reduced-scope evidence already stored.
+
 `reports/report_archive/` is a generated technical evidence archive of
 inventories, current command outputs and Mermaid diagrams. Rebuild it
 with `python -m chronoslob.cli build-report-archive`.

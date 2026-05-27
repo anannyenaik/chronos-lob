@@ -1,0 +1,129 @@
+{
+  "aggregation": {
+    "metrics": [
+      "accuracy",
+      "macro_f1",
+      "mcc",
+      "brier_score",
+      "ece"
+    ],
+    "std_ddof": 0
+  },
+  "artefacts": {
+    "calibration_summary": "calibration_summary.csv",
+    "execution_summary": "execution_summary.csv",
+    "folds": "folds/",
+    "model_failures": "model_failures.json",
+    "results_by_fold": "results_by_fold.csv",
+    "results_summary": "results_summary.csv",
+    "summary": "summary.json"
+  },
+  "calibration": {
+    "enabled": true,
+    "n_bins": 10
+  },
+  "config_path": "configs\\experiments\\fi2010_multifold.yaml",
+  "config_sha256": "e23db9c52a54a98264876b33430a47c3c91d7b81f6f150ae0e558f51c0d436ab",
+  "created_at": "2026-05-26T16:47:05.714231Z",
+  "dataset_name": "FI-2010",
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "execution_sensitivity": {
+    "class_direction_map": {
+      "1": 1,
+      "2": -1,
+      "3": 0
+    },
+    "confidence_thresholds": [
+      0.0,
+      0.5,
+      0.6,
+      0.7
+    ],
+    "cost_bps": [
+      0.0,
+      0.5,
+      1.0,
+      5.0
+    ],
+    "enabled": true,
+    "latency_steps": [
+      0,
+      1
+    ],
+    "return_proxy": {
+      "ask_price_column": "ask_price_1",
+      "bid_price_column": "bid_price_1",
+      "horizon_offset": null,
+      "kind": "mid_forward_return"
+    }
+  },
+  "failure_count": 0,
+  "fold_count": 5,
+  "fold_inputs": [
+    {
+      "fold_id": 1,
+      "path": "data\\processed\\fi2010\\fold1_combined.csv",
+      "sha256": "49a24198d14b929d8484d58ea2ff5fb5e1853a02f4d519ef9ba46ba27ee5bdb0"
+    },
+    {
+      "fold_id": 2,
+      "path": "data\\processed\\fi2010\\fold2_combined.csv",
+      "sha256": "13893030307586e562133f3f281f35a4c1d46c2201b00618ac48f89a7aa1c762"
+    },
+    {
+      "fold_id": 3,
+      "path": "data\\processed\\fi2010\\fold3_combined.csv",
+      "sha256": "1dc455fd0e8de7e6b45d10bfb790f57c8361cb646f489f745b1e5a87c3c025b6"
+    },
+    {
+      "fold_id": 4,
+      "path": "data\\processed\\fi2010\\fold4_combined.csv",
+      "sha256": "f8e4278246f074a8dd74a84a4dc2654436d1522ba70da7fa8748dcf1acdbf2f3"
+    },
+    {
+      "fold_id": 5,
+      "path": "data\\processed\\fi2010\\fold5_combined.csv",
+      "sha256": "701075030dc3df292cc0791054ab61a2ab11fb555e1ebfa76711379b86018294"
+    }
+  ],
+  "folds_completed": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "folds_requested": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "full_predictions_written": false,
+  "git_commit": "cad08334543fb18df3e01f3126af66c2d21e1bcc",
+  "model_count": 6,
+  "models_requested": [
+    "majority",
+    "logistic",
+    "ridge",
+    "elastic_net",
+    "random_forest",
+    "gradient_boosting"
+  ],
+  "output_dir": "experiments\\fi2010_multifold_classical",
+  "processed_root": "data\\processed\\fi2010",
+  "result_rows": 60,
+  "runner_version": "phase-d/fi2010-multifold-classical/v1",
+  "seeds": [
+    0
+  ],
+  "study_name": "fi2010_multifold_research_study",
+  "target_horizon": 10,
+  "task_name": "midprice_direction",
+  "warnings": []
+}

@@ -1,0 +1,12 @@
+{
+  "skipped": [
+    {
+      "ablation_family": "lookback",
+      "ablation_name": "lookback_sweep",
+      "fold_id": "-",
+      "model_name": "-",
+      "skip_reason": "neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it"
+    }
+  ],
+  "skipped_count": 1
+}

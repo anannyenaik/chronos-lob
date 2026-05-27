@@ -1,0 +1,81 @@
+{
+  "name": "fi2010_external_benchmark_context",
+  "version": 1,
+  "scope": "protocol comparison only; no external numeric metrics",
+  "chronoslob_protocol": {
+    "dataset": "FI-2010",
+    "variant": "NoAuction ZScore",
+    "folds": ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"],
+    "horizon": "label_10",
+    "split_protocol": "official split column; validation carved from train only",
+    "normalisation": "official z-score matrices; train-only model preprocessing where applicable",
+    "label_handling": "official categorical labels for predictive metrics; configured direction map for execution proxies",
+    "full_predictions_written": false,
+    "checkpoints_written": false
+  },
+  "chronoslob_result_snapshot": [
+    {
+      "model_name": "gradient_boosting",
+      "model_scope": "classical",
+      "split": "test",
+      "metric": "macro_f1",
+      "mean": 0.4654,
+      "std": 0.0039,
+      "folds": 5,
+      "caveat": "single classical seed across stored folds"
+    },
+    {
+      "model_name": "matrix_transformer",
+      "model_scope": "reduced-scope supervised neural",
+      "split": "test",
+      "metric": "macro_f1",
+      "mean": 0.7337,
+      "std": 0.0280,
+      "folds": 5,
+      "seed_count": 1,
+      "lookback": 20,
+      "caveat": "single-seed, single-lookback evidence; no neural superiority claim"
+    }
+  ],
+  "external_references": [
+    {
+      "source_name": "Ntakaris et al. FI-2010 dataset and baselines",
+      "source_type": "paper_and_dataset",
+      "url": "https://arxiv.org/abs/1705.03233",
+      "metric_values_included": false
+    },
+    {
+      "source_name": "Tsantekidis et al. stationary-feature LOB forecasting",
+      "source_type": "paper",
+      "url": "https://arxiv.org/abs/1810.09965",
+      "metric_values_included": false
+    },
+    {
+      "source_name": "Zhang, Zohren and Roberts DeepLOB",
+      "source_type": "paper",
+      "url": "https://arxiv.org/abs/1808.03668",
+      "metric_values_included": false
+    },
+    {
+      "source_name": "Wallbridge TransLOB",
+      "source_type": "paper",
+      "url": "https://arxiv.org/abs/2003.00130",
+      "metric_values_included": false
+    },
+    {
+      "source_name": "Sangadiev et al. DeepFolio",
+      "source_type": "paper",
+      "url": "https://arxiv.org/abs/2008.12152",
+      "metric_values_included": false
+    }
+  ],
+  "claim_boundaries": {
+    "no_external_numeric_metrics": true,
+    "no_external_ranking_claim": true,
+    "no_neural_superiority_claim": true,
+    "no_profitability_claim": true,
+    "no_live_tradability_claim": true,
+    "no_foundation_model_claim": true,
+    "no_ssl_result": true
+  }
+}

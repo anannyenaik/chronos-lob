@@ -1,0 +1,35 @@
+{
+  "skipped": [
+    {
+      "diagnostic": "adverse_selection",
+      "scope": "deeplob_style",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed"
+    },
+    {
+      "diagnostic": "adverse_selection",
+      "scope": "matrix_transformer",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed"
+    },
+    {
+      "diagnostic": "fill_assumption",
+      "scope": "deeplob_style",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed"
+    },
+    {
+      "diagnostic": "fill_assumption",
+      "scope": "matrix_transformer",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed"
+    },
+    {
+      "diagnostic": "degradation",
+      "scope": "deeplob_style",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed"
+    },
+    {
+      "diagnostic": "degradation",
+      "scope": "matrix_transformer",
+      "skip_reason": "neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed"
+    }
+  ],
+  "skipped_count": 6
+}

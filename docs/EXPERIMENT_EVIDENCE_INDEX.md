@@ -4,6 +4,23 @@ This index maps research themes to the modules, configs, tests and CLI
 commands that implement them. It is a navigation aid for anyone reading
 or reproducing the platform.
 
+## Research Protocol
+
+- Public protocol: [RESEARCH_PROTOCOL](RESEARCH_PROTOCOL.md)
+- Maintainer note: [reports/10_10_research_protocol.md](../reports/10_10_research_protocol.md)
+- Multi-fold study skeleton:
+  [`configs/experiments/fi2010_multifold.yaml`](../configs/experiments/fi2010_multifold.yaml)
+- Multi-fold preparation runbook:
+  [FI2010_MULTIFOLD_PROTOCOL](FI2010_MULTIFOLD_PROTOCOL.md)
+- Multi-fold classical runner:
+  [FI2010_MULTIFOLD_CLASSICAL](FI2010_MULTIFOLD_CLASSICAL.md)
+- Neural benchmark protocol:
+  [NEURAL_BENCHMARK_PROTOCOL](NEURAL_BENCHMARK_PROTOCOL.md)
+- Neural benchmark runner:
+  [FI2010_NEURAL_BENCHMARKS](FI2010_NEURAL_BENCHMARKS.md)
+- External benchmark context:
+  [FI2010_EXTERNAL_BENCHMARKS](FI2010_EXTERNAL_BENCHMARKS.md)
+
 ## Real FI-2010 Evidence Map
 
 - Acquisition and conversion:
@@ -63,14 +80,24 @@ or reproducing the platform.
 
 - Modules: `chronoslob/models/`, `chronoslob/training/`
 - Configs: `configs/models/*.yaml`,
-  `configs/experiments/*smoke.yaml`
+  `configs/experiments/*smoke.yaml`,
+  `configs/experiments/fi2010_neural_serious.yaml`
 - Tests: `tests/test_baselines.py`,
   `tests/test_deeplob_forward.py`,
-  `tests/test_transformer_model.py`
-- CLI: `inspect-baselines`, `inspect-deeplob`, `inspect-transformer`
+  `tests/test_transformer_model.py`,
+  `tests/test_neural_benchmarking.py`,
+  `tests/test_fi2010_neural_runner.py`
+- CLI: `inspect-baselines`, `inspect-deeplob`, `inspect-transformer`,
+  `inspect-fi2010-neural-plan`, `run-fi2010-neural-benchmark`
 - Reports: [baselines](../reports/baselines.md),
   [deeplob_baseline](../reports/deeplob_baseline.md),
   [transformer_architecture](../reports/transformer_architecture.md)
+- Neural planning module:
+  `chronoslob/experiments/neural_benchmarking.py`
+- Neural execution module:
+  `chronoslob/experiments/fi2010_neural_runner.py`
+- Neural protocol:
+  [NEURAL_BENCHMARK_PROTOCOL](NEURAL_BENCHMARK_PROTOCOL.md)
 
 ## Self-Supervised and Multi-Task Learning
 
@@ -89,6 +116,76 @@ or reproducing the platform.
 - Reports:
   [self_supervised_objectives](../reports/self_supervised_objectives.md),
   [multitask_finetuning](../reports/multitask_finetuning.md)
+
+## Statistical Uncertainty
+
+- Module: `chronoslob/experiments/statistics.py`
+- Tests: `tests/test_fi2010_uncertainty.py`
+- CLI: `analyse-fi2010-uncertainty`
+- Docs: [STATISTICAL_UNCERTAINTY](STATISTICAL_UNCERTAINTY.md)
+- Artefact directory:
+  [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/)
+- Outputs: `summary.json`, `metric_confidence_intervals.csv`,
+  `paired_model_comparisons.csv`, `rank_stability.csv`,
+  `model_ranking.csv`, `uncertainty_notes.md`. Diagnostic only.
+  Neural numbers carry a reduced-scope, single-seed caveat in
+  `uncertainty_notes.md`.
+
+## Brutal Ablations
+
+- Module: `chronoslob/experiments/fi2010_brutal_ablations.py`
+- Tests: `tests/test_fi2010_brutal_ablations.py`
+- CLI: `run-fi2010-brutal-ablations`
+- Docs: [FI2010_BRUTAL_ABLATIONS](FI2010_BRUTAL_ABLATIONS.md)
+- Artefact directory:
+  [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/)
+- Outputs: `summary.json`, `ablation_results.csv`, `ablation_summary.csv`,
+  `skipped_ablations.json`, `feature_group_ablation.csv`,
+  `model_class_ablation.csv`, `lookback_ablation.csv`,
+  `horizon_ablation.csv`, `calibration_threshold_ablation.csv`,
+  `execution_cost_latency_ablation.csv` and `ablation_notes.md`. The
+  feature-group and horizon families refit a fast linear baseline on the
+  real folds; the model-class, calibration and execution families reuse
+  stored evidence; the neural lookback sweep is skipped by default and
+  recorded with a reason. Execution numbers are proxy diagnostics only.
+
+## Execution-Aware Evaluation v2
+
+- Module: `chronoslob/experiments/execution_v2.py`
+- Tests: `tests/test_fi2010_execution_v2.py`
+- CLI: `run-fi2010-execution-v2`
+- Docs: [FI2010_EXECUTION_V2](FI2010_EXECUTION_V2.md)
+- Artefact directory:
+  [`experiments/fi2010_execution_v2/`](../experiments/fi2010_execution_v2/)
+- Outputs: `summary.json`, `execution_v2_results.csv`,
+  `cost_latency_surface.csv`, `confidence_threshold_summary.csv`,
+  `turnover_summary.csv`, `adverse_selection_summary.csv`,
+  `fill_assumption_summary.csv`, `degradation_summary.csv`,
+  `skipped_diagnostics.json`, `execution_assumptions.md` and
+  `execution_notes.md`. The layer reuses the stored multi-fold and
+  ablation artefacts to make the forecasting-versus-tradability gap
+  explicit through cost, latency, confidence, turnover, adverse-selection,
+  fill and statistical-to-execution degradation proxies. Neural runs ship
+  no stored execution proxy rows, so their execution-aware diagnostics are
+  recorded as explicit skips. Every metric is a proxy diagnostic; no
+  profitability or live tradability claim is made.
+
+## External Benchmark Context
+
+- Docs: [FI2010_EXTERNAL_BENCHMARKS](FI2010_EXTERNAL_BENCHMARKS.md)
+- Maintainer note:
+  [`reports/external_benchmark_context.md`](../reports/external_benchmark_context.md)
+- Artefact directory:
+  [`experiments/fi2010_external_context/`](../experiments/fi2010_external_context/)
+- Outputs: `benchmark_context.json`, `protocol_comparison.csv` and
+  `comparison_notes.md`.
+- Scope: protocol comparison only. The layer documents dataset variant,
+  auction setting, normalisation, folds, horizon, label mapping, split
+  protocol, metrics, preprocessing, model class and calibration/execution
+  diagnostics. It includes the current ChronosLOB classical and
+  reduced-scope neural result snapshot, carries the single-seed neural
+  caveat and records no external numeric paper metrics. No SSL result is
+  reported.
 
 ## Calibration and Uncertainty
 
@@ -153,11 +250,59 @@ or reproducing the platform.
 - Tests: `tests/test_fi2010_benchmark_preparation.py`,
   `tests/test_fi2010_official_adapter.py`
 - CLI: `prepare-fi2010-benchmark`, `verify-fi2010-local`,
-  `convert-fi2010-official`
+  `convert-fi2010-official`, `inspect-fi2010-multifold`,
+  `prepare-fi2010-multifold`, `run-fi2010-multifold-classical`,
+  `inspect-fi2010-neural-plan`, `run-fi2010-neural-benchmark`
 - Docs: [FI2010_BENCHMARK](FI2010_BENCHMARK.md),
-  [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
+  [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md),
+  [FI2010_MULTIFOLD_PROTOCOL](FI2010_MULTIFOLD_PROTOCOL.md),
+  [FI2010_MULTIFOLD_CLASSICAL](FI2010_MULTIFOLD_CLASSICAL.md)
+- Multi-fold modules:
+  `chronoslob/experiments/fi2010_multifold.py`,
+  `chronoslob/experiments/fi2010_multifold_runner.py`,
+  `chronoslob/experiments/fi2010_neural_runner.py`
+- Multi-fold tests: `tests/test_fi2010_multifold.py`,
+  `tests/test_fi2010_multifold_runner.py`,
+  `tests/test_fi2010_neural_runner.py`
 - Split support: generic temporal split and official split-aware
-  evaluation from the combined CSV `split` column.
+  evaluation from the combined CSV `split` column. Multi-fold
+  preparation produces the same split column per fold.
+- Classical multi-fold artefacts: `summary.json`,
+  `results_by_fold.csv`, `results_summary.csv`,
+  `calibration_summary.csv`, `execution_summary.csv`,
+  `model_failures.json` and per-fold lightweight evidence under
+  `folds/fold_<N>/`.
+- Real classical multi-fold evidence:
+  [`experiments/fi2010_multifold_classical/`](../experiments/fi2010_multifold_classical/)
+  contains a run across the five official NoAuction ZScore folds for the
+  classical baseline set (`majority`, `logistic`, `ridge`, `elastic_net`,
+  `random_forest`, `gradient_boosting`) at horizon `label_10`. Full
+  predictions are not written.
+- Serious neural plan: `configs/experiments/fi2010_neural_serious.yaml`
+  and `inspect-fi2010-neural-plan` define the supervised neural run grid.
+- Neural benchmark runner: `run-fi2010-neural-benchmark` executes selected
+  supervised neural subsets and writes `summary.json`, `run_plan.csv`,
+  `results_by_fold_seed.csv`, `results_summary.csv`,
+  `training_summary.csv`, `model_capacity_summary.csv` and
+  `model_failures.json`. Full prediction rows and checkpoints are not
+  written by default.
+- Real reduced-scope neural multi-fold evidence:
+  [`experiments/fi2010_multifold_neural/`](../experiments/fi2010_multifold_neural/)
+  contains a CPU run across the five official NoAuction ZScore folds for
+  `deeplob_style` and `matrix_transformer` at horizon `label_10`, with a
+  single seed (`0`), single lookback (`20`) and `max_epochs=25`. Scope is
+  reduced from the configured grid because the full grid is impractical
+  on CPU. All ten planned runs completed; zero failures. Full predictions
+  and checkpoints are not written. The full configured grid is not yet
+  reported here.
+- Statistical uncertainty layer:
+  [STATISTICAL_UNCERTAINTY](STATISTICAL_UNCERTAINTY.md) and
+  [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/)
+  contain fold-level confidence intervals, paired comparisons against the
+  `gradient_boosting` baseline, rank stability and a combined ranking
+  computed from the stored multi-fold tables. The neural numbers remain
+  reduced-scope, single-seed evidence; the analysis does not promote any
+  model beyond that evidence.
 
 ## Paper Experiment Runner
 

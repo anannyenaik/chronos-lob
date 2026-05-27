@@ -455,11 +455,15 @@ class PaperNeuralSettings(BaseModel):
     transformer_window_length: int = 4
     batch_size: int = 4
     max_epochs: int = 1
+    early_stopping_patience: int | None = None
+    early_stopping_metric: str = "validation_loss"
     learning_rate: float = 1e-3
     weight_decay: float = 0.0
     gradient_clip_norm: float | None = 1.0
     device: str = "cpu"
     deterministic: bool = True
+    checkpoint_enabled: bool = False
+    checkpoint_path: str | None = None
     dropout: float = 0.0
     deeplob_conv_channels: int = 4
     deeplob_lstm_hidden_size: int = 8
@@ -540,6 +544,30 @@ class PaperNeuralSettings(BaseModel):
             raise ValueError("gradient_clip_norm must be positive when provided")
         return numeric
 
+    @field_validator("early_stopping_patience")
+    @classmethod
+    def _validate_early_stopping_patience(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("early_stopping_patience must be an integer or null")
+        if value < 0:
+            raise ValueError("early_stopping_patience must be non-negative")
+        return int(value)
+
+    @field_validator("early_stopping_metric")
+    @classmethod
+    def _validate_early_stopping_metric(cls, value: str) -> str:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("early_stopping_metric must be a non-empty string")
+        cleaned = value.strip().lower()
+        if cleaned not in {"validation_loss", "validation_macro_f1"}:
+            raise ValueError(
+                "early_stopping_metric must be one of "
+                "['validation_loss', 'validation_macro_f1']"
+            )
+        return cleaned
+
     @field_validator("dropout")
     @classmethod
     def _validate_dropout(cls, value: float) -> float:
@@ -555,7 +583,19 @@ class PaperNeuralSettings(BaseModel):
     def _validate_device(cls, value: str) -> str:
         if not isinstance(value, str) or not value.strip():
             raise ValueError("device must be a non-empty string")
-        return value.strip().lower()
+        cleaned = value.strip().lower()
+        if cleaned not in {"auto", "cpu", "cuda"} and not cleaned.startswith("cuda:"):
+            raise ValueError("device must be auto, cpu, cuda or cuda:<index>")
+        return cleaned
+
+    @field_validator("checkpoint_path")
+    @classmethod
+    def _validate_checkpoint_path(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("checkpoint_path must be non-empty when provided")
+        return value.strip()
 
     @model_validator(mode="after")
     def _validate_transformer_heads(self) -> PaperNeuralSettings:

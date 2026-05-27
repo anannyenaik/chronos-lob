@@ -1,0 +1,341 @@
+{
+  "fold_id": 3,
+  "models": [
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          0,
+          2652,
+          0
+        ],
+        [
+          0,
+          10817,
+          0
+        ],
+        [
+          0,
+          2498,
+          0
+        ]
+      ],
+      "model_name": "majority",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          0,
+          7183,
+          0
+        ],
+        [
+          0,
+          22144,
+          0
+        ],
+        [
+          0,
+          7696,
+          0
+        ]
+      ],
+      "model_name": "majority",
+      "seed": 0,
+      "split": "test"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          70,
+          2498,
+          84
+        ],
+        [
+          73,
+          10568,
+          176
+        ],
+        [
+          55,
+          2294,
+          149
+        ]
+      ],
+      "model_name": "logistic",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          532,
+          6450,
+          201
+        ],
+        [
+          353,
+          21531,
+          260
+        ],
+        [
+          374,
+          6913,
+          409
+        ]
+      ],
+      "model_name": "logistic",
+      "seed": 0,
+      "split": "test"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          51,
+          2532,
+          69
+        ],
+        [
+          46,
+          10658,
+          113
+        ],
+        [
+          40,
+          2347,
+          111
+        ]
+      ],
+      "model_name": "ridge",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          400,
+          6622,
+          161
+        ],
+        [
+          224,
+          21743,
+          177
+        ],
+        [
+          268,
+          7121,
+          307
+        ]
+      ],
+      "model_name": "ridge",
+      "seed": 0,
+      "split": "test"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          72,
+          2496,
+          84
+        ],
+        [
+          75,
+          10566,
+          176
+        ],
+        [
+          54,
+          2294,
+          150
+        ]
+      ],
+      "model_name": "elastic_net",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          526,
+          6451,
+          206
+        ],
+        [
+          355,
+          21530,
+          259
+        ],
+        [
+          373,
+          6915,
+          408
+        ]
+      ],
+      "model_name": "elastic_net",
+      "seed": 0,
+      "split": "test"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          405,
+          2053,
+          194
+        ],
+        [
+          625,
+          9851,
+          341
+        ],
+        [
+          303,
+          1906,
+          289
+        ]
+      ],
+      "model_name": "random_forest",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          1786,
+          4689,
+          708
+        ],
+        [
+          1331,
+          19954,
+          859
+        ],
+        [
+          1126,
+          5112,
+          1458
+        ]
+      ],
+      "model_name": "random_forest",
+      "seed": 0,
+      "split": "test"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          534,
+          1951,
+          167
+        ],
+        [
+          452,
+          10190,
+          175
+        ],
+        [
+          391,
+          1843,
+          264
+        ]
+      ],
+      "model_name": "gradient_boosting",
+      "seed": 0,
+      "split": "validation"
+    },
+    {
+      "fold_id": 3,
+      "labels": [
+        1,
+        2,
+        3
+      ],
+      "matrix": [
+        [
+          1967,
+          4603,
+          613
+        ],
+        [
+          1130,
+          20398,
+          616
+        ],
+        [
+          1198,
+          5116,
+          1382
+        ]
+      ],
+      "model_name": "gradient_boosting",
+      "seed": 0,
+      "split": "test"
+    }
+  ]
+}

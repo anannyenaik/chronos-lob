@@ -1,0 +1,23 @@
+model_name,source,split,confidence_threshold,cost_bps,latency_steps,fold_count,fill_assumption,eligible_predictions_mean,trade_count_proxy_mean,fill_assumption_proxy_mean,fill_assumption_proxy_std,status,skip_reason
+elastic_net,classical,test,0.0,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,15811.0,0.9501494573557571,0.013561550070767552,ok,
+elastic_net,classical,test,0.5,0.0,0.0,5,full_fill_at_mid_no_queue,11815.4,11652.2,0.9865139463561869,0.007487262979912092,ok,
+elastic_net,classical,test,0.6,0.0,0.0,5,full_fill_at_mid_no_queue,7270.2,7202.4,0.9908856625541216,0.006597365053459871,ok,
+elastic_net,classical,test,0.7,0.0,0.0,5,full_fill_at_mid_no_queue,3326.2,3293.2,0.9903998464160017,0.00859209931148117,ok,
+gradient_boosting,classical,test,0.0,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,15346.4,0.921958049051937,0.0229641968610749,ok,
+gradient_boosting,classical,test,0.5,0.0,0.0,5,full_fill_at_mid_no_queue,12012.0,11680.0,0.9732098740733296,0.011357850052564716,ok,
+gradient_boosting,classical,test,0.6,0.0,0.0,5,full_fill_at_mid_no_queue,8445.4,8387.2,0.9931894402634805,0.003857624469758949,ok,
+gradient_boosting,classical,test,0.7,0.0,0.0,5,full_fill_at_mid_no_queue,4480.6,4475.0,0.9985478425962555,0.0011425184775181326,ok,
+logistic,classical,test,0.0,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,15809.2,0.9500427462601566,0.013614707908851869,ok,
+logistic,classical,test,0.5,0.0,0.0,5,full_fill_at_mid_no_queue,11818.8,11654.6,0.9864258454193587,0.007475344997164229,ok,
+logistic,classical,test,0.6,0.0,0.0,5,full_fill_at_mid_no_queue,7271.0,7202.0,0.9907348583267679,0.006792828366059347,ok,
+logistic,classical,test,0.7,0.0,0.0,5,full_fill_at_mid_no_queue,3329.4,3296.4,0.9904162912685248,0.008567500302086103,ok,
+majority,classical,test,0.0,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,16671.4,1.0,0.0,ok,
+majority,classical,test,0.5,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,16671.4,1.0,0.0,ok,
+majority,classical,test,0.6,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,16671.4,1.0,0.0,ok,
+majority,classical,test,0.7,0.0,0.0,5,full_fill_at_mid_no_queue,0.0,0.0,,,ok,
+random_forest,classical,test,0.0,0.0,0.0,5,full_fill_at_mid_no_queue,16671.4,15191.0,0.9110733605966285,0.013031280393217678,ok,
+random_forest,classical,test,0.5,0.0,0.0,5,full_fill_at_mid_no_queue,8857.2,8620.8,0.9734272891532509,0.008066210737546976,ok,
+random_forest,classical,test,0.6,0.0,0.0,5,full_fill_at_mid_no_queue,4499.8,4476.4,0.9948976414508823,0.0021435088880302424,ok,
+random_forest,classical,test,0.7,0.0,0.0,5,full_fill_at_mid_no_queue,1942.4,1941.0,0.9987104670109865,0.0011485775920187019,ok,
+deeplob_style,neural,test,,,,0,unavailable,,,,,skipped,"neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed"
+matrix_transformer,neural,test,,,,0,unavailable,,,,,skipped,"neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed"

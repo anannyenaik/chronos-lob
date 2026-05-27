@@ -150,6 +150,10 @@ class TransformerTrainingConfig:
     gradient_clip_norm: float | None = 1.0
     device: str = "cpu"
     seed: int = 42
+    early_stopping_patience: int | None = None
+    early_stopping_metric: str = "validation_loss"
+    checkpoint_path: Path | None = None
+    save_best_checkpoint: bool = True
 
     def __post_init__(self) -> None:
         _validate_positive_int(self.epochs, name="epochs")
@@ -163,6 +167,19 @@ class TransformerTrainingConfig:
         if not isinstance(self.device, str) or not self.device.strip():
             raise ValueError("device must be a non-empty string")
         _validate_non_negative_int(self.seed, name="seed")
+        if self.early_stopping_patience is not None:
+            _validate_non_negative_int(
+                self.early_stopping_patience,
+                name="early_stopping_patience",
+            )
+        if self.early_stopping_metric not in {
+            "validation_loss",
+            "validation_macro_f1",
+        }:
+            raise ValueError(
+                "early_stopping_metric must be 'validation_loss' or "
+                "'validation_macro_f1'"
+            )
 
 
 @dataclass(frozen=True)
@@ -173,6 +190,9 @@ class TransformerEpochResult:
     train_loss: float
     validation_loss: float | None = None
     validation_metrics: dict[str, object] | None = field(default=None)
+    monitored_value: float | None = None
+    is_best: bool = False
+    early_stop: bool = False
 
 
 def _move_batch_to_device(
@@ -377,6 +397,72 @@ def evaluate_transformer_classifier(
     }
 
 
+def _monitored_metric_value(
+    result: TransformerEpochResult,
+    *,
+    metric: str,
+) -> tuple[float | None, bool]:
+    """Return ``(value, higher_is_better)`` for early stopping."""
+    if metric == "validation_loss":
+        return result.validation_loss, False
+    if metric == "validation_macro_f1":
+        metrics = result.validation_metrics
+        if not isinstance(metrics, Mapping):
+            return None, True
+        nested = metrics.get("metrics")
+        if not isinstance(nested, Mapping):
+            return None, True
+        value = nested.get("macro_f1")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None, True
+        return float(value), True
+    raise ValueError(
+        "early_stopping_metric must be 'validation_loss' or "
+        "'validation_macro_f1'"
+    )
+
+
+def _is_improvement(
+    value: float,
+    best_value: float | None,
+    *,
+    higher_is_better: bool,
+) -> bool:
+    if best_value is None:
+        return True
+    if higher_is_better:
+        return value > best_value
+    return value < best_value
+
+
+def _clone_model_state(model: Any) -> dict[str, Any]:
+    return {
+        str(name): tensor.detach().cpu().clone()
+        for name, tensor in model.state_dict().items()
+    }
+
+
+def _write_checkpoint(
+    *,
+    path: Path,
+    model: Any,
+    epoch: int,
+    metric: str,
+    value: float,
+) -> None:
+    torch_module = _require_torch()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch_module.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "best_epoch": int(epoch),
+            "metric": metric,
+            "metric_value": float(value),
+        },
+        path,
+    )
+
+
 def fit_transformer_classifier(
     model: MarketTransformerEncoder,
     train_loader: Iterable[Any],
@@ -402,6 +488,9 @@ def fit_transformer_classifier(
     loss_fn = nn.CrossEntropyLoss()
 
     history: list[TransformerEpochResult] = []
+    best_value: float | None = None
+    best_state: dict[str, Any] | None = None
+    epochs_without_improvement = 0
     for epoch in range(1, training_config.epochs + 1):
         train_loss = train_transformer_one_epoch(
             model,
@@ -424,14 +513,61 @@ def fit_transformer_classifier(
                 "metrics": evaluation["metrics"],
                 "confusion_matrix": evaluation["confusion_matrix"],
             }
+        epoch_result = TransformerEpochResult(
+            epoch=epoch,
+            train_loss=train_loss,
+            validation_loss=validation_loss,
+            validation_metrics=validation_metrics,
+        )
+        monitored_value, higher_is_better = _monitored_metric_value(
+            epoch_result,
+            metric=training_config.early_stopping_metric,
+        )
+        is_best = False
+        should_stop = False
+        if monitored_value is not None:
+            if _is_improvement(
+                monitored_value,
+                best_value,
+                higher_is_better=higher_is_better,
+            ):
+                best_value = monitored_value
+                best_state = _clone_model_state(model)
+                epochs_without_improvement = 0
+                is_best = True
+                if (
+                    training_config.checkpoint_path is not None
+                    and training_config.save_best_checkpoint
+                ):
+                    _write_checkpoint(
+                        path=training_config.checkpoint_path,
+                        model=model,
+                        epoch=epoch,
+                        metric=training_config.early_stopping_metric,
+                        value=monitored_value,
+                    )
+            else:
+                epochs_without_improvement += 1
+                should_stop = (
+                    training_config.early_stopping_patience is not None
+                    and epochs_without_improvement
+                    >= training_config.early_stopping_patience
+                )
         history.append(
             TransformerEpochResult(
                 epoch=epoch,
                 train_loss=train_loss,
                 validation_loss=validation_loss,
                 validation_metrics=validation_metrics,
+                monitored_value=monitored_value,
+                is_best=is_best,
+                early_stop=should_stop,
             )
         )
+        if should_stop:
+            break
+    if best_state is not None:
+        model.load_state_dict(best_state)
     return history
 
 

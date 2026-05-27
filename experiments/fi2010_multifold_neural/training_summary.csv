@@ -1,0 +1,11 @@
+fold_id,seed,model_name,lookback,device,parameter_count,max_epochs,best_epoch,early_stopped,training_seconds,validation_metric_name,validation_metric_value,status,error
+fold_1,0,deeplob_style,20,cpu,42371,25,20,False,229.4528253000026,validation_macro_f1,0.7223063968261382,ok,
+fold_1,0,matrix_transformer,20,cpu,77699,25,23,False,596.5289310999942,validation_macro_f1,0.6906614751686245,ok,
+fold_2,0,deeplob_style,20,cpu,42371,25,17,False,392.49227039999096,validation_macro_f1,0.7438498383396078,ok,
+fold_2,0,matrix_transformer,20,cpu,77699,25,23,False,1567.7883780999982,validation_macro_f1,0.7378575703637545,ok,
+fold_3,0,deeplob_style,20,cpu,42371,25,25,False,900.2973182999995,validation_macro_f1,0.762782194995085,ok,
+fold_3,0,matrix_transformer,20,cpu,77699,25,24,False,2026.898203500008,validation_macro_f1,0.75467650366129,ok,
+fold_4,0,deeplob_style,20,cpu,42371,25,23,False,783.7215940000024,validation_macro_f1,0.7520394679267831,ok,
+fold_4,0,matrix_transformer,20,cpu,77699,25,17,False,2666.694002299992,validation_macro_f1,0.7605723701744148,ok,
+fold_5,0,deeplob_style,20,cpu,42371,25,23,False,1354.0826333000005,validation_macro_f1,0.7494608554865864,ok,
+fold_5,0,matrix_transformer,20,cpu,77699,25,25,False,3104.2364065,validation_macro_f1,0.7627938937745635,ok,

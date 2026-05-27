@@ -17,6 +17,7 @@ implemented end to end.
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +30,7 @@ from chronoslob.experiments.fi2010_benchmark import (
     FI2010BenchmarkConfig,
     PaperNeuralSettings,
 )
+from chronoslob.experiments.neural_benchmarking import resolve_neural_device
 from chronoslob.models.deeplob import DeepLOBConfig, create_deeplob_model
 from chronoslob.models.matrix_transformer import (
     MatrixTransformerConfig,
@@ -144,6 +146,46 @@ def _select_metric_subset(metric_dict: Mapping[str, Any]) -> dict[str, float]:
             if math.isfinite(numeric):
                 cleaned[key] = numeric
     return cleaned
+
+
+def _best_epoch(history: Sequence[Any]) -> int | None:
+    for item in reversed(list(history)):
+        if bool(item.is_best):
+            return int(item.epoch)
+    if not history:
+        return None
+    return int(history[-1].epoch)
+
+
+def _history_early_stopped(history: Sequence[Any]) -> bool:
+    return any(bool(item.early_stop) for item in history)
+
+
+def _history_rows(history: Sequence[Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in history:
+        monitored_value = item.monitored_value
+        row: dict[str, Any] = {
+            "epoch": int(item.epoch),
+            "train_loss": float(item.train_loss),
+            "validation_loss": (
+                None if item.validation_loss is None else float(item.validation_loss)
+            ),
+            "monitored_value": (
+                None
+                if monitored_value is None
+                else float(monitored_value)
+            ),
+            "is_best": bool(item.is_best),
+            "early_stop": bool(item.early_stop),
+        }
+        validation_metrics = item.validation_metrics
+        if isinstance(validation_metrics, Mapping):
+            metrics = validation_metrics.get("metrics")
+            if isinstance(metrics, Mapping):
+                row["validation_macro_f1"] = metrics.get("macro_f1")
+        rows.append(row)
+    return rows
 
 
 def _expected_calibration_error(
@@ -594,27 +636,38 @@ def _run_deeplob_style(
         dropout=settings.dropout,
         use_batch_norm=settings.deeplob_use_batch_norm,
     )
+    device_resolution = resolve_neural_device(settings.device)
+    checkpoint_path = (
+        Path(settings.checkpoint_path)
+        if settings.checkpoint_enabled and settings.checkpoint_path is not None
+        else None
+    )
     training_config = TorchTrainingConfig(
         epochs=settings.max_epochs,
         learning_rate=settings.learning_rate,
         weight_decay=settings.weight_decay,
         gradient_clip_norm=settings.gradient_clip_norm,
-        device=settings.device,
+        device=device_resolution.resolved,
         seed=config.seed,
+        early_stopping_patience=settings.early_stopping_patience,
+        early_stopping_metric=settings.early_stopping_metric,
+        checkpoint_path=checkpoint_path,
     )
     if settings.deterministic:
         set_torch_deterministic(config.seed)
     model = create_deeplob_model(model_config)
+    training_started = time.perf_counter()
     history = fit_torch_classifier(
         model,
         train_loader,
         validation_loader,
         training_config,
     )
+    training_seconds = time.perf_counter() - training_started
     evaluation = evaluate_torch_classifier(
         model,
         test_loader,
-        device=settings.device,
+        device=device_resolution.resolved,
         labels=sorted(class_mapping.values()),
     )
     row_indices = [sample.target_index for sample in test_dataset.sample_indices]
@@ -633,19 +686,32 @@ def _run_deeplob_style(
             "windows_stay_inside_split": True,
         },
         "validation_skip_reason": validation_skip,
-        "training_history": [
-            {
-                "epoch": int(item.epoch),
-                "train_loss": float(item.train_loss),
-                "validation_loss": (
-                    None
-                    if item.validation_loss is None
-                    else float(item.validation_loss)
-                ),
-            }
-            for item in history
-        ],
+        "training_history": _history_rows(history),
+        "max_epochs": int(settings.max_epochs),
+        "epochs_ran": len(history),
+        "best_epoch": _best_epoch(history),
+        "early_stopped": _history_early_stopped(history),
+        "training_seconds": float(training_seconds),
+        "early_stopping": {
+            "metric": settings.early_stopping_metric,
+            "patience": settings.early_stopping_patience,
+        },
+        "device": {
+            "requested": device_resolution.requested,
+            "resolved": device_resolution.resolved,
+            "cuda_available": device_resolution.cuda_available,
+        },
+        "deterministic_seed": {
+            "enabled": bool(settings.deterministic),
+            "seed": int(config.seed),
+        },
         "model_parameter_count": int(model.n_parameters()),
+        "parameter_count": int(model.n_parameters()),
+        "checkpoint": {
+            "enabled": bool(settings.checkpoint_enabled),
+            "path": None if checkpoint_path is None else str(checkpoint_path),
+            "written": bool(checkpoint_path is not None and checkpoint_path.is_file()),
+        },
         "class_mapping": {str(label): int(index) for label, index in class_mapping.items()},
         "standardisation": scaler_metadata,
     }
@@ -751,27 +817,38 @@ def _run_matrix_transformer(
         dropout=settings.dropout,
         max_sequence_length=effective_window_length,
     )
+    device_resolution = resolve_neural_device(settings.device)
+    checkpoint_path = (
+        Path(settings.checkpoint_path)
+        if settings.checkpoint_enabled and settings.checkpoint_path is not None
+        else None
+    )
     training_config = TorchTrainingConfig(
         epochs=settings.max_epochs,
         learning_rate=settings.learning_rate,
         weight_decay=settings.weight_decay,
         gradient_clip_norm=settings.gradient_clip_norm,
-        device=settings.device,
+        device=device_resolution.resolved,
         seed=config.seed,
+        early_stopping_patience=settings.early_stopping_patience,
+        early_stopping_metric=settings.early_stopping_metric,
+        checkpoint_path=checkpoint_path,
     )
     if settings.deterministic:
         set_torch_deterministic(config.seed)
     model = create_matrix_transformer(model_config)
+    training_started = time.perf_counter()
     history = fit_torch_classifier(
         model,
         train_loader,
         validation_loader,
         training_config,
     )
+    training_seconds = time.perf_counter() - training_started
     evaluation = evaluate_torch_classifier(
         model,
         test_loader,
-        device=settings.device,
+        device=device_resolution.resolved,
         labels=sorted(class_mapping.values()),
     )
     row_indices = [sample.target_index for sample in test_dataset.sample_indices]
@@ -794,19 +871,32 @@ def _run_matrix_transformer(
             "windows_stay_inside_split": True,
         },
         "validation_skip_reason": validation_skip,
-        "training_history": [
-            {
-                "epoch": int(item.epoch),
-                "train_loss": float(item.train_loss),
-                "validation_loss": (
-                    None
-                    if item.validation_loss is None
-                    else float(item.validation_loss)
-                ),
-            }
-            for item in history
-        ],
+        "training_history": _history_rows(history),
+        "max_epochs": int(settings.max_epochs),
+        "epochs_ran": len(history),
+        "best_epoch": _best_epoch(history),
+        "early_stopped": _history_early_stopped(history),
+        "training_seconds": float(training_seconds),
+        "early_stopping": {
+            "metric": settings.early_stopping_metric,
+            "patience": settings.early_stopping_patience,
+        },
+        "device": {
+            "requested": device_resolution.requested,
+            "resolved": device_resolution.resolved,
+            "cuda_available": device_resolution.cuda_available,
+        },
+        "deterministic_seed": {
+            "enabled": bool(settings.deterministic),
+            "seed": int(config.seed),
+        },
         "model_parameter_count": int(model.n_parameters()),
+        "parameter_count": int(model.n_parameters()),
+        "checkpoint": {
+            "enabled": bool(settings.checkpoint_enabled),
+            "path": None if checkpoint_path is None else str(checkpoint_path),
+            "written": bool(checkpoint_path is not None and checkpoint_path.is_file()),
+        },
         "class_mapping": {str(label): int(index) for label, index in class_mapping.items()},
         "standardisation": scaler_metadata,
     }
@@ -1115,13 +1205,22 @@ def _run_transformer(
         activation="gelu",
         use_layer_norm=True,
     )
+    device_resolution = resolve_neural_device(settings.device)
+    checkpoint_path = (
+        Path(settings.checkpoint_path)
+        if settings.checkpoint_enabled and settings.checkpoint_path is not None
+        else None
+    )
     training_config = TransformerTrainingConfig(
         epochs=settings.max_epochs,
         learning_rate=settings.learning_rate,
         weight_decay=settings.weight_decay,
         gradient_clip_norm=settings.gradient_clip_norm,
-        device=settings.device,
+        device=device_resolution.resolved,
         seed=config.seed,
+        early_stopping_patience=settings.early_stopping_patience,
+        early_stopping_metric=settings.early_stopping_metric,
+        checkpoint_path=checkpoint_path,
     )
     if settings.deterministic:
         set_torch_deterministic(config.seed)
@@ -1133,16 +1232,18 @@ def _run_transformer(
         else None
     )
     test_loader = _make_token_loader(test_dataset, batch_size=settings.batch_size)
+    training_started = time.perf_counter()
     history = fit_transformer_classifier(
         model,
         train_loader,
         validation_loader,
         training_config,
     )
+    training_seconds = time.perf_counter() - training_started
     evaluation = evaluate_transformer_classifier(
         model,
         test_loader,
-        device=settings.device,
+        device=device_resolution.resolved,
         labels=sorted(class_mapping.values()),
     )
     metadata: dict[str, Any] = {
@@ -1163,19 +1264,32 @@ def _run_transformer(
         "token_window_length": int(settings.transformer_window_length),
         "tokenised_record_count": len(sequence.records),
         "fitted_source_tokens": list(fit_state.fitted_source_tokens),
-        "training_history": [
-            {
-                "epoch": int(item.epoch),
-                "train_loss": float(item.train_loss),
-                "validation_loss": (
-                    None
-                    if item.validation_loss is None
-                    else float(item.validation_loss)
-                ),
-            }
-            for item in history
-        ],
+        "training_history": _history_rows(history),
+        "max_epochs": int(settings.max_epochs),
+        "epochs_ran": len(history),
+        "best_epoch": _best_epoch(history),
+        "early_stopped": _history_early_stopped(history),
+        "training_seconds": float(training_seconds),
+        "early_stopping": {
+            "metric": settings.early_stopping_metric,
+            "patience": settings.early_stopping_patience,
+        },
+        "device": {
+            "requested": device_resolution.requested,
+            "resolved": device_resolution.resolved,
+            "cuda_available": device_resolution.cuda_available,
+        },
+        "deterministic_seed": {
+            "enabled": bool(settings.deterministic),
+            "seed": int(config.seed),
+        },
         "model_parameter_count": int(model.n_parameters()),
+        "parameter_count": int(model.n_parameters()),
+        "checkpoint": {
+            "enabled": bool(settings.checkpoint_enabled),
+            "path": None if checkpoint_path is None else str(checkpoint_path),
+            "written": bool(checkpoint_path is not None and checkpoint_path.is_file()),
+        },
         "class_mapping": {str(label): int(index) for label, index in class_mapping.items()},
         "tokenisation_fit_split": "train",
     }

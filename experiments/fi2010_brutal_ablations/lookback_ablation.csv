@@ -1,0 +1,17 @@
+ablation_family,ablation_name,fold_id,model_name,split,metric_name,metric_value,baseline_value,delta_vs_baseline,status,skip_reason,lookback
+lookback,lookback_20_reference,fold_1,matrix_transformer,test,accuracy,0.7607222888112981,0.7607222888112981,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_1,matrix_transformer,test,macro_f1,0.6809423311571964,0.6809423311571964,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_1,matrix_transformer,test,mcc,0.5612900483824037,0.5612900483824037,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_2,matrix_transformer,test,accuracy,0.8222401458830131,0.8222401458830131,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_2,matrix_transformer,test,macro_f1,0.7436381427447326,0.7436381427447326,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_2,matrix_transformer,test,mcc,0.6448036558985163,0.6448036558985163,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_3,matrix_transformer,test,accuracy,0.802129499513566,0.802129499513566,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_3,matrix_transformer,test,macro_f1,0.7338142727764269,0.7338142727764269,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_3,matrix_transformer,test,mcc,0.632452095269451,0.632452095269451,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_4,matrix_transformer,test,accuracy,0.7977621814416384,0.7977621814416384,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_4,matrix_transformer,test,macro_f1,0.7471132055474672,0.7471132055474672,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_4,matrix_transformer,test,mcc,0.6413546306756692,0.6413546306756692,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_5,matrix_transformer,test,accuracy,0.8211483913832316,0.8211483913832316,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_5,matrix_transformer,test,macro_f1,0.7631542086577122,0.7631542086577122,0.0,ok,,20.0
+lookback,lookback_20_reference,fold_5,matrix_transformer,test,mcc,0.6643459844889738,0.6643459844889738,0.0,ok,,20.0
+lookback,lookback_sweep,-,-,-,-,,,,skipped,"neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it",

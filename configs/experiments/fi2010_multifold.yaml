@@ -1,0 +1,242 @@
+# FI-2010 multi-fold research protocol skeleton.
+#
+# This file records the multi-fold study design required by the research
+# protocol documented in docs/RESEARCH_PROTOCOL.md and
+# reports/10_10_research_protocol.md. The preparation layer and the
+# classical multi-fold runner are executable; neural and self-supervised
+# model execution remains outside this runner.
+#
+# The preparation layer below is executable: it converts the official
+# FI-2010 NoAuction ZScore train and test .txt matrices into one combined
+# split-aware CSV per fold, plus per-fold manifests and a top-level
+# summary. The preparation layer never downloads anything and never
+# commits raw or processed FI-2010 data.
+
+study_name: fi2010_multifold_research_study
+dataset_name: FI-2010
+task_name: midprice_direction
+protocol_reference: docs/RESEARCH_PROTOCOL.md
+implementation_note_reference: reports/10_10_research_protocol.md
+# The preparation layer (preparation: below) is executable and consumed by
+# the prepare-fi2010-multifold and inspect-fi2010-multifold CLI commands.
+# The classical downstream runner consumes the prepared folds through
+# run-fi2010-multifold-classical.
+executable: true
+notes: |
+  The preparation block below is executable and is consumed by
+  prepare-fi2010-multifold and inspect-fi2010-multifold. The classical
+  runner block is consumed by run-fi2010-multifold-classical. Neural,
+  self-supervised, ablation and systems orchestration remain separate
+  future stages.
+
+# Local data root for the prepared combined CSV files. This directory is a
+# documentation example and does not exist by default. The repository does
+# not download FI-2010 and does not commit FI-2010 data.
+local_data_root_path: data/processed/fi2010
+combined_csv_filename_template: "fold{fold}_combined.csv"
+
+# Preparation-only options consumed by prepare-fi2010-multifold and
+# inspect-fi2010-multifold. The extracted dataset root must contain the
+# official FI-2010 .txt train and test matrices under the configured
+# template paths. The processed output root receives one combined CSV per
+# fold. Both roots are local-only and gitignored under data/raw/ and
+# data/processed/. See docs/FI2010_MULTIFOLD_PROTOCOL.md for the full
+# acquisition and conversion runbook.
+preparation:
+  extracted_dataset_root_placeholder: data/raw/fi2010/extracted/BenchmarkDatasets
+  processed_output_root_placeholder: data/processed/fi2010
+  combined_csv_filename_template: "fold{fold}_combined.csv"
+  # The official FI-2010 NoAuction ZScore release stores all train
+  # matrices under ``NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training/``
+  # and all test matrices under
+  # ``NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing/``, with the
+  # per-fold suffix ``_CF_{fold}`` on the file name. Per-fold overrides
+  # are supported through ``fold_overrides`` if a local copy uses a
+  # different layout.
+  train_filename_template: "NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Training/Train_Dst_NoAuction_ZScore_CF_{fold}.txt"
+  test_filename_template: "NoAuction/1.NoAuction_Zscore/NoAuction_Zscore_Testing/Test_Dst_NoAuction_ZScore_CF_{fold}.txt"
+  fold_overrides: {}
+  compute_source_hashes: true
+  local_only_note: |
+    Raw FI-2010 .txt matrices under the extracted dataset root and
+    processed combined CSV files under the processed output root are
+    local-only and gitignored. The repository does not download FI-2010
+    and does not commit raw or processed FI-2010 data.
+
+# Official FI-2010 NoAuction ZScore folds. Each fold is built locally from
+# the official train and test .txt matrices using the documented conversion
+# path.
+folds:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+
+# Source of truth for evaluation. The combined CSV split column marks each
+# row as either train or test. Test rows are held out end-to-end.
+official_split:
+  split_column: split
+  train_value: train
+  test_value: test
+  validation_fraction_within_train: 0.15
+
+# Mid-price direction target. The FI-2010 horizon labels are stored as
+# named columns in the combined CSV file.
+target:
+  horizon: 10
+  label_column: label_10
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+  class_direction_map:
+    "1": 1
+    "2": -1
+    "3": 0
+
+# Allowed model families for the multi-fold study. SSL pretraining is gated
+# under the research protocol and remains unsupported in the runner until
+# the gate is satisfied.
+models:
+  classical:
+    - majority
+    - logistic
+    - ridge
+    - elastic_net
+    - random_forest
+    - gradient_boosting
+  neural:
+    - deeplob_style
+    - transformer
+  gated:
+    - ssl_transformer
+
+# Cross-seed uncertainty list. The protocol requires at least three seeds
+# per configuration; this skeleton declares the canonical seed list.
+seeds:
+  - 0
+  - 1
+  - 2
+
+# Current executable classical runner settings. Cross-seed orchestration
+# remains a later protocol stage, so the runner uses this explicit seed
+# list for the present classical evidence layer.
+classical_runner:
+  models:
+    - majority
+    - logistic
+    - ridge
+    - elastic_net
+    - random_forest
+    - gradient_boosting
+  seeds:
+    - 0
+
+aggregation:
+  metrics:
+    - accuracy
+    - macro_f1
+    - mcc
+    - brier_score
+    - ece
+  std_ddof: 0
+
+# Metric set per evaluated configuration per fold. Predictive, calibration
+# and execution-aware proxy metrics are reported as separate evidence
+# streams and are not collapsed into a single ranking number.
+metrics:
+  predictive:
+    - macro_f1
+    - accuracy
+    - mcc
+    - brier_score
+  confidence:
+    - mean_confidence
+  calibration:
+    - ece
+  execution_proxy:
+    - turnover_proxy
+    - gross_signal_return_proxy
+    - cost_proxy
+    - net_signal_return_proxy
+    - hit_rate_proxy
+
+# Calibration diagnostics. Reliability bins are computed from held-out test
+# predictions only. Calibrators are fit on the train partition only.
+calibration:
+  enabled: true
+  n_bins: 10
+  fit_on: train
+
+# Execution-aware proxy diagnostics. This is a simplified proxy analysis
+# under explicit cost assumptions, not a backtest, not a tradable strategy
+# and no claim of live tradability is made.
+execution_sensitivity:
+  enabled: true
+  confidence_thresholds: [0.0, 0.5, 0.6, 0.7]
+  cost_bps: [0.0, 0.5, 1.0, 5.0]
+  latency_steps: [0, 1]
+  return_proxy:
+    kind: mid_forward_return
+    bid_price_column: bid_price_1
+    ask_price_column: ask_price_1
+
+# Ablation groups required by the protocol. Each fold's main run is
+# accompanied by this set. Skipped ablations are recorded explicitly with a
+# reason; hidden skips are not permitted.
+ablations:
+  groups:
+    - name: lookback_window
+      kind: lookback_grid
+    - name: feature_groups
+      kind: feature_toggle
+    - name: calibration_toggle
+      kind: calibrator_off_vs_on
+    - name: ssl_pretraining
+      kind: gated_skip
+      reason: |
+        SSL pretraining is gated by section 10 of the research protocol
+        until the runner supports traceable train-only pretraining and
+        supervised fine-tuning. Recorded as a skipped ablation with this
+        reason rather than as a result.
+
+# Artefact output roots. These directories are documentation examples that
+# do not exist by default. The orchestrator creates them locally.
+artefacts:
+  experiment_root_path: experiments/fi2010_multifold_classical
+  per_fold_subdir_template: "fold_{fold}"
+  per_seed_subdir_template: "seed_{seed}"
+  ablation_root_path: experiments/fi2010_multifold_ablations
+  systems_root_path: experiments/fi2010_multifold_systems
+  report_path: reports/chronoslob_multifold_report.md
+
+output_artefacts:
+  summary: summary.json
+  results_by_fold: results_by_fold.csv
+  results_summary: results_summary.csv
+  calibration_summary: calibration_summary.csv
+  execution_summary: execution_summary.csv
+  model_failures: model_failures.json
+  folds_dir: folds
+  fold_subdir_template: "fold_{fold}"
+
+# Hard data and artefact assumptions enforced by the protocol.
+data_handling:
+  download_fi2010: false
+  commit_raw_data: false
+  commit_processed_csv: false
+  commit_predictions: false
+  commit_intermediate_matrices: false
+  expects_local_acquisition: true
+  acquisition_reference: docs/FI2010_DATA_ACQUISITION.md
+
+# Public claim boundaries that any generated multi-fold report must respect.
+# These match the public boundaries in docs/RESEARCH_PROTOCOL.md.
+claim_boundaries:
+  no_profitable_strategy_claim: true
+  no_market_beating_claim: true
+  no_state_of_the_art_claim: true
+  no_foundation_model_claim: true
+  no_ssl_result_claim_until_gate_satisfied: true
+  no_live_tradability_claim: true

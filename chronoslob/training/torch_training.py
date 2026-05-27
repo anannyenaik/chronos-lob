@@ -21,8 +21,9 @@ from __future__ import annotations
 import contextlib
 import os
 import random
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -129,6 +130,10 @@ class TorchTrainingConfig:
     device: str = "cpu"
     seed: int = 42
     log_every: int = 0
+    early_stopping_patience: int | None = None
+    early_stopping_metric: str = "validation_loss"
+    checkpoint_path: Path | None = None
+    save_best_checkpoint: bool = True
 
     def __post_init__(self) -> None:
         """Validate epoch counts, optimiser hyperparameters and device."""
@@ -141,6 +146,19 @@ class TorchTrainingConfig:
             raise ValueError("device must be a non-empty string")
         _validate_non_negative_int(self.seed, name="seed")
         _validate_non_negative_int(self.log_every, name="log_every")
+        if self.early_stopping_patience is not None:
+            _validate_non_negative_int(
+                self.early_stopping_patience,
+                name="early_stopping_patience",
+            )
+        if self.early_stopping_metric not in {
+            "validation_loss",
+            "validation_macro_f1",
+        }:
+            raise ValueError(
+                "early_stopping_metric must be 'validation_loss' or "
+                "'validation_macro_f1'"
+            )
 
 
 @dataclass(frozen=True)
@@ -151,6 +169,9 @@ class TorchEpochResult:
     train_loss: float
     validation_loss: float | None = None
     validation_metrics: dict[str, object] | None = field(default=None)
+    monitored_value: float | None = None
+    is_best: bool = False
+    early_stop: bool = False
 
 
 def set_torch_deterministic(seed: int) -> None:
@@ -361,6 +382,72 @@ def evaluate_torch_classifier(
     }
 
 
+def _monitored_metric_value(
+    result: TorchEpochResult,
+    *,
+    metric: str,
+) -> tuple[float | None, bool]:
+    """Return ``(value, higher_is_better)`` for early stopping."""
+    if metric == "validation_loss":
+        return result.validation_loss, False
+    if metric == "validation_macro_f1":
+        metrics = result.validation_metrics
+        if not isinstance(metrics, Mapping):
+            return None, True
+        nested = metrics.get("metrics")
+        if not isinstance(nested, Mapping):
+            return None, True
+        value = nested.get("macro_f1")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None, True
+        return float(value), True
+    raise ValueError(
+        "early_stopping_metric must be 'validation_loss' or "
+        "'validation_macro_f1'"
+    )
+
+
+def _is_improvement(
+    value: float,
+    best_value: float | None,
+    *,
+    higher_is_better: bool,
+) -> bool:
+    if best_value is None:
+        return True
+    if higher_is_better:
+        return value > best_value
+    return value < best_value
+
+
+def _clone_model_state(model: Any) -> dict[str, Any]:
+    return {
+        str(name): tensor.detach().cpu().clone()
+        for name, tensor in model.state_dict().items()
+    }
+
+
+def _write_checkpoint(
+    *,
+    path: Path,
+    model: Any,
+    epoch: int,
+    metric: str,
+    value: float,
+) -> None:
+    torch_module = _require_torch()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    torch_module.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "best_epoch": int(epoch),
+            "metric": metric,
+            "metric_value": float(value),
+        },
+        path,
+    )
+
+
 def fit_torch_classifier(
     model: Any,
     train_loader: Iterable[Any],
@@ -393,6 +480,9 @@ def fit_torch_classifier(
     loss_fn = nn.CrossEntropyLoss()
 
     history: list[TorchEpochResult] = []
+    best_value: float | None = None
+    best_state: dict[str, Any] | None = None
+    epochs_without_improvement = 0
     for epoch in range(1, training_config.epochs + 1):
         train_loss = train_one_epoch(
             model,
@@ -415,12 +505,59 @@ def fit_torch_classifier(
                 "metrics": validation_result["metrics"],
                 "confusion_matrix": validation_result["confusion_matrix"],
             }
+        epoch_result = TorchEpochResult(
+            epoch=epoch,
+            train_loss=train_loss,
+            validation_loss=validation_loss,
+            validation_metrics=validation_metrics,
+        )
+        monitored_value, higher_is_better = _monitored_metric_value(
+            epoch_result,
+            metric=training_config.early_stopping_metric,
+        )
+        is_best = False
+        should_stop = False
+        if monitored_value is not None:
+            if _is_improvement(
+                monitored_value,
+                best_value,
+                higher_is_better=higher_is_better,
+            ):
+                best_value = monitored_value
+                best_state = _clone_model_state(model)
+                epochs_without_improvement = 0
+                is_best = True
+                if (
+                    training_config.checkpoint_path is not None
+                    and training_config.save_best_checkpoint
+                ):
+                    _write_checkpoint(
+                        path=training_config.checkpoint_path,
+                        model=model,
+                        epoch=epoch,
+                        metric=training_config.early_stopping_metric,
+                        value=monitored_value,
+                    )
+            else:
+                epochs_without_improvement += 1
+                should_stop = (
+                    training_config.early_stopping_patience is not None
+                    and epochs_without_improvement
+                    >= training_config.early_stopping_patience
+                )
         history.append(
             TorchEpochResult(
                 epoch=epoch,
                 train_loss=train_loss,
                 validation_loss=validation_loss,
                 validation_metrics=validation_metrics,
+                monitored_value=monitored_value,
+                is_best=is_best,
+                early_stop=should_stop,
             )
         )
+        if should_stop:
+            break
+    if best_state is not None:
+        model.load_state_dict(best_state)
     return history

@@ -1,0 +1,88 @@
+{
+  "artefacts": {
+    "ablation_notes": "ablation_notes.md",
+    "ablation_results": "ablation_results.csv",
+    "ablation_summary": "ablation_summary.csv",
+    "calibration_threshold_ablation": "calibration_threshold_ablation.csv",
+    "execution_cost_latency_ablation": "execution_cost_latency_ablation.csv",
+    "feature_group_ablation": "feature_group_ablation.csv",
+    "horizon_ablation": "horizon_ablation.csv",
+    "lookback_ablation": "lookback_ablation.csv",
+    "model_class_ablation": "model_class_ablation.csv",
+    "skipped_ablations": "skipped_ablations.json",
+    "summary": "summary.json"
+  },
+  "checkpoints_written": false,
+  "claim_boundaries": [
+    "Diagnostic only; no profitability or live tradability claim is made.",
+    "Execution numbers are simplified proxy diagnostics, not a backtest.",
+    "No foundation-model or leading-benchmark claim.",
+    "No self-supervised pretraining result is reported.",
+    "Neural superiority over the classical baseline is not asserted."
+  ],
+  "counts": {
+    "ok_rows": 1290,
+    "result_rows": 1291,
+    "skipped_rows": 1
+  },
+  "created_at": "2026-05-27T10:17:39.389572+00:00",
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "families_requested": [
+    "feature_groups",
+    "model_class",
+    "lookback",
+    "horizon",
+    "calibration",
+    "execution"
+  ],
+  "families_run": [
+    "feature_groups",
+    "horizon",
+    "model_class",
+    "calibration",
+    "execution"
+  ],
+  "families_skipped": [
+    "lookback"
+  ],
+  "feature_groups": [
+    "all_features",
+    "top_of_book_only",
+    "depth_features",
+    "liquidity_depth_features",
+    "price_only",
+    "labels_excluded"
+  ],
+  "fit_models": [
+    "logistic"
+  ],
+  "folds": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "full_predictions_written": false,
+  "git_commit": "cad08334543fb18df3e01f3126af66c2d21e1bcc",
+  "horizons": [
+    10,
+    50,
+    100
+  ],
+  "inputs": {
+    "classical_dir": "experiments\\fi2010_multifold_classical",
+    "config": "configs\\experiments\\fi2010_multifold.yaml",
+    "config_sha256": "e23db9c52a54a98264876b33430a47c3c91d7b81f6f150ae0e558f51c0d436ab",
+    "neural_config": "configs\\experiments\\fi2010_neural_serious.yaml",
+    "neural_dir": "experiments\\fi2010_multifold_neural",
+    "processed_root": "data\\processed\\fi2010"
+  },
+  "package_version": "0.1.0",
+  "runner_version": "phase-g/fi2010-brutal-ablations/v1",
+  "warnings": []
+}
