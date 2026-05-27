@@ -93,5 +93,5 @@ no_implicit_optional = true
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["pandas", "sklearn.*", "torch", "torch.*"]
+module = ["matplotlib", "matplotlib.*", "pandas", "sklearn.*", "torch", "torch.*"]
 ignore_missing_imports = true
