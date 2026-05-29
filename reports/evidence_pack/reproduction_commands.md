@@ -56,6 +56,24 @@ Expected output: `experiments/fi2010_neural_full_grid`
 
 Compute and dependency caveat: Real run requires local compute suitable for neural training.
 
+## Proper-Training Neural Subset
+
+Smoke-test version:
+
+```bash
+python -m chronoslob.cli run-fi2010-neural-proper-training-subset --config configs/experiments/fi2010_neural_proper_training_smoke.yaml --processed-root data/processed/fi2010 --out experiments/fi2010_neural_proper_training_subset_v2 --folds 1 --horizons 10 --seeds 0 --lookbacks 10 --objectives supervised,masked_reconstruction,next_field --pretrain-epochs 1 --max-epochs 2 --patience 1 --batch-size 16 --smoke-test
+```
+
+Real-run version:
+
+```bash
+python -m chronoslob.cli run-fi2010-neural-proper-training-subset --config configs/experiments/fi2010_neural_proper_training.yaml --processed-root data/processed/fi2010 --out experiments/fi2010_neural_proper_training_subset_v2 --folds 1,2,3 --horizons 10,50 --seeds 0 --lookbacks 50 --objectives supervised,masked_reconstruction,next_field --pretrain-epochs 5 --max-epochs 25 --patience 5 --batch-size 1024 --device cpu
+```
+
+Expected output: `experiments/fi2010_neural_proper_training_subset_v2`
+
+Compute and dependency caveat: Fallback real evidence is partial_real; complete_real requires folds 1-5 at horizons 10 and 50 with the same longer-training protocol.
+
 ## SSL Benchmark
 
 Smoke-test version:
@@ -133,13 +151,13 @@ Compute and dependency caveat: Requires stored feature-ablation tables.
 Smoke-test version:
 
 ```bash
-python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --neural-full-grid experiments/fi2010_neural_full_grid --feature-ablations experiments/fi2010_feature_ablations --execution-v3 experiments/fi2010_execution_v3 --out reports/chronoslob_final_empirical_report.md --overwrite
+python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --execution-v3 experiments/fi2010_execution_v3 --out reports/chronoslob_final_empirical_report.md --overwrite
 ```
 
 Real-run version:
 
 ```bash
-python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --ablations experiments/fi2010_brutal_ablations --external experiments/fi2010_external_context --neural-full-grid experiments/fi2010_neural_full_grid --feature-ablations experiments/fi2010_feature_ablations --execution-v3 experiments/fi2010_execution_v3 --evidence-pack reports/evidence_pack --out reports/chronoslob_final_empirical_report.md --overwrite
+python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --ablations experiments/fi2010_brutal_ablations --external experiments/fi2010_external_context --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --execution-v3 experiments/fi2010_execution_v3 --evidence-pack reports/evidence_pack --out reports/chronoslob_final_empirical_report.md --overwrite
 ```
 
 Expected output: `reports/chronoslob_final_empirical_report.md`

@@ -1,9 +1,10 @@
 {
   "allow_smoke_test": false,
   "artefact_status_counts": {
-    "complete_real": 5,
+    "complete_real": 2,
     "missing": 2,
     "partial_real": 2,
+    "stale": 4,
     "unknown_staleness": 1
   },
   "artefacts": [
@@ -17,13 +18,13 @@
       "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
       "input_hashes_present": true,
       "limitations": "Classical benchmark artefacts do not establish live tradability.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_multifold_classical",
       "required_files_missing": [],
       "skipped_runs": null,
       "smoke_test": false,
-      "status": "complete_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_multifold_classical/summary.json",
         "experiments/fi2010_multifold_classical/results_summary.csv",
@@ -65,13 +66,13 @@
       "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
       "input_hashes_present": false,
       "limitations": "Full-grid claims require non-smoke aggregate artefacts.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_neural_full_grid",
       "required_files_missing": [],
       "skipped_runs": 54,
       "smoke_test": false,
-      "status": "complete_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_neural_full_grid/summary.json",
         "experiments/fi2010_neural_full_grid/results_summary.csv",
@@ -85,6 +86,36 @@
         "general.supervised_vs_ssl_transformers",
         "general.train_only_ssl"
       ]
+    },
+    {
+      "artefact_name": "fi2010_neural_proper_training_subset",
+      "artefact_type": "fi2010_neural_proper_training",
+      "completed_runs": 6,
+      "exists": true,
+      "failed_runs": 0,
+      "generated_at": "2026-05-29T23:05:47.747970Z",
+      "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
+      "input_hashes_present": false,
+      "limitations": "Proper-training subset claims are limited to the exact folds, horizons, seeds, lookbacks and objectives stored in the artefacts.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "experiments/fi2010_neural_proper_training_subset_v2",
+      "required_files_missing": [],
+      "skipped_runs": 6,
+      "smoke_test": false,
+      "status": "partial_real",
+      "supporting_files": [
+        "experiments/fi2010_neural_proper_training_subset_v2/summary.json",
+        "experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json",
+        "experiments/fi2010_neural_proper_training_subset_v2/results_summary.csv",
+        "experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.csv",
+        "experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.json",
+        "experiments/fi2010_neural_proper_training_subset_v2/training_curves_summary.csv",
+        "experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv",
+        "experiments/fi2010_neural_proper_training_subset_v2/failures.csv",
+        "experiments/fi2010_neural_proper_training_subset_v2/sha256_manifest.json"
+      ],
+      "supports_claims": []
     },
     {
       "artefact_name": "fi2010_figures",
@@ -119,13 +150,13 @@
       "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
       "input_hashes_present": true,
       "limitations": "Offline proxy diagnostics only; not execution simulation or trading PnL.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": true,
       "path": "experiments/fi2010_execution_v3",
       "required_files_missing": [],
       "skipped_runs": 5,
       "smoke_test": false,
-      "status": "complete_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_execution_v3/summary.json",
         "experiments/fi2010_execution_v3/execution_v3_manifest.json",
@@ -173,13 +204,13 @@
       "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
       "input_hashes_present": false,
       "limitations": "FI-2010 snapshot features cannot prove true event-level OFI, trade imbalance, cancellation imbalance or queue position.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_feature_ablations",
       "required_files_missing": [],
       "skipped_runs": 168,
       "smoke_test": false,
-      "status": "partial_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_feature_ablations/summary.json",
         "experiments/fi2010_feature_ablations/results_summary.csv",
@@ -221,8 +252,8 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-29T16:14:28.200335Z",
-      "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+      "generated_at": "2026-05-29T23:12:59.915115Z",
+      "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Generated timestamp is present.",
@@ -272,12 +303,11 @@
   "claim_status_counts": {
     "forbidden": 9,
     "needs_real_evidence": 1,
-    "partially_supported": 4,
-    "supported": 6,
+    "partially_supported": 10,
     "unsupported": 2
   },
-  "generated_at": "2026-05-29T16:14:50.939207+00:00",
-  "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+  "generated_at": "2026-05-29T23:13:11.074450+00:00",
+  "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "classical_dir": "experiments/fi2010_multifold_classical",
@@ -289,6 +319,7 @@
     "neural_full_grid_dir": "experiments/fi2010_neural_full_grid",
     "out_dir": "reports/evidence_pack",
     "project_audit_dir": "reports/report_archive",
+    "proper_training_dir": "experiments/fi2010_neural_proper_training_subset_v2",
     "ssl_dir": "experiments/fi2010_ssl"
   },
   "outputs": {
@@ -309,8 +340,12 @@
   "strict": true,
   "strict_violations": [],
   "warnings": [
+    "fi2010_classical_benchmarks: stale",
     "fi2010_ssl_runner_outputs: missing",
+    "fi2010_neural_full_grid: stale",
+    "execution_v3_outputs: stale",
     "feature_registry_audit_outputs: missing",
+    "feature_ablation_outputs: stale",
     "project_audit_archive: unknown_staleness"
   ]
 }

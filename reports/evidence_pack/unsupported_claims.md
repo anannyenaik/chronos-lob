@@ -4,6 +4,22 @@
   - status: partially_supported
   - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
   - safe wording: ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.
+- ChronosLOB uses leakage-safe FI-2010 evaluation
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and leakage-control documentation.
+- ChronosLOB includes train-only SSL pretraining
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real non-smoke SSL artefacts.
+- ChronosLOB compares supervised and SSL transformers
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched FI-2010 settings.
+- ChronosLOB includes execution-aware proxy diagnostics
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB includes offline execution-aware proxy diagnostics with explicit limitations.
 - ChronosLOB includes microstructure feature ablations
   - status: partially_supported
   - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
@@ -24,10 +40,18 @@
   - status: needs_real_evidence
   - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.
   - safe wording: Report execution-v3 proxy rows descriptively and avoid SSL improvement language unless a real matched aggregate table explicitly supports it.
+- Gradient boosting remained the strongest classical baseline
+  - status: partially_supported
+  - reason: Gradient boosting is best in stored rows, but evidence is not clean complete.
+  - safe wording: Name the best classical model from the stored result table and include the metric, split and scope.
 - Feature group X improved performance
   - status: partially_supported
   - reason: Some feature-delta rows are positive, but the placeholder claim must name the exact group, model, horizon, split and ablation mode.
   - safe wording: Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored FI-2010 snapshot diagnostics.
+- Confidence filtering improved cost-adjusted proxy
+  - status: partially_supported
+  - reason: Stored threshold aggregates show an improvement, but evidence is not clean complete.
+  - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.
 - profitable trading strategy
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.

@@ -81,7 +81,13 @@ __all__ = [
     "FI2010_SSL_RUNNER_VERSION",
     "SSL_OBJECTIVE_CHOICES",
     "FI2010SSLBenchmarkSummary",
+    "FI2010SSLObjectiveFlags",
+    "FI2010SSLRunInputs",
+    "build_ssl_finetune_settings",
+    "prepare_fi2010_run_inputs",
+    "pretrain_matrix_ssl_encoder",
     "run_fi2010_ssl_neural_benchmark",
+    "ssl_objective_flags",
 ]
 
 FI2010_SSL_RUNNER_VERSION = "fi2010-ssl-runner/v1"
@@ -1230,3 +1236,21 @@ def _column_mean(series: pd.Series) -> float | None:
         return None
     value = float(numeric.mean())
     return value if math.isfinite(value) else None
+
+
+# ---------------------------------------------------------------------------
+# Public, stable re-exports of the leakage-safe SSL building blocks.
+#
+# These let sibling runners (for example the proper-training neural subset)
+# reuse the exact same train-only pretraining, matched preprocessing and
+# fine-tuning settings as this benchmark runner, instead of re-deriving the
+# leakage controls. They are thin aliases over the internal helpers; their
+# behaviour is identical and intentionally unchanged.
+# ---------------------------------------------------------------------------
+
+FI2010SSLRunInputs = _RunInputs
+FI2010SSLObjectiveFlags = _SSLObjectiveFlags
+ssl_objective_flags = _objective_flags
+prepare_fi2010_run_inputs = _prepare_run_inputs
+pretrain_matrix_ssl_encoder = _pretrain_and_checkpoint
+build_ssl_finetune_settings = _finetune_settings

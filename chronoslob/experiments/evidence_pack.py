@@ -151,6 +151,7 @@ class EvidencePackConfig:
 
     out_dir: Path = Path("reports/evidence_pack")
     neural_full_grid_dir: Path = Path("experiments/fi2010_neural_full_grid")
+    proper_training_dir: Path = Path("experiments/fi2010_neural_proper_training_subset_v2")
     figures_dir: Path = Path("reports/figures/fi2010_neural_full_grid")
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
     feature_ablations_dir: Path = Path("experiments/fi2010_feature_ablations")
@@ -461,6 +462,27 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             ),
             metadata_files=("summary.json", "aggregate_summary.json"),
             limitations="Full-grid claims require non-smoke aggregate artefacts.",
+        ),
+        _ArtefactSpec(
+            name="fi2010_neural_proper_training_subset",
+            artefact_type="fi2010_neural_proper_training",
+            path=config.proper_training_dir,
+            required_files=(
+                "summary.json",
+                "config_snapshot.json",
+                "results_summary.csv",
+                "aggregate_summary.csv",
+                "aggregate_summary.json",
+                "training_curves_summary.csv",
+                "ssl_comparison.csv",
+                "failures.csv",
+                "sha256_manifest.json",
+            ),
+            metadata_files=("summary.json", "aggregate_summary.json"),
+            limitations=(
+                "Proper-training subset claims are limited to the exact folds, "
+                "horizons, seeds, lookbacks and objectives stored in the artefacts."
+            ),
         ),
         _ArtefactSpec(
             name="fi2010_figures",
@@ -817,6 +839,12 @@ def _completion_status(spec: _ArtefactSpec, loaded: _LoadedArtefact) -> Artefact
             return "complete_real"
         evidence_level = str(summary.get("evidence_level", "")).lower()
         if evidence_level in {"full_grid_complete", "complete_real"}:
+            return "complete_real"
+        return "partial_real"
+    if spec.artefact_type == "fi2010_neural_proper_training":
+        summary = loaded.payloads.get("summary", {})
+        evidence_level = str(summary.get("evidence_level", "")).lower()
+        if evidence_level == "complete_real" or bool(summary.get("target_scope_complete")):
             return "complete_real"
         return "partial_real"
     if spec.artefact_type == "feature_ablations":
@@ -1197,8 +1225,7 @@ def _audit_infrastructure_claim(
         reason = "Only smoke-test diagnostics are available for this claim."
     elif best == "partially_supported":
         reason = (
-            "Some artefacts exist, but the evidence is partial, stale or lacks "
-            "clean staleness."
+            "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness."
         )
     else:
         reason = "Required non-smoke artefacts are missing or invalid."
@@ -1253,8 +1280,7 @@ def _audit_model_metric_claim(
     required = ["fi2010_classical_benchmarks", "fi2010_neural_full_grid"]
     records = [record for name in required if (record := by_name.get(name)) is not None]
     has_real_table = any(
-        record.status in _REAL_STATUSES | _PARTIAL_STATUSES
-        and _best_macro_f1(record) is not None
+        record.status in _REAL_STATUSES | _PARTIAL_STATUSES and _best_macro_f1(record) is not None
         for record in records
     )
     has_smoke_table = any(record.status == "smoke_test_only" for record in records)
@@ -1509,14 +1535,12 @@ def _audit_confidence_filtering_claim(
     elif improvement is True:
         status = "partially_supported"
         reason = (
-            "Stored threshold aggregates show an improvement, but evidence is "
-            "not clean complete."
+            "Stored threshold aggregates show an improvement, but evidence is not clean complete."
         )
     elif improvement is False:
         status = "unsupported"
         reason = (
-            "Stored threshold aggregates do not show an improvement over the "
-            "reference threshold."
+            "Stored threshold aggregates do not show an improvement over the reference threshold."
         )
     else:
         status = "needs_real_evidence"
@@ -1569,8 +1593,7 @@ def _needs_real_evidence(
         required_artefacts=list(required),
         reason=reason,
         safe_rewording=(
-            "Built infrastructure exists, but this result claim needs real "
-            "aggregate artefacts."
+            "Built infrastructure exists, but this result claim needs real aggregate artefacts."
         ),
         category="empirical result",
     )
@@ -1590,8 +1613,7 @@ def _smoke_only_claim(
         required_artefacts=list(required),
         reason="Only smoke-test artefacts support this code path; they are not empirical evidence.",
         safe_rewording=(
-            "Smoke diagnostics exercise the code path only; no empirical result "
-            "is claimed."
+            "Smoke diagnostics exercise the code path only; no empirical result is claimed."
         ),
         category="empirical result",
     )
@@ -1926,8 +1948,8 @@ def _render_strong_bullets(
         [
             "Bullet:",
             (
-                "\"Compared supervised and self-supervised transformer variants across "
-                "FI-2010 folds, horizons and seeds under leakage-safe evaluation.\""
+                '"Compared supervised and self-supervised transformer variants across '
+                'FI-2010 folds, horizons and seeds under leakage-safe evaluation."'
             ),
             "",
             "Status:",
@@ -1943,8 +1965,8 @@ def _render_strong_bullets(
             "",
             "Safe fallback:",
             (
-                "\"Built infrastructure to compare supervised and self-supervised "
-                "transformer variants under leakage-safe FI-2010 evaluation.\""
+                '"Built infrastructure to compare supervised and self-supervised '
+                'transformer variants under leakage-safe FI-2010 evaluation."'
             ),
             "",
         ]
@@ -1953,8 +1975,8 @@ def _render_strong_bullets(
         [
             "Bullet:",
             (
-                "\"Generated artefact-backed execution-aware proxy diagnostics for "
-                "stored FI-2010 predictions.\""
+                '"Generated artefact-backed execution-aware proxy diagnostics for '
+                'stored FI-2010 predictions."'
             ),
             "",
             "Status:",
@@ -1965,8 +1987,8 @@ def _render_strong_bullets(
             "",
             "Safe fallback:",
             (
-                "\"Built offline execution-aware proxy diagnostics with explicit "
-                "release limitations.\""
+                '"Built offline execution-aware proxy diagnostics with explicit '
+                'release limitations."'
             ),
             "",
         ]
@@ -1975,7 +1997,7 @@ def _render_strong_bullets(
         lines.extend(
             [
                 "Bullet:",
-                "\"Identified the strongest stored classical FI-2010 baseline by macro-F1.\"",
+                '"Identified the strongest stored classical FI-2010 baseline by macro-F1."',
                 "",
                 "Status:",
                 "supported by classical result artefacts.",
@@ -2134,6 +2156,25 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "Real run requires local compute suitable for neural training.",
         ),
         (
+            "Proper-Training Neural Subset",
+            "python -m chronoslob.cli run-fi2010-neural-proper-training-subset "
+            "--config configs/experiments/fi2010_neural_proper_training_smoke.yaml "
+            "--processed-root data/processed/fi2010 "
+            f"--out {config.proper_training_dir.as_posix()} --folds 1 --horizons 10 "
+            "--seeds 0 --lookbacks 10 --objectives supervised,masked_reconstruction,next_field "
+            "--pretrain-epochs 1 --max-epochs 2 --patience 1 --batch-size 16 --smoke-test",
+            "python -m chronoslob.cli run-fi2010-neural-proper-training-subset "
+            "--config configs/experiments/fi2010_neural_proper_training.yaml "
+            "--processed-root data/processed/fi2010 "
+            f"--out {config.proper_training_dir.as_posix()} --folds 1,2,3 "
+            "--horizons 10,50 --seeds 0 --lookbacks 50 "
+            "--objectives supervised,masked_reconstruction,next_field "
+            "--pretrain-epochs 5 --max-epochs 25 --patience 5 --batch-size 1024 --device cpu",
+            config.proper_training_dir.as_posix(),
+            "Fallback real evidence is partial_real; complete_real requires folds "
+            "1-5 at horizons 10 and 50 with the same longer-training protocol.",
+        ),
+        (
             "SSL Benchmark",
             "python -m chronoslob.cli run-fi2010-ssl-neural-benchmark "
             "--config configs/experiments/fi2010_ssl_smoke.yaml "
@@ -2188,6 +2229,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "--neural experiments/fi2010_multifold_neural "
             "--uncertainty experiments/fi2010_uncertainty "
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
+            f"--proper-training {config.proper_training_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--out {config.final_report_path.as_posix()} --overwrite",
@@ -2198,6 +2240,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "--ablations experiments/fi2010_brutal_ablations "
             "--external experiments/fi2010_external_context "
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
+            f"--proper-training {config.proper_training_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--evidence-pack {config.out_dir.as_posix()} "
@@ -2352,6 +2395,7 @@ def _strict_violations(
             and record.artefact_name
             in {
                 "fi2010_neural_full_grid",
+                "fi2010_neural_proper_training_subset",
                 "fi2010_figures",
                 "execution_v3_outputs",
                 "feature_ablation_outputs",
@@ -2359,8 +2403,7 @@ def _strict_violations(
             }
         ):
             violations.append(
-                "smoke-test artefact requires --allow-smoke-test: "
-                f"{record.artefact_name}"
+                f"smoke-test artefact requires --allow-smoke-test: {record.artefact_name}"
             )
     violations.extend(public_claim_violations)
     return violations
@@ -2418,6 +2461,7 @@ def _config_paths(config: EvidencePackConfig) -> dict[str, str | None]:
         "classical_dir": _display_path(config.classical_dir),
         "ssl_dir": _display_path(config.ssl_dir),
         "neural_full_grid_dir": _display_path(config.neural_full_grid_dir),
+        "proper_training_dir": _display_path(config.proper_training_dir),
         "figures_dir": _display_path(config.figures_dir),
         "execution_v3_dir": _display_path(config.execution_v3_dir),
         "feature_audit_dir": (

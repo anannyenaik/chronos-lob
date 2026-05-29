@@ -1,0 +1,4 @@
+run_id,fold,horizon,seed,lookback,objective,pretraining_objective,max_epochs,epochs_ran,best_epoch,monitored_metric,best_validation_score,early_stopping_patience,early_stopped,training_seconds,test_macro_f1,test_accuracy,test_mcc,test_ece,status
+fold_1__h10__seed_0__lb10__supervised,1,10,0,10,supervised,none,2,2,1,validation_macro_f1,0.2551658424827115,1,True,28.538111000030767,0.2598609546144611,0.590340731478587,0.0319831406009846,0.13033527113480917,completed
+fold_1__h10__seed_0__lb10__masked_reconstruction,1,10,0,10,masked_reconstruction,masked_reconstruction,2,2,1,validation_macro_f1,0.2540612145297358,1,True,27.14911610004492,0.24812577739607686,0.5912264249244555,0.012203749026723299,0.1270182237023448,completed
+fold_1__h10__seed_0__lb10__next_field,1,10,0,10,next_field,next_field,2,2,1,validation_macro_f1,0.2540612145297358,1,True,32.015803000016604,0.24767518009168302,0.5911222256955299,0.0,0.16919407152495625,completed

@@ -12,7 +12,7 @@ supported only if:
 - no broad SSL improvement is claimed unless aggregate deltas support it
 
 Current status:
-- neural full-grid status = complete_real
+- neural full-grid status = stale
 
 Safe fallback:
 "Built infrastructure to compare supervised and self-supervised transformer variants under leakage-safe FI-2010 evaluation."
@@ -28,9 +28,3 @@ supported only if:
 
 Safe fallback:
 "Built offline execution-aware proxy diagnostics with explicit release limitations."
-
-Bullet:
-"Identified the strongest stored classical FI-2010 baseline by macro-F1."
-
-Status:
-supported by classical result artefacts.

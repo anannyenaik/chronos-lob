@@ -1,0 +1,69 @@
+{
+  "aggregate_rows": 3,
+  "artefacts": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "aggregate_summary_json": "aggregate_summary.json",
+    "failures": "failures.csv",
+    "missing_pairs": "missing_pairs.csv",
+    "readme": "README.md",
+    "results_summary": "results_summary.csv",
+    "run_plan": "run_plan.csv",
+    "runs": "runs/",
+    "ssl_comparison": "ssl_comparison.csv",
+    "summary": "summary.json",
+    "training_curves_summary": "training_curves_summary.csv"
+  },
+  "batch_size": 1024,
+  "comparison_rows": 2,
+  "completed_run_count": 3,
+  "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
+  "created_at": "2026-05-29T18:19:01.498437Z",
+  "device": "cpu",
+  "early_stopping": {
+    "metric": "validation_macro_f1",
+    "no_test_set_selection": true,
+    "patience": 1,
+    "restore_best_checkpoint_before_test": true,
+    "validation_only_model_selection": true
+  },
+  "early_stopping_metric": "validation_macro_f1",
+  "early_stopping_patience": 1,
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "evidence_level": "partial_real",
+  "execution_mode": "benchmark",
+  "failed_run_count": 0,
+  "folds": [
+    1
+  ],
+  "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
+  "horizons": [
+    10
+  ],
+  "lookbacks": [
+    10
+  ],
+  "max_epochs": 2,
+  "missing_pair_count": 0,
+  "objectives": [
+    "supervised",
+    "masked_reconstruction",
+    "next_field"
+  ],
+  "output_dir": "experiments\\fi2010_neural_proper_training_subset",
+  "pretrain_epochs": 1,
+  "processed_root": "data\\processed\\fi2010",
+  "run_count": 3,
+  "runner_version": "fi2010-neural-proper-training-subset/v1",
+  "seeds": [
+    0
+  ],
+  "skipped_existing_count": 0,
+  "smoke_test": false,
+  "subset_kind": "proper_training_subset",
+  "target_scope_complete": false,
+  "warnings": []
+}

@@ -8,13 +8,14 @@ Smoke rows remain code-path checks only.
 
 | artefact | status | smoke | completed | failed | notes |
 | --- | --- | --- | --- | --- | --- |
-| fi2010_classical_benchmarks | complete_real | no | 60 | 0 | Generated timestamp is present. |
+| fi2010_classical_benchmarks | stale | no | 60 | 0 | Recorded git commit differs from the current repository commit. |
 | fi2010_ssl_runner_outputs | missing | no |  |  | Artefact path is missing. |
-| fi2010_neural_full_grid | complete_real | no | 135 | 0 | Generated timestamp is present. |
+| fi2010_neural_full_grid | stale | no | 135 | 0 | Recorded git commit differs from the current repository commit. |
+| fi2010_neural_proper_training_subset | partial_real | no | 6 | 0 | Generated timestamp is present. |
 | fi2010_figures | partial_real | no | 17 |  | Generated timestamp is present. |
-| execution_v3_outputs | complete_real | no | 4800519 | 0 | Generated timestamp is present. |
+| execution_v3_outputs | stale | no | 4800519 | 0 | Recorded git commit differs from the current repository commit. |
 | feature_registry_audit_outputs | missing | no |  |  | The CLI feature audit is read-only unless a caller stores its output. Artefact path is missing. |
-| feature_ablation_outputs | partial_real | no | 840 | 0 | Generated timestamp is present. |
+| feature_ablation_outputs | stale | no | 840 | 0 | Recorded git commit differs from the current repository commit. |
 | ablation_figures | complete_real | no | 6 |  | Generated timestamp is present. |
 | final_empirical_report | complete_real | no |  |  | Generated timestamp is present. |
 | project_audit_archive | unknown_staleness | no |  |  | No commit, input-hash or timestamp evidence was available for staleness. |

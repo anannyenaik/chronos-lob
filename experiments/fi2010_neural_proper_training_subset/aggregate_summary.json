@@ -1,0 +1,73 @@
+{
+  "aggregate": [
+    {
+      "completed_run_count": 1,
+      "failed_run_count": 0,
+      "horizon": 10,
+      "lookback": 10,
+      "mean_accuracy": 0.5912264249244555,
+      "mean_brier_score": 0.590658213461356,
+      "mean_ece": 0.1270182237023448,
+      "mean_macro_f1": 0.24812577739607686,
+      "mean_mcc": 0.012203749026723299,
+      "mean_nll": 0.9998028165397608,
+      "model_family": "matrix_transformer",
+      "pretraining_objective": "masked_reconstruction",
+      "std_accuracy": 0.0,
+      "std_ece": 0.0,
+      "std_macro_f1": 0.0,
+      "std_mcc": 0.0
+    },
+    {
+      "completed_run_count": 1,
+      "failed_run_count": 0,
+      "horizon": 10,
+      "lookback": 10,
+      "mean_accuracy": 0.5911222256955299,
+      "mean_brier_score": 0.6214368155048346,
+      "mean_ece": 0.16919407152495625,
+      "mean_macro_f1": 0.24767518009168302,
+      "mean_mcc": 0.0,
+      "mean_nll": 1.0738281822469482,
+      "model_family": "matrix_transformer",
+      "pretraining_objective": "next_field",
+      "std_accuracy": 0.0,
+      "std_ece": 0.0,
+      "std_macro_f1": 0.0,
+      "std_mcc": 0.0
+    },
+    {
+      "completed_run_count": 1,
+      "failed_run_count": 0,
+      "horizon": 10,
+      "lookback": 10,
+      "mean_accuracy": 0.590340731478587,
+      "mean_brier_score": 0.5878413779888315,
+      "mean_ece": 0.13033527113480917,
+      "mean_macro_f1": 0.2598609546144611,
+      "mean_mcc": 0.0319831406009846,
+      "mean_nll": 0.9933300906848914,
+      "model_family": "matrix_transformer",
+      "pretraining_objective": "none",
+      "std_accuracy": 0.0,
+      "std_ece": 0.0,
+      "std_macro_f1": 0.0,
+      "std_mcc": 0.0
+    }
+  ],
+  "completed_run_count": 3,
+  "created_at": "2026-05-29T18:19:01.494446+00:00",
+  "failed_run_count": 0,
+  "missing_pair_count": 0,
+  "paths": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "failures": "failures.csv",
+    "missing_pairs": "missing_pairs.csv",
+    "results_summary": "results_summary.csv",
+    "ssl_comparison": "ssl_comparison.csv",
+    "training_curves_summary": "training_curves_summary.csv"
+  },
+  "runner_version": "fi2010-neural-proper-training-subset/v1",
+  "skipped_existing_count": 0,
+  "subset_kind": "proper_training_subset"
+}

@@ -402,8 +402,7 @@ def _verify_fi2010_local_impl(*, data_path: Path) -> int:
     print("  outputs:           not written")
     if report.is_official_layout:
         print(
-            "  next step:         run convert-fi2010-official to produce a "
-            "loader-ready CSV",
+            "  next step:         run convert-fi2010-official to produce a loader-ready CSV",
         )
     return 0 if not report.issues else 1
 
@@ -466,8 +465,7 @@ def _parse_fold_selection(value: str | None) -> list[int] | None:
             fold = int(cleaned)
         except ValueError as exc:
             raise ValueError(
-                f"--folds must be 'all' or a comma-separated integer list; "
-                f"got {value!r}",
+                f"--folds must be 'all' or a comma-separated integer list; got {value!r}",
             ) from exc
         if fold <= 0:
             raise ValueError(f"--folds entries must be positive; got {fold}")
@@ -505,8 +503,7 @@ def _parse_neural_fold_selection(value: str | None) -> list[str] | None:
             cleaned = f"fold_{int(cleaned)}"
         if not cleaned.startswith("fold_") or not cleaned.removeprefix("fold_").isdigit():
             raise ValueError(
-                f"--folds must be 'all' or a comma-separated list like fold_1,2; "
-                f"got {value!r}",
+                f"--folds must be 'all' or a comma-separated list like fold_1,2; got {value!r}",
             )
         if int(cleaned.removeprefix("fold_")) <= 0:
             raise ValueError("--folds entries must be positive")
@@ -665,8 +662,7 @@ def _run_fi2010_neural_benchmark_impl(
     except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
         print(f"FI-2010 neural benchmark run failed: {exc}", file=sys.stderr)
         print(
-            "  supported neural models: "
-            + ", ".join(SUPPORTED_NEURAL_BENCHMARK_MODELS),
+            "  supported neural models: " + ", ".join(SUPPORTED_NEURAL_BENCHMARK_MODELS),
             file=sys.stderr,
         )
         return 1
@@ -680,10 +676,7 @@ def _run_fi2010_neural_benchmark_impl(
     print(f"  processed root:      {summary.processed_root}")
     print(f"  output directory:    {summary.output_dir}")
     print(f"  execution mode:      {summary.execution_mode}")
-    print(
-        "  benchmark-level:     "
-        f"{'yes' if summary.full_benchmark_grid else 'no'}"
-    )
+    print(f"  benchmark-level:     {'yes' if summary.full_benchmark_grid else 'no'}")
     print(f"  folds:               {summary.folds_requested}")
     print(f"  seeds:               {summary.seeds}")
     print(f"  models:              {', '.join(summary.models_requested)}")
@@ -696,13 +689,9 @@ def _run_fi2010_neural_benchmark_impl(
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
     print(
-        "  full predictions:    "
-        f"{'written' if summary.full_predictions_written else 'not written'}"
+        f"  full predictions:    {'written' if summary.full_predictions_written else 'not written'}"
     )
-    print(
-        "  checkpoints:         "
-        f"{'written' if summary.checkpoints_written else 'not written'}"
-    )
+    print(f"  checkpoints:         {'written' if summary.checkpoints_written else 'not written'}")
     print("  network calls:       none performed")
     return 0 if summary.failure_count == 0 else 1
 
@@ -783,10 +772,7 @@ def _run_fi2010_ssl_neural_benchmark_impl(
     print(f"  planned runs:        {summary.run_count}")
     print(f"  completed runs:      {summary.completed_run_count}")
     print(f"  run failures:        {summary.failure_count}")
-    print(
-        "  ssl artefacts:       "
-        f"{'written' if summary.ssl_artefacts_written else 'not written'}"
-    )
+    print(f"  ssl artefacts:       {'written' if summary.ssl_artefacts_written else 'not written'}")
     print("  artefacts written:")
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
@@ -874,6 +860,91 @@ def _run_fi2010_neural_full_grid_impl(
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
     print("  network calls:       none performed")
+    return 0 if summary.failed_run_count == 0 else 1
+
+
+def _run_fi2010_neural_proper_training_subset_impl(
+    *,
+    config_path: Path,
+    processed_root: Path,
+    out: Path,
+    folds: Sequence[str | int] | None,
+    horizons: Sequence[int] | None,
+    seeds: Sequence[int] | None,
+    lookbacks: Sequence[int] | None,
+    objectives: Sequence[str] | None,
+    pretrain_epochs: int,
+    max_epochs: int | None,
+    patience: int | None,
+    batch_size: int | None,
+    device: str,
+    reuse_completed: bool,
+    smoke_test: bool,
+) -> int:
+    """Run the FI-2010 proper-training (longer-training) neural subset."""
+    from chronoslob.experiments.fi2010_neural_proper_training import (
+        PROPER_TRAINING_OBJECTIVE_CHOICES,
+        run_fi2010_neural_proper_training_subset,
+    )
+
+    try:
+        summary = run_fi2010_neural_proper_training_subset(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root),
+            out_dir=Path(out),
+            folds=folds,
+            horizons=horizons,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            objectives=objectives,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            patience=patience,
+            batch_size=batch_size,
+            device=device,
+            reuse_completed=reuse_completed,
+            smoke_test=smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
+        print(f"FI-2010 proper-training subset failed: {exc}", file=sys.stderr)
+        print(
+            "  supported objectives: " + ", ".join(PROPER_TRAINING_OBJECTIVE_CHOICES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 proper-training neural subset runner")
+    print(f"  config:                {summary.config_path}")
+    print(f"  processed root:        {summary.processed_root}")
+    print(f"  output directory:      {summary.output_dir}")
+    print(f"  subset kind:           {summary.subset_kind}")
+    print(f"  execution mode:        {summary.execution_mode}")
+    print(f"  smoke test:            {'yes' if summary.smoke_test else 'no'}")
+    print(f"  folds:                 {summary.folds}")
+    print(f"  horizons:              {summary.horizons}")
+    print(f"  seeds:                 {summary.seeds}")
+    print(f"  lookbacks:             {summary.lookbacks}")
+    print(f"  objectives:            {', '.join(summary.objectives)}")
+    print(f"  pretrain epochs:       {summary.pretrain_epochs}")
+    print(f"  max epochs:            {summary.max_epochs}")
+    print(f"  early stopping metric: {summary.early_stopping_metric}")
+    print(f"  early stopping patience: {summary.early_stopping_patience}")
+    print(f"  batch size:            {summary.batch_size}")
+    print(f"  device:                {summary.device}")
+    print(f"  planned runs:          {summary.run_count}")
+    print(f"  completed runs:        {summary.completed_run_count}")
+    print(f"  skipped existing:      {summary.skipped_existing_count}")
+    print(f"  failed runs:           {summary.failed_run_count}")
+    print(f"  missing pairs:         {summary.missing_pair_count}")
+    print(f"  target scope complete: {'yes' if summary.target_scope_complete else 'no'}")
+    print("  validation-only model selection; best checkpoint restored before test")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print("  network calls:         none performed")
     return 0 if summary.failed_run_count == 0 else 1
 
 
@@ -1216,13 +1287,9 @@ def _analyse_fi2010_uncertainty_impl(
         )
     )
     print(
-        "  classical seed variance: "
-        f"{'yes' if summary.classical_seed_variance_available else 'no'}"
+        f"  classical seed variance: {'yes' if summary.classical_seed_variance_available else 'no'}"
     )
-    print(
-        "  neural seed variance:    "
-        f"{'yes' if summary.neural_seed_variance_available else 'no'}"
-    )
+    print(f"  neural seed variance:    {'yes' if summary.neural_seed_variance_available else 'no'}")
     print("  artefacts written:")
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
@@ -1421,8 +1488,7 @@ def _run_fi2010_multifold_classical_impl(
     except (OSError, ValueError, TypeError, RuntimeError) as exc:
         print(f"FI-2010 multi-fold classical run failed: {exc}", file=sys.stderr)
         print(
-            "  supported classical models: "
-            + ", ".join(CLASSICAL_MULTIFOLD_MODELS),
+            "  supported classical models: " + ", ".join(CLASSICAL_MULTIFOLD_MODELS),
             file=sys.stderr,
         )
         return 1
@@ -1740,15 +1806,9 @@ def _run_paper_experiment_impl(
     else:
         print("  skipped models:      none")
     if summary.predictive_metric_names:
-        print(
-            "  predictive metrics:  "
-            + ", ".join(summary.predictive_metric_names)
-        )
+        print("  predictive metrics:  " + ", ".join(summary.predictive_metric_names))
     if summary.calibration_metric_names:
-        print(
-            "  calibration metrics: "
-            + ", ".join(summary.calibration_metric_names)
-        )
+        print("  calibration metrics: " + ", ".join(summary.calibration_metric_names))
     if summary.metric_names:
         print(f"  all metrics emitted: {', '.join(summary.metric_names)}")
     else:
@@ -1758,10 +1818,7 @@ def _run_paper_experiment_impl(
     print("  artefacts written:")
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
-    print(
-        "  artefact validation: "
-        f"{'valid' if summary.validation.is_valid else 'invalid'}"
-    )
+    print(f"  artefact validation: {'valid' if summary.validation.is_valid else 'invalid'}")
     if summary.validation.missing_required:
         print("  missing required:")
         for missing in summary.validation.missing_required:
@@ -1845,11 +1902,7 @@ def _run_paper_ablations_impl(
         print("  ablations skipped:")
         for name in summary.ablations_skipped:
             reason = next(
-                (
-                    result.reason
-                    for result in summary.results
-                    if result.name == name
-                ),
+                (result.reason for result in summary.results if result.name == name),
                 None,
             )
             suffix = f" ({reason})" if reason else ""
@@ -1909,8 +1962,7 @@ def _run_system_benchmarks_impl(
     except (OSError, ValueError, TypeError, RuntimeError) as exc:
         print(f"Systems benchmark failed: {exc}", file=sys.stderr)
         print(
-            "  supported benchmark sets: "
-            + ", ".join(SUPPORTED_SYSTEM_BENCHMARK_SETS),
+            "  supported benchmark sets: " + ", ".join(SUPPORTED_SYSTEM_BENCHMARK_SETS),
             file=sys.stderr,
         )
         return 1
@@ -1983,9 +2035,7 @@ def _inspect_system_benchmarks_impl(*, benchmark: Path) -> int:
 
     reports_dir = resolved_dir / "reports"
     reports_present = (
-        sorted(path.name for path in reports_dir.glob("*.md"))
-        if reports_dir.is_dir()
-        else []
+        sorted(path.name for path in reports_dir.glob("*.md")) if reports_dir.is_dir() else []
     )
     benchmark_set = str(payload.get("benchmark_set", "unknown"))
     benchmarks_run = payload.get("benchmarks_run")
@@ -2103,10 +2153,7 @@ def _inspect_paper_experiment_impl(*, experiment: Path) -> int:
     print(f"  experiment dir:   {resolved_dir}")
 
     report = validate_experiment_directory(resolved_dir, include_plots=True)
-    print(
-        "  artefact validation: "
-        f"{'valid' if report.is_valid else 'invalid'}"
-    )
+    print(f"  artefact validation: {'valid' if report.is_valid else 'invalid'}")
     if report.missing_required:
         print("  missing required:")
         for missing in report.missing_required:
@@ -2171,10 +2218,7 @@ def _inspect_paper_experiment_impl(*, experiment: Path) -> int:
                 + (", ".join(streams.execution) if streams.execution else "none")
             )
             if streams.robustness:
-                print(
-                    "    robustness:   "
-                    + ", ".join(streams.robustness)
-                )
+                print("    robustness:   " + ", ".join(streams.robustness))
     else:
         print("  results.json:     not found")
 
@@ -2185,42 +2229,29 @@ def _inspect_paper_experiment_impl(*, experiment: Path) -> int:
         except OSError as exc:
             print(f"  predictions.csv row count error: {exc}")
         else:
-            print(
-                "  prediction rows:  "
-                + (str(max(row_count, 0)) if row_count >= 0 else "0")
-            )
+            print("  prediction rows:  " + (str(max(row_count, 0)) if row_count >= 0 else "0"))
     else:
         print("  prediction rows:  predictions.csv not present")
 
     calibration_path = resolved_dir / "calibration_bins.csv"
     if calibration_path.is_file():
         try:
-            calibration_count = (
-                sum(1 for _ in calibration_path.open("r", encoding="utf-8")) - 1
-            )
+            calibration_count = sum(1 for _ in calibration_path.open("r", encoding="utf-8")) - 1
         except OSError as exc:
             print(f"  calibration row count error: {exc}")
         else:
-            print(
-                "  calibration rows: "
-                + str(max(calibration_count, 0))
-            )
+            print("  calibration rows: " + str(max(calibration_count, 0)))
     else:
         print("  calibration rows: calibration_bins.csv not present")
 
     execution_path = resolved_dir / "execution_sensitivity.csv"
     if execution_path.is_file():
         try:
-            execution_count = (
-                sum(1 for _ in execution_path.open("r", encoding="utf-8")) - 1
-            )
+            execution_count = sum(1 for _ in execution_path.open("r", encoding="utf-8")) - 1
         except OSError as exc:
             print(f"  execution row count error: {exc}")
         else:
-            print(
-                "  execution rows:   "
-                + str(max(execution_count, 0))
-            )
+            print("  execution rows:   " + str(max(execution_count, 0)))
     else:
         print("  execution rows:   execution_sensitivity.csv not present")
 
@@ -2337,10 +2368,7 @@ def _build_paper_report_impl(
     print(f"  warnings:           {len(summary.warnings)}")
     for warning in summary.warnings:
         print(f"    - {warning}")
-    print(
-        "  fixture/smoke run:  "
-        f"{'yes' if summary.fixture_or_smoke_run else 'no'}"
-    )
+    print(f"  fixture/smoke run:  {'yes' if summary.fixture_or_smoke_run else 'no'}")
     print("  network calls:      none performed")
     return 0
 
@@ -2358,6 +2386,7 @@ def _build_final_empirical_report_impl(
     external: Path | None,
     ssl: Path | None = None,
     neural_full_grid: Path | None = None,
+    proper_training: Path | None = None,
     evidence_pack: Path | None = None,
     overwrite: bool,
 ) -> int:
@@ -2374,17 +2403,12 @@ def _build_final_empirical_report_impl(
                 Path(feature_ablations) if feature_ablations is not None else None
             ),
             execution_dir=Path(execution) if execution is not None else None,
-            execution_v3_dir=(
-                Path(execution_v3) if execution_v3 is not None else None
-            ),
+            execution_v3_dir=(Path(execution_v3) if execution_v3 is not None else None),
             external_dir=Path(external) if external is not None else None,
             ssl_dir=Path(ssl) if ssl is not None else None,
-            neural_full_grid_dir=(
-                Path(neural_full_grid) if neural_full_grid is not None else None
-            ),
-            evidence_pack_dir=(
-                Path(evidence_pack) if evidence_pack is not None else None
-            ),
+            neural_full_grid_dir=(Path(neural_full_grid) if neural_full_grid is not None else None),
+            proper_training_dir=(Path(proper_training) if proper_training is not None else None),
+            evidence_pack_dir=(Path(evidence_pack) if evidence_pack is not None else None),
             out_path=Path(out),
             overwrite=overwrite,
         )
@@ -2443,6 +2467,7 @@ def _build_evidence_pack_impl(
     overwrite: bool,
     classical: Path = Path("experiments/fi2010_multifold_classical"),
     ssl: Path = Path("experiments/fi2010_ssl"),
+    proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
     feature_audit: Path | None = Path("reports/feature_audit"),
     project_audit: Path | None = Path("reports/report_archive"),
 ) -> int:
@@ -2459,6 +2484,7 @@ def _build_evidence_pack_impl(
                 out_dir=Path(out),
                 classical_dir=Path(classical),
                 ssl_dir=Path(ssl),
+                proper_training_dir=Path(proper_training),
                 neural_full_grid_dir=Path(neural_full_grid),
                 figures_dir=Path(figures),
                 execution_v3_dir=Path(execution_v3),
@@ -2531,10 +2557,7 @@ def _inspect_paper_report_impl(*, report: Path) -> int:
     if inspection.fixture_or_smoke_run is None:
         print("  fixture/smoke flag:   unknown")
     else:
-        print(
-            "  fixture/smoke flag:   "
-            f"{'yes' if inspection.fixture_or_smoke_run else 'no'}"
-        )
+        print(f"  fixture/smoke flag:   {'yes' if inspection.fixture_or_smoke_run else 'no'}")
     print("  outputs:              not written")
     print("  network calls:        none performed")
     return 0
@@ -2547,10 +2570,7 @@ def _is_synthetic_fixture_path(path: Path) -> bool:
 
 def _print_synthetic_fixture_warning(path: Path) -> None:
     if _is_synthetic_fixture_path(path):
-        print(
-            "WARNING: event log path is a synthetic fixture; "
-            "outputs are not real market data."
-        )
+        print("WARNING: event log path is a synthetic fixture; outputs are not real market data.")
 
 
 def _inspect_event_log_impl(path: Path) -> int:
@@ -2569,20 +2589,11 @@ def _inspect_event_log_impl(path: Path) -> int:
         return 1
 
     symbols = ", ".join(manifest.symbols) if manifest.symbols else "none"
-    start = (
-        manifest.start_timestamp.isoformat()
-        if manifest.start_timestamp is not None
-        else "n/a"
-    )
-    end = (
-        manifest.end_timestamp.isoformat()
-        if manifest.end_timestamp is not None
-        else "n/a"
-    )
+    start = manifest.start_timestamp.isoformat() if manifest.start_timestamp is not None else "n/a"
+    end = manifest.end_timestamp.isoformat() if manifest.end_timestamp is not None else "n/a"
     seq_range = (
         f"{manifest.min_sequence_id}..{manifest.max_sequence_id}"
-        if manifest.min_sequence_id is not None
-        and manifest.max_sequence_id is not None
+        if manifest.min_sequence_id is not None and manifest.max_sequence_id is not None
         else "n/a"
     )
 
@@ -2644,10 +2655,7 @@ def _inspect_event_tokens_impl(
     print(f"  tokenised records:       {len(sequence.records)}")
     print(f"  token windows:           {len(windows)}")
     print(f"  window length:           {window_length}")
-    print(
-        "  snapshot-derived tokens: "
-        f"{'yes' if sequence.has_snapshot_derived_tokens else 'no'}"
-    )
+    print(f"  snapshot-derived tokens: {'yes' if sequence.has_snapshot_derived_tokens else 'no'}")
     print("  vocabulary sizes:")
     for field_name, size in sequence.field_sizes.items():
         print(f"    {field_name}: {size}")
@@ -2679,9 +2687,7 @@ def _event_log_to_features_impl(path: Path) -> int:
         return 1
 
     feature_columns = [
-        column
-        for column in frame.columns
-        if column not in {"timestamp", "symbol", "split"}
+        column for column in frame.columns if column not in {"timestamp", "symbol", "split"}
     ]
 
     print("ChronosLOB event-log-to-features inspection")
@@ -2689,9 +2695,7 @@ def _event_log_to_features_impl(path: Path) -> int:
     print(f"  rows:                {len(frame)}")
     print(f"  feature columns:     {len(feature_columns)}")
     print(f"  synthetic_time:      {frame.attrs.get('synthetic_time', False)}")
-    print(
-        f"  skipped time feats:  {frame.attrs.get('skipped_time_features', False)}"
-    )
+    print(f"  skipped time feats:  {frame.attrs.get('skipped_time_features', False)}")
     print(f"  validation ok:       {validation.ok}")
     print(f"  validation errors:   {validation.error_count}")
     print(f"  validation warnings: {validation.warning_count}")
@@ -2772,9 +2776,7 @@ def _inspect_features_fi2010_impl(
     )
 
     resolved_labels = (
-        list(label_columns)
-        if label_columns is not None
-        else ["label_10", "label_50", "label_100"]
+        list(label_columns) if label_columns is not None else ["label_10", "label_50", "label_100"]
     )
     try:
         config = FI2010Config(
@@ -2793,9 +2795,7 @@ def _inspect_features_fi2010_impl(
         return 1
 
     pipeline_config = FeaturePipelineConfig(
-        allow_synthetic_timestamps_for_time_features=(
-            allow_synthetic_timestamps_for_time_features
-        )
+        allow_synthetic_timestamps_for_time_features=(allow_synthetic_timestamps_for_time_features)
     )
     try:
         frame = build_feature_frame_from_fi2010(dataset, pipeline_config)
@@ -2804,9 +2804,7 @@ def _inspect_features_fi2010_impl(
         return 1
 
     feature_columns = [
-        column
-        for column in frame.columns
-        if column not in {"timestamp", "symbol", "split"}
+        column for column in frame.columns if column not in {"timestamp", "symbol", "split"}
     ]
     validation = validate_feature_frame(frame)
 
@@ -2815,9 +2813,7 @@ def _inspect_features_fi2010_impl(
     print(f"  rows:                {len(frame)}")
     print(f"  feature columns:     {len(feature_columns)}")
     print(f"  synthetic_time:      {frame.attrs.get('synthetic_time', False)}")
-    print(
-        f"  skipped time feats:  {frame.attrs.get('skipped_time_features', False)}"
-    )
+    print(f"  skipped time feats:  {frame.attrs.get('skipped_time_features', False)}")
     print(f"  validation ok:       {validation.ok}")
     print(f"  validation errors:   {validation.error_count}")
     print(f"  validation warnings: {validation.warning_count}")
@@ -2843,9 +2839,7 @@ def _inspect_labels_fi2010_impl(
     )
 
     resolved_labels = (
-        list(label_columns)
-        if label_columns is not None
-        else ["label_10", "label_50", "label_100"]
+        list(label_columns) if label_columns is not None else ["label_10", "label_50", "label_100"]
     )
     try:
         config = FI2010Config(
@@ -3418,14 +3412,8 @@ def _inspect_ssl_impl() -> int:
     config = SSLTransformerConfig()
     model = create_ssl_transformer(config)
     print("ChronosLOB SSL Transformer wrapper")
-    print(
-        "  Self-supervised pretraining over field-wise tokenised market "
-        "microstructure."
-    )
-    print(
-        "  No supervised market labels, calibration, execution simulation or "
-        "benchmark claim."
-    )
+    print("  Self-supervised pretraining over field-wise tokenised market microstructure.")
+    print("  No supervised market labels, calibration, execution simulation or benchmark claim.")
     print(f"  enabled objectives:       {list(config.enabled_objectives())}")
     print(f"  masked fields:            {list(config.masked_fields)}")
     print(f"  next-predicted fields:    {list(config.next_fields)}")
@@ -3434,14 +3422,9 @@ def _inspect_ssl_impl() -> int:
     print("  masking config:")
     print(f"    mask_probability:        {config.masking.mask_probability}")
     print(f"    mask_token_probability:  {config.masking.mask_token_probability}")
-    print(
-        "    random_token_probability:"
-        f" {config.masking.random_token_probability}"
-    )
+    print(f"    random_token_probability: {config.masking.random_token_probability}")
     print(f"    keep_token_probability:  {config.masking.keep_token_probability}")
-    print(
-        f"    force_at_least_one_mask: {config.masking.force_at_least_one_mask}"
-    )
+    print(f"    force_at_least_one_mask: {config.masking.force_at_least_one_mask}")
     print("  loss weights:")
     for name, weight in dict(config.loss_weights).items():
         print(f"    {name}: {weight}")
@@ -3449,10 +3432,7 @@ def _inspect_ssl_impl() -> int:
     print(f"    model_dim:              {config.transformer.model_dim}")
     print(f"    num_heads:              {config.transformer.num_heads}")
     print(f"    num_layers:             {config.transformer.num_layers}")
-    print(
-        "    max_sequence_length:    "
-        f"{config.transformer.max_sequence_length}"
-    )
+    print(f"    max_sequence_length:    {config.transformer.max_sequence_length}")
     print(f"  model parameter count:    {model.n_parameters()}")
     print("  No training was run.")
     return 0
@@ -3551,10 +3531,7 @@ def _inspect_multitask_impl() -> int:
     config = MultiTaskTransformerConfig()
     model = create_multitask_transformer(config)
     print("ChronosLOB Multi-Task Transformer")
-    print(
-        "  Supervised fine-tuning heads over a shared field-wise token "
-        "transformer backbone."
-    )
+    print("  Supervised fine-tuning heads over a shared field-wise token transformer backbone.")
     print(
         "  No calibration, confidence filtering, execution simulation, "
         "backtesting or performance claim."
@@ -3744,18 +3721,10 @@ def _run_calibration_smoke_impl(
     print(f"  fitted temperature:      {result['fitted_temperature']:.6f}")
     print("  pre-calibration metrics:")
     pre = cast(Mapping[str, Any], result["pre_calibration"])
-    print(
-        f"    nll={pre['nll']:.6f} "
-        f"ece={pre['ece']:.6f} "
-        f"brier={pre['brier_score']:.6f}"
-    )
+    print(f"    nll={pre['nll']:.6f} ece={pre['ece']:.6f} brier={pre['brier_score']:.6f}")
     print("  post-calibration metrics:")
     post = cast(Mapping[str, Any], result["post_calibration"])
-    print(
-        f"    nll={post['nll']:.6f} "
-        f"ece={post['ece']:.6f} "
-        f"brier={post['brier_score']:.6f}"
-    )
+    print(f"    nll={post['nll']:.6f} ece={post['ece']:.6f} brier={post['brier_score']:.6f}")
     print("  confidence filtering:")
     print("    threshold  coverage  abstention  accuracy  n_covered/n_total")
     confidence_filtering = cast(
@@ -3942,9 +3911,7 @@ def _run_robustness_analysis_smoke_impl(
     print(f"  transfer records:         {result['n_transfer_records']}")
     print(f"  sensitivity points:       {result['n_sensitivity_points']}")
     print(f"  ablation records:         {result['n_ablation_records']}")
-    regime_summary_counts = cast(
-        Mapping[str, int], result["regime_summary_counts"]
-    )
+    regime_summary_counts = cast(Mapping[str, int], result["regime_summary_counts"])
     print("  regime summary counts:")
     for kind, count in regime_summary_counts.items():
         print(f"    {kind}: {count}")
@@ -3955,18 +3922,10 @@ def _run_robustness_analysis_smoke_impl(
         f"{matrix_shape[0]}x{matrix_shape[1]} "
         f"(metric={transfer_matrix['metric_name']})"
     )
-    print(
-        "  ablation comparisons:     "
-        f"{result['ablation_comparisons_count']}"
-    )
-    print(
-        "  sensitivity curves:       "
-        f"{result['sensitivity_curves_produced']}"
-    )
+    print(f"  ablation comparisons:     {result['ablation_comparisons_count']}")
+    print(f"  sensitivity curves:       {result['sensitivity_curves_produced']}")
     print("  example metric summaries:")
-    example_rows = cast(
-        Sequence[Mapping[str, Any]], result["example_summary_rows"]
-    )
+    example_rows = cast(Sequence[Mapping[str, Any]], result["example_summary_rows"])
     for example in example_rows[:4]:
         row = cast(Mapping[str, Any], example["row"])
         mean_value = row.get("mean")
@@ -4014,10 +3973,7 @@ def _inspect_binance_replay_impl(
 
     fixture_marker = Path("tests") / "fixtures"
     fixture_marker_str = str(fixture_marker)
-    is_fixture = any(
-        fixture_marker_str in str(path)
-        for path in (snapshot_path, updates_path)
-    )
+    is_fixture = any(fixture_marker_str in str(path) for path in (snapshot_path, updates_path))
     if is_fixture:
         print(
             "WARNING: replay is running against a synthetic fixture; "
@@ -4049,12 +4005,8 @@ def _inspect_binance_replay_impl(
         final_snapshot = result.snapshots[-1]
         best_bid = final_snapshot.best_bid
         best_ask = final_snapshot.best_ask
-        bid_str = (
-            f"{best_bid.price}@{best_bid.quantity}" if best_bid is not None else "n/a"
-        )
-        ask_str = (
-            f"{best_ask.price}@{best_ask.quantity}" if best_ask is not None else "n/a"
-        )
+        bid_str = f"{best_bid.price}@{best_bid.quantity}" if best_bid is not None else "n/a"
+        ask_str = f"{best_ask.price}@{best_ask.quantity}" if best_ask is not None else "n/a"
         print(f"  best bid:         {bid_str}")
         print(f"  best ask:         {ask_str}")
         bid_levels = len(final_snapshot.bids)
@@ -4203,8 +4155,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob verify-fi2010-local",
             description=(
-                "Inspect a local FI-2010 ``.txt`` matrix safely without "
-                "loading it into memory."
+                "Inspect a local FI-2010 ``.txt`` matrix safely without loading it into memory."
             ),
         )
         parser.add_argument("--data-path", type=Path, required=True)
@@ -4294,10 +4245,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "--processed-root",
             type=Path,
             default=None,
-            help=(
-                "Local root for the combined CSV outputs. Defaults to the "
-                "value in the config."
-            ),
+            help=("Local root for the combined CSV outputs. Defaults to the value in the config."),
         )
         parser.add_argument("--out", type=Path, required=True)
         parser.add_argument(
@@ -4309,9 +4257,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument(
             "--overwrite",
             action="store_true",
-            help=(
-                "Replace existing combined CSVs, manifests and summary.json."
-            ),
+            help=("Replace existing combined CSVs, manifests and summary.json."),
         )
         parsed = parser.parse_args(args[1:])
         try:
@@ -4340,10 +4286,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "--processed-root",
             type=Path,
             default=None,
-            help=(
-                "Root containing prepared fold CSV files. Defaults to the "
-                "value in the config."
-            ),
+            help=("Root containing prepared fold CSV files. Defaults to the value in the config."),
         )
         parser.add_argument("--out", type=Path, required=True)
         parser.add_argument(
@@ -4375,9 +4318,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         model_tokens = None
         if parsed.models is not None:
             model_tokens = [
-                token.strip()
-                for token in str(parsed.models).split(",")
-                if token.strip()
+                token.strip() for token in str(parsed.models).split(",") if token.strip()
             ]
         return _run_fi2010_multifold_classical_impl(
             config_path=parsed.config,
@@ -4806,6 +4747,83 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             reuse_completed=bool(parsed.reuse_completed),
             smoke_test=bool(parsed.smoke_test),
         )
+    if command == "run-fi2010-neural-proper-training-subset":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-neural-proper-training-subset",
+            description=(
+                "Run the FI-2010 proper-training (longer-training) neural subset "
+                "with validation-only early stopping and matched supervised-vs-SSL "
+                "comparison, reported separately from the one-epoch full grid."
+            ),
+        )
+        parser.add_argument(
+            "--config",
+            type=Path,
+            default=Path("configs/experiments/fi2010_neural_proper_training.yaml"),
+        )
+        parser.add_argument("--processed-root", type=Path, required=True)
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        )
+        parser.add_argument("--folds", type=str, default="1,2,3,4,5")
+        parser.add_argument("--horizons", type=str, default="10,20,50")
+        parser.add_argument("--seeds", type=str, default="0,1,2")
+        parser.add_argument("--lookbacks", type=str, default="50")
+        parser.add_argument(
+            "--objectives",
+            type=str,
+            default="supervised,masked_reconstruction,next_field",
+        )
+        parser.add_argument("--pretrain-epochs", type=int, default=10)
+        parser.add_argument("--max-epochs", type=int, default=None)
+        parser.add_argument("--patience", type=int, default=None)
+        parser.add_argument("--batch-size", type=int, default=None)
+        parser.add_argument("--device", type=str, default="cpu")
+        parser.add_argument(
+            _REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_true",
+            default=True,
+        )
+        parser.add_argument(
+            _NO_REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_false",
+        )
+        parser.add_argument("--smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        try:
+            pt_folds = _parse_neural_fold_selection(parsed.folds)
+            pt_horizons = _parse_int_selection(
+                parsed.horizons, option_name="--horizons", positive=True
+            )
+            pt_seeds = _parse_int_selection(parsed.seeds, option_name="--seeds", positive=False)
+            pt_lookbacks = _parse_int_selection(
+                parsed.lookbacks, option_name="--lookbacks", positive=True
+            )
+            pt_objectives = _parse_model_selection(parsed.objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _run_fi2010_neural_proper_training_subset_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            folds=pt_folds,
+            horizons=pt_horizons,
+            seeds=pt_seeds,
+            lookbacks=pt_lookbacks,
+            objectives=pt_objectives,
+            pretrain_epochs=parsed.pretrain_epochs,
+            max_epochs=parsed.max_epochs,
+            patience=parsed.patience,
+            batch_size=parsed.batch_size,
+            device=parsed.device,
+            reuse_completed=bool(parsed.reuse_completed),
+            smoke_test=bool(parsed.smoke_test),
+        )
     if command == "build-fi2010-figures":
         parser = argparse.ArgumentParser(
             prog="chronoslob build-fi2010-figures",
@@ -4923,7 +4941,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         )
         parser.add_argument(
             _REUSE_COMPLETED_FLAG,
-        dest="reuse_completed",
+            dest="reuse_completed",
             action="store_true",
             default=True,
         )
@@ -5111,17 +5129,10 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "--build-plots",
             dest="build_plots",
             action="store_true",
-            help=(
-                "Generate paper experiment plots from stored artefacts "
-                "after the run finishes."
-            ),
+            help=("Generate paper experiment plots from stored artefacts after the run finishes."),
         )
         parsed = parser.parse_args(args[1:])
-        model_tokens = [
-            token.strip()
-            for token in str(parsed.models).split(",")
-            if token.strip()
-        ]
+        model_tokens = [token.strip() for token in str(parsed.models).split(",") if token.strip()]
         return _run_paper_experiment_impl(
             config_path=parsed.config,
             data_path=parsed.data_path,
@@ -5156,10 +5167,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "--ablation-set",
             type=str,
             default="smoke",
-            help=(
-                "Named ablation set. Supported values: smoke, standard. "
-                "Defaults to smoke."
-            ),
+            help=("Named ablation set. Supported values: smoke, standard. Defaults to smoke."),
         )
         parser.add_argument(
             "--overwrite",
@@ -5173,11 +5181,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             help="Generate plots inside each child experiment directory.",
         )
         parsed = parser.parse_args(args[1:])
-        model_tokens = [
-            token.strip()
-            for token in str(parsed.models).split(",")
-            if token.strip()
-        ]
+        model_tokens = [token.strip() for token in str(parsed.models).split(",") if token.strip()]
         return _run_paper_ablations_impl(
             config_path=parsed.config,
             data_path=parsed.data_path,
@@ -5216,11 +5220,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             help="Replace the output directory if it already exists.",
         )
         parsed = parser.parse_args(args[1:])
-        model_tokens = [
-            token.strip()
-            for token in str(parsed.models).split(",")
-            if token.strip()
-        ]
+        model_tokens = [token.strip() for token in str(parsed.models).split(",") if token.strip()]
         return _run_system_benchmarks_impl(
             config_path=parsed.config,
             data_path=parsed.data_path,
@@ -5260,8 +5260,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-paper-experiment",
             description=(
-                "Print a concise human-readable summary of a paper "
-                "experiment artefact directory."
+                "Print a concise human-readable summary of a paper experiment artefact directory."
             ),
         )
         parser.add_argument("--experiment", type=Path, required=True)
@@ -5296,8 +5295,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob build-final-empirical-report",
             description=(
-                "Build the final empirical Markdown report from stored FI-2010 "
-                "artefacts."
+                "Build the final empirical Markdown report from stored FI-2010 artefacts."
             ),
         )
         parser.add_argument("--classical", type=Path, required=True)
@@ -5327,6 +5325,15 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             ),
         )
         parser.add_argument(
+            "--proper-training",
+            type=Path,
+            default=None,
+            help=(
+                "Optional proper-training neural subset artefact directory. "
+                "Smoke-test subsets are reported as smoke only."
+            ),
+        )
+        parser.add_argument(
             "--evidence-pack",
             type=Path,
             default=None,
@@ -5350,6 +5357,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             external=parsed.external,
             ssl=parsed.ssl,
             neural_full_grid=parsed.neural_full_grid,
+            proper_training=parsed.proper_training,
             evidence_pack=parsed.evidence_pack,
             out=parsed.out,
             overwrite=bool(parsed.overwrite),
@@ -5358,8 +5366,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob build-evidence-pack",
             description=(
-                "Build a release evidence pack that inventories artefacts and "
-                "audits public claims."
+                "Build a release evidence pack that inventories artefacts and audits public claims."
             ),
         )
         parser.add_argument("--out", type=Path, default=Path("reports/evidence_pack"))
@@ -5380,6 +5387,12 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             default=Path("experiments/fi2010_multifold_classical"),
         )
         parser.add_argument("--ssl", type=Path, default=Path("experiments/fi2010_ssl"))
+        parser.add_argument(
+            "--proper-training",
+            type=Path,
+            default=Path("experiments/fi2010_neural_proper_training_subset_v2"),
+            help="Path to FI-2010 proper-training neural subset artefacts.",
+        )
         parser.add_argument(
             "--feature-audit",
             type=Path,
@@ -5406,6 +5419,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             final_report=parsed.final_report,
             classical=parsed.classical,
             ssl=parsed.ssl,
+            proper_training=parsed.proper_training,
             feature_audit=parsed.feature_audit,
             project_audit=parsed.project_audit,
             strict=bool(parsed.strict),
@@ -5432,8 +5446,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-tokens",
             description=(
-                "Tokenise a local canonical event-log JSONL file and print "
-                "a read-only summary."
+                "Tokenise a local canonical event-log JSONL file and print a read-only summary."
             ),
         )
         parser.add_argument("--path", type=Path, required=True)
@@ -5494,20 +5507,15 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parsed = parser.parse_args(args[1:])
         return _inspect_fi2010_impl(
             path=parsed.path,
-            timestamp_column=(
-                None if parsed.no_timestamp_column else parsed.timestamp_column
-            ),
-            split_column=(
-                None if parsed.no_split_column else parsed.split_column
-            ),
+            timestamp_column=(None if parsed.no_timestamp_column else parsed.timestamp_column),
+            split_column=(None if parsed.no_split_column else parsed.split_column),
             price_level_count=parsed.price_level_count,
         )
     if command == "inspect-features-fi2010":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-features-fi2010",
             description=(
-                "Load an FI-2010 file, build microstructure features and "
-                "print a short summary."
+                "Load an FI-2010 file, build microstructure features and print a short summary."
             ),
         )
         parser.add_argument("--path", type=Path, required=True)
@@ -5528,30 +5536,22 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "--allow-synthetic-time",
             action="store_true",
             help=(
-                "Compute time-window features even when timestamps are "
-                "synthetic. Off by default."
+                "Compute time-window features even when timestamps are synthetic. Off by default."
             ),
         )
         parsed = parser.parse_args(args[1:])
         return _inspect_features_fi2010_impl(
             path=parsed.path,
-            timestamp_column=(
-                None if parsed.no_timestamp_column else parsed.timestamp_column
-            ),
-            split_column=(
-                None if parsed.no_split_column else parsed.split_column
-            ),
+            timestamp_column=(None if parsed.no_timestamp_column else parsed.timestamp_column),
+            split_column=(None if parsed.no_split_column else parsed.split_column),
             price_level_count=parsed.price_level_count,
-            allow_synthetic_timestamps_for_time_features=(
-                parsed.allow_synthetic_time
-            ),
+            allow_synthetic_timestamps_for_time_features=(parsed.allow_synthetic_time),
         )
     if command == "inspect-labels-fi2010":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-labels-fi2010",
             description=(
-                "Load an FI-2010 file, build or extract labels and print "
-                "a short summary."
+                "Load an FI-2010 file, build or extract labels and print a short summary."
             ),
         )
         parser.add_argument("--path", type=Path, required=True)
@@ -5579,9 +5579,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parsed = parser.parse_args(args[1:])
         return _inspect_labels_fi2010_impl(
             path=parsed.path,
-            timestamp_column=(
-                None if parsed.no_timestamp_column else parsed.timestamp_column
-            ),
+            timestamp_column=(None if parsed.no_timestamp_column else parsed.timestamp_column),
             split_column=None if parsed.no_split_column else parsed.split_column,
             price_level_count=parsed.price_level_count,
             prefer_existing_labels=not parsed.generate_labels,
@@ -5667,9 +5665,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             lookback=parsed.lookback,
             batch_size=parsed.batch_size,
             target_column=parsed.target_column,
-            timestamp_column=(
-                None if parsed.no_timestamp_column else parsed.timestamp_column
-            ),
+            timestamp_column=(None if parsed.no_timestamp_column else parsed.timestamp_column),
             split_column=None if parsed.no_split_column else parsed.split_column,
             price_level_count=parsed.price_level_count,
             train_fraction=parsed.train_fraction,
@@ -5795,8 +5791,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser = argparse.ArgumentParser(
             prog="chronoslob run-calibration-smoke",
             description=(
-                "Run a deterministic synthetic calibration smoke check. "
-                "This is plumbing only."
+                "Run a deterministic synthetic calibration smoke check. This is plumbing only."
             ),
         )
         parser.add_argument("--n-examples", type=int, default=60)
@@ -6017,10 +6012,7 @@ if typer is not None:
     _CONVERT_FI2010_SPLIT_OPTION = typer.Option(
         None,
         "--split",
-        help=(
-            "Optional split label written to a 'split' column "
-            "(train or test)."
-        ),
+        help=("Optional split label written to a 'split' column (train or test)."),
     )
     _CONVERT_FI2010_OVERWRITE_OPTION = typer.Option(
         False,
@@ -6035,17 +6027,12 @@ if typer is not None:
     _MULTIFOLD_EXTRACTED_ROOT_OPTION = typer.Option(
         ...,
         "--extracted-root",
-        help=(
-            "Local extracted FI-2010 dataset root (e.g. the "
-            "BenchmarkDatasets/ directory)."
-        ),
+        help=("Local extracted FI-2010 dataset root (e.g. the BenchmarkDatasets/ directory)."),
     )
     _MULTIFOLD_PROCESSED_ROOT_OPTION = typer.Option(
         None,
         "--processed-root",
-        help=(
-            "Local processed CSV root. Defaults to the value in the config."
-        ),
+        help=("Local processed CSV root. Defaults to the value in the config."),
     )
     _MULTIFOLD_OUT_OPTION = typer.Option(
         ...,
@@ -6060,9 +6047,7 @@ if typer is not None:
     _MULTIFOLD_OVERWRITE_OPTION = typer.Option(
         False,
         "--overwrite",
-        help=(
-            "Replace existing combined CSVs, manifests and summary.json."
-        ),
+        help=("Replace existing combined CSVs, manifests and summary.json."),
     )
     _RUN_MULTIFOLD_CLASSICAL_CONFIG_OPTION = typer.Option(
         ...,
@@ -6072,10 +6057,7 @@ if typer is not None:
     _RUN_MULTIFOLD_CLASSICAL_PROCESSED_ROOT_OPTION = typer.Option(
         None,
         "--processed-root",
-        help=(
-            "Root containing prepared fold CSV files. Defaults to the "
-            "value in the config."
-        ),
+        help=("Root containing prepared fold CSV files. Defaults to the value in the config."),
     )
     _RUN_MULTIFOLD_CLASSICAL_OUT_OPTION = typer.Option(
         ...,
@@ -6086,8 +6068,7 @@ if typer is not None:
         None,
         "--models",
         help=(
-            "Comma-separated classical model list. Defaults to the "
-            "classical list in the config."
+            "Comma-separated classical model list. Defaults to the classical list in the config."
         ),
     )
     _RUN_MULTIFOLD_CLASSICAL_FOLDS_OPTION = typer.Option(
@@ -6330,6 +6311,81 @@ if typer is not None:
         "--smoke-test",
         help="Run a tiny CPU-safe grid subset and mark artefacts as smoke only.",
     )
+    _RUN_PT_CONFIG_OPTION = typer.Option(
+        Path("configs/experiments/fi2010_neural_proper_training.yaml"),
+        "--config",
+        help="Path to the FI-2010 proper-training neural YAML config.",
+    )
+    _RUN_PT_PROCESSED_ROOT_OPTION = typer.Option(
+        ...,
+        "--processed-root",
+        help="Root containing prepared fold CSV files.",
+    )
+    _RUN_PT_OUT_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        "--out",
+        help="Output directory for proper-training subset artefacts.",
+    )
+    _RUN_PT_FOLDS_OPTION = typer.Option(
+        "1,2,3,4,5",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _RUN_PT_HORIZONS_OPTION = typer.Option(
+        "10,20,50",
+        "--horizons",
+        help="'all' or comma-separated target horizons.",
+    )
+    _RUN_PT_SEEDS_OPTION = typer.Option(
+        "0,1,2",
+        "--seeds",
+        help="Comma-separated non-negative seeds.",
+    )
+    _RUN_PT_LOOKBACKS_OPTION = typer.Option(
+        "50",
+        "--lookbacks",
+        help="Comma-separated positive lookbacks.",
+    )
+    _RUN_PT_OBJECTIVES_OPTION = typer.Option(
+        "supervised,masked_reconstruction,next_field",
+        "--objectives",
+        help="supervised, masked_reconstruction and/or next_field.",
+    )
+    _RUN_PT_PRETRAIN_EPOCHS_OPTION = typer.Option(
+        10,
+        "--pretrain-epochs",
+        help="Self-supervised pretraining epochs (SSL objectives only).",
+    )
+    _RUN_PT_MAX_EPOCHS_OPTION = typer.Option(
+        25,
+        "--max-epochs",
+        help="Maximum training epochs before early stopping.",
+    )
+    _RUN_PT_PATIENCE_OPTION = typer.Option(
+        5,
+        "--patience",
+        help="Validation early-stopping patience in epochs.",
+    )
+    _RUN_PT_BATCH_SIZE_OPTION = typer.Option(
+        256,
+        "--batch-size",
+        help="Training batch size.",
+    )
+    _RUN_PT_DEVICE_OPTION = typer.Option(
+        "cpu",
+        "--device",
+        help="Device: cpu or cuda-prefixed device.",
+    )
+    _RUN_PT_REUSE_OPTION = typer.Option(
+        True,
+        f"{_REUSE_COMPLETED_FLAG}/{_NO_REUSE_COMPLETED_FLAG}",
+        help="Skip existing completed run directories when possible.",
+    )
+    _RUN_PT_SMOKE_OPTION = typer.Option(
+        False,
+        "--smoke-test",
+        help="Run a tiny CPU-safe subset and mark artefacts as smoke only.",
+    )
     _BUILD_FI2010_FIGURES_GRID_OPTION = typer.Option(
         ...,
         "--neural-full-grid",
@@ -6500,16 +6556,14 @@ if typer is not None:
         None,
         "--classical",
         help=(
-            "Path to the classical multi-fold artefact directory "
-            "containing results_by_fold.csv."
+            "Path to the classical multi-fold artefact directory containing results_by_fold.csv."
         ),
     )
     _ANALYSE_UNCERTAINTY_NEURAL_OPTION = typer.Option(
         None,
         "--neural",
         help=(
-            "Path to the neural multi-fold artefact directory containing "
-            "results_by_fold_seed.csv."
+            "Path to the neural multi-fold artefact directory containing results_by_fold_seed.csv."
         ),
     )
     _ANALYSE_UNCERTAINTY_OUT_OPTION = typer.Option(
@@ -6521,8 +6575,7 @@ if typer is not None:
         "gradient_boosting",
         "--baseline",
         help=(
-            "Baseline model name for paired fold-level comparisons. "
-            "Defaults to gradient_boosting."
+            "Baseline model name for paired fold-level comparisons. Defaults to gradient_boosting."
         ),
     )
     _ANALYSE_UNCERTAINTY_CI_OPTION = typer.Option(
@@ -6770,10 +6823,7 @@ if typer is not None:
     _RUN_PAPER_EXPERIMENT_BUILD_PLOTS_OPTION = typer.Option(
         False,
         "--build-plots",
-        help=(
-            "Generate paper experiment plots from stored artefacts after "
-            "the run finishes."
-        ),
+        help=("Generate paper experiment plots from stored artefacts after the run finishes."),
     )
     _RUN_PAPER_ABLATIONS_CONFIG_OPTION = typer.Option(
         ...,
@@ -6941,6 +6991,14 @@ if typer is not None:
             "Smoke-test grids are reported as smoke only."
         ),
     )
+    _BUILD_FINAL_REPORT_PROPER_TRAINING_OPTION = typer.Option(
+        None,
+        "--proper-training",
+        help=(
+            "Optional proper-training neural subset artefact directory. "
+            "Smoke-test subsets are reported as smoke only."
+        ),
+    )
     _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION = typer.Option(
         None,
         "--evidence-pack",
@@ -7000,6 +7058,11 @@ if typer is not None:
         Path("experiments/fi2010_ssl"),
         "--ssl",
         help="Path to SSL benchmark artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_PROPER_TRAINING_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        "--proper-training",
+        help="Path to proper-training neural subset artefacts.",
     )
     _BUILD_EVIDENCE_PACK_FEATURE_AUDIT_OPTION = typer.Option(
         Path("reports/feature_audit"),
@@ -7373,6 +7436,55 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def run_fi2010_neural_proper_training_subset(
+        config: Path = _RUN_PT_CONFIG_OPTION,
+        processed_root: Path = _RUN_PT_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_PT_OUT_OPTION,
+        folds: str = _RUN_PT_FOLDS_OPTION,
+        horizons: str = _RUN_PT_HORIZONS_OPTION,
+        seeds: str = _RUN_PT_SEEDS_OPTION,
+        lookbacks: str = _RUN_PT_LOOKBACKS_OPTION,
+        objectives: str = _RUN_PT_OBJECTIVES_OPTION,
+        pretrain_epochs: int = _RUN_PT_PRETRAIN_EPOCHS_OPTION,
+        max_epochs: int = _RUN_PT_MAX_EPOCHS_OPTION,
+        patience: int = _RUN_PT_PATIENCE_OPTION,
+        batch_size: int = _RUN_PT_BATCH_SIZE_OPTION,
+        device: str = _RUN_PT_DEVICE_OPTION,
+        reuse_completed: bool = _RUN_PT_REUSE_OPTION,
+        smoke_test: bool = _RUN_PT_SMOKE_OPTION,
+    ) -> None:
+        """Run the FI-2010 proper-training (longer-training) neural subset."""
+        try:
+            fold_tokens = _parse_neural_fold_selection(folds)
+            horizon_tokens = _parse_int_selection(horizons, option_name="--horizons", positive=True)
+            seed_tokens = _parse_int_selection(seeds, option_name="--seeds", positive=False)
+            lookback_tokens = _parse_int_selection(
+                lookbacks, option_name="--lookbacks", positive=True
+            )
+            objective_tokens = _parse_model_selection(objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _run_fi2010_neural_proper_training_subset_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            folds=fold_tokens,
+            horizons=horizon_tokens,
+            seeds=seed_tokens,
+            lookbacks=lookback_tokens,
+            objectives=objective_tokens,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            patience=patience,
+            batch_size=batch_size,
+            device=device,
+            reuse_completed=reuse_completed,
+            smoke_test=smoke_test,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def build_fi2010_figures(
         neural_full_grid: Path = _BUILD_FI2010_FIGURES_GRID_OPTION,
         out: Path = _BUILD_FI2010_FIGURES_OUT_OPTION,
@@ -7731,6 +7843,7 @@ if typer is not None:
         external: Path | None = _BUILD_FINAL_REPORT_EXTERNAL_OPTION,
         ssl: Path | None = _BUILD_FINAL_REPORT_SSL_OPTION,
         neural_full_grid: Path | None = _BUILD_FINAL_REPORT_FULL_GRID_OPTION,
+        proper_training: Path | None = _BUILD_FINAL_REPORT_PROPER_TRAINING_OPTION,
         evidence_pack: Path | None = _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION,
         out: Path = _BUILD_FINAL_REPORT_OUT_OPTION,
         overwrite: bool = _BUILD_FINAL_REPORT_OVERWRITE_OPTION,
@@ -7747,6 +7860,7 @@ if typer is not None:
             external=external,
             ssl=ssl,
             neural_full_grid=neural_full_grid,
+            proper_training=proper_training,
             evidence_pack=evidence_pack,
             out=out,
             overwrite=overwrite,
@@ -7764,6 +7878,7 @@ if typer is not None:
         final_report: Path = _BUILD_EVIDENCE_PACK_FINAL_REPORT_OPTION,
         classical: Path = _BUILD_EVIDENCE_PACK_CLASSICAL_OPTION,
         ssl: Path = _BUILD_EVIDENCE_PACK_SSL_OPTION,
+        proper_training: Path = _BUILD_EVIDENCE_PACK_PROPER_TRAINING_OPTION,
         feature_audit: Path | None = _BUILD_EVIDENCE_PACK_FEATURE_AUDIT_OPTION,
         project_audit: Path | None = _BUILD_EVIDENCE_PACK_PROJECT_AUDIT_OPTION,
         strict: bool = _BUILD_EVIDENCE_PACK_STRICT_OPTION,
@@ -7781,6 +7896,7 @@ if typer is not None:
             final_report=final_report,
             classical=classical,
             ssl=ssl,
+            proper_training=proper_training,
             feature_audit=feature_audit,
             project_audit=project_audit,
             strict=strict,
@@ -7843,9 +7959,7 @@ if typer is not None:
         """Load an FI-2010 file and print a data-quality summary."""
         exit_code = _inspect_fi2010_impl(
             path=path,
-            timestamp_column=(
-                None if no_timestamp_column else timestamp_column
-            ),
+            timestamp_column=(None if no_timestamp_column else timestamp_column),
             split_column=None if no_split_column else split_column,
             price_level_count=price_level_count,
         )
@@ -7855,10 +7969,7 @@ if typer is not None:
     _INSPECT_FEAT_ALLOW_SYNTHETIC_OPTION = typer.Option(
         False,
         "--allow-synthetic-time",
-        help=(
-            "Compute time-window features even when timestamps are "
-            "synthetic. Off by default."
-        ),
+        help=("Compute time-window features even when timestamps are synthetic. Off by default."),
     )
     _INSPECT_LABELS_GENERATE_OPTION = typer.Option(
         False,
@@ -7931,9 +8042,7 @@ if typer is not None:
         """Build microstructure features from an FI-2010 file and summarise."""
         exit_code = _inspect_features_fi2010_impl(
             path=path,
-            timestamp_column=(
-                None if no_timestamp_column else timestamp_column
-            ),
+            timestamp_column=(None if no_timestamp_column else timestamp_column),
             split_column=None if no_split_column else split_column,
             price_level_count=price_level_count,
             allow_synthetic_timestamps_for_time_features=allow_synthetic_time,
@@ -7953,9 +8062,7 @@ if typer is not None:
         """Build or extract FI-2010 labels and summarise."""
         exit_code = _inspect_labels_fi2010_impl(
             path=path,
-            timestamp_column=(
-                None if no_timestamp_column else timestamp_column
-            ),
+            timestamp_column=(None if no_timestamp_column else timestamp_column),
             split_column=None if no_split_column else split_column,
             price_level_count=price_level_count,
             prefer_existing_labels=not generate_labels,
@@ -8067,9 +8174,7 @@ if typer is not None:
             lookback=lookback,
             batch_size=batch_size,
             target_column=target_column,
-            timestamp_column=(
-                None if no_timestamp_column else timestamp_column
-            ),
+            timestamp_column=(None if no_timestamp_column else timestamp_column),
             split_column=None if no_split_column else split_column,
             price_level_count=price_level_count,
             train_fraction=train_fraction,
@@ -9064,6 +9169,7 @@ else:
         external: Path | None = None,
         ssl: Path | None = None,
         neural_full_grid: Path | None = None,
+        proper_training: Path | None = None,
         evidence_pack: Path | None = None,
         out: Path = Path("runs/chronoslob_final_empirical_report_smoke.md"),
         overwrite: bool = False,
@@ -9080,6 +9186,7 @@ else:
             external=external,
             ssl=ssl,
             neural_full_grid=neural_full_grid,
+            proper_training=proper_training,
             evidence_pack=evidence_pack,
             out=out,
             overwrite=overwrite,
@@ -9097,6 +9204,7 @@ else:
         final_report: Path = Path("reports/chronoslob_final_empirical_report.md"),
         classical: Path = Path("experiments/fi2010_multifold_classical"),
         ssl: Path = Path("experiments/fi2010_ssl"),
+        proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
         feature_audit: Path | None = Path("reports/feature_audit"),
         project_audit: Path | None = Path("reports/report_archive"),
         strict: bool = True,
@@ -9114,6 +9222,7 @@ else:
             final_report=final_report,
             classical=classical,
             ssl=ssl,
+            proper_training=proper_training,
             feature_audit=feature_audit,
             project_audit=project_audit,
             strict=strict,
@@ -9174,6 +9283,9 @@ if typer is not None:
     app.command("run-fi2010-neural-benchmark")(run_fi2010_neural_benchmark)
     app.command("run-fi2010-ssl-neural-benchmark")(run_fi2010_ssl_neural_benchmark)
     app.command("run-fi2010-neural-full-grid")(run_fi2010_neural_full_grid)
+    app.command("run-fi2010-neural-proper-training-subset")(
+        run_fi2010_neural_proper_training_subset
+    )
     app.command("build-fi2010-figures")(build_fi2010_figures)
     app.command("audit-fi2010-features")(audit_fi2010_features)
     app.command("run-fi2010-feature-ablations")(run_fi2010_feature_ablations)

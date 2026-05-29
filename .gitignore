@@ -62,8 +62,19 @@ mlruns/
 experiments/fi2010_midprice_h10/predictions.csv
 experiments/fi2010_midprice_h10/predictions.parquet
 experiments/fi2010_neural_full_grid/runs/
+experiments/fi2010_neural_proper_training_subset/runs/
+experiments/fi2010_neural_proper_training_subset_v2/runs/
 experiments/fi2010_feature_ablations/runs/
 experiments/fi2010_feature_ablations/features/
+# Cached feature matrices and per-run row-level predictions are regenerable
+# and must never be tracked, regardless of which experiment tree they live in.
+experiments/**/features/
+experiments/**/predictions.csv
+experiments/**/predictions.parquet
+# Extracted raw FI-2010 tree (regenerable by unzipping BenchmarkDatasets.zip).
+data/raw/fi2010/extracted/
+# Local pre-deletion archive (never commit).
+_local_archive_before_delete/
 experiments/fi2010_midprice_h10_ablations/experiments/
 experiments/fi2010_midprice_h10_systems/child_experiments/
 experiments/paper_experiment_*/

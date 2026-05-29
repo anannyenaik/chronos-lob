@@ -1,4 +1,4 @@
-# ChronosLOB: Self-Supervised Market Microstructure Modelling for Execution-Aware Alpha Discovery
+# ChronosLOB: Self-Supervised Market Microstructure Modelling for Execution-Aware Validation
 
 A leakage-safe FI-2010 market microstructure research platform comparing
 classical, supervised transformer and self-supervised transformer variants with
@@ -24,6 +24,7 @@ integration and not automated order-placement software.
 | --- | --- | --- |
 | Classical benchmark | `complete_real` | FI-2010 folds 1-5 with stored aggregate artefacts. |
 | Neural full grid | `complete_real` | Folds 1-5, horizons 10/20/50, seeds 0-2, one-epoch matched grid. |
+| Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50, max 25 epochs, patience 5; matched SSL comparisons are exact-scope only. |
 | SSL comparison | `complete_real` | Tested in the matched grid; no SSL improvement is supported. |
 | Execution-v3 | `complete_real` | Offline execution-aware proxy diagnostic only. |
 | Feature ablations | `partial_real` | Broad horizon-10 logistic/ridge evidence; wider model/horizon scope unfinished. |
@@ -37,7 +38,13 @@ integration and not automated order-placement software.
 - The completed matched neural grid compares supervised, masked-SSL and
   next-field-SSL transformer variants across folds 1-5, horizons 10/20/50 and
   three seeds.
-- SSL pretraining did not improve the matched full-grid results.
+- SSL pretraining did not improve the matched one-epoch full-grid results.
+- The proper-training neural subset is separate longer-training modelling
+  evidence. In the current partial-real slice (fold 1, horizons 10/50, seed 0,
+  lookback 50), masked reconstruction improved macro-F1 and MCC on both
+  horizons, next-field improved those metrics only at horizon 50, and ECE
+  worsened in every matched SSL row. This is a narrow exact-scope result, not a
+  broad SSL improvement claim.
 - The one-epoch matched full grid is separate from the earlier 25-epoch
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or
@@ -64,6 +71,7 @@ integration and not automated order-placement software.
 | --- | --- |
 | Final empirical report | [reports/chronoslob_final_empirical_report.md](reports/chronoslob_final_empirical_report.md) |
 | Evidence pack summary | [reports/evidence_pack/evidence_pack_summary.md](reports/evidence_pack/evidence_pack_summary.md) |
+| Proper-training neural subset | [experiments/fi2010_neural_proper_training_subset_v2/README.md](experiments/fi2010_neural_proper_training_subset_v2/README.md) |
 | Claim audit | [reports/evidence_pack/claim_audit.md](reports/evidence_pack/claim_audit.md) |
 | Reproduction commands | [reports/evidence_pack/reproduction_commands.md](reports/evidence_pack/reproduction_commands.md) |
 | Figure index | [docs/FIGURE_INDEX.md](docs/FIGURE_INDEX.md) |

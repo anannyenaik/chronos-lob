@@ -50,6 +50,7 @@ def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
         out_dir=tmp_path / "pack",
         classical_dir=tmp_path / "classical",
         ssl_dir=tmp_path / "ssl",
+        proper_training_dir=tmp_path / "proper_training",
         neural_full_grid_dir=tmp_path / "grid",
         figures_dir=tmp_path / "figures",
         execution_v3_dir=tmp_path / "execution_v3",
@@ -137,6 +138,45 @@ def _write_complete_ssl(path: Path) -> None:
     )
     _write_csv(path / "results_summary.csv", ["status"], [{"status": "completed"}])
     _write_csv(path / "comparison_summary.csv", ["status"], [{"status": "ok"}])
+
+
+def _write_proper_training(
+    path: Path,
+    *,
+    evidence_level: str,
+    target_scope_complete: bool,
+    completed_run_count: int,
+) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-29T00:00:00Z",
+            "smoke_test": False,
+            "execution_mode": "benchmark",
+            "evidence_level": evidence_level,
+            "target_scope_complete": target_scope_complete,
+            "completed_run_count": completed_run_count,
+            "failed_run_count": 0,
+            "folds": [1, 2, 3],
+            "horizons": [10, 50],
+            "seeds": [0],
+            "lookbacks": [50],
+            "objectives": ["supervised", "masked_reconstruction", "next_field"],
+            "max_epochs": 25,
+            "early_stopping_patience": 5,
+        },
+    )
+    _write_json(path / "config_snapshot.json", {"created_at": "2026-05-29T00:00:00Z"})
+    _write_csv(path / "results_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(path / "aggregate_summary.csv", ["status"], [{"status": "completed"}])
+    _write_json(
+        path / "aggregate_summary.json",
+        {"created_at": "2026-05-29T00:00:00Z", "completed_run_count": completed_run_count},
+    )
+    _write_csv(path / "training_curves_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(path / "ssl_comparison.csv", ["status"], [{"status": "matched"}])
+    _write_csv(path / "failures.csv", ["status"], [])
+    _write_json(path / "sha256_manifest.json", {"sha256": {}})
 
 
 def _write_complete_figures(path: Path) -> None:
@@ -281,6 +321,35 @@ def test_partial_real_classification(tmp_path: Path) -> None:
     records = discover_artefacts(config)
 
     assert _record(records, "fi2010_neural_full_grid").status == "partial_real"
+
+
+def test_proper_training_status_depends_on_target_scope(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_proper_training(
+        config.proper_training_dir,
+        evidence_level="partial_real",
+        target_scope_complete=False,
+        completed_run_count=18,
+    )
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_proper_training_subset").status == "partial_real"
+
+    complete_config = _minimal_config(tmp_path / "complete")
+    _write_proper_training(
+        complete_config.proper_training_dir,
+        evidence_level="complete_real",
+        target_scope_complete=True,
+        completed_run_count=30,
+    )
+
+    complete_records = discover_artefacts(complete_config)
+
+    assert (
+        _record(complete_records, "fi2010_neural_proper_training_subset").status
+        == "complete_real"
+    )
 
 
 def test_invalid_artefact_classification(tmp_path: Path) -> None:

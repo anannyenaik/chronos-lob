@@ -26,23 +26,37 @@ calibration and execution-aware evaluation.
   validation.
 - Real FI-2010 multi-fold classical evidence on the official NoAuction ZScore
   folds 1-5, using official split-aware evaluation.
-- Reduced-scope supervised neural FI-2010 evidence across folds 1-5, with a
-  single-seed and lookback-20 caveat.
+- A completed one-epoch matched neural full grid across folds 1-5, horizons
+  10/20/50 and seeds 0-2 comparing supervised, masked-SSL and next-field-SSL
+  transformer variants; this is matched comparison evidence and supports no SSL
+  improvement claim.
+- A first partial-real proper-training neural subset, separate from the
+  one-epoch full grid, covering fold 1, horizon 10, seed 0, lookback 10 and all
+  three objectives with validation-only early stopping, best-checkpoint
+  restoration and per-epoch curves. In this exact slice SSL did not improve
+  macro-F1 or MCC; masked reconstruction improved ECE only in that row.
+- A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
+  across folds 1-5, with a single-seed and lookback-20 caveat, reported
+  separately from the matched grid.
 - Normalised FI-2010 matrix support for the supervised transformer paper-runner
   path, without weakening raw order-book schema validation.
 - FI-2010 calibration artefacts, statistical uncertainty, brutal ablations,
   execution-aware proxy diagnostics and external benchmark protocol context.
 - A final empirical report generated from stored multi-fold FI-2010 classical,
-  reduced-scope neural, uncertainty, ablation, execution-proxy and
-  external-context artefacts.
+  the matched one-epoch neural full grid, the separate reduced-scope neural
+  benchmark, uncertainty, ablation, execution-proxy and external-context
+  artefacts.
 
 ## In Progress and Next
 
-- Broaden neural evidence beyond the current reduced-scope single-seed,
-  lookback-20 run while keeping official split-aware evaluation and train-only
-  preprocessing intact.
-- Add a genuine SSL pretraining and supervised fine-tuning runner before
-  reporting any `ssl_transformer` result.
+- Broaden the proper-training neural subset beyond the current fold-1,
+  horizon-10, seed-0, lookback-10 slice, while keeping official split-aware
+  evaluation, train-only preprocessing and validation-only model selection
+  intact.
+- Extend evidence beyond FI-2010 to other limit order book datasets where data
+  access and licensing allow.
+- Broaden genuine train-only SSL pretraining and supervised fine-tuning
+  evidence before making any SSL improvement claim.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when
   data access and licensing allow.
 - Improve execution modelling with richer queue-position, partial-fill,

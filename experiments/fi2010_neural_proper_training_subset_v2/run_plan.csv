@@ -1,0 +1,7 @@
+run_id,fold,fold_id,horizon,seed,lookback,objective,pretraining_objective,run_dir
+fold_1__h10__seed_0__lb50__supervised,1,fold_1,10,0,50,supervised,none,runs/fold_1/horizon_10/seed_0/lookback_50/supervised
+fold_1__h10__seed_0__lb50__masked_reconstruction,1,fold_1,10,0,50,masked_reconstruction,masked_reconstruction,runs/fold_1/horizon_10/seed_0/lookback_50/masked_reconstruction
+fold_1__h10__seed_0__lb50__next_field,1,fold_1,10,0,50,next_field,next_field,runs/fold_1/horizon_10/seed_0/lookback_50/next_field
+fold_1__h50__seed_0__lb50__supervised,1,fold_1,50,0,50,supervised,none,runs/fold_1/horizon_50/seed_0/lookback_50/supervised
+fold_1__h50__seed_0__lb50__masked_reconstruction,1,fold_1,50,0,50,masked_reconstruction,masked_reconstruction,runs/fold_1/horizon_50/seed_0/lookback_50/masked_reconstruction
+fold_1__h50__seed_0__lb50__next_field,1,fold_1,50,0,50,next_field,next_field,runs/fold_1/horizon_50/seed_0/lookback_50/next_field

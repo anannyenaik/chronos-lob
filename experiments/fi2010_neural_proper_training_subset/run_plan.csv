@@ -1,0 +1,4 @@
+run_id,fold,fold_id,horizon,seed,lookback,objective,pretraining_objective,run_dir
+fold_1__h10__seed_0__lb10__supervised,1,fold_1,10,0,10,supervised,none,runs/fold_1/horizon_10/seed_0/lookback_10/supervised
+fold_1__h10__seed_0__lb10__masked_reconstruction,1,fold_1,10,0,10,masked_reconstruction,masked_reconstruction,runs/fold_1/horizon_10/seed_0/lookback_10/masked_reconstruction
+fold_1__h10__seed_0__lb10__next_field,1,fold_1,10,0,10,next_field,next_field,runs/fold_1/horizon_10/seed_0/lookback_10/next_field

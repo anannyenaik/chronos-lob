@@ -186,6 +186,8 @@ def _history_rows(history: Sequence[Any]) -> list[dict[str, Any]]:
             metrics = validation_metrics.get("metrics")
             if isinstance(metrics, Mapping):
                 row["validation_macro_f1"] = metrics.get("macro_f1")
+                row["validation_accuracy"] = metrics.get("accuracy")
+                row["validation_mcc"] = metrics.get("matthews_corrcoef")
         rows.append(row)
     return rows
 

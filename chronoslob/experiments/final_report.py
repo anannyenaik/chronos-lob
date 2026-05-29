@@ -6,6 +6,7 @@ import csv
 import json
 import math
 import subprocess
+import textwrap
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -29,6 +30,7 @@ _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=Tru
 
 _SECTION_TITLES: tuple[str, ...] = (
     "Evidence Snapshot",
+    "Evidence Status Summary",
     "Evidence Pack Audit",
     "Research Question",
     "Dataset And Split Protocol",
@@ -36,6 +38,9 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Main Result Table",
     "Self-Supervised Pretraining",
     "Full Neural Grid",
+    "Proper-Training Neural Subset",
+    "Legacy Reduced-Scope Benchmark",
+    "SSL Interpretation",
     "Figure Index",
     "Uncertainty Summary",
     "Ablation Summary",
@@ -63,6 +68,17 @@ _REQUIRED_FULL_GRID_FILES = (
     "aggregate_summary.json",
     "ssl_comparison.csv",
     "failures.csv",
+)
+_REQUIRED_PROPER_TRAINING_FILES = (
+    "summary.json",
+    "config_snapshot.json",
+    "results_summary.csv",
+    "aggregate_summary.csv",
+    "aggregate_summary.json",
+    "training_curves_summary.csv",
+    "ssl_comparison.csv",
+    "failures.csv",
+    "sha256_manifest.json",
 )
 
 _REQUIRED_CLASSICAL_FILES = ("summary.json", "results_summary.csv")
@@ -192,6 +208,27 @@ class _FullGridArtefacts:
 
 
 @dataclass
+class _ProperTrainingArtefacts:
+    """Validated longer-training neural subset aggregate artefacts.
+
+    Reported separately from the one-epoch matched full grid. ``available`` is
+    ``True`` once the required aggregate tables load; ``evidence_level`` records
+    whether the stored scope is ``complete_real``, ``partial_real`` or
+    ``smoke_test_only`` so the report never overstates the subset.
+    """
+
+    available: bool = False
+    evidence_level: str = "missing"
+    reason: str = "proper-training subset input not supplied"
+    directory: Path | None = None
+    summary: dict[str, Any] | None = None
+    aggregate_rows: list[dict[str, str]] = field(default_factory=list)
+    comparison_rows: list[dict[str, str]] = field(default_factory=list)
+    training_rows: list[dict[str, str]] = field(default_factory=list)
+    failure_rows: list[dict[str, str]] = field(default_factory=list)
+
+
+@dataclass
 class _FigureArtefacts:
     """Optional generated figure manifest loaded for the final report."""
 
@@ -229,6 +266,7 @@ class _FinalReportData:
     external: _OptionalArtefacts
     ssl: _SSLArtefacts
     full_grid: _FullGridArtefacts
+    proper_training: _ProperTrainingArtefacts
     figures: _FigureArtefacts
     evidence_pack: _EvidencePackArtefacts
     report_path: Path
@@ -263,6 +301,7 @@ def build_final_empirical_report(
     external_dir: Path | None = None,
     ssl_dir: Path | None = None,
     neural_full_grid_dir: Path | None = None,
+    proper_training_dir: Path | None = None,
     evidence_pack_dir: Path | None = None,
     overwrite: bool = False,
 ) -> FinalEmpiricalReportSummary:
@@ -296,17 +335,16 @@ def build_final_empirical_report(
             Path(feature_ablation_dir) if feature_ablation_dir is not None else None
         ),
         execution_dir=Path(execution_dir) if execution_dir is not None else None,
-        execution_v3_dir=(
-            Path(execution_v3_dir) if execution_v3_dir is not None else None
-        ),
+        execution_v3_dir=(Path(execution_v3_dir) if execution_v3_dir is not None else None),
         external_dir=Path(external_dir) if external_dir is not None else None,
         ssl_dir=Path(ssl_dir) if ssl_dir is not None else None,
         neural_full_grid_dir=(
             Path(neural_full_grid_dir) if neural_full_grid_dir is not None else None
         ),
-        evidence_pack_dir=(
-            Path(evidence_pack_dir) if evidence_pack_dir is not None else None
+        proper_training_dir=(
+            Path(proper_training_dir) if proper_training_dir is not None else None
         ),
+        evidence_pack_dir=(Path(evidence_pack_dir) if evidence_pack_dir is not None else None),
         report_path=report_path,
         summary_path=summary_path,
     )
@@ -346,6 +384,7 @@ def _load_final_report_data(
     external_dir: Path | None,
     ssl_dir: Path | None,
     neural_full_grid_dir: Path | None,
+    proper_training_dir: Path | None,
     evidence_pack_dir: Path | None,
     report_path: Path,
     summary_path: Path,
@@ -487,6 +526,14 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    proper_training = _load_proper_training_artefacts(
+        directory=proper_training_dir,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
     figures = _load_figure_artefacts(
         neural_full_grid_dir=neural_full_grid_dir,
         input_paths=input_paths,
@@ -513,6 +560,7 @@ def _load_final_report_data(
         external=external,
         ssl=ssl,
         full_grid=full_grid,
+        proper_training=proper_training,
         figures=figures,
         evidence_pack=evidence_pack,
         report_path=report_path,
@@ -650,8 +698,7 @@ def _load_ssl_artefacts(
     for filename in _REQUIRED_SSL_FILES:
         if not (candidate / filename).is_file():
             return _refuse(
-                f"SSL artefacts incomplete: missing "
-                f"{_display_path(candidate / filename)}"
+                f"SSL artefacts incomplete: missing {_display_path(candidate / filename)}"
             )
 
     verified_runs = _verify_ssl_checkpoints(candidate)
@@ -680,13 +727,10 @@ def _load_ssl_artefacts(
         file_hashes,
     )
     has_ssl_row = any(
-        str(row.get("model_name", "")).strip() == "ssl_transformer"
-        for row in results_rows
+        str(row.get("model_name", "")).strip() == "ssl_transformer" for row in results_rows
     )
     if not has_ssl_row:
-        return _refuse(
-            "SSL results_summary.csv does not contain an ssl_transformer row"
-        )
+        return _refuse("SSL results_summary.csv does not contain an ssl_transformer row")
 
     input_paths["ssl_dir"] = _display_path(candidate)
     return _SSLArtefacts(
@@ -724,9 +768,7 @@ def _load_full_grid_artefacts(
         return _refuse("full neural grid input not supplied")
     candidate = Path(directory)
     if not candidate.exists() or not candidate.is_dir():
-        return _refuse(
-            f"full neural grid artefact directory missing: {_display_path(candidate)}"
-        )
+        return _refuse(f"full neural grid artefact directory missing: {_display_path(candidate)}")
     for filename in _REQUIRED_FULL_GRID_FILES:
         if not (candidate / filename).is_file():
             return _refuse(
@@ -772,9 +814,9 @@ def _load_full_grid_artefacts(
     )
     input_paths["neural_full_grid_dir"] = _display_path(candidate)
 
-    smoke = bool(summary.get("smoke_test")) or str(
-        summary.get("execution_mode", "")
-    ).lower() == "smoke"
+    smoke = (
+        bool(summary.get("smoke_test")) or str(summary.get("execution_mode", "")).lower() == "smoke"
+    )
     if smoke:
         warnings.append(
             "full neural grid artefacts are marked smoke-test-only; no empirical "
@@ -793,6 +835,109 @@ def _load_full_grid_artefacts(
         results_rows=results_rows,
         aggregate_rows=aggregate_rows,
         comparison_rows=comparison_rows,
+        failure_rows=failure_rows,
+    )
+
+
+_PROPER_TRAINING_SECTION_TITLE = "Proper-Training Neural Subset"
+
+
+def _load_proper_training_artefacts(
+    *,
+    directory: Path | None,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+    warnings: list[str],
+    skipped_sections: list[str],
+    missing_sections: list[str],
+) -> _ProperTrainingArtefacts:
+    """Load the longer-training neural subset without overstating its scope."""
+
+    def _refuse(reason: str) -> _ProperTrainingArtefacts:
+        warnings.append(f"{reason}; {_PROPER_TRAINING_SECTION_TITLE} will make no claim.")
+        skipped_sections.append(_PROPER_TRAINING_SECTION_TITLE)
+        missing_sections.append(reason)
+        return _ProperTrainingArtefacts(available=False, reason=reason)
+
+    if directory is None:
+        return _refuse("proper-training subset input not supplied")
+    candidate = Path(directory)
+    if not candidate.exists() or not candidate.is_dir():
+        return _refuse(
+            f"proper-training subset artefact directory missing: {_display_path(candidate)}"
+        )
+    for filename in _REQUIRED_PROPER_TRAINING_FILES:
+        if not (candidate / filename).is_file():
+            return _refuse(
+                "proper-training subset artefacts incomplete: missing "
+                f"{_display_path(candidate / filename)}"
+            )
+
+    summary = _read_json(
+        candidate / "summary.json",
+        "proper_training_summary",
+        input_paths,
+        file_hashes,
+    )
+    _read_json(
+        candidate / "config_snapshot.json",
+        "proper_training_config_snapshot",
+        input_paths,
+        file_hashes,
+    )
+    aggregate_rows = _read_csv(
+        candidate / "aggregate_summary.csv",
+        "proper_training_aggregate_summary",
+        input_paths,
+        file_hashes,
+    )
+    comparison_rows = _read_csv(
+        candidate / "ssl_comparison.csv",
+        "proper_training_ssl_comparison",
+        input_paths,
+        file_hashes,
+    )
+    training_rows = _read_csv(
+        candidate / "training_curves_summary.csv",
+        "proper_training_curves_summary",
+        input_paths,
+        file_hashes,
+    )
+    failure_rows = _read_csv(
+        candidate / "failures.csv",
+        "proper_training_failures",
+        input_paths,
+        file_hashes,
+    )
+    _read_json(
+        candidate / "sha256_manifest.json",
+        "proper_training_sha256_manifest",
+        input_paths,
+        file_hashes,
+    )
+    input_paths["proper_training_dir"] = _display_path(candidate)
+
+    smoke = (
+        bool(summary.get("smoke_test")) or str(summary.get("execution_mode", "")).lower() == "smoke"
+    )
+    if smoke:
+        warnings.append(
+            "proper-training subset artefacts are marked smoke-test-only; no "
+            "empirical longer-training result is claimed."
+        )
+        skipped_sections.append(_PROPER_TRAINING_SECTION_TITLE)
+        evidence_level = "smoke_test_only"
+    else:
+        evidence_level = str(summary.get("evidence_level", "partial_real"))
+    return _ProperTrainingArtefacts(
+        available=True,
+        evidence_level=evidence_level,
+        reason="loaded",
+        directory=candidate,
+        summary=summary,
+        aggregate_rows=aggregate_rows,
+        comparison_rows=comparison_rows,
+        training_rows=training_rows,
         failure_rows=failure_rows,
     )
 
@@ -834,9 +979,7 @@ def _load_figure_artefacts(
     entries: list[dict[str, Any]] = []
     if isinstance(raw_entries, list):
         entries = [
-            cast(dict[str, Any], dict(entry))
-            for entry in raw_entries
-            if isinstance(entry, Mapping)
+            cast(dict[str, Any], dict(entry)) for entry in raw_entries if isinstance(entry, Mapping)
         ]
     smoke = bool(manifest.get("smoke_test")) or (
         bool(entries) and all(bool(entry.get("smoke_test")) for entry in entries)
@@ -939,6 +1082,7 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
         "",
     ]
     lines.extend(_section("Evidence Snapshot", _render_evidence_snapshot(data, headline_metrics)))
+    lines.extend(_section("Evidence Status Summary", _render_evidence_status_summary(data)))
     lines.extend(_section("Evidence Pack Audit", _render_evidence_pack_audit(data)))
     lines.extend(_section("Research Question", _render_research_question()))
     lines.extend(_section("Dataset And Split Protocol", _render_dataset_protocol(data)))
@@ -946,6 +1090,9 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section("Main Result Table", _render_main_results(data)))
     lines.extend(_section(_SSL_SECTION_TITLE, _render_ssl(data)))
     lines.extend(_section(_FULL_GRID_SECTION_TITLE, _render_full_grid(data)))
+    lines.extend(_section(_PROPER_TRAINING_SECTION_TITLE, _render_proper_training(data)))
+    lines.extend(_section("Legacy Reduced-Scope Benchmark", _render_legacy_neural_benchmark(data)))
+    lines.extend(_section("SSL Interpretation", _render_ssl_interpretation(data)))
     lines.extend(_section("Figure Index", _render_figure_index(data)))
     lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
     lines.extend(_section("Ablation Summary", _render_ablations(data)))
@@ -953,9 +1100,7 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
     lines.extend(_section("External Benchmark Context", _render_external(data)))
     lines.extend(_section("What This Supports", _render_what_this_proves(data)))
-    lines.extend(
-        _section("What This Does Not Claim", _render_what_this_does_not_prove(data))
-    )
+    lines.extend(_section("What This Does Not Claim", _render_what_this_does_not_prove(data)))
     lines.extend(_section("Limitations", _render_limitations(data)))
     lines.extend(_section("Artefact Traceability", _render_traceability(data)))
     lines.extend(_section("Reproduction Commands", _render_reproduction_commands()))
@@ -983,16 +1128,10 @@ def _render_evidence_snapshot(
         if data.external.directory is not None and data.external.summary is not None
         else "skipped"
     )
-    if not data.full_grid.available:
-        full_grid_status = "not supplied; no full-grid neural result claimed"
-    elif data.full_grid.evidence_level == "smoke_test_only":
-        full_grid_status = "smoke-test-only; not empirical evidence"
-    else:
-        full_grid_status = (
-            "loaded; "
-            f"{_mapping_str(data.full_grid.summary, 'completed_run_count')} completed, "
-            f"{_mapping_str(data.full_grid.summary, 'failed_run_count')} failed"
-        )
+    full_grid_status, matched_count = _full_grid_snapshot(data)
+    ssl_comparison_status = _ssl_comparison_snapshot(data, matched_count)
+    proper_training_status = _proper_training_snapshot(data)
+    legacy_epochs = _mapping_str(data.neural_summary, "max_epochs", default="prior")
     rows = [
         ("generated_at", data.generated_at.isoformat()),
         ("git_commit", data.git_commit or "not available"),
@@ -1001,19 +1140,207 @@ def _render_evidence_snapshot(
             "best_classical_test_macro_f1",
             _metric_snapshot(classical, include_lookback=False),
         ),
-        ("neural_scope", "reduced-scope supervised neural, single-seed"),
-        ("best_neural_test_macro_f1", _metric_snapshot(neural, include_lookback=True)),
+        ("neural_full_grid_scope", full_grid_status),
+        ("proper_training_neural_scope", proper_training_status),
+        ("ssl_comparison_scope", ssl_comparison_status),
+        (
+            "legacy_reduced_scope_neural_scope",
+            f"separate earlier {legacy_epochs}-epoch reduced-scope supervised "
+            "benchmark, single-seed, lookback 20; reported separately, not used "
+            "as matched-grid or SSL evidence",
+        ),
+        (
+            "best_legacy_reduced_scope_neural_test_macro_f1",
+            f"{_metric_snapshot(neural, include_lookback=True)} "
+            f"(separate {legacy_epochs}-epoch reduced-scope benchmark)",
+        ),
         ("execution_scope", f"{execution_status}; metrics are proxy diagnostics"),
         ("execution_v3_scope", execution_v3_status),
         (
             "external_scope",
             f"{external_status}; protocol context only, not ranking claims",
         ),
-        ("full_neural_grid", full_grid_status),
         ("report_path", _display_path(data.report_path)),
         ("summary_path", _display_path(data.summary_path)),
     ]
     return _markdown_table(("field", "value"), rows)
+
+
+def _full_grid_snapshot(data: _FinalReportData) -> tuple[str, int]:
+    """Return the matched full-grid snapshot text and matched comparison count."""
+    grid = data.full_grid
+    if not grid.available:
+        return ("not supplied; no matched full-grid neural result claimed", 0)
+    if grid.evidence_level == "smoke_test_only":
+        return ("smoke-test-only; not empirical evidence", 0)
+    summary = grid.summary or {}
+    matched_count = sum(1 for row in grid.comparison_rows if row.get("status") == "matched")
+    pretrain = _mapping_str(summary, "pretrain_epochs", default="1")
+    fine_tune = _mapping_str(summary, "max_epochs", default="1")
+    descriptor = (
+        "completed one-epoch matched comparison grid; "
+        f"folds {_join_values(_mapping_list(summary, 'folds'))}, "
+        f"horizons {_join_values(_mapping_list(summary, 'horizons'))}, "
+        f"seeds {_join_values(_mapping_list(summary, 'seeds'))}, "
+        f"objectives {_join_values(_mapping_list(summary, 'objectives'))}; "
+        f"pretrain_epochs {pretrain}, fine_tune_epochs {fine_tune}; "
+        f"{summary.get('completed_run_count', 'not available')} completed, "
+        f"{summary.get('failed_run_count', 'not available')} failed; "
+        "matched comparison and pipeline evidence, not a "
+        "performance-maximising neural benchmark"
+    )
+    return (descriptor, matched_count)
+
+
+def _ssl_comparison_snapshot(data: _FinalReportData, matched_count: int) -> str:
+    """Describe the SSL comparison state for the evidence snapshot."""
+    if matched_count > 0:
+        return (
+            "matched supervised-vs-SSL comparison present in the full grid "
+            "(masked_reconstruction, next_field objectives); no SSL improvement "
+            "is supported"
+        )
+    if data.ssl.admitted:
+        return (
+            "standalone SSL runner artefacts verified; like-for-like comparison "
+            "only, no SSL improvement is supported"
+        )
+    return "no matched SSL comparison available; no SSL result claimed"
+
+
+def _proper_training_snapshot(data: _FinalReportData) -> str:
+    """Describe the longer-training subset state without upgrading its scope."""
+    subset = data.proper_training
+    if not subset.available:
+        return "not supplied; no longer-training neural result claimed"
+    if subset.evidence_level == "smoke_test_only":
+        return "smoke-test-only; code-path check, not empirical evidence"
+    summary = subset.summary or {}
+    return (
+        f"{subset.evidence_level}; folds "
+        f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
+        f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+        f"{_join_values(_mapping_list(summary, 'seeds'))}, lookbacks "
+        f"{_join_values(_mapping_list(summary, 'lookbacks'))}, objectives "
+        f"{_join_values(_mapping_list(summary, 'objectives'))}; "
+        f"max_epochs {_mapping_str(summary, 'max_epochs')}, "
+        f"patience {_mapping_str(summary, 'early_stopping_patience')}; "
+        "validation-only early stopping with best checkpoint restored before test"
+    )
+
+
+def _render_evidence_status_summary(data: _FinalReportData) -> list[str]:
+    """Render a conservative, plain-language status summary near the top.
+
+    This section keeps the README, evidence pack and this report aligned on the
+    same neural and SSL status, and separates the completed one-epoch matched
+    full grid from the earlier reduced-scope supervised benchmark.
+    """
+    grid = data.full_grid
+    full_grid_complete = grid.available and grid.evidence_level != "smoke_test_only"
+    matched_count = sum(1 for row in grid.comparison_rows if row.get("status") == "matched")
+    legacy_epochs = _mapping_str(data.neural_summary, "max_epochs", default="prior")
+
+    complete_bullets = [
+        "- Multi-fold classical FI-2010 benchmark across the stored folds.",
+    ]
+    if full_grid_complete:
+        complete_bullets.append(
+            "- One-epoch matched neural full grid across folds "
+            f"{_join_values(_mapping_list(grid.summary, 'folds'))}, horizons "
+            f"{_join_values(_mapping_list(grid.summary, 'horizons'))}, seeds "
+            f"{_join_values(_mapping_list(grid.summary, 'seeds'))} and objectives "
+            f"{_join_values(_mapping_list(grid.summary, 'objectives'))}."
+        )
+        if matched_count > 0:
+            complete_bullets.append("- A matched supervised-vs-SSL comparison inside that grid.")
+    if (
+        data.execution_v3.directory is not None
+        and data.execution_v3.summary is not None
+        and not bool(data.execution_v3.summary.get("smoke_test"))
+    ):
+        complete_bullets.append("- Execution-v3 offline cost-adjusted proxy diagnostics.")
+    proper = data.proper_training
+    if proper.available and proper.evidence_level == "complete_real":
+        complete_bullets.append(
+            "- Proper-training neural subset with validation-only early stopping "
+            "and best-checkpoint restoration, reported separately from the "
+            "one-epoch matched grid."
+        )
+
+    partial_bullets = []
+    if proper.available and proper.evidence_level == "partial_real":
+        partial_bullets.append(
+            "- Proper-training neural subset: documented partial longer-training "
+            "modelling evidence with validation-only early stopping; exact folds, "
+            "horizons, seeds, lookbacks and objectives are listed in its section."
+        )
+    elif proper.available and proper.evidence_level == "smoke_test_only":
+        partial_bullets.append(
+            "- Proper-training neural subset: smoke-test-only code-path artefacts; "
+            "not empirical longer-training evidence."
+        )
+    if data.feature_ablation.directory is not None and data.feature_ablation.summary is not None:
+        partial_bullets.append(
+            "- FI-2010 snapshot feature ablations: currently folds 1-5 at horizon "
+            "10 for logistic and ridge only; wider model/horizon scope unfinished."
+        )
+
+    not_claimed_bullets = [
+        "- No SSL improvement: SSL was implemented and tested under matched "
+        "settings, but no SSL improvement is supported.",
+        "- No profitability, tradability, live-trading, PnL, SOTA, "
+        "foundation-model or production-execution-simulator claim.",
+        "- No true event-level order flow or queue position is observed from FI-2010 snapshots.",
+    ]
+    legacy_bullet = (
+        f"- The earlier {legacy_epochs}-epoch reduced-scope supervised "
+        "matrix-transformer benchmark (single seed, lookback 20) is reported "
+        "separately and is not used as matched SSL evidence."
+    )
+
+    lines: list[str] = [
+        *_wrap_prose(
+            "This summary uses the same status language as the README and the evidence pack."
+        ),
+        "",
+        "What is complete (`complete_real`):",
+        "",
+        *_wrap_bullets(complete_bullets),
+    ]
+    if partial_bullets:
+        lines.extend(["", "What is partial (`partial_real`):", "", *_wrap_bullets(partial_bullets)])
+    lines.extend(
+        [
+            "",
+            "What is separate legacy / reduced-scope evidence:",
+            "",
+            *_wrap_bullet(legacy_bullet),
+            "",
+            "What is not claimed:",
+            "",
+            *_wrap_bullets(not_claimed_bullets),
+            "",
+        ]
+    )
+    if full_grid_complete:
+        lines.extend(
+            _wrap_prose(
+                "The completed matched full grid is a one-epoch comparison grid. "
+                "It is useful for controlled supervised-vs-SSL comparison and "
+                "pipeline validation, but it is not a performance-maximising "
+                "neural training result."
+            )
+        )
+        lines.append("")
+    lines.extend(
+        _wrap_prose(
+            f"The earlier {legacy_epochs}-epoch reduced-scope supervised "
+            "matrix-transformer result is reported separately and is not used as "
+            "matched SSL evidence."
+        )
+    )
+    return lines
 
 
 def _render_evidence_pack_audit(data: _FinalReportData) -> list[str]:
@@ -1093,10 +1420,32 @@ def _render_dataset_protocol(data: _FinalReportData) -> list[str]:
         ),
         (
             "neural_protocol",
-            "reduced-scope supervised neural; one seed and one lookback in stored artefacts",
+            _neural_protocol_text(data),
         ),
     ]
     return _markdown_table(("field", "value"), rows)
+
+
+def _neural_protocol_text(data: _FinalReportData) -> str:
+    """Describe both the matched full grid and the separate legacy benchmark."""
+    grid = data.full_grid
+    legacy = (
+        "separate earlier "
+        f"{_mapping_str(data.neural_summary, 'max_epochs', default='prior')}-epoch "
+        "reduced-scope supervised benchmark (single seed, lookback 20) reported "
+        "separately"
+    )
+    if grid.available and grid.evidence_level != "smoke_test_only":
+        summary = grid.summary or {}
+        return (
+            "matched one-epoch full grid over folds "
+            f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
+            f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+            f"{_join_values(_mapping_list(summary, 'seeds'))} and objectives "
+            f"{_join_values(_mapping_list(summary, 'objectives'))}; "
+            f"{legacy}"
+        )
+    return f"{legacy}; no matched full-grid artefacts supplied"
 
 
 def _render_model_families(data: _FinalReportData) -> list[str]:
@@ -1105,14 +1454,42 @@ def _render_model_families(data: _FinalReportData) -> list[str]:
             "classical",
             _join_values(_mapping_list(data.classical_summary, "models_requested")),
             "multi-fold stored fold summaries",
-        ),
-        (
-            "neural",
-            _join_values(_mapping_list(data.neural_summary, "models_requested")),
-            "reduced-scope, single-seed, lookback "
-            + _join_values(_mapping_list(data.neural_summary, "lookbacks")),
-        ),
+        )
     ]
+    if data.full_grid.available and data.full_grid.evidence_level != "smoke_test_only":
+        summary = data.full_grid.summary or {}
+        rows.append(
+            (
+                "neural matched grid",
+                "matrix_transformer",
+                "one-epoch matched supervised/SSL grid over folds "
+                f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
+                f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+                f"{_join_values(_mapping_list(summary, 'seeds'))}; comparison evidence",
+            )
+        )
+    if data.proper_training.available and data.proper_training.evidence_level != "smoke_test_only":
+        summary = data.proper_training.summary or {}
+        rows.append(
+            (
+                "neural proper-training subset",
+                "matrix_transformer",
+                f"{data.proper_training.evidence_level}; folds "
+                f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
+                f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+                f"{_join_values(_mapping_list(summary, 'seeds'))}, lookbacks "
+                f"{_join_values(_mapping_list(summary, 'lookbacks'))}; "
+                "validation-only early stopping",
+            )
+        )
+    rows.append(
+        (
+            "neural legacy supervised",
+            _join_values(_mapping_list(data.neural_summary, "models_requested")),
+            "separate earlier reduced-scope, single-seed, lookback "
+            + _join_values(_mapping_list(data.neural_summary, "lookbacks")),
+        )
+    )
     return _markdown_table(("family", "models", "scope"), rows)
 
 
@@ -1178,6 +1555,34 @@ def _render_main_results(data: _FinalReportData) -> list[str]:
 def _render_ssl(data: _FinalReportData) -> list[str]:
     ssl = data.ssl
     if not ssl.admitted:
+        grid = data.full_grid
+        matched_count = sum(1 for row in grid.comparison_rows if row.get("status") == "matched")
+        full_grid_ssl = (
+            grid.available and grid.evidence_level != "smoke_test_only" and matched_count > 0
+        )
+        if full_grid_ssl:
+            return [
+                *_wrap_prose(
+                    "The standalone SSL runner artefact is not supplied, so no "
+                    "standalone `ssl_transformer` row is admitted here."
+                ),
+                "",
+                *_wrap_prose(
+                    "However, the matched supervised-vs-SSL comparison is not "
+                    "absent from this report: it is reported in the Full Neural "
+                    "Grid section below, where masked_reconstruction and "
+                    "next_field objectives are compared against the supervised "
+                    "baseline under identical fold, horizon, seed, lookback, "
+                    "architecture and preprocessing settings."
+                ),
+                "",
+                *_wrap_prose(
+                    "That matched comparison is a one-epoch grid. No SSL "
+                    "improvement over the matched supervised baseline is "
+                    "supported; deltas are reported metric-by-metric in the Full "
+                    "Neural Grid section."
+                ),
+            ]
         return [
             f"Skipped: {ssl.reason}.",
             "",
@@ -1241,8 +1646,7 @@ def _render_full_grid(data: _FinalReportData) -> list[str]:
     status_lines = [
         f"Status: {'smoke-test-only' if smoke else 'loaded'}.",
         (
-            "These artefacts are code-path smoke outputs and are not empirical "
-            "evidence."
+            "These artefacts are code-path smoke outputs and are not empirical evidence."
             if smoke
             else "These artefacts are loaded as aggregate full-grid evidence, "
             "subject to the failures table below."
@@ -1298,9 +1702,7 @@ def _render_full_grid(data: _FinalReportData) -> list[str]:
         )
     )
     lines.extend(["", "Matched SSL deltas:", ""])
-    matched_rows = [
-        row for row in grid.comparison_rows if row.get("status") == "matched"
-    ]
+    matched_rows = [row for row in grid.comparison_rows if row.get("status") == "matched"]
     delta_rows = []
     for row in matched_rows:
         delta_rows.append(
@@ -1364,6 +1766,353 @@ def _render_full_grid(data: _FinalReportData) -> list[str]:
     return lines
 
 
+_PROPER_TRAINING_FRAMING = (
+    "The one-epoch full grid is retained as matched comparison evidence. The "
+    "proper-training subset is used to assess whether the neural models remain "
+    "credible under a more realistic training budget."
+)
+
+
+def _render_proper_training(data: _FinalReportData) -> list[str]:
+    subset = data.proper_training
+    framing = _wrap_prose(_PROPER_TRAINING_FRAMING)
+    if not subset.available:
+        return [
+            *framing,
+            "",
+            f"Status: unavailable. {subset.reason}.",
+            "",
+            "No longer-training neural result is claimed.",
+        ]
+    summary = subset.summary or {}
+    smoke = subset.evidence_level == "smoke_test_only"
+    lines = [*framing, ""]
+    lines.append(f"Status: {'smoke-test-only' if smoke else 'loaded'}.")
+    if smoke:
+        lines.extend(
+            [
+                "These artefacts are code-path smoke outputs and are not empirical evidence.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "These artefacts are loaded as longer-training modelling evidence, "
+                "subject to the scope and failure rows below.",
+                "",
+            ]
+        )
+    status_rows = [
+        ("subset_kind", _mapping_str(summary, "subset_kind", default="proper_training_subset")),
+        ("evidence_level", subset.evidence_level),
+        ("scope_label", _mapping_str(summary, "scope_label")),
+        ("execution_mode", _mapping_str(summary, "execution_mode")),
+        ("folds", _join_values(_mapping_list(summary, "folds"))),
+        ("horizons", _join_values(_mapping_list(summary, "horizons"))),
+        ("seeds", _join_values(_mapping_list(summary, "seeds"))),
+        ("lookbacks", _join_values(_mapping_list(summary, "lookbacks"))),
+        ("objectives", _join_values(_mapping_list(summary, "objectives"))),
+        ("max_epochs", _mapping_str(summary, "max_epochs")),
+        ("early_stopping_metric", _mapping_str(summary, "early_stopping_metric")),
+        ("early_stopping_patience", _mapping_str(summary, "early_stopping_patience")),
+        ("pretrain_epochs", _mapping_str(summary, "pretrain_epochs")),
+        ("completed_runs", str(summary.get("completed_run_count", "not available"))),
+        ("failed_runs", str(summary.get("failed_run_count", "not available"))),
+        (
+            "planned_scope_complete",
+            str(summary.get("planned_scope_complete", "not available")),
+        ),
+        (
+            "target_scope_complete",
+            str(summary.get("target_scope_complete", "not available")),
+        ),
+        (
+            "model_selection",
+            "validation-only early stopping; best checkpoint restored before test",
+        ),
+    ]
+    lines.extend(_markdown_table(("field", "value"), status_rows))
+
+    if not smoke and not bool(summary.get("target_scope_complete")):
+        lines.extend(
+            [
+                "",
+                *_wrap_prose(
+                    "Scope note: this is a documented partial subset "
+                    f"(`{subset.evidence_level}`). It does not cover the full "
+                    "primary proper-training target (folds 1-5, horizons 10 and "
+                    "50, seed 0, all three objectives, lookback 50, max_epochs 25, "
+                    "patience 5); the table above states exactly what was run."
+                ),
+            ]
+        )
+
+    lines.extend(["", "Training / early-stopping summary:", ""])
+    lines.extend(_markdown_table(("field", "value"), _proper_training_curve_rows(subset)))
+
+    lines.extend(["", "Aggregate test metrics by objective:", ""])
+    aggregate_rows = [
+        (
+            row.get("horizon", ""),
+            row.get("lookback", ""),
+            row.get("pretraining_objective", ""),
+            row.get("completed_run_count", ""),
+            _format_float(_row_float(row, "mean_macro_f1")),
+            _format_float(_row_float(row, "std_macro_f1")),
+            _format_float(_row_float(row, "mean_mcc")),
+            _format_float(_row_float(row, "mean_ece")),
+        )
+        for row in subset.aggregate_rows
+    ]
+    lines.extend(
+        _markdown_table(
+            (
+                "horizon",
+                "lookback",
+                "pretraining",
+                "completed",
+                "mean macro-F1",
+                "std macro-F1",
+                "mean MCC",
+                "mean ECE",
+            ),
+            aggregate_rows,
+        )
+    )
+
+    matched_rows = [row for row in subset.comparison_rows if row.get("status") == "matched"]
+    lines.extend(["", "Matched SSL deltas (longer training):", ""])
+    delta_rows = [
+        (
+            row.get("horizon", ""),
+            row.get("seed", ""),
+            row.get("ssl_objective", ""),
+            _format_float(_row_float(row, "delta_macro_f1")),
+            _format_float(_row_float(row, "delta_mcc")),
+            _format_float(_row_float(row, "delta_ece")),
+            row.get("macro_f1_outcome", ""),
+            row.get("mcc_outcome", ""),
+            row.get("ece_outcome", ""),
+        )
+        for row in matched_rows
+    ]
+    lines.extend(
+        _markdown_table(
+            (
+                "horizon",
+                "seed",
+                "SSL objective",
+                "delta macro-F1",
+                "delta MCC",
+                "delta ECE",
+                "macro-F1",
+                "MCC",
+                "ECE",
+            ),
+            delta_rows,
+        )
+    )
+    lines.extend(["", *_proper_training_interpretation(subset, matched_rows)])
+    return lines
+
+
+def _proper_training_curve_rows(
+    subset: _ProperTrainingArtefacts,
+) -> list[tuple[str, str]]:
+    rows = subset.training_rows
+    completed = [row for row in rows if row.get("status") in ("", "completed", "skipped_existing")]
+    best_epochs = [
+        value for row in completed for value in [_row_int(row, "best_epoch")] if value is not None
+    ]
+    epochs_ran = [
+        value for row in completed for value in [_row_int(row, "epochs_ran")] if value is not None
+    ]
+    early_stopped = sum(
+        1 for row in completed if str(row.get("early_stopped", "")).strip().lower() == "true"
+    )
+    best_epoch_text = (
+        f"{min(best_epochs)} to {max(best_epochs)} (mean {sum(best_epochs) / len(best_epochs):.1f})"
+        if best_epochs
+        else "not available"
+    )
+    epochs_ran_text = f"{min(epochs_ran)} to {max(epochs_ran)}" if epochs_ran else "not available"
+    return [
+        ("runs_with_curves", str(len(completed))),
+        ("best_epoch_range", best_epoch_text),
+        ("epochs_ran_range", epochs_ran_text),
+        ("runs_early_stopped", f"{early_stopped} of {len(completed)}"),
+        (
+            "curve_files",
+            "per-run runs/**/curves.csv and curves.json (train/validation loss, "
+            "validation macro-F1, accuracy, MCC)",
+        ),
+    ]
+
+
+def _proper_training_interpretation(
+    subset: _ProperTrainingArtefacts,
+    matched_rows: Sequence[Mapping[str, str]],
+) -> list[str]:
+    if subset.evidence_level == "smoke_test_only":
+        return [
+            "Interpretation: smoke-test-only; no empirical longer-training or SSL claim is made."
+        ]
+    invalid_failures = [
+        row
+        for row in subset.failure_rows
+        if str(row.get("invalidates_aggregate_claims", "")).lower() == "true"
+    ]
+    if invalid_failures:
+        return [
+            "Interpretation: failed runs are present, so longer-training claims are "
+            "limited to completed runs and are not described as a complete subset."
+        ]
+    if not matched_rows:
+        return [
+            "Interpretation: no matched supervised-vs-SSL pairs are available in the "
+            "subset, so no SSL delta claim is made."
+        ]
+    lines = ["Interpretation:"]
+    for objective in ("masked_reconstruction", "next_field"):
+        rows = [row for row in matched_rows if row.get("ssl_objective") == objective]
+        if not rows:
+            lines.append(f"- {objective}: no matched rows.")
+            continue
+        macro = _outcome_counts(rows, "macro_f1_outcome")
+        mcc = _outcome_counts(rows, "mcc_outcome")
+        ece = _outcome_counts(rows, "ece_outcome")
+        macro_mean = _mean_delta(rows, "delta_macro_f1")
+        mcc_mean = _mean_delta(rows, "delta_mcc")
+        ece_mean = _mean_delta(rows, "delta_ece")
+        lines.append(
+            f"- {objective}: mean deltas macro-F1 {_format_float(macro_mean)}, "
+            f"MCC {_format_float(mcc_mean)}, ECE {_format_float(ece_mean)}; "
+            f"outcomes macro-F1 {macro}, MCC {mcc}, ECE {ece}."
+        )
+    lines.append(
+        "  Under this longer-training budget no broad SSL improvement is claimed; "
+        "deltas are reported metric-by-metric, fold-by-fold and seed-by-seed. Any "
+        "improvement is scoped to exactly the rows above."
+    )
+    return lines
+
+
+def _render_legacy_neural_benchmark(data: _FinalReportData) -> list[str]:
+    legacy_epochs = _mapping_str(data.neural_summary, "max_epochs", default="prior")
+    lookbacks = _join_values(_mapping_list(data.neural_summary, "lookbacks"))
+    seeds = _join_values(_mapping_list(data.neural_summary, "seeds"))
+    rows = [
+        (
+            row.get("model_name", ""),
+            _format_metric_pair(
+                _row_float(row, "macro_f1_mean"),
+                _row_float(row, "macro_f1_std"),
+            ),
+            _format_float(_row_float(row, "accuracy_mean")),
+            _format_float(_row_float(row, "mcc_mean")),
+            row.get("fold_count", ""),
+            _empty_to_na(row.get("seed_count", "")),
+            _empty_to_na(row.get("lookback", "")),
+        )
+        for row in _sorted_test_rows(data.neural_results, lookback_column="lookback")
+    ]
+    lines = [
+        *_wrap_prose(
+            f"This is the earlier {legacy_epochs}-epoch reduced-scope supervised "
+            "neural benchmark. It is reported separately from the one-epoch "
+            "matched full grid and from the proper-training supervised-vs-SSL "
+            "subset, and it is not used as matched SSL evidence."
+        ),
+        "",
+        (
+            f"Stored scope: seeds {seeds or 'not available'}, "
+            f"lookbacks {lookbacks or 'not available'}."
+        ),
+        "",
+    ]
+    lines.extend(
+        _markdown_table(
+            (
+                "model",
+                "test macro-F1",
+                "accuracy",
+                "MCC",
+                "folds",
+                "seeds",
+                "lookback",
+            ),
+            rows,
+        )
+    )
+    return lines
+
+
+def _render_ssl_interpretation(data: _FinalReportData) -> list[str]:
+    full_grid_rows = [
+        row for row in data.full_grid.comparison_rows if row.get("status") == "matched"
+    ]
+    proper_rows = [
+        row for row in data.proper_training.comparison_rows if row.get("status") == "matched"
+    ]
+    lines = [
+        *_wrap_prose(
+            "SSL evidence is interpreted only through matched supervised-vs-SSL "
+            "rows. The one-epoch full grid remains comparison and infrastructure "
+            "evidence; the proper-training subset is longer-training modelling "
+            "evidence at its exact stored scope."
+        ),
+        "",
+    ]
+    rows: list[tuple[str, str, str, str, str, str]] = []
+    for source, matched in (
+        ("one-epoch full grid", full_grid_rows),
+        ("proper-training subset", proper_rows),
+    ):
+        for objective in ("masked_reconstruction", "next_field"):
+            objective_rows = [row for row in matched if row.get("ssl_objective") == objective]
+            if not objective_rows:
+                continue
+            rows.append(
+                (
+                    source,
+                    objective,
+                    _format_float(_mean_delta(objective_rows, "delta_macro_f1")),
+                    _format_float(_mean_delta(objective_rows, "delta_mcc")),
+                    _format_float(_mean_delta(objective_rows, "delta_ece")),
+                    _outcome_counts(objective_rows, "macro_f1_outcome"),
+                )
+            )
+    if rows:
+        lines.extend(
+            _markdown_table(
+                (
+                    "source",
+                    "SSL objective",
+                    "mean delta macro-F1",
+                    "mean delta MCC",
+                    "mean delta ECE",
+                    "macro-F1 outcomes",
+                ),
+                rows,
+            )
+        )
+        lines.append("")
+    if proper_rows and not _all_rows_improve(proper_rows, "delta_macro_f1"):
+        lines.append("The longer-training subset does not support an SSL improvement claim.")
+    else:
+        lines.append(
+            "No broad SSL improvement claim is made unless all matched aggregate "
+            "deltas support it without metric-specific degradation."
+        )
+    return lines
+
+
+def _all_rows_improve(rows: Sequence[Mapping[str, str]], column: str) -> bool:
+    values = [value for row in rows for value in [_row_float(row, column)] if value is not None]
+    return bool(values) and all(value > 0.0 for value in values)
+
+
 def _render_figure_index(data: _FinalReportData) -> list[str]:
     figures = data.figures
     if not figures.available:
@@ -1371,12 +2120,8 @@ def _render_figure_index(data: _FinalReportData) -> list[str]:
             f"Skipped: {figures.reason}.",
             "No diagnostic figure evidence is implied without a figure manifest.",
         ]
-    completed = [
-        entry for entry in figures.entries if str(entry.get("status", "")) == "completed"
-    ]
-    skipped = [
-        entry for entry in figures.entries if str(entry.get("status", "")) == "skipped"
-    ]
+    completed = [entry for entry in figures.entries if str(entry.get("status", "")) == "completed"]
+    skipped = [entry for entry in figures.entries if str(entry.get("status", "")) == "skipped"]
     lines: list[str] = []
     if figures.smoke_test_only:
         lines.extend(
@@ -1469,19 +2214,13 @@ def _full_grid_interpretation(
             f"outcomes macro-F1 {macro}, MCC {mcc}, ECE {ece}."
         )
         lines.append(
-            "  No overall SSL improvement is supported; report any deltas "
-            "metric-by-metric."
+            "  No overall SSL improvement is supported; report any deltas metric-by-metric."
         )
     return lines
 
 
 def _mean_delta(rows: Sequence[Mapping[str, str]], column: str) -> float | None:
-    values = [
-        value
-        for row in rows
-        for value in [_row_float(row, column)]
-        if value is not None
-    ]
+    values = [value for row in rows for value in [_row_float(row, column)] if value is not None]
     if not values:
         return None
     return sum(values) / len(values)
@@ -1806,9 +2545,7 @@ def _render_execution(data: _FinalReportData) -> list[str]:
             )
     elif data.execution_v3.directory is None:
         lines.append("")
-        lines.append(
-            "Execution-v3 artefacts were not supplied, so no execution-v3 claim is made."
-        )
+        lines.append("Execution-v3 artefacts were not supplied, so no execution-v3 claim is made.")
 
     if data.execution.directory is not None and data.execution.summary is not None:
         lines.extend(["", "Legacy execution-v2 proxy snapshot:", ""])
@@ -2040,9 +2777,12 @@ def _render_external(data: _FinalReportData) -> list[str]:
 
 
 def _render_what_this_proves(data: _FinalReportData) -> list[str]:
+    legacy_epochs = _mapping_str(data.neural_summary, "max_epochs", default="prior")
     lines = [
         "- The committed artefacts support a traceable multi-fold classical FI-2010 result.",
-        "- The committed artefacts support reduced-scope, single-seed supervised neural evidence.",
+        f"- A separate, earlier {legacy_epochs}-epoch reduced-scope, single-seed "
+        "supervised neural benchmark is reported on its own terms and is not "
+        "used as matched-grid or SSL evidence.",
         "- The uncertainty, ablation and proxy-diagnostic layers are generated from stored tables.",
         "- External references are used only to document protocol context.",
     ]
@@ -2053,10 +2793,13 @@ def _render_what_this_proves(data: _FinalReportData) -> list[str]:
             "ssl_transformer vs supervised comparison.",
         )
     if data.full_grid.available and data.full_grid.evidence_level != "smoke_test_only":
-        lines.append(
-            "- The full neural grid artefacts compare supervised and SSL "
-            "matrix-transformer variants under matched fold, horizon, seed, "
-            "lookback, architecture and preprocessing keys.",
+        lines.extend(
+            _wrap_bullet(
+                "- The one-epoch full neural grid artefacts compare supervised "
+                "and SSL matrix-transformer variants under matched fold, horizon, "
+                "seed, lookback, architecture and preprocessing keys; this is "
+                "matched comparison evidence and supports no SSL improvement claim."
+            )
         )
     if (
         data.execution_v3.directory is not None
@@ -2362,9 +3105,7 @@ def _require_files(directory: Path, filenames: Sequence[str], label: str) -> Non
     for filename in filenames:
         path = directory / filename
         if not path.is_file():
-            raise FileNotFoundError(
-                f"{label} required artefact is missing: {path}"
-            )
+            raise FileNotFoundError(f"{label} required artefact is missing: {path}")
 
 
 def _read_json(
@@ -2454,6 +3195,40 @@ def _display_path(path: Path) -> str:
         return candidate.as_posix()
 
 
+def _wrap_prose(text: str, *, width: int = 200) -> list[str]:
+    """Wrap a prose paragraph so each physical line stays within ``width``."""
+    wrapped = textwrap.wrap(
+        text,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    return wrapped or [text]
+
+
+def _wrap_bullets(bullets: Sequence[str], *, width: int = 200) -> list[str]:
+    """Wrap a sequence of ``- `` bullets, flattening into output lines."""
+    lines: list[str] = []
+    for bullet in bullets:
+        lines.extend(_wrap_bullet(bullet, width=width))
+    return lines
+
+
+def _wrap_bullet(text: str, *, width: int = 200) -> list[str]:
+    """Wrap a ``- `` bullet, indenting continuation lines to stay in the list."""
+    prefix = "- "
+    body = text[len(prefix) :] if text.startswith(prefix) else text
+    wrapped = textwrap.wrap(
+        body,
+        width=width - len(prefix),
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    if not wrapped:
+        return [text]
+    return [prefix + wrapped[0], *(f"  {part}" for part in wrapped[1:])]
+
+
 def _markdown_table(
     headers: Sequence[str],
     rows: Sequence[Sequence[str]],
@@ -2526,9 +3301,7 @@ def _first_markdown_bullets(text: str | None, *, fallback: str) -> str:
     if not text:
         return fallback
     bullets = [
-        line.removeprefix("- ").strip()
-        for line in text.splitlines()
-        if line.startswith("- ")
+        line.removeprefix("- ").strip() for line in text.splitlines() if line.startswith("- ")
     ]
     if not bullets:
         return fallback
