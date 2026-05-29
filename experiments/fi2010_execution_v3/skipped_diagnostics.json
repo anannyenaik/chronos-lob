@@ -1,0 +1,30 @@
+{
+  "skipped": [
+    {
+      "diagnostic": "regime_execution",
+      "scope": "volatility_regime",
+      "skip_reason": "volatility_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "spread_regime",
+      "skip_reason": "spread_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "imbalance_regime",
+      "skip_reason": "imbalance_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "liquidity_regime",
+      "skip_reason": "liquidity_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "regime",
+      "skip_reason": "regime labels unavailable in prediction artefacts"
+    }
+  ],
+  "skipped_count": 5
+}

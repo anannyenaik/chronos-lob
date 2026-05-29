@@ -1,0 +1,13 @@
+{
+  "class_order": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "created_at": "2026-05-29T16:04:53.213327+00:00",
+  "figure_id": "execution_v3_fill_assumption_comparison",
+  "proxy_label": "offline execution-aware proxy diagnostic",
+  "smoke_test": false,
+  "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_fill_assumption_comparison.csv",
+  "title": "Fill Assumption Comparison Proxy Diagnostic"
+}

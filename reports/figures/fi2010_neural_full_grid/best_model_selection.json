@@ -1,0 +1,85 @@
+{
+  "candidate_count": 9,
+  "selected": [
+    {
+      "folds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizon": 10,
+      "lookback": 20,
+      "macro_f1_variance": 0.002104793265732547,
+      "mean_ece": 0.11649784777266387,
+      "mean_macro_f1": 0.33360731814589617,
+      "model_family": "matrix_transformer",
+      "model_key": "matrix_transformer/supervised",
+      "objective_label": "supervised",
+      "pretraining_objective": "none",
+      "reason": "selected by highest mean macro-F1; ties prefer lower ECE, then lower macro-F1 variance",
+      "run_count": 15,
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "folds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizon": 20,
+      "lookback": 20,
+      "macro_f1_variance": 0.002644649362182547,
+      "mean_ece": 0.09990885128969111,
+      "mean_macro_f1": 0.3711322885696212,
+      "model_family": "matrix_transformer",
+      "model_key": "matrix_transformer/supervised",
+      "objective_label": "supervised",
+      "pretraining_objective": "none",
+      "reason": "selected by highest mean macro-F1; ties prefer lower ECE, then lower macro-F1 variance",
+      "run_count": 15,
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "folds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizon": 50,
+      "lookback": 20,
+      "macro_f1_variance": 0.001964157167298329,
+      "mean_ece": 0.07326091676330923,
+      "mean_macro_f1": 0.4179687985365532,
+      "model_family": "matrix_transformer",
+      "model_key": "matrix_transformer/supervised",
+      "objective_label": "supervised",
+      "pretraining_objective": "none",
+      "reason": "selected by highest mean macro-F1; ties prefer lower ECE, then lower macro-F1 variance",
+      "run_count": 15,
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    }
+  ],
+  "selection_metric": "mean_macro_f1",
+  "tie_breakers": [
+    "lower_mean_ece",
+    "lower_macro_f1_variance"
+  ]
+}

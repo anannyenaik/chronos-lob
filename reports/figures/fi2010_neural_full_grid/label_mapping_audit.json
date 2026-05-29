@@ -1,0 +1,40 @@
+{
+  "class_order_used_for_metrics": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "classwise_f1_columns_expected": [
+    "class_f1_up",
+    "class_f1_stationary",
+    "class_f1_down"
+  ],
+  "confusion_matrix_axis_labels": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "detected_labels": [
+    1,
+    2,
+    3
+  ],
+  "errors": [],
+  "expected_labels": {
+    "1": "up",
+    "2": "stationary",
+    "3": "down"
+  },
+  "probability_column_order_used": [
+    "prob_up",
+    "prob_stationary",
+    "prob_down"
+  ],
+  "probability_columns_found": [
+    "prob_down",
+    "prob_stationary",
+    "prob_up"
+  ],
+  "status": "pass",
+  "warnings": []
+}

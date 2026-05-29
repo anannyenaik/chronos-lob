@@ -1,0 +1,66 @@
+{
+  "aggregate_rows": 9,
+  "artefacts": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "aggregate_summary_json": "aggregate_summary.json",
+    "failures": "failures.csv",
+    "missing_pairs": "missing_pairs.csv",
+    "readme": "README.md",
+    "results_summary": "results_summary.csv",
+    "run_plan": "run_plan.csv",
+    "runs": "runs/",
+    "ssl_comparison": "ssl_comparison.csv",
+    "summary": "summary.json"
+  },
+  "batch_size": 256,
+  "comparison_rows": 90,
+  "completed_run_count": 135,
+  "config_path": "configs\\experiments\\fi2010_neural_serious.yaml",
+  "core_grid_complete": true,
+  "created_at": "2026-05-29T02:16:42.700154Z",
+  "device": "cpu",
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "evidence_level": "full_grid_complete",
+  "execution_mode": "benchmark",
+  "failed_run_count": 0,
+  "folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+  "horizons": [
+    10,
+    20,
+    50
+  ],
+  "lookbacks": [
+    20
+  ],
+  "max_epochs": 1,
+  "missing_pair_count": 0,
+  "objectives": [
+    "supervised",
+    "masked_reconstruction",
+    "next_field"
+  ],
+  "output_dir": "experiments\\fi2010_neural_full_grid",
+  "pretrain_epochs": 1,
+  "processed_root": "data\\processed\\fi2010",
+  "run_count": 135,
+  "runner_version": "fi2010-neural-full-grid/v1",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "skipped_existing_count": 54,
+  "smoke_test": false,
+  "warnings": []
+}

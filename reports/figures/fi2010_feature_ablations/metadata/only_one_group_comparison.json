@@ -1,0 +1,8 @@
+{
+  "created_at": "2026-05-29T15:05:09.441115+00:00",
+  "figure_id": "only_one_group_comparison",
+  "smoke_test": false,
+  "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/only_one_group_comparison.csv",
+  "source_sha256": "8ee5aca7fc8482ae1354a0881c639ad6ef58c416ac587df7c1461f68aa92342d",
+  "title": "Only-One-Group Comparison"
+}

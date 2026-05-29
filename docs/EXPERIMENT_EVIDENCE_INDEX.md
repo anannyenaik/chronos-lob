@@ -36,9 +36,18 @@ or reproducing the platform.
   [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/)
 - Execution-aware proxy diagnostics:
   [`experiments/fi2010_execution_v2/`](../experiments/fi2010_execution_v2/)
+- Execution-v3 offline execution-aware proxy diagnostic:
+  [EXECUTION_VALIDATION_V3](EXECUTION_VALIDATION_V3.md)
 - External benchmark context:
   [FI2010_EXTERNAL_BENCHMARKS](FI2010_EXTERNAL_BENCHMARKS.md) and
   [`experiments/fi2010_external_context/`](../experiments/fi2010_external_context/)
+- FI-2010 neural figure pipeline:
+  [FIGURE_INDEX](FIGURE_INDEX.md) and
+  [`reports/figures/fi2010_neural_full_grid/`](../reports/figures/fi2010_neural_full_grid/)
+- FI-2010 microstructure feature registry and ablations:
+  [MICROSTRUCTURE_FEATURES](MICROSTRUCTURE_FEATURES.md),
+  [FEATURE_ABLATIONS](FEATURE_ABLATIONS.md) and
+  [`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/)
 - Acquisition and conversion:
   [FI2010_DATA_ACQUISITION](FI2010_DATA_ACQUISITION.md)
 - Benchmark preparation:
@@ -54,6 +63,9 @@ or reproducing the platform.
   [`experiments/fi2010_midprice_h10_systems/`](../experiments/fi2010_midprice_h10_systems/)
 - Generated artefact report:
   [`reports/chronoslob_empirical_report.md`](../reports/chronoslob_empirical_report.md)
+- Release evidence pack:
+  [EVIDENCE_PACK](EVIDENCE_PACK.md) and
+  [`reports/evidence_pack/`](../reports/evidence_pack/)
 - Model card:
   [`experiments/fi2010_midprice_h10/model_card.md`](../experiments/fi2010_midprice_h10/model_card.md)
 
@@ -133,6 +145,23 @@ or reproducing the platform.
   [self_supervised_objectives](../reports/self_supervised_objectives.md),
   [multitask_finetuning](../reports/multitask_finetuning.md)
 
+## FI-2010 Self-Supervised Pretraining And Fine-Tuning
+
+- Scope: a leakage-safe `ssl_transformer` path that pretrains an encoder on
+  training rows only, fine-tunes on mid-price direction and compares against a
+  supervised baseline of identical architecture. No SSL effectiveness is
+  claimed; the final report admits SSL rows only when artefacts are
+  SHA256-verified.
+- Modules: `chronoslob/models/matrix_ssl.py`,
+  `chronoslob/training/matrix_ssl_datasets.py`,
+  `chronoslob/training/matrix_ssl_experiment.py`,
+  `chronoslob/experiments/fi2010_ssl_runner.py`
+- Config: `configs/experiments/fi2010_ssl_smoke.yaml`
+- Tests: `tests/test_matrix_ssl.py`,
+  `tests/test_fi2010_ssl_runner.py`
+- CLI: `run-fi2010-ssl-neural-benchmark`
+- Docs: [FI2010_SSL_BENCHMARKS](FI2010_SSL_BENCHMARKS.md)
+
 ## Statistical Uncertainty
 
 - Module: `chronoslob/experiments/statistics.py`
@@ -165,6 +194,33 @@ or reproducing the platform.
   stored evidence; the neural lookback sweep is skipped by default and
   recorded with a reason. Execution numbers are proxy diagnostics only.
 
+## Microstructure Feature Registry and Ablations
+
+- Modules: `chronoslob/features/registry.py`,
+  `chronoslob/features/microstructure_fi2010.py`,
+  `chronoslob/experiments/fi2010_feature_ablations.py`,
+  `chronoslob/analysis/fi2010_ablation_figures.py`
+- Tests: `tests/test_fi2010_microstructure_features.py`,
+  `tests/test_fi2010_feature_ablations_v2.py`
+- CLI: `audit-fi2010-features`, `run-fi2010-feature-ablations`,
+  `build-fi2010-ablation-figures`
+- Docs: [MICROSTRUCTURE_FEATURES](MICROSTRUCTURE_FEATURES.md),
+  [FEATURE_ABLATIONS](FEATURE_ABLATIONS.md),
+  [FIGURE_INDEX](FIGURE_INDEX.md)
+- Artefact directory:
+  [`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/)
+- Outputs: `features.csv`, `feature_metadata.json`,
+  `feature_group_manifest.json`, `results_summary.csv`,
+  `aggregate_summary.csv`, `feature_delta_summary.csv`, per-run
+  metrics, predictions where available, status records, SHA-256 manifests
+  and ablation figures with source CSVs.
+- Scope: separates raw LOB levels, top-of-book, spread, midprice,
+  microprice, depth and concentration families from rolling volatility and
+  clearly labelled snapshot-flow proxy features. Unsupported FI-2010 event
+  families are recorded explicitly, so the evidence does not claim true
+  order-flow, cancellation, trade or queue-position information unless a
+  future data source directly supports those fields.
+
 ## Execution-Aware Evaluation v2
 
 - Module: `chronoslob/experiments/execution_v2.py`
@@ -185,6 +241,26 @@ or reproducing the platform.
   no stored execution proxy rows, so their execution-aware diagnostics are
   recorded as explicit skips. Every metric is a proxy diagnostic; no
   profitability or live tradability claim is made.
+
+## Execution-Aware Validation v3
+
+- Module: `chronoslob/analysis/execution_v3.py`
+- Tests: `tests/test_fi2010_execution_v3.py`
+- CLI: `build-fi2010-execution-v3`
+- Docs: [EXECUTION_VALIDATION_V3](EXECUTION_VALIDATION_V3.md)
+- Default artefact directory:
+  [`experiments/fi2010_execution_v3/`](../experiments/fi2010_execution_v3/)
+- Outputs: `summary.json`, `execution_v3_manifest.json`,
+  `confidence_threshold_summary.csv`, `confidence_threshold_aggregate.csv`,
+  `cost_sensitivity_summary.csv`, `latency_sensitivity_summary.csv`,
+  `fill_assumption_summary.csv`, `adverse_selection_summary.csv`,
+  `regime_execution_summary.csv`, `skipped_diagnostics.json` and
+  `execution_v3_notes.md`.
+- Scope: consumes stored FI-2010 full-grid prediction artefacts and evaluates
+  confidence filtering, costs, row-step latency, fill assumptions,
+  adverse-selection proxies and explicit regime breakdowns when context exists.
+  It is an offline execution-aware proxy diagnostic, not a live trading system,
+  broker integration, profitability claim or realistic execution simulator.
 
 ## External Benchmark Context
 

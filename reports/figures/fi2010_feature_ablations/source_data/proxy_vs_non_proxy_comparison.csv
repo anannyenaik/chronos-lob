@@ -1,0 +1,5 @@
+feature_set,model,macro_f1
+with_proxy_features,logistic,0.6090270207086947
+with_proxy_features,ridge,0.33299584798271237
+without_proxy_features,logistic,0.27539732609095935
+without_proxy_features,ridge,0.2752731889598021

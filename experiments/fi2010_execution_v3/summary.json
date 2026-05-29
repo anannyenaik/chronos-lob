@@ -1,0 +1,84 @@
+{
+  "builder_version": "fi2010-execution-aware-proxy-diagnostic/v3",
+  "claim_boundary": "This is an offline execution-aware proxy diagnostic. It is not a live trading system, broker integration, profitability claim or realistic execution simulator.",
+  "cost_mode": "unit_proxy",
+  "created_at": "2026-05-29T16:01:54.219480+00:00",
+  "diagnostics_produced": [
+    "confidence_threshold",
+    "cost_sensitivity",
+    "latency_sensitivity",
+    "fill_assumptions",
+    "adverse_selection"
+  ],
+  "diagnostics_skipped": [
+    "regime_execution"
+  ],
+  "feature_ablation_dir": null,
+  "fill_modes_used": [
+    "aggressive_crossing",
+    "passive_optimistic",
+    "passive_conservative",
+    "abstain_only"
+  ],
+  "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+  "input_kind": "neural_full_grid",
+  "label_mapping_audit_status": "pass",
+  "latency_modes_used": [
+    0,
+    1,
+    2,
+    5,
+    10
+  ],
+  "neural_full_grid_dir": "experiments/fi2010_neural_full_grid",
+  "offline_execution_aware_proxy_diagnostic": true,
+  "output_dir": "experiments/fi2010_execution_v3",
+  "outputs": {
+    "adverse_selection_summary": "experiments/fi2010_execution_v3/adverse_selection_summary.csv",
+    "confidence_threshold_aggregate": "experiments/fi2010_execution_v3/confidence_threshold_aggregate.csv",
+    "confidence_threshold_summary": "experiments/fi2010_execution_v3/confidence_threshold_summary.csv",
+    "cost_sensitivity_summary": "experiments/fi2010_execution_v3/cost_sensitivity_summary.csv",
+    "execution_v3_notes": "experiments/fi2010_execution_v3/execution_v3_notes.md",
+    "fill_assumption_summary": "experiments/fi2010_execution_v3/fill_assumption_summary.csv",
+    "latency_sensitivity_summary": "experiments/fi2010_execution_v3/latency_sensitivity_summary.csv",
+    "regime_execution_summary": "experiments/fi2010_execution_v3/regime_execution_summary.csv",
+    "skipped_diagnostics": "experiments/fi2010_execution_v3/skipped_diagnostics.json"
+  },
+  "package_version": "0.1.0",
+  "payoff_mode": "unit_payoff",
+  "prediction_row_count": 4800519,
+  "run_group_count": 135,
+  "skipped_diagnostics": [
+    {
+      "diagnostic": "regime_execution",
+      "scope": "volatility_regime",
+      "skip_reason": "volatility_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "spread_regime",
+      "skip_reason": "spread_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "imbalance_regime",
+      "skip_reason": "imbalance_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "liquidity_regime",
+      "skip_reason": "liquidity_regime labels unavailable in prediction artefacts"
+    },
+    {
+      "diagnostic": "regime_execution",
+      "scope": "regime",
+      "skip_reason": "regime labels unavailable in prediction artefacts"
+    }
+  ],
+  "smoke_test": false,
+  "smoke_test_status": "not smoke-test",
+  "strict": true,
+  "warnings": [
+    "optional input artefact missing: experiments\\fi2010_neural_full_grid\\label_mapping_audit.json"
+  ]
+}

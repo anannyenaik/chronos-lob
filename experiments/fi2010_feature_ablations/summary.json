@@ -1,0 +1,74 @@
+{
+  "ablation_modes": [
+    "all_features",
+    "remove_one_group",
+    "only_one_group",
+    "raw_lob_only",
+    "derived_microstructure_only",
+    "no_proxy_features"
+  ],
+  "artefacts": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "failures": "failures.json",
+    "feature_delta_summary": "feature_delta_summary.csv",
+    "manifest": "ablation_manifest.json",
+    "results_summary": "results_summary.csv",
+    "runs": "runs/",
+    "summary": "summary.json"
+  },
+  "claim_boundary": "Feature ablations are leakage-safe diagnostics over FI-2010 snapshots. Snapshot deltas are proxies, not true order-flow imbalance.",
+  "completed_run_count": 840,
+  "created_at": "2026-05-29T14:56:57.253251Z",
+  "failed_run_count": 0,
+  "feature_groups": [
+    "price_levels",
+    "size_levels",
+    "top_of_book",
+    "spread",
+    "midprice",
+    "microprice",
+    "top_of_book_imbalance",
+    "depth_imbalance",
+    "depth_slope",
+    "liquidity_concentration",
+    "snapshot_order_flow_proxy",
+    "volatility_proxy"
+  ],
+  "folds": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+  "horizons": [
+    10
+  ],
+  "models": [
+    "logistic",
+    "ridge"
+  ],
+  "output_dir": "experiments\\fi2010_feature_ablations",
+  "package_version": "0.1.0",
+  "proxy_groups": [
+    "snapshot_order_flow_proxy"
+  ],
+  "run_count": 840,
+  "runner_version": "fi2010-microstructure-feature-ablations/v2",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "skipped_existing_count": 168,
+  "smoke_test": false,
+  "unsupported_groups": [
+    "time_context",
+    "true_order_flow_imbalance",
+    "cancellation_imbalance",
+    "trade_imbalance",
+    "queue_position"
+  ],
+  "warnings": []
+}

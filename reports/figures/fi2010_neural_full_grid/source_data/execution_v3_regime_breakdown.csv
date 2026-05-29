@@ -1,0 +1,1 @@
+model_family,pretraining_objective,horizon,regime_type,regime_label,sample_count,active_trade_count,directional_hit_rate,gross_proxy,net_proxy,payoff_mode,cost_mode,status,skipped_reason,model_key

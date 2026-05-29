@@ -1,0 +1,75 @@
+{
+  "ablation_dir": "experiments/fi2010_feature_ablations",
+  "builder_version": "fi2010-feature-ablation-figures/v1",
+  "created_at": "2026-05-29T15:05:10.395170+00:00",
+  "figures": [
+    {
+      "figure_id": "feature_group_delta_macro_f1",
+      "file_path": "reports/figures/fi2010_feature_ablations/feature_group_delta_macro_f1.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/feature_group_delta_macro_f1.json",
+      "reason": "",
+      "row_count": 28,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/feature_group_delta_macro_f1.csv",
+      "status": "completed",
+      "title": "Feature Group Delta Macro-F1"
+    },
+    {
+      "figure_id": "feature_group_delta_mcc",
+      "file_path": "reports/figures/fi2010_feature_ablations/feature_group_delta_mcc.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/feature_group_delta_mcc.json",
+      "reason": "",
+      "row_count": 28,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/feature_group_delta_mcc.csv",
+      "status": "completed",
+      "title": "Feature Group Delta MCC"
+    },
+    {
+      "figure_id": "only_one_group_comparison",
+      "file_path": "reports/figures/fi2010_feature_ablations/only_one_group_comparison.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/only_one_group_comparison.json",
+      "reason": "",
+      "row_count": 24,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/only_one_group_comparison.csv",
+      "status": "completed",
+      "title": "Only-One-Group Comparison"
+    },
+    {
+      "figure_id": "remove_one_group_degradation",
+      "file_path": "reports/figures/fi2010_feature_ablations/remove_one_group_degradation.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/remove_one_group_degradation.json",
+      "reason": "",
+      "row_count": 12,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/remove_one_group_degradation.csv",
+      "status": "completed",
+      "title": "Remove-One-Group Degradation"
+    },
+    {
+      "figure_id": "proxy_vs_non_proxy_comparison",
+      "file_path": "reports/figures/fi2010_feature_ablations/proxy_vs_non_proxy_comparison.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/proxy_vs_non_proxy_comparison.json",
+      "reason": "",
+      "row_count": 4,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/proxy_vs_non_proxy_comparison.csv",
+      "status": "completed",
+      "title": "Proxy Versus Non-Proxy Feature Comparison"
+    },
+    {
+      "figure_id": "horizon_specific_feature_importance",
+      "file_path": "reports/figures/fi2010_feature_ablations/horizon_specific_feature_importance.png",
+      "metadata_path": "reports/figures/fi2010_feature_ablations/metadata/horizon_specific_feature_importance.json",
+      "reason": "",
+      "row_count": 12,
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/horizon_specific_feature_importance.csv",
+      "status": "completed",
+      "title": "Horizon-Specific Feature Importance"
+    }
+  ],
+  "output_dir": "reports/figures/fi2010_feature_ablations",
+  "smoke_test": false
+}

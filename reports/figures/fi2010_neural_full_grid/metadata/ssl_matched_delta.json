@@ -1,0 +1,12 @@
+{
+  "class_order": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "created_at": "2026-05-29T16:03:33.213496+00:00",
+  "figure_id": "ssl_matched_delta",
+  "smoke_test": false,
+  "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/ssl_matched_delta.csv",
+  "title": "Matched SSL Deltas"
+}

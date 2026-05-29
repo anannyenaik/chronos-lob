@@ -1,0 +1,492 @@
+{
+  "allow_smoke_test": false,
+  "best_model_selection": "reports/figures/fi2010_neural_full_grid/best_model_selection.json",
+  "builder_version": "fi2010-neural-figures/v1",
+  "created_at": "2026-05-29T16:04:54.020518+00:00",
+  "execution_v3_dir": "experiments/fi2010_execution_v3",
+  "figures": [
+    {
+      "figure_id": "confusion_matrix_h10",
+      "file_path": "reports/figures/fi2010_neural_full_grid/confusion_matrix_h10.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/confusion_matrix_h10.json",
+      "models_included": [
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confusion_matrix_h10.csv",
+      "status": "completed",
+      "title": "Confusion Matrix H10"
+    },
+    {
+      "figure_id": "confusion_matrix_h20",
+      "file_path": "reports/figures/fi2010_neural_full_grid/confusion_matrix_h20.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        20
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/confusion_matrix_h20.json",
+      "models_included": [
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confusion_matrix_h20.csv",
+      "status": "completed",
+      "title": "Confusion Matrix H20"
+    },
+    {
+      "figure_id": "confusion_matrix_h50",
+      "file_path": "reports/figures/fi2010_neural_full_grid/confusion_matrix_h50.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/confusion_matrix_h50.json",
+      "models_included": [
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confusion_matrix_h50.csv",
+      "status": "completed",
+      "title": "Confusion Matrix H50"
+    },
+    {
+      "figure_id": "reliability_curve",
+      "file_path": "reports/figures/fi2010_neural_full_grid/reliability_curve.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/reliability_curve.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/reliability_curve.csv",
+      "status": "completed",
+      "title": "Reliability Curve"
+    },
+    {
+      "figure_id": "macro_f1_by_fold",
+      "file_path": "reports/figures/fi2010_neural_full_grid/macro_f1_by_fold.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/macro_f1_by_fold.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/macro_f1_by_fold.csv",
+      "status": "completed",
+      "title": "Macro-F1 Across Folds"
+    },
+    {
+      "figure_id": "macro_f1_by_horizon",
+      "file_path": "reports/figures/fi2010_neural_full_grid/macro_f1_by_horizon.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/macro_f1_by_horizon.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/macro_f1_by_horizon.csv",
+      "status": "completed",
+      "title": "Macro-F1 Across Horizons"
+    },
+    {
+      "figure_id": "ece_by_horizon",
+      "file_path": "reports/figures/fi2010_neural_full_grid/ece_by_horizon.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/ece_by_horizon.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/ece_by_horizon.csv",
+      "status": "completed",
+      "title": "ECE Across Horizons"
+    },
+    {
+      "figure_id": "ssl_matched_delta",
+      "file_path": "reports/figures/fi2010_neural_full_grid/ssl_matched_delta.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/ssl_matched_delta.json",
+      "models_included": [],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/ssl_matched_delta.csv",
+      "status": "completed",
+      "title": "Matched SSL Deltas"
+    },
+    {
+      "figure_id": "confidence_threshold_eligible_fraction",
+      "file_path": "reports/figures/fi2010_neural_full_grid/confidence_threshold_eligible_fraction.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/confidence_threshold_eligible_fraction.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confidence_threshold_eligible_fraction.csv",
+      "status": "completed",
+      "title": "Confidence Threshold Vs Eligible Fraction"
+    },
+    {
+      "figure_id": "confidence_threshold_macro_f1",
+      "file_path": "reports/figures/fi2010_neural_full_grid/confidence_threshold_macro_f1.png",
+      "folds_included": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/confidence_threshold_macro_f1.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confidence_threshold_macro_f1.csv",
+      "status": "completed",
+      "title": "Confidence Threshold Vs Retained Macro-F1"
+    },
+    {
+      "figure_id": "cost_adjusted_proxy",
+      "file_path": "reports/figures/fi2010_neural_full_grid/cost_adjusted_proxy.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/cost_adjusted_proxy.json",
+      "models_included": [],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/cost_adjusted_proxy.csv",
+      "status": "completed",
+      "title": "Cost-Adjusted Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_confidence_active_fraction",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_confidence_active_fraction.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_confidence_active_fraction.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_confidence_active_fraction.csv",
+      "status": "completed",
+      "title": "Confidence Threshold Vs Active Trade Fraction Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_confidence_net_proxy",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_confidence_net_proxy.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_confidence_net_proxy.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_confidence_net_proxy.csv",
+      "status": "completed",
+      "title": "Confidence Threshold Vs Net Cost-Adjusted Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_cost_sensitivity",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_cost_sensitivity.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_cost_sensitivity.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_cost_sensitivity.csv",
+      "status": "completed",
+      "title": "Cost Sensitivity Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_latency_sensitivity",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_latency_sensitivity.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_latency_sensitivity.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_latency_sensitivity.csv",
+      "status": "completed",
+      "title": "Latency Sensitivity Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_fill_assumption_comparison",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_fill_assumption_comparison.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_fill_assumption_comparison.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [
+        0,
+        1,
+        2
+      ],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_fill_assumption_comparison.csv",
+      "status": "completed",
+      "title": "Fill Assumption Comparison Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_adverse_selection_by_confidence",
+      "file_path": "reports/figures/fi2010_neural_full_grid/execution_v3_adverse_selection_by_confidence.png",
+      "folds_included": [],
+      "horizons_included": [
+        10,
+        20,
+        50
+      ],
+      "metadata_path": "reports/figures/fi2010_neural_full_grid/metadata/execution_v3_adverse_selection_by_confidence.json",
+      "models_included": [
+        "matrix_transformer/masked_reconstruction",
+        "matrix_transformer/next_field",
+        "matrix_transformer/supervised"
+      ],
+      "reason": "",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_adverse_selection_by_confidence.csv",
+      "status": "completed",
+      "title": "Adverse Selection By Confidence Bucket Proxy Diagnostic"
+    },
+    {
+      "figure_id": "execution_v3_regime_breakdown",
+      "file_path": null,
+      "folds_included": [],
+      "horizons_included": [],
+      "metadata_path": null,
+      "models_included": [],
+      "reason": "regime_execution_summary.csv has no plottable execution-v3 rows",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/execution_v3_regime_breakdown.csv",
+      "status": "skipped",
+      "title": "Regime Execution Breakdown Proxy Diagnostic"
+    },
+    {
+      "figure_id": "regime_breakdown",
+      "file_path": null,
+      "folds_included": [],
+      "horizons_included": [],
+      "metadata_path": null,
+      "models_included": [],
+      "reason": "regime labels not present in prediction artefacts",
+      "seeds_included": [],
+      "smoke_test": false,
+      "source_data_path": null,
+      "status": "skipped",
+      "title": "Regime Breakdown"
+    }
+  ],
+  "label_mapping_audit": "reports/figures/fi2010_neural_full_grid/label_mapping_audit.json",
+  "neural_full_grid_dir": "experiments/fi2010_neural_full_grid",
+  "output_dir": "reports/figures/fi2010_neural_full_grid",
+  "smoke_test": false,
+  "strict": true
+}

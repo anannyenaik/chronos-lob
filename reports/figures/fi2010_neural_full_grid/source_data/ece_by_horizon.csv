@@ -1,0 +1,10 @@
+horizon,model_key,mean_ece,std_ece,run_count,folds,seeds
+10,matrix_transformer/masked_reconstruction,0.14246518329317612,0.05117746569548801,15,"1,2,3,4,5","0,1,2"
+10,matrix_transformer/next_field,0.08467660373607916,0.04141356454005743,15,"1,2,3,4,5","0,1,2"
+10,matrix_transformer/supervised,0.11649784777266387,0.058350743126721845,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/masked_reconstruction,0.1281113254174867,0.03692823870786502,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/next_field,0.09558429580479574,0.042012120565178855,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/supervised,0.09990885128969111,0.050714273285841875,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/masked_reconstruction,0.08541195357132748,0.031514322742620726,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/next_field,0.08457399354646712,0.05642307535747774,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/supervised,0.07326091676330923,0.03653576004840714,15,"1,2,3,4,5","0,1,2"

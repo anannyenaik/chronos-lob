@@ -1,0 +1,36 @@
+{
+  "class_order_used_for_metrics": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "detected_labels": [
+    1,
+    2,
+    3
+  ],
+  "errors": [],
+  "existing_audit_status": "not_available",
+  "expected_labels": {
+    "1": "up",
+    "2": "stationary",
+    "3": "down"
+  },
+  "mode": "existing_audit_checked_and_canonical_validation_rerun",
+  "prediction_rows_checked": 4800519,
+  "probability_column_order_used": [
+    "prob_up",
+    "prob_stationary",
+    "prob_down"
+  ],
+  "probability_columns_found": [
+    "prob_down",
+    "prob_stationary",
+    "prob_up"
+  ],
+  "result_rows_checked": 135,
+  "status": "pass",
+  "warnings": [
+    "optional input artefact missing: experiments\\fi2010_neural_full_grid\\label_mapping_audit.json"
+  ]
+}

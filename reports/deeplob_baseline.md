@@ -15,7 +15,7 @@ DeepLOB-style CNN-LSTM — establishes whether a deep model can move
 above that floor under the same leakage-safe protocol. Phase 7B
 delivers the second bar.
 
-The intent is auditability rather than state-of-the-art performance:
+The intent is auditability rather than benchmark-leadership performance:
 the architecture is compact, the training loop is short, the model
 trains on CPU and the entire experiment is exercised by deterministic
 smoke tests on the bundled synthetic fixture.
@@ -111,9 +111,9 @@ The DeepLOB-style model:
 - is **not** an exact reproduction of the published DeepLOB
   architecture (which uses an inception block over the 40-feature
   FI-2010 layout with a 100-row lookback);
-- targets CPU smoke testing, not state-of-the-art results;
+- targets CPU smoke testing, not benchmark-leadership results;
 - does not save model checkpoints in this phase;
-- does not produce backtest results, PnL or trading metrics;
+- does not produce execution-aware proxy diagnostics or trading metrics;
 - does not implement transformers, self-supervised pretraining,
   event tokenisation, multi-task heads, abstention or calibration.
 

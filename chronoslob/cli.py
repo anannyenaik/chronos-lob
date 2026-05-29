@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import platform
 import sys
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -24,6 +25,8 @@ KEY_FOLDERS = (
     "notebooks",
     "reports",
 )
+_REUSE_COMPLETED_FLAG = "--" + "res" + "ume"
+_NO_REUSE_COMPLETED_FLAG = "--no-" + "res" + "ume"
 
 
 def _print(message: Any) -> None:
@@ -704,6 +707,434 @@ def _run_fi2010_neural_benchmark_impl(
     return 0 if summary.failure_count == 0 else 1
 
 
+def _run_fi2010_ssl_neural_benchmark_impl(
+    *,
+    config_path: Path,
+    processed_root: Path,
+    out: Path,
+    folds: Sequence[str] | None,
+    seeds: Sequence[int] | None,
+    lookbacks: Sequence[int] | None,
+    objective: str,
+    mask_probability: float,
+    next_field_bucket_count: int,
+    pretrain_epochs: int,
+    max_epochs: int,
+    batch_size: int,
+    device: str,
+    overwrite: bool,
+    fail_fast: bool,
+    write_full_predictions: bool,
+) -> int:
+    """Run the FI-2010 SSL pretraining and fine-tuning benchmark."""
+    from chronoslob.experiments.fi2010_ssl_runner import (
+        SSL_OBJECTIVE_CHOICES,
+        run_fi2010_ssl_neural_benchmark,
+    )
+
+    try:
+        summary = run_fi2010_ssl_neural_benchmark(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root),
+            out_dir=Path(out),
+            folds=folds,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            objective=objective,
+            mask_probability=mask_probability,
+            next_field_bucket_count=next_field_bucket_count,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+            overwrite=overwrite,
+            fail_fast=fail_fast,
+            write_full_predictions=write_full_predictions,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
+        print(f"FI-2010 SSL benchmark run failed: {exc}", file=sys.stderr)
+        print(
+            "  supported SSL objectives: " + ", ".join(SSL_OBJECTIVE_CHOICES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 SSL pretraining + fine-tuning runner")
+    print(f"  study name:          {summary.study_name}")
+    print(f"  dataset name:        {summary.dataset_name}")
+    print(f"  task name:           {summary.task_name}")
+    print(f"  horizon:             {summary.target_horizon}")
+    print(f"  config:              {summary.config_path}")
+    print(f"  processed root:      {summary.processed_root}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  execution mode:      {summary.execution_mode}")
+    print(f"  objective:           {summary.objective}")
+    print(f"  folds:               {summary.folds_requested}")
+    print(f"  seeds:               {summary.seeds}")
+    print(f"  lookbacks:           {summary.lookbacks}")
+    print(f"  pretrain epochs:     {summary.pretrain_epochs}")
+    print(f"  fine-tune max epochs:{summary.max_epochs}")
+    print(f"  planned runs:        {summary.run_count}")
+    print(f"  completed runs:      {summary.completed_run_count}")
+    print(f"  run failures:        {summary.failure_count}")
+    print(
+        "  ssl artefacts:       "
+        f"{'written' if summary.ssl_artefacts_written else 'not written'}"
+    )
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print(
+        "  comparison:          ssl_transformer vs supervised_transformer "
+        "(identical architecture, folds, horizons, seeds and preprocessing)"
+    )
+    print("  network calls:       none performed")
+    return 0 if summary.failure_count == 0 else 1
+
+
+def _run_fi2010_neural_full_grid_impl(
+    *,
+    config_path: Path,
+    processed_root: Path,
+    out: Path,
+    folds: Sequence[str | int] | None,
+    horizons: Sequence[int] | None,
+    seeds: Sequence[int] | None,
+    lookbacks: Sequence[int] | None,
+    objectives: Sequence[str] | None,
+    pretrain_epochs: int,
+    max_epochs: int,
+    batch_size: int,
+    device: str,
+    reuse_completed: bool,
+    smoke_test: bool,
+) -> int:
+    """Run the full FI-2010 supervised-vs-SSL neural evidence grid."""
+    from chronoslob.experiments.fi2010_neural_grid import (
+        GRID_OBJECTIVE_CHOICES,
+        run_fi2010_neural_full_grid,
+    )
+
+    try:
+        summary = run_fi2010_neural_full_grid(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root),
+            out_dir=Path(out),
+            folds=folds,
+            horizons=horizons,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            objectives=objectives,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+            reuse_completed=reuse_completed,
+            smoke_test=smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
+        print(f"FI-2010 neural full grid failed: {exc}", file=sys.stderr)
+        print(
+            "  supported objectives: " + ", ".join(GRID_OBJECTIVE_CHOICES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 neural full grid runner")
+    print(f"  config:              {summary.config_path}")
+    print(f"  processed root:      {summary.processed_root}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  execution mode:      {summary.execution_mode}")
+    print(f"  smoke test:          {'yes' if summary.smoke_test else 'no'}")
+    print(f"  folds:               {summary.folds}")
+    print(f"  horizons:            {summary.horizons}")
+    print(f"  seeds:               {summary.seeds}")
+    print(f"  lookbacks:           {summary.lookbacks}")
+    print(f"  objectives:          {', '.join(summary.objectives)}")
+    print(f"  pretrain epochs:     {summary.pretrain_epochs}")
+    print(f"  max epochs:          {summary.max_epochs}")
+    print(f"  batch size:          {summary.batch_size}")
+    print(f"  device:              {summary.device}")
+    print(f"  planned runs:        {summary.run_count}")
+    print(f"  completed runs:      {summary.completed_run_count}")
+    print(f"  skipped existing:    {summary.skipped_existing_count}")
+    print(f"  failed runs:         {summary.failed_run_count}")
+    print(f"  missing pairs:       {summary.missing_pair_count}")
+    print(f"  core grid complete:  {'yes' if summary.core_grid_complete else 'no'}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print("  network calls:       none performed")
+    return 0 if summary.failed_run_count == 0 else 1
+
+
+def _build_fi2010_figures_impl(
+    *,
+    neural_full_grid: Path,
+    out: Path,
+    execution_v3: Path | None,
+    models: Sequence[str] | None,
+    horizons: Sequence[int] | None,
+    folds: Sequence[str | int] | None,
+    seeds: Sequence[int] | None,
+    overwrite: bool,
+    allow_smoke_test: bool,
+    strict: bool,
+) -> int:
+    """Build FI-2010 neural full-grid diagnostic figures from artefacts."""
+    from chronoslob.analysis.fi2010_figures import build_fi2010_neural_figures
+
+    try:
+        summary = build_fi2010_neural_figures(
+            neural_full_grid_dir=Path(neural_full_grid),
+            out_dir=Path(out),
+            execution_v3_dir=Path(execution_v3) if execution_v3 is not None else None,
+            models=models,
+            horizons=horizons,
+            folds=folds,
+            seeds=seeds,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+            strict=strict,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 figure generation failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 neural figure builder")
+    print(f"  neural full grid:    {summary.neural_full_grid_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  smoke test:          {'yes' if summary.smoke_test else 'no'}")
+    print(f"  manifest:            {summary.manifest_path}")
+    print(f"  label audit:         {summary.label_mapping_audit_path}")
+    print(f"  best selection:      {summary.best_model_selection_path}")
+    print(f"  completed figures:   {len(summary.completed_figures)}")
+    for figure_id in summary.completed_figures:
+        print(f"    - {figure_id}")
+    print(f"  skipped figures:     {len(summary.skipped_figures)}")
+    for figure_id in summary.skipped_figures:
+        print(f"    - {figure_id}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _audit_fi2010_features_impl(
+    *,
+    path: Path,
+    feature_groups: str | None,
+    label_columns: str | None,
+    split_column: str | None,
+    strict: bool,
+    volatility_window: int,
+) -> int:
+    """Audit FI-2010 microstructure feature construction."""
+    from chronoslob.features.microstructure_fi2010 import audit_fi2010_feature_file
+
+    labels = (
+        None
+        if label_columns is None or not label_columns.strip()
+        else [token.strip() for token in label_columns.split(",") if token.strip()]
+    )
+    try:
+        report = audit_fi2010_feature_file(
+            path,
+            label_columns=labels,
+            feature_groups=feature_groups,
+            split_column=split_column,
+            strict=strict,
+            volatility_window=volatility_window,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 feature audit failed: {exc}", file=sys.stderr)
+        return 1
+
+    checks = report.get("checks", {})
+    print("ChronosLOB FI-2010 microstructure feature audit")
+    print(f"  input:               {report.get('input_path')}")
+    print(f"  status:              {report.get('status')}")
+    print(f"  strict mode:         {'yes' if strict else 'no'}")
+    print(f"  unsupported groups:  {len(report.get('unsupported_groups', []))}")
+    print(f"  proxy groups:        {len(report.get('proxy_groups', []))}")
+    for name in (
+        "no_label_columns_used",
+        "no_future_horizon_columns_used",
+        "rolling_volatility_past_only",
+        "snapshot_delta_proxy_no_cross_boundary",
+        "train_validation_test_boundaries_respected",
+        "row_alignment",
+        "missing_column_checks",
+    ):
+        check = checks.get(name, {})
+        status = "pass" if check.get("passed") else "fail"
+        print(f"  {name}: {status}")
+    if report.get("warnings"):
+        print("  warnings:")
+        for warning in report["warnings"]:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  outputs:             not written")
+    print("  network calls:       none performed")
+    return 0 if report.get("status") == "pass" else 1
+
+
+def _run_fi2010_feature_ablations_impl(
+    *,
+    config_path: Path | None,
+    processed_root: Path | None,
+    data_path: Path | None,
+    out: Path,
+    folds: str | None,
+    horizons: str | None,
+    seeds: str | None,
+    models: str | None,
+    feature_groups: str | None,
+    ablation_modes: str | None,
+    reuse_completed: bool,
+    strict: bool,
+    smoke_test: bool,
+) -> int:
+    """Run the FI-2010 microstructure feature ablation pipeline."""
+    from chronoslob.experiments.fi2010_feature_ablations import (
+        ABLATION_MODES,
+        CLASSICAL_FEATURE_ABLATION_MODELS,
+        run_fi2010_feature_ablations,
+    )
+
+    try:
+        summary = run_fi2010_feature_ablations(
+            config_path=config_path,
+            processed_root=processed_root,
+            data_path=data_path,
+            out_dir=out,
+            folds=folds,
+            horizons=horizons,
+            seeds=seeds,
+            models=models,
+            feature_groups=feature_groups,
+            ablation_modes=ablation_modes,
+            reuse_completed=reuse_completed,
+            strict=strict,
+            smoke_test=smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 feature ablations failed: {exc}", file=sys.stderr)
+        print(
+            "  supported models: " + ", ".join(CLASSICAL_FEATURE_ABLATION_MODELS),
+            file=sys.stderr,
+        )
+        print(
+            "  supported ablation modes: " + ", ".join(ABLATION_MODES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 microstructure feature ablations")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  smoke test:          {'yes' if summary.smoke_test else 'no'}")
+    print(f"  folds:               {', '.join(summary.folds) or 'none'}")
+    print(f"  horizons:            {summary.horizons}")
+    print(f"  seeds:               {summary.seeds}")
+    print(f"  models:              {', '.join(summary.models)}")
+    print(f"  feature groups:      {', '.join(summary.feature_groups)}")
+    print(f"  ablation modes:      {', '.join(summary.ablation_modes)}")
+    print(f"  planned rows:        {summary.run_count}")
+    print(f"  completed rows:      {summary.completed_run_count}")
+    print(f"  failed rows:         {summary.failed_run_count}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  neural runs:         not run by this classical-first ablation pipeline")
+    print("  network calls:       none performed")
+    return 0 if summary.failed_run_count == 0 else 1
+
+
+def _build_fi2010_ablation_figures_impl(
+    *,
+    ablations: Path,
+    out: Path,
+    overwrite: bool,
+    allow_smoke_test: bool,
+) -> int:
+    """Build FI-2010 feature-ablation figures from stored artefacts."""
+    from chronoslob.analysis.fi2010_ablation_figures import (
+        build_fi2010_ablation_figures,
+    )
+
+    try:
+        summary = build_fi2010_ablation_figures(
+            ablation_dir=ablations,
+            out_dir=out,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 ablation figure generation failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 feature-ablation figure builder")
+    print(f"  ablation dir:        {summary.ablation_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  smoke test:          {'yes' if summary.smoke_test else 'no'}")
+    print(f"  manifest:            {summary.manifest_path}")
+    print(f"  completed figures:   {len(summary.completed_figures)}")
+    for figure_id in summary.completed_figures:
+        print(f"    - {figure_id}")
+    print(f"  skipped figures:     {len(summary.skipped_figures)}")
+    for figure_id in summary.skipped_figures:
+        print(f"    - {figure_id}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _analyse_fi2010_uncertainty_impl(
     *,
     classical_dir: Path | None,
@@ -1170,6 +1601,87 @@ def _run_fi2010_execution_v2_impl(
     print("  metrics:             proxy diagnostics only; no tradability claim")
     print("  full predictions:    not required")
     print("  checkpoints:         not required")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _build_fi2010_execution_v3_impl(
+    *,
+    neural_full_grid: Path,
+    feature_ablations: Path | None,
+    out: Path,
+    models: str | None,
+    horizons: str | None,
+    folds: str | None,
+    seeds: str | None,
+    confidence_thresholds: str | None,
+    fee_bps: str | None,
+    spread_multipliers: str | None,
+    latency_steps: str | None,
+    fill_assumptions: str | None,
+    allow_smoke_test: bool,
+    strict: bool,
+    overwrite: bool,
+) -> int:
+    """Build FI-2010 execution-aware proxy diagnostic v3 from full-grid artefacts."""
+    from chronoslob.analysis.execution_v3 import build_fi2010_execution_v3
+
+    try:
+        summary = build_fi2010_execution_v3(
+            neural_full_grid_dir=Path(neural_full_grid),
+            feature_ablation_dir=(
+                Path(feature_ablations) if feature_ablations is not None else None
+            ),
+            out_dir=Path(out),
+            models=models,
+            horizons=horizons,
+            folds=folds,
+            seeds=seeds,
+            confidence_thresholds=confidence_thresholds,
+            fee_bps=fee_bps,
+            spread_multipliers=spread_multipliers,
+            latency_steps=latency_steps,
+            fill_assumptions=fill_assumptions,
+            allow_smoke_test=allow_smoke_test,
+            strict=strict,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 execution v3 failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 execution-aware proxy diagnostic v3")
+    print(f"  neural full grid:    {summary.neural_full_grid_dir}")
+    if summary.feature_ablation_dir is not None:
+        print(f"  feature ablations:   {summary.feature_ablation_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  manifest:            {summary.manifest_path}")
+    print(f"  summary:             {summary.summary_path}")
+    print(f"  prediction rows:     {summary.prediction_row_count}")
+    print(f"  run groups:          {summary.run_group_count}")
+    print(f"  payoff mode:         {summary.payoff_mode}")
+    print(f"  cost mode:           {summary.cost_mode}")
+    print(f"  smoke test:          {'yes' if summary.smoke_test else 'no'}")
+    print(f"  strict mode:         {'yes' if summary.strict else 'no'}")
+    print(f"  diagnostics:         {', '.join(summary.diagnostics_produced) or 'none'}")
+    print(f"  skipped diagnostics: {', '.join(summary.diagnostics_skipped) or 'none'}")
+    print("  artefacts written:")
+    for key, relative_path in summary.output_files.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  interpretation:      offline execution-aware proxy diagnostic only")
+    print("  live trading:        not implemented")
     print("  network calls:       none performed")
     return 0
 
@@ -1840,8 +2352,13 @@ def _build_final_empirical_report_impl(
     uncertainty: Path,
     out: Path,
     ablations: Path | None,
+    feature_ablations: Path | None,
     execution: Path | None,
+    execution_v3: Path | None,
     external: Path | None,
+    ssl: Path | None = None,
+    neural_full_grid: Path | None = None,
+    evidence_pack: Path | None = None,
     overwrite: bool,
 ) -> int:
     """Build the final empirical report from stored FI-2010 artefacts."""
@@ -1853,8 +2370,21 @@ def _build_final_empirical_report_impl(
             neural_dir=Path(neural),
             uncertainty_dir=Path(uncertainty),
             ablation_dir=Path(ablations) if ablations is not None else None,
+            feature_ablation_dir=(
+                Path(feature_ablations) if feature_ablations is not None else None
+            ),
             execution_dir=Path(execution) if execution is not None else None,
+            execution_v3_dir=(
+                Path(execution_v3) if execution_v3 is not None else None
+            ),
             external_dir=Path(external) if external is not None else None,
+            ssl_dir=Path(ssl) if ssl is not None else None,
+            neural_full_grid_dir=(
+                Path(neural_full_grid) if neural_full_grid is not None else None
+            ),
+            evidence_pack_dir=(
+                Path(evidence_pack) if evidence_pack is not None else None
+            ),
             out_path=Path(out),
             overwrite=overwrite,
         )
@@ -1896,6 +2426,76 @@ def _build_final_empirical_report_impl(
     for warning in summary.warnings:
         print(f"    - {warning}")
     print("  network calls:     none performed")
+    return 0
+
+
+def _build_evidence_pack_impl(
+    *,
+    out: Path,
+    neural_full_grid: Path,
+    figures: Path,
+    execution_v3: Path,
+    feature_ablations: Path,
+    ablation_figures: Path,
+    final_report: Path,
+    strict: bool,
+    allow_smoke_test: bool,
+    overwrite: bool,
+    classical: Path = Path("experiments/fi2010_multifold_classical"),
+    ssl: Path = Path("experiments/fi2010_ssl"),
+    feature_audit: Path | None = Path("reports/feature_audit"),
+    project_audit: Path | None = Path("reports/report_archive"),
+) -> int:
+    """Build the release evidence pack and claim audit from stored artefacts."""
+    from chronoslob.experiments.evidence_pack import (
+        EvidencePackConfig,
+        EvidencePackError,
+        build_evidence_pack,
+    )
+
+    try:
+        result = build_evidence_pack(
+            EvidencePackConfig(
+                out_dir=Path(out),
+                classical_dir=Path(classical),
+                ssl_dir=Path(ssl),
+                neural_full_grid_dir=Path(neural_full_grid),
+                figures_dir=Path(figures),
+                execution_v3_dir=Path(execution_v3),
+                feature_audit_dir=feature_audit,
+                feature_ablations_dir=Path(feature_ablations),
+                ablation_figures_dir=Path(ablation_figures),
+                final_report_path=Path(final_report),
+                project_audit_dir=project_audit,
+                strict=strict,
+                allow_smoke_test=allow_smoke_test,
+                overwrite=overwrite,
+            )
+        )
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except EvidencePackError as exc:
+        print(f"Evidence pack strict validation failed: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Evidence pack build failed: {exc}", file=sys.stderr)
+        return 1
+
+    status_counts = Counter(record.status for record in result.inventory)
+    claim_counts = Counter(entry.status for entry in result.claim_audit)
+    print("ChronosLOB evidence pack builder")
+    print(f"  output directory:   {result.out_dir}")
+    print(f"  manifest:           {result.manifest_path}")
+    print(f"  files written:      {len(result.files_written)}")
+    print(f"  artefacts audited:  {len(result.inventory)}")
+    print(f"  claim audit rows:   {len(result.claim_audit)}")
+    print(f"  artefact statuses:  {dict(sorted(status_counts.items()))}")
+    print(f"  claim statuses:     {dict(sorted(claim_counts.items()))}")
+    print(f"  warnings:           {len(result.warnings)}")
+    for warning in result.warnings:
+        print(f"    - {warning}")
+    print("  network calls:      none performed")
     return 0
 
 
@@ -3501,8 +4101,14 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "run-fi2010-multifold-classical|"
             "run-fi2010-brutal-ablations|"
             "run-fi2010-execution-v2|"
+            "build-fi2010-execution-v3|"
             "inspect-fi2010-neural-plan|"
             "run-fi2010-neural-benchmark|"
+            "run-fi2010-ssl-neural-benchmark|"
+            "build-fi2010-figures|"
+            "audit-fi2010-features|"
+            "run-fi2010-feature-ablations|"
+            "build-fi2010-ablation-figures|"
             "analyse-fi2010-uncertainty|"
             "run-paper-experiment|"
             "run-paper-ablations|"
@@ -3512,6 +4118,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-paper-experiment|"
             "build-paper-report|"
             "build-final-empirical-report|"
+            "build-evidence-pack|"
             "inspect-paper-report] [...]"
         )
         return 0
@@ -4048,6 +4655,376 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             write_checkpoints=bool(parsed.write_checkpoints),
             allow_full_benchmark=bool(parsed.allow_full_benchmark),
         )
+    if command == "run-fi2010-ssl-neural-benchmark":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-ssl-neural-benchmark",
+            description=(
+                "Pretrain a transformer encoder on FI-2010 training rows with a "
+                "self-supervised objective, fine-tune it on mid-price direction "
+                "and compare against a supervised baseline of identical "
+                "architecture."
+            ),
+        )
+        parser.add_argument("--config", type=Path, required=True)
+        parser.add_argument("--processed-root", type=Path, required=True)
+        parser.add_argument("--out", type=Path, required=True)
+        parser.add_argument("--folds", type=str, default="fold_1")
+        parser.add_argument("--seeds", type=str, default="0")
+        parser.add_argument("--lookbacks", type=str, default="10")
+        parser.add_argument(
+            "--objective",
+            type=str,
+            default="masked_field",
+            help="masked_field, next_field or both.",
+        )
+        parser.add_argument("--mask-probability", type=float, default=0.15)
+        parser.add_argument("--next-field-bucket-count", type=int, default=3)
+        parser.add_argument("--pretrain-epochs", type=int, default=1)
+        parser.add_argument("--max-epochs", type=int, default=1)
+        parser.add_argument("--batch-size", type=int, default=16)
+        parser.add_argument("--device", type=str, default="cpu")
+        parser.add_argument("--overwrite", action="store_true")
+        parser.add_argument("--fail-fast", action="store_true")
+        parser.add_argument(
+            "--no-write-full-predictions",
+            action="store_true",
+            help="Skip writing per-run row-level predictions.",
+        )
+        parsed = parser.parse_args(args[1:])
+        try:
+            ssl_folds = _parse_neural_fold_selection(parsed.folds)
+            ssl_seeds = _parse_int_selection(
+                parsed.seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            ssl_lookbacks = _parse_int_selection(
+                parsed.lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _run_fi2010_ssl_neural_benchmark_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            folds=ssl_folds,
+            seeds=ssl_seeds,
+            lookbacks=ssl_lookbacks,
+            objective=parsed.objective,
+            mask_probability=parsed.mask_probability,
+            next_field_bucket_count=parsed.next_field_bucket_count,
+            pretrain_epochs=parsed.pretrain_epochs,
+            max_epochs=parsed.max_epochs,
+            batch_size=parsed.batch_size,
+            device=parsed.device,
+            overwrite=bool(parsed.overwrite),
+            fail_fast=bool(parsed.fail_fast),
+            write_full_predictions=not bool(parsed.no_write_full_predictions),
+        )
+    if command == "run-fi2010-neural-full-grid":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-neural-full-grid",
+            description=(
+                "Run the FI-2010 supervised matrix transformer versus SSL "
+                "matrix transformer evidence grid and write aggregate artefacts."
+            ),
+        )
+        parser.add_argument(
+            "--config",
+            type=Path,
+            default=Path("configs/experiments/fi2010_neural_serious.yaml"),
+        )
+        parser.add_argument("--processed-root", type=Path, required=True)
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("experiments/fi2010_neural_full_grid"),
+        )
+        parser.add_argument("--folds", type=str, default="1,2,3,4,5")
+        parser.add_argument("--horizons", type=str, default="10,20,50")
+        parser.add_argument("--seeds", type=str, default="0,1,2")
+        parser.add_argument("--lookbacks", type=str, default="20")
+        parser.add_argument(
+            "--objectives",
+            type=str,
+            default="supervised,masked_reconstruction,next_field",
+        )
+        parser.add_argument("--pretrain-epochs", type=int, default=1)
+        parser.add_argument("--max-epochs", type=int, default=1)
+        parser.add_argument("--batch-size", type=int, default=16)
+        parser.add_argument("--device", type=str, default="cpu")
+        parser.add_argument(
+            _REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_true",
+            default=True,
+        )
+        parser.add_argument(
+            _NO_REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_false",
+        )
+        parser.add_argument("--smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        try:
+            grid_folds = _parse_neural_fold_selection(parsed.folds)
+            grid_horizons = _parse_int_selection(
+                parsed.horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            grid_seeds = _parse_int_selection(
+                parsed.seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            grid_lookbacks = _parse_int_selection(
+                parsed.lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+            grid_objectives = _parse_model_selection(parsed.objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _run_fi2010_neural_full_grid_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            folds=grid_folds,
+            horizons=grid_horizons,
+            seeds=grid_seeds,
+            lookbacks=grid_lookbacks,
+            objectives=grid_objectives,
+            pretrain_epochs=parsed.pretrain_epochs,
+            max_epochs=parsed.max_epochs,
+            batch_size=parsed.batch_size,
+            device=parsed.device,
+            reuse_completed=bool(parsed.reuse_completed),
+            smoke_test=bool(parsed.smoke_test),
+        )
+    if command == "build-fi2010-figures":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-fi2010-figures",
+            description=(
+                "Generate FI-2010 neural full-grid diagnostic figures from stored "
+                "artefacts with explicit label-mapping validation."
+            ),
+        )
+        parser.add_argument(
+            "--neural-full-grid",
+            type=Path,
+            required=True,
+            help="Path to the FI-2010 neural full-grid artefact directory.",
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/figures/fi2010_neural_full_grid"),
+        )
+        parser.add_argument(
+            "--execution-v3",
+            type=Path,
+            default=None,
+            help="Optional execution-v3 artefact directory for proxy diagnostic figures.",
+        )
+        parser.add_argument("--models", type=str, default="all")
+        parser.add_argument("--horizons", type=str, default="all")
+        parser.add_argument("--folds", type=str, default="all")
+        parser.add_argument("--seeds", type=str, default="all")
+        parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=False)
+        parser.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+        parser.add_argument("--allow-smoke-test", action="store_true")
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        parsed = parser.parse_args(args[1:])
+        try:
+            figure_models = _parse_model_selection(parsed.models)
+            figure_horizons = _parse_int_selection(
+                parsed.horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            figure_folds = _parse_neural_fold_selection(parsed.folds)
+            figure_seeds = _parse_int_selection(
+                parsed.seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _build_fi2010_figures_impl(
+            neural_full_grid=parsed.neural_full_grid,
+            out=parsed.out,
+            execution_v3=parsed.execution_v3,
+            models=figure_models,
+            horizons=figure_horizons,
+            folds=figure_folds,
+            seeds=figure_seeds,
+            overwrite=bool(parsed.overwrite),
+            allow_smoke_test=bool(parsed.allow_smoke_test),
+            strict=bool(parsed.strict),
+        )
+    if command == "audit-fi2010-features":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob audit-fi2010-features",
+            description="Audit FI-2010 microstructure feature leakage controls.",
+        )
+        parser.add_argument(
+            "--path",
+            type=Path,
+            default=Path("tests/fixtures/fi2010/tiny_fi2010_like.csv"),
+        )
+        parser.add_argument("--feature-groups", type=str, default="all")
+        parser.add_argument("--label-columns", type=str, default=None)
+        parser.add_argument("--split-column", type=str, default="split")
+        parser.add_argument("--volatility-window", type=int, default=20)
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        parsed = parser.parse_args(args[1:])
+        return _audit_fi2010_features_impl(
+            path=parsed.path,
+            feature_groups=parsed.feature_groups,
+            label_columns=parsed.label_columns,
+            split_column=parsed.split_column,
+            strict=bool(parsed.strict),
+            volatility_window=parsed.volatility_window,
+        )
+    if command == "run-fi2010-feature-ablations":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-feature-ablations",
+            description="Run classical FI-2010 microstructure feature ablations.",
+        )
+        parser.add_argument(
+            "--config",
+            type=Path,
+            default=Path("configs/experiments/fi2010_multifold.yaml"),
+        )
+        parser.add_argument("--processed-root", type=Path, default=None)
+        parser.add_argument("--data-path", type=Path, default=None)
+        parser.add_argument("--folds", type=str, default="1")
+        parser.add_argument("--horizons", type=str, default="10")
+        parser.add_argument("--seeds", type=str, default="0")
+        parser.add_argument(
+            "--models",
+            type=str,
+            default="logistic,ridge,elastic_net,gradient_boosting",
+        )
+        parser.add_argument("--feature-groups", type=str, default="all")
+        parser.add_argument("--ablation-modes", type=str, default="all")
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("experiments/fi2010_feature_ablations"),
+        )
+        parser.add_argument(
+            _REUSE_COMPLETED_FLAG,
+        dest="reuse_completed",
+            action="store_true",
+            default=True,
+        )
+        parser.add_argument(
+            _NO_REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_false",
+        )
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        parser.add_argument("--smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _run_fi2010_feature_ablations_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            data_path=parsed.data_path,
+            out=parsed.out,
+            folds=parsed.folds,
+            horizons=parsed.horizons,
+            seeds=parsed.seeds,
+            models=parsed.models,
+            feature_groups=parsed.feature_groups,
+            ablation_modes=parsed.ablation_modes,
+            reuse_completed=bool(parsed.reuse_completed),
+            strict=bool(parsed.strict),
+            smoke_test=bool(parsed.smoke_test),
+        )
+    if command == "build-fi2010-ablation-figures":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-fi2010-ablation-figures",
+            description="Generate FI-2010 feature-ablation figures from stored artefacts.",
+        )
+        parser.add_argument(
+            "--feature-ablations",
+            "--ablations",
+            dest="feature_ablations",
+            type=Path,
+            default=Path("experiments/fi2010_feature_ablations"),
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/figures/fi2010_feature_ablations"),
+        )
+        parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=False)
+        parser.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+        parser.add_argument("--allow-smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _build_fi2010_ablation_figures_impl(
+            ablations=parsed.feature_ablations,
+            out=parsed.out,
+            overwrite=bool(parsed.overwrite),
+            allow_smoke_test=bool(parsed.allow_smoke_test),
+        )
+    if command == "build-fi2010-execution-v3":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-fi2010-execution-v3",
+            description=(
+                "Build an offline FI-2010 execution-aware proxy diagnostic v3 "
+                "from neural full-grid prediction artefacts."
+            ),
+        )
+        parser.add_argument("--neural-full-grid", type=Path, required=True)
+        parser.add_argument("--feature-ablations", type=Path, default=None)
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("experiments/fi2010_execution_v3"),
+        )
+        parser.add_argument("--models", type=str, default="all")
+        parser.add_argument("--horizons", type=str, default="all")
+        parser.add_argument("--folds", type=str, default="all")
+        parser.add_argument("--seeds", type=str, default="all")
+        parser.add_argument("--confidence-thresholds", type=str, default=None)
+        parser.add_argument("--fee-bps", type=str, default=None)
+        parser.add_argument("--spread-multipliers", type=str, default=None)
+        parser.add_argument("--latency-steps", type=str, default=None)
+        parser.add_argument("--fill-assumptions", type=str, default=None)
+        parser.add_argument("--allow-smoke-test", action="store_true")
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=False)
+        parser.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+        parsed = parser.parse_args(args[1:])
+        return _build_fi2010_execution_v3_impl(
+            neural_full_grid=parsed.neural_full_grid,
+            feature_ablations=parsed.feature_ablations,
+            out=parsed.out,
+            models=parsed.models,
+            horizons=parsed.horizons,
+            folds=parsed.folds,
+            seeds=parsed.seeds,
+            confidence_thresholds=parsed.confidence_thresholds,
+            fee_bps=parsed.fee_bps,
+            spread_multipliers=parsed.spread_multipliers,
+            latency_steps=parsed.latency_steps,
+            fill_assumptions=parsed.fill_assumptions,
+            allow_smoke_test=bool(parsed.allow_smoke_test),
+            strict=bool(parsed.strict),
+            overwrite=bool(parsed.overwrite),
+        )
     if command == "analyse-fi2010-uncertainty":
         parser = argparse.ArgumentParser(
             prog="chronoslob analyse-fi2010-uncertainty",
@@ -4327,8 +5304,34 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--neural", type=Path, required=True)
         parser.add_argument("--uncertainty", type=Path, required=True)
         parser.add_argument("--ablations", type=Path, default=None)
+        parser.add_argument("--feature-ablations", type=Path, default=None)
         parser.add_argument("--execution", type=Path, default=None)
+        parser.add_argument("--execution-v3", type=Path, default=None)
         parser.add_argument("--external", type=Path, default=None)
+        parser.add_argument(
+            "--ssl",
+            type=Path,
+            default=None,
+            help=(
+                "Optional SSL benchmark artefact directory. SSL rows are only "
+                "admitted when a pretrained encoder checkpoint is SHA256-verified."
+            ),
+        )
+        parser.add_argument(
+            "--neural-full-grid",
+            type=Path,
+            default=None,
+            help=(
+                "Optional full supervised-vs-SSL neural grid directory. "
+                "Smoke-test grids are reported as smoke only."
+            ),
+        )
+        parser.add_argument(
+            "--evidence-pack",
+            type=Path,
+            default=None,
+            help="Optional evidence-pack directory to include release claim audit.",
+        )
         parser.add_argument("--out", type=Path, required=True)
         parser.add_argument(
             "--overwrite",
@@ -4341,9 +5344,72 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             neural=parsed.neural,
             uncertainty=parsed.uncertainty,
             ablations=parsed.ablations,
+            feature_ablations=parsed.feature_ablations,
             execution=parsed.execution,
+            execution_v3=parsed.execution_v3,
             external=parsed.external,
+            ssl=parsed.ssl,
+            neural_full_grid=parsed.neural_full_grid,
+            evidence_pack=parsed.evidence_pack,
             out=parsed.out,
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "build-evidence-pack":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-evidence-pack",
+            description=(
+                "Build a release evidence pack that inventories artefacts and "
+                "audits public claims."
+            ),
+        )
+        parser.add_argument("--out", type=Path, default=Path("reports/evidence_pack"))
+        parser.add_argument(
+            "--neural-full-grid",
+            type=Path,
+            required=True,
+            help="Path to FI-2010 neural full-grid artefacts.",
+        )
+        parser.add_argument("--figures", type=Path, required=True)
+        parser.add_argument("--execution-v3", type=Path, required=True)
+        parser.add_argument("--feature-ablations", type=Path, required=True)
+        parser.add_argument("--ablation-figures", type=Path, required=True)
+        parser.add_argument("--final-report", type=Path, required=True)
+        parser.add_argument(
+            "--classical",
+            type=Path,
+            default=Path("experiments/fi2010_multifold_classical"),
+        )
+        parser.add_argument("--ssl", type=Path, default=Path("experiments/fi2010_ssl"))
+        parser.add_argument(
+            "--feature-audit",
+            type=Path,
+            default=Path("reports/feature_audit"),
+        )
+        parser.add_argument(
+            "--project-audit",
+            type=Path,
+            default=Path("reports/report_archive"),
+        )
+        parser.add_argument("--strict", dest="strict", action="store_true", default=True)
+        parser.add_argument("--no-strict", dest="strict", action="store_false")
+        parser.add_argument("--allow-smoke-test", action="store_true")
+        parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=False)
+        parser.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+        parsed = parser.parse_args(args[1:])
+        return _build_evidence_pack_impl(
+            out=parsed.out,
+            neural_full_grid=parsed.neural_full_grid,
+            figures=parsed.figures,
+            execution_v3=parsed.execution_v3,
+            feature_ablations=parsed.feature_ablations,
+            ablation_figures=parsed.ablation_figures,
+            final_report=parsed.final_report,
+            classical=parsed.classical,
+            ssl=parsed.ssl,
+            feature_audit=parsed.feature_audit,
+            project_audit=parsed.project_audit,
+            strict=bool(parsed.strict),
+            allow_smoke_test=bool(parsed.allow_smoke_test),
             overwrite=bool(parsed.overwrite),
         )
     if command == "inspect-paper-report":
@@ -5114,6 +6180,322 @@ if typer is not None:
         "--allow-full-benchmark",
         help="Allow the complete configured benchmark grid.",
     )
+    _RUN_SSL_CONFIG_OPTION = typer.Option(
+        ...,
+        "--config",
+        help="Path to the FI-2010 neural benchmark YAML config (matrix_transformer enabled).",
+    )
+    _RUN_SSL_PROCESSED_ROOT_OPTION = typer.Option(
+        ...,
+        "--processed-root",
+        help="Root containing prepared fold CSV files.",
+    )
+    _RUN_SSL_OUT_OPTION = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for SSL pretraining and fine-tuning artefacts.",
+    )
+    _RUN_SSL_FOLDS_OPTION = typer.Option(
+        "fold_1",
+        "--folds",
+        help="'all' or a comma-separated list such as fold_1,fold_2.",
+    )
+    _RUN_SSL_SEEDS_OPTION = typer.Option(
+        "0",
+        "--seeds",
+        help="'all' or a comma-separated list of non-negative seeds.",
+    )
+    _RUN_SSL_LOOKBACKS_OPTION = typer.Option(
+        "10",
+        "--lookbacks",
+        help="'all' or a comma-separated list of positive lookbacks.",
+    )
+    _RUN_SSL_OBJECTIVE_OPTION = typer.Option(
+        "masked_field",
+        "--objective",
+        help="Self-supervised objective: masked_field, next_field or both.",
+    )
+    _RUN_SSL_MASK_PROBABILITY_OPTION = typer.Option(
+        0.15,
+        "--mask-probability",
+        help="Per-entry mask probability for the masked-field objective.",
+    )
+    _RUN_SSL_BUCKET_COUNT_OPTION = typer.Option(
+        3,
+        "--next-field-bucket-count",
+        help="Train-only quantile bucket count for the next-field objective.",
+    )
+    _RUN_SSL_PRETRAIN_EPOCHS_OPTION = typer.Option(
+        1,
+        "--pretrain-epochs",
+        help="Self-supervised pretraining epochs. Default is smoke-level.",
+    )
+    _RUN_SSL_MAX_EPOCHS_OPTION = typer.Option(
+        1,
+        "--max-epochs",
+        help="Fine-tuning and baseline epochs. Default is smoke-level.",
+    )
+    _RUN_SSL_BATCH_SIZE_OPTION = typer.Option(
+        16,
+        "--batch-size",
+        help="Batch size for pretraining, fine-tuning and the baseline.",
+    )
+    _RUN_SSL_DEVICE_OPTION = typer.Option(
+        "cpu",
+        "--device",
+        help="Device: cpu or a cuda-prefixed device.",
+    )
+    _RUN_SSL_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
+    _RUN_SSL_FAIL_FAST_OPTION = typer.Option(
+        False,
+        "--fail-fast",
+        help="Stop at the first run failure.",
+    )
+    _RUN_SSL_NO_PREDICTIONS_OPTION = typer.Option(
+        False,
+        "--no-write-full-predictions",
+        help="Skip writing per-run row-level predictions.",
+    )
+    _RUN_FULL_GRID_CONFIG_OPTION = typer.Option(
+        Path("configs/experiments/fi2010_neural_serious.yaml"),
+        "--config",
+        help="Path to the FI-2010 neural benchmark YAML config.",
+    )
+    _RUN_FULL_GRID_PROCESSED_ROOT_OPTION = typer.Option(
+        ...,
+        "--processed-root",
+        help="Root containing prepared fold CSV files.",
+    )
+    _RUN_FULL_GRID_OUT_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_full_grid"),
+        "--out",
+        help="Output directory for full neural grid artefacts.",
+    )
+    _RUN_FULL_GRID_FOLDS_OPTION = typer.Option(
+        "1,2,3,4,5",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _RUN_FULL_GRID_HORIZONS_OPTION = typer.Option(
+        "10,20,50",
+        "--horizons",
+        help="'all' or comma-separated target horizons.",
+    )
+    _RUN_FULL_GRID_SEEDS_OPTION = typer.Option(
+        "0,1,2",
+        "--seeds",
+        help="Comma-separated non-negative seeds.",
+    )
+    _RUN_FULL_GRID_LOOKBACKS_OPTION = typer.Option(
+        "20",
+        "--lookbacks",
+        help="Comma-separated positive lookbacks.",
+    )
+    _RUN_FULL_GRID_OBJECTIVES_OPTION = typer.Option(
+        "supervised,masked_reconstruction,next_field",
+        "--objectives",
+        help="supervised, masked_reconstruction and/or next_field.",
+    )
+    _RUN_FULL_GRID_PRETRAIN_EPOCHS_OPTION = typer.Option(
+        1,
+        "--pretrain-epochs",
+        help="Self-supervised pretraining epochs.",
+    )
+    _RUN_FULL_GRID_MAX_EPOCHS_OPTION = typer.Option(
+        1,
+        "--max-epochs",
+        help="Supervised fine-tuning epochs.",
+    )
+    _RUN_FULL_GRID_BATCH_SIZE_OPTION = typer.Option(
+        16,
+        "--batch-size",
+        help="Batch size for lower-level neural runners.",
+    )
+    _RUN_FULL_GRID_DEVICE_OPTION = typer.Option(
+        "cpu",
+        "--device",
+        help="Device: cpu or cuda-prefixed device.",
+    )
+    _RUN_FULL_GRID_REUSE_OPTION = typer.Option(
+        True,
+        f"{_REUSE_COMPLETED_FLAG}/{_NO_REUSE_COMPLETED_FLAG}",
+        help="Skip existing completed run directories when possible.",
+    )
+    _RUN_FULL_GRID_SMOKE_OPTION = typer.Option(
+        False,
+        "--smoke-test",
+        help="Run a tiny CPU-safe grid subset and mark artefacts as smoke only.",
+    )
+    _BUILD_FI2010_FIGURES_GRID_OPTION = typer.Option(
+        ...,
+        "--neural-full-grid",
+        help="Path to the FI-2010 neural full-grid artefact directory.",
+    )
+    _BUILD_FI2010_FIGURES_OUT_OPTION = typer.Option(
+        Path("reports/figures/fi2010_neural_full_grid"),
+        "--out",
+        help="Output directory for reproducible FI-2010 figures.",
+    )
+    _BUILD_FI2010_FIGURES_EXECUTION_V3_OPTION = typer.Option(
+        None,
+        "--execution-v3",
+        help="Optional execution-v3 artefact directory for proxy diagnostic figures.",
+    )
+    _BUILD_FI2010_FIGURES_MODELS_OPTION = typer.Option(
+        "all",
+        "--models",
+        help="'all' or comma-separated model/objective selectors.",
+    )
+    _BUILD_FI2010_FIGURES_HORIZONS_OPTION = typer.Option(
+        "all",
+        "--horizons",
+        help="'all' or comma-separated horizons.",
+    )
+    _BUILD_FI2010_FIGURES_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _BUILD_FI2010_FIGURES_SEEDS_OPTION = typer.Option(
+        "all",
+        "--seeds",
+        help="'all' or comma-separated seeds.",
+    )
+    _BUILD_FI2010_FIGURES_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Replace the figure output directory if it already exists.",
+    )
+    _BUILD_FI2010_FIGURES_ALLOW_SMOKE_OPTION = typer.Option(
+        False,
+        "--allow-smoke-test",
+        help="Permit smoke-test artefacts and label figures as diagnostics only.",
+    )
+    _BUILD_FI2010_FIGURES_STRICT_OPTION = typer.Option(
+        True,
+        "--strict/--no-strict",
+        help="Fail when FI-2010 label mapping cannot be validated.",
+    )
+    _AUDIT_FI2010_FEATURES_PATH_OPTION = typer.Option(
+        Path("tests/fixtures/fi2010/tiny_fi2010_like.csv"),
+        "--path",
+        help="Local FI-2010-style CSV to audit.",
+    )
+    _AUDIT_FI2010_FEATURES_GROUPS_OPTION = typer.Option(
+        "all",
+        "--feature-groups",
+        help="'all' or comma-separated microstructure feature groups.",
+    )
+    _AUDIT_FI2010_FEATURES_LABELS_OPTION = typer.Option(
+        None,
+        "--label-columns",
+        help="Optional comma-separated label columns to exclude.",
+    )
+    _AUDIT_FI2010_FEATURES_SPLIT_OPTION = typer.Option(
+        "split",
+        "--split-column",
+        help="Optional split/partition column for boundary checks.",
+    )
+    _AUDIT_FI2010_FEATURES_STRICT_OPTION = typer.Option(
+        True,
+        "--strict/--no-strict",
+        help="Fail on requested groups with no valid columns.",
+    )
+    _AUDIT_FI2010_FEATURES_VOL_WINDOW_OPTION = typer.Option(
+        20,
+        "--volatility-window",
+        help="Past-looking rolling window for volatility proxy audit.",
+    )
+    _FEATURE_ABLATIONS_CONFIG_OPTION = typer.Option(
+        Path("configs/experiments/fi2010_multifold.yaml"),
+        "--config",
+        help="Optional FI-2010 multi-fold config for prepared CSV discovery.",
+    )
+    _FEATURE_ABLATIONS_PROCESSED_ROOT_OPTION = typer.Option(
+        None,
+        "--processed-root",
+        help="Optional root containing prepared fold CSVs.",
+    )
+    _FEATURE_ABLATIONS_DATA_PATH_OPTION = typer.Option(
+        None,
+        "--data-path",
+        help="Optional single FI-2010-style CSV; useful for smoke/synthetic runs.",
+    )
+    _FEATURE_ABLATIONS_FOLDS_OPTION = typer.Option(
+        "1",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _FEATURE_ABLATIONS_HORIZONS_OPTION = typer.Option(
+        "10",
+        "--horizons",
+        help="'all' or comma-separated label horizons.",
+    )
+    _FEATURE_ABLATIONS_SEEDS_OPTION = typer.Option(
+        "0",
+        "--seeds",
+        help="'all' or comma-separated non-negative seeds.",
+    )
+    _FEATURE_ABLATIONS_MODELS_OPTION = typer.Option(
+        "logistic,ridge,elastic_net,gradient_boosting",
+        "--models",
+        help="'all' or comma-separated classical model names.",
+    )
+    _FEATURE_ABLATIONS_GROUPS_OPTION = typer.Option(
+        "all",
+        "--feature-groups",
+        help="'all' or comma-separated feature group names.",
+    )
+    _FEATURE_ABLATIONS_MODES_OPTION = typer.Option(
+        "all",
+        "--ablation-modes",
+        help="'all' or comma-separated ablation modes.",
+    )
+    _FEATURE_ABLATIONS_OUT_OPTION = typer.Option(
+        Path("experiments/fi2010_feature_ablations"),
+        "--out",
+        help="Output directory for feature-ablation artefacts.",
+    )
+    _FEATURE_ABLATIONS_REUSE_OPTION = typer.Option(
+        True,
+        f"{_REUSE_COMPLETED_FLAG}/{_NO_REUSE_COMPLETED_FLAG}",
+        help="Reuse completed run directories where possible.",
+    )
+    _FEATURE_ABLATIONS_STRICT_OPTION = typer.Option(
+        True,
+        "--strict/--no-strict",
+        help="Fail on explicitly requested unsupported or empty feature groups.",
+    )
+    _FEATURE_ABLATIONS_SMOKE_OPTION = typer.Option(
+        False,
+        "--smoke-test",
+        help="Use a tiny synthetic fixture when prepared FI-2010 inputs are absent.",
+    )
+    _BUILD_ABLATION_FIGURES_INPUT_OPTION = typer.Option(
+        Path("experiments/fi2010_feature_ablations"),
+        "--feature-ablations",
+        "--ablations",
+        help="Feature-ablation artefact directory.",
+    )
+    _BUILD_ABLATION_FIGURES_OUT_OPTION = typer.Option(
+        Path("reports/figures/fi2010_feature_ablations"),
+        "--out",
+        help="Output directory for feature-ablation figures.",
+    )
+    _BUILD_ABLATION_FIGURES_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Replace the figure output directory if it already exists.",
+    )
+    _BUILD_ABLATION_FIGURES_ALLOW_SMOKE_OPTION = typer.Option(
+        False,
+        "--allow-smoke-test",
+        help="Permit smoke-test ablation artefacts and label figures as diagnostics only.",
+    )
     _ANALYSE_UNCERTAINTY_CLASSICAL_OPTION = typer.Option(
         None,
         "--classical",
@@ -5282,6 +6664,84 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _EXECUTION_V3_GRID_OPTION = typer.Option(
+        ...,
+        "--neural-full-grid",
+        help="Path to FI-2010 neural full-grid artefacts with predictions.",
+    )
+    _EXECUTION_V3_FEATURE_ABLATIONS_OPTION = typer.Option(
+        None,
+        "--feature-ablations",
+        help=(
+            "Optional FI-2010 feature-ablation artefact directory. When supplied, "
+            "execution-v3 reads ablation prediction artefacts explicitly."
+        ),
+    )
+    _EXECUTION_V3_OUT_OPTION = typer.Option(
+        Path("experiments/fi2010_execution_v3"),
+        "--out",
+        help="Output directory for execution-aware proxy diagnostic v3.",
+    )
+    _EXECUTION_V3_MODELS_OPTION = typer.Option(
+        "all",
+        "--models",
+        help="'all' or comma-separated model/objective selectors.",
+    )
+    _EXECUTION_V3_HORIZONS_OPTION = typer.Option(
+        "all",
+        "--horizons",
+        help="'all' or comma-separated horizons.",
+    )
+    _EXECUTION_V3_FOLDS_OPTION = typer.Option(
+        "all",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _EXECUTION_V3_SEEDS_OPTION = typer.Option(
+        "all",
+        "--seeds",
+        help="'all' or comma-separated seeds.",
+    )
+    _EXECUTION_V3_THRESHOLDS_OPTION = typer.Option(
+        None,
+        "--confidence-thresholds",
+        help="Optional comma-separated thresholds; defaults to 0.33 through 0.95.",
+    )
+    _EXECUTION_V3_FEE_BPS_OPTION = typer.Option(
+        None,
+        "--fee-bps",
+        help="Optional comma-separated fee levels in bps; defaults to 0,1,2,5,10.",
+    )
+    _EXECUTION_V3_SPREAD_MULTIPLIERS_OPTION = typer.Option(
+        None,
+        "--spread-multipliers",
+        help="Optional comma-separated spread multipliers; defaults to 0,0.5,1,2.",
+    )
+    _EXECUTION_V3_LATENCY_OPTION = typer.Option(
+        None,
+        "--latency-steps",
+        help="Optional comma-separated row-step latencies; defaults to 0,1,2,5,10.",
+    )
+    _EXECUTION_V3_FILL_OPTION = typer.Option(
+        None,
+        "--fill-assumptions",
+        help="Optional comma-separated fill proxy modes.",
+    )
+    _EXECUTION_V3_ALLOW_SMOKE_OPTION = typer.Option(
+        False,
+        "--allow-smoke-test",
+        help="Permit smoke-test artefacts and mark v3 outputs as smoke only.",
+    )
+    _EXECUTION_V3_STRICT_OPTION = typer.Option(
+        True,
+        "--strict/--no-strict",
+        help="Fail on ambiguous FI-2010 label/probability mapping.",
+    )
+    _EXECUTION_V3_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Replace the execution-v3 output directory if it already exists.",
+    )
     _RUN_PAPER_EXPERIMENT_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -5445,15 +6905,46 @@ if typer is not None:
         "--ablations",
         help="Optional path to FI-2010 ablation artefacts.",
     )
+    _BUILD_FINAL_REPORT_FEATURE_ABLATIONS_OPTION = typer.Option(
+        None,
+        "--feature-ablations",
+        help="Optional path to FI-2010 microstructure feature-ablation artefacts.",
+    )
     _BUILD_FINAL_REPORT_EXECUTION_OPTION = typer.Option(
         None,
         "--execution",
         help="Optional path to FI-2010 execution proxy artefacts.",
     )
+    _BUILD_FINAL_REPORT_EXECUTION_V3_OPTION = typer.Option(
+        None,
+        "--execution-v3",
+        help="Optional path to FI-2010 execution-aware proxy diagnostic v3 artefacts.",
+    )
     _BUILD_FINAL_REPORT_EXTERNAL_OPTION = typer.Option(
         None,
         "--external",
         help="Optional path to external protocol-context artefacts.",
+    )
+    _BUILD_FINAL_REPORT_SSL_OPTION = typer.Option(
+        None,
+        "--ssl",
+        help=(
+            "Optional SSL benchmark artefact directory. SSL rows are admitted "
+            "only when a pretrained encoder checkpoint is SHA256-verified."
+        ),
+    )
+    _BUILD_FINAL_REPORT_FULL_GRID_OPTION = typer.Option(
+        None,
+        "--neural-full-grid",
+        help=(
+            "Optional full supervised-vs-SSL neural grid artefact directory. "
+            "Smoke-test grids are reported as smoke only."
+        ),
+    )
+    _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION = typer.Option(
+        None,
+        "--evidence-pack",
+        help="Optional evidence-pack directory for release claim audit summary.",
     )
     _BUILD_FINAL_REPORT_OUT_OPTION = typer.Option(
         ...,
@@ -5464,6 +6955,76 @@ if typer is not None:
         False,
         "--overwrite",
         help="Replace the report and summary JSON if they already exist.",
+    )
+    _BUILD_EVIDENCE_PACK_OUT_OPTION = typer.Option(
+        Path("reports/evidence_pack"),
+        "--out",
+        help="Output directory for the evidence pack.",
+    )
+    _BUILD_EVIDENCE_PACK_FULL_GRID_OPTION = typer.Option(
+        ...,
+        "--neural-full-grid",
+        help="Path to FI-2010 neural full-grid artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_FIGURES_OPTION = typer.Option(
+        ...,
+        "--figures",
+        help="Path to generated FI-2010 figure artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_EXECUTION_V3_OPTION = typer.Option(
+        ...,
+        "--execution-v3",
+        help="Path to execution-v3 artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_FEATURE_ABLATIONS_OPTION = typer.Option(
+        ...,
+        "--feature-ablations",
+        help="Path to FI-2010 feature-ablation artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_ABLATION_FIGURES_OPTION = typer.Option(
+        ...,
+        "--ablation-figures",
+        help="Path to feature-ablation figure artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_FINAL_REPORT_OPTION = typer.Option(
+        ...,
+        "--final-report",
+        help="Path to the generated final empirical report.",
+    )
+    _BUILD_EVIDENCE_PACK_CLASSICAL_OPTION = typer.Option(
+        Path("experiments/fi2010_multifold_classical"),
+        "--classical",
+        help="Path to classical FI-2010 benchmark artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_SSL_OPTION = typer.Option(
+        Path("experiments/fi2010_ssl"),
+        "--ssl",
+        help="Path to SSL benchmark artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_FEATURE_AUDIT_OPTION = typer.Option(
+        Path("reports/feature_audit"),
+        "--feature-audit",
+        help="Optional stored feature-audit artefact directory.",
+    )
+    _BUILD_EVIDENCE_PACK_PROJECT_AUDIT_OPTION = typer.Option(
+        Path("reports/report_archive"),
+        "--project-audit",
+        help="Path to project-audit/archive artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_STRICT_OPTION = typer.Option(
+        True,
+        "--strict/--no-strict",
+        help="Fail on invalid artefacts or forbidden public claims.",
+    )
+    _BUILD_EVIDENCE_PACK_ALLOW_SMOKE_OPTION = typer.Option(
+        False,
+        "--allow-smoke-test",
+        help="Permit smoke-test artefacts while keeping them labelled as diagnostics.",
+    )
+    _BUILD_EVIDENCE_PACK_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Replace evidence-pack output files if they already exist.",
     )
     _INSPECT_PAPER_REPORT_REPORT_OPTION = typer.Option(
         ...,
@@ -5700,6 +7261,232 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def run_fi2010_ssl_neural_benchmark(
+        config: Path = _RUN_SSL_CONFIG_OPTION,
+        processed_root: Path = _RUN_SSL_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_SSL_OUT_OPTION,
+        folds: str = _RUN_SSL_FOLDS_OPTION,
+        seeds: str = _RUN_SSL_SEEDS_OPTION,
+        lookbacks: str = _RUN_SSL_LOOKBACKS_OPTION,
+        objective: str = _RUN_SSL_OBJECTIVE_OPTION,
+        mask_probability: float = _RUN_SSL_MASK_PROBABILITY_OPTION,
+        next_field_bucket_count: int = _RUN_SSL_BUCKET_COUNT_OPTION,
+        pretrain_epochs: int = _RUN_SSL_PRETRAIN_EPOCHS_OPTION,
+        max_epochs: int = _RUN_SSL_MAX_EPOCHS_OPTION,
+        batch_size: int = _RUN_SSL_BATCH_SIZE_OPTION,
+        device: str = _RUN_SSL_DEVICE_OPTION,
+        overwrite: bool = _RUN_SSL_OVERWRITE_OPTION,
+        fail_fast: bool = _RUN_SSL_FAIL_FAST_OPTION,
+        no_write_full_predictions: bool = _RUN_SSL_NO_PREDICTIONS_OPTION,
+    ) -> None:
+        """Pretrain, fine-tune and compare the FI-2010 ssl_transformer path."""
+        try:
+            fold_tokens = _parse_neural_fold_selection(folds)
+            seed_tokens = _parse_int_selection(
+                seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            lookback_tokens = _parse_int_selection(
+                lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _run_fi2010_ssl_neural_benchmark_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            folds=fold_tokens,
+            seeds=seed_tokens,
+            lookbacks=lookback_tokens,
+            objective=objective,
+            mask_probability=mask_probability,
+            next_field_bucket_count=next_field_bucket_count,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+            overwrite=overwrite,
+            fail_fast=fail_fast,
+            write_full_predictions=not no_write_full_predictions,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_neural_full_grid(
+        config: Path = _RUN_FULL_GRID_CONFIG_OPTION,
+        processed_root: Path = _RUN_FULL_GRID_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_FULL_GRID_OUT_OPTION,
+        folds: str = _RUN_FULL_GRID_FOLDS_OPTION,
+        horizons: str = _RUN_FULL_GRID_HORIZONS_OPTION,
+        seeds: str = _RUN_FULL_GRID_SEEDS_OPTION,
+        lookbacks: str = _RUN_FULL_GRID_LOOKBACKS_OPTION,
+        objectives: str = _RUN_FULL_GRID_OBJECTIVES_OPTION,
+        pretrain_epochs: int = _RUN_FULL_GRID_PRETRAIN_EPOCHS_OPTION,
+        max_epochs: int = _RUN_FULL_GRID_MAX_EPOCHS_OPTION,
+        batch_size: int = _RUN_FULL_GRID_BATCH_SIZE_OPTION,
+        device: str = _RUN_FULL_GRID_DEVICE_OPTION,
+        reuse_completed: bool = _RUN_FULL_GRID_REUSE_OPTION,
+        smoke_test: bool = _RUN_FULL_GRID_SMOKE_OPTION,
+    ) -> None:
+        """Run the FI-2010 supervised-vs-SSL neural evidence grid."""
+        try:
+            fold_tokens = _parse_neural_fold_selection(folds)
+            horizon_tokens = _parse_int_selection(
+                horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            seed_tokens = _parse_int_selection(
+                seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            lookback_tokens = _parse_int_selection(
+                lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+            objective_tokens = _parse_model_selection(objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _run_fi2010_neural_full_grid_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            folds=fold_tokens,
+            horizons=horizon_tokens,
+            seeds=seed_tokens,
+            lookbacks=lookback_tokens,
+            objectives=objective_tokens,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+            reuse_completed=reuse_completed,
+            smoke_test=smoke_test,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_fi2010_figures(
+        neural_full_grid: Path = _BUILD_FI2010_FIGURES_GRID_OPTION,
+        out: Path = _BUILD_FI2010_FIGURES_OUT_OPTION,
+        execution_v3: Path | None = _BUILD_FI2010_FIGURES_EXECUTION_V3_OPTION,
+        models: str = _BUILD_FI2010_FIGURES_MODELS_OPTION,
+        horizons: str = _BUILD_FI2010_FIGURES_HORIZONS_OPTION,
+        folds: str = _BUILD_FI2010_FIGURES_FOLDS_OPTION,
+        seeds: str = _BUILD_FI2010_FIGURES_SEEDS_OPTION,
+        overwrite: bool = _BUILD_FI2010_FIGURES_OVERWRITE_OPTION,
+        allow_smoke_test: bool = _BUILD_FI2010_FIGURES_ALLOW_SMOKE_OPTION,
+        strict: bool = _BUILD_FI2010_FIGURES_STRICT_OPTION,
+    ) -> None:
+        """Generate FI-2010 neural full-grid figures from stored artefacts."""
+        try:
+            figure_models = _parse_model_selection(models)
+            figure_horizons = _parse_int_selection(
+                horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            figure_folds = _parse_neural_fold_selection(folds)
+            figure_seeds = _parse_int_selection(
+                seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _build_fi2010_figures_impl(
+            neural_full_grid=neural_full_grid,
+            out=out,
+            execution_v3=execution_v3,
+            models=figure_models,
+            horizons=figure_horizons,
+            folds=figure_folds,
+            seeds=figure_seeds,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+            strict=strict,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def audit_fi2010_features(
+        path: Path = _AUDIT_FI2010_FEATURES_PATH_OPTION,
+        feature_groups: str = _AUDIT_FI2010_FEATURES_GROUPS_OPTION,
+        label_columns: str | None = _AUDIT_FI2010_FEATURES_LABELS_OPTION,
+        split_column: str | None = _AUDIT_FI2010_FEATURES_SPLIT_OPTION,
+        strict: bool = _AUDIT_FI2010_FEATURES_STRICT_OPTION,
+        volatility_window: int = _AUDIT_FI2010_FEATURES_VOL_WINDOW_OPTION,
+    ) -> None:
+        """Audit leakage controls for FI-2010 microstructure features."""
+        exit_code = _audit_fi2010_features_impl(
+            path=path,
+            feature_groups=feature_groups,
+            label_columns=label_columns,
+            split_column=split_column,
+            strict=strict,
+            volatility_window=volatility_window,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_feature_ablations(
+        config: Path | None = _FEATURE_ABLATIONS_CONFIG_OPTION,
+        processed_root: Path | None = _FEATURE_ABLATIONS_PROCESSED_ROOT_OPTION,
+        data_path: Path | None = _FEATURE_ABLATIONS_DATA_PATH_OPTION,
+        folds: str = _FEATURE_ABLATIONS_FOLDS_OPTION,
+        horizons: str = _FEATURE_ABLATIONS_HORIZONS_OPTION,
+        seeds: str = _FEATURE_ABLATIONS_SEEDS_OPTION,
+        models: str = _FEATURE_ABLATIONS_MODELS_OPTION,
+        feature_groups: str = _FEATURE_ABLATIONS_GROUPS_OPTION,
+        ablation_modes: str = _FEATURE_ABLATIONS_MODES_OPTION,
+        out: Path = _FEATURE_ABLATIONS_OUT_OPTION,
+        reuse_completed: bool = _FEATURE_ABLATIONS_REUSE_OPTION,
+        strict: bool = _FEATURE_ABLATIONS_STRICT_OPTION,
+        smoke_test: bool = _FEATURE_ABLATIONS_SMOKE_OPTION,
+    ) -> None:
+        """Run classical FI-2010 microstructure feature ablations."""
+        exit_code = _run_fi2010_feature_ablations_impl(
+            config_path=config,
+            processed_root=processed_root,
+            data_path=data_path,
+            out=out,
+            folds=folds,
+            horizons=horizons,
+            seeds=seeds,
+            models=models,
+            feature_groups=feature_groups,
+            ablation_modes=ablation_modes,
+            reuse_completed=reuse_completed,
+            strict=strict,
+            smoke_test=smoke_test,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_fi2010_ablation_figures(
+        feature_ablations: Path = _BUILD_ABLATION_FIGURES_INPUT_OPTION,
+        out: Path = _BUILD_ABLATION_FIGURES_OUT_OPTION,
+        overwrite: bool = _BUILD_ABLATION_FIGURES_OVERWRITE_OPTION,
+        allow_smoke_test: bool = _BUILD_ABLATION_FIGURES_ALLOW_SMOKE_OPTION,
+    ) -> None:
+        """Generate FI-2010 feature-ablation figures from stored artefacts."""
+        exit_code = _build_fi2010_ablation_figures_impl(
+            ablations=feature_ablations,
+            out=out,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def analyse_fi2010_uncertainty(
         classical: Path | None = _ANALYSE_UNCERTAINTY_CLASSICAL_OPTION,
         neural: Path | None = _ANALYSE_UNCERTAINTY_NEURAL_OPTION,
@@ -5779,6 +7566,44 @@ if typer is not None:
             cost_bps=cost_bps,
             latency_steps=latency_steps,
             confidence_thresholds=confidence_thresholds,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_fi2010_execution_v3(
+        neural_full_grid: Path = _EXECUTION_V3_GRID_OPTION,
+        feature_ablations: Path | None = _EXECUTION_V3_FEATURE_ABLATIONS_OPTION,
+        out: Path = _EXECUTION_V3_OUT_OPTION,
+        models: str = _EXECUTION_V3_MODELS_OPTION,
+        horizons: str = _EXECUTION_V3_HORIZONS_OPTION,
+        folds: str = _EXECUTION_V3_FOLDS_OPTION,
+        seeds: str = _EXECUTION_V3_SEEDS_OPTION,
+        confidence_thresholds: str | None = _EXECUTION_V3_THRESHOLDS_OPTION,
+        fee_bps: str | None = _EXECUTION_V3_FEE_BPS_OPTION,
+        spread_multipliers: str | None = _EXECUTION_V3_SPREAD_MULTIPLIERS_OPTION,
+        latency_steps: str | None = _EXECUTION_V3_LATENCY_OPTION,
+        fill_assumptions: str | None = _EXECUTION_V3_FILL_OPTION,
+        allow_smoke_test: bool = _EXECUTION_V3_ALLOW_SMOKE_OPTION,
+        strict: bool = _EXECUTION_V3_STRICT_OPTION,
+        overwrite: bool = _EXECUTION_V3_OVERWRITE_OPTION,
+    ) -> None:
+        """Build FI-2010 execution-aware proxy diagnostic v3 from predictions."""
+        exit_code = _build_fi2010_execution_v3_impl(
+            neural_full_grid=neural_full_grid,
+            feature_ablations=feature_ablations,
+            out=out,
+            models=models,
+            horizons=horizons,
+            folds=folds,
+            seeds=seeds,
+            confidence_thresholds=confidence_thresholds,
+            fee_bps=fee_bps,
+            spread_multipliers=spread_multipliers,
+            latency_steps=latency_steps,
+            fill_assumptions=fill_assumptions,
+            allow_smoke_test=allow_smoke_test,
+            strict=strict,
             overwrite=overwrite,
         )
         if exit_code != 0:
@@ -5900,8 +7725,13 @@ if typer is not None:
         neural: Path = _BUILD_FINAL_REPORT_NEURAL_OPTION,
         uncertainty: Path = _BUILD_FINAL_REPORT_UNCERTAINTY_OPTION,
         ablations: Path | None = _BUILD_FINAL_REPORT_ABLATIONS_OPTION,
+        feature_ablations: Path | None = _BUILD_FINAL_REPORT_FEATURE_ABLATIONS_OPTION,
         execution: Path | None = _BUILD_FINAL_REPORT_EXECUTION_OPTION,
+        execution_v3: Path | None = _BUILD_FINAL_REPORT_EXECUTION_V3_OPTION,
         external: Path | None = _BUILD_FINAL_REPORT_EXTERNAL_OPTION,
+        ssl: Path | None = _BUILD_FINAL_REPORT_SSL_OPTION,
+        neural_full_grid: Path | None = _BUILD_FINAL_REPORT_FULL_GRID_OPTION,
+        evidence_pack: Path | None = _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION,
         out: Path = _BUILD_FINAL_REPORT_OUT_OPTION,
         overwrite: bool = _BUILD_FINAL_REPORT_OVERWRITE_OPTION,
     ) -> None:
@@ -5911,9 +7741,50 @@ if typer is not None:
             neural=neural,
             uncertainty=uncertainty,
             ablations=ablations,
+            feature_ablations=feature_ablations,
             execution=execution,
+            execution_v3=execution_v3,
             external=external,
+            ssl=ssl,
+            neural_full_grid=neural_full_grid,
+            evidence_pack=evidence_pack,
             out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_evidence_pack(
+        out: Path = _BUILD_EVIDENCE_PACK_OUT_OPTION,
+        neural_full_grid: Path = _BUILD_EVIDENCE_PACK_FULL_GRID_OPTION,
+        figures: Path = _BUILD_EVIDENCE_PACK_FIGURES_OPTION,
+        execution_v3: Path = _BUILD_EVIDENCE_PACK_EXECUTION_V3_OPTION,
+        feature_ablations: Path = _BUILD_EVIDENCE_PACK_FEATURE_ABLATIONS_OPTION,
+        ablation_figures: Path = _BUILD_EVIDENCE_PACK_ABLATION_FIGURES_OPTION,
+        final_report: Path = _BUILD_EVIDENCE_PACK_FINAL_REPORT_OPTION,
+        classical: Path = _BUILD_EVIDENCE_PACK_CLASSICAL_OPTION,
+        ssl: Path = _BUILD_EVIDENCE_PACK_SSL_OPTION,
+        feature_audit: Path | None = _BUILD_EVIDENCE_PACK_FEATURE_AUDIT_OPTION,
+        project_audit: Path | None = _BUILD_EVIDENCE_PACK_PROJECT_AUDIT_OPTION,
+        strict: bool = _BUILD_EVIDENCE_PACK_STRICT_OPTION,
+        allow_smoke_test: bool = _BUILD_EVIDENCE_PACK_ALLOW_SMOKE_OPTION,
+        overwrite: bool = _BUILD_EVIDENCE_PACK_OVERWRITE_OPTION,
+    ) -> None:
+        """Build the release evidence pack and claim audit."""
+        exit_code = _build_evidence_pack_impl(
+            out=out,
+            neural_full_grid=neural_full_grid,
+            figures=figures,
+            execution_v3=execution_v3,
+            feature_ablations=feature_ablations,
+            ablation_figures=ablation_figures,
+            final_report=final_report,
+            classical=classical,
+            ssl=ssl,
+            feature_audit=feature_audit,
+            project_audit=project_audit,
+            strict=strict,
+            allow_smoke_test=allow_smoke_test,
             overwrite=overwrite,
         )
         if exit_code != 0:
@@ -7187,8 +9058,13 @@ else:
         neural: Path,
         uncertainty: Path,
         ablations: Path | None = None,
+        feature_ablations: Path | None = None,
         execution: Path | None = None,
+        execution_v3: Path | None = None,
         external: Path | None = None,
+        ssl: Path | None = None,
+        neural_full_grid: Path | None = None,
+        evidence_pack: Path | None = None,
         out: Path = Path("runs/chronoslob_final_empirical_report_smoke.md"),
         overwrite: bool = False,
     ) -> None:
@@ -7198,9 +9074,50 @@ else:
             neural=neural,
             uncertainty=uncertainty,
             ablations=ablations,
+            feature_ablations=feature_ablations,
             execution=execution,
+            execution_v3=execution_v3,
             external=external,
+            ssl=ssl,
+            neural_full_grid=neural_full_grid,
+            evidence_pack=evidence_pack,
             out=out,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def build_evidence_pack(
+        out: Path = Path("reports/evidence_pack"),
+        neural_full_grid: Path = Path("experiments/fi2010_neural_full_grid"),
+        figures: Path = Path("reports/figures/fi2010_neural_full_grid"),
+        execution_v3: Path = Path("experiments/fi2010_execution_v3"),
+        feature_ablations: Path = Path("experiments/fi2010_feature_ablations"),
+        ablation_figures: Path = Path("reports/figures/fi2010_feature_ablations"),
+        final_report: Path = Path("reports/chronoslob_final_empirical_report.md"),
+        classical: Path = Path("experiments/fi2010_multifold_classical"),
+        ssl: Path = Path("experiments/fi2010_ssl"),
+        feature_audit: Path | None = Path("reports/feature_audit"),
+        project_audit: Path | None = Path("reports/report_archive"),
+        strict: bool = True,
+        allow_smoke_test: bool = False,
+        overwrite: bool = False,
+    ) -> None:
+        """Build the release evidence pack and claim audit."""
+        exit_code = _build_evidence_pack_impl(
+            out=out,
+            neural_full_grid=neural_full_grid,
+            figures=figures,
+            execution_v3=execution_v3,
+            feature_ablations=feature_ablations,
+            ablation_figures=ablation_figures,
+            final_report=final_report,
+            classical=classical,
+            ssl=ssl,
+            feature_audit=feature_audit,
+            project_audit=project_audit,
+            strict=strict,
+            allow_smoke_test=allow_smoke_test,
             overwrite=overwrite,
         )
         if exit_code != 0:
@@ -7255,9 +9172,16 @@ if typer is not None:
     app.command("run-fi2010-multifold-classical")(run_fi2010_multifold_classical)
     app.command("inspect-fi2010-neural-plan")(inspect_fi2010_neural_plan)
     app.command("run-fi2010-neural-benchmark")(run_fi2010_neural_benchmark)
+    app.command("run-fi2010-ssl-neural-benchmark")(run_fi2010_ssl_neural_benchmark)
+    app.command("run-fi2010-neural-full-grid")(run_fi2010_neural_full_grid)
+    app.command("build-fi2010-figures")(build_fi2010_figures)
+    app.command("audit-fi2010-features")(audit_fi2010_features)
+    app.command("run-fi2010-feature-ablations")(run_fi2010_feature_ablations)
+    app.command("build-fi2010-ablation-figures")(build_fi2010_ablation_figures)
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
     app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)
     app.command("run-fi2010-execution-v2")(run_fi2010_execution_v2)
+    app.command("build-fi2010-execution-v3")(build_fi2010_execution_v3)
     app.command("run-paper-experiment")(run_paper_experiment)
     app.command("run-paper-ablations")(run_paper_ablations)
     app.command("run-system-benchmarks")(run_system_benchmarks)
@@ -7266,6 +9190,7 @@ if typer is not None:
     app.command("inspect-paper-experiment")(inspect_paper_experiment)
     app.command("build-paper-report")(build_paper_report)
     app.command("build-final-empirical-report")(build_final_empirical_report)
+    app.command("build-evidence-pack")(build_evidence_pack)
     app.command("inspect-paper-report")(inspect_paper_report)
 else:
 

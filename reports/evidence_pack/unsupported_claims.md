@@ -1,0 +1,66 @@
+# Unsupported Or Limited Claims
+
+- ChronosLOB is a reproducible LOB research platform
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.
+- ChronosLOB includes microstructure feature ablations
+  - status: partially_supported
+  - reason: Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.
+  - safe wording: ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.
+- Model X achieved macro-F1 Y
+  - status: partially_supported
+  - reason: Stored result tables contain macro-F1 values, but this template claim requires the exact model, metric value, scope and artefact path.
+  - safe wording: Quote model, split, fold/seed scope and macro-F1 directly from artefact_inventory.csv and the referenced result table.
+- SSL improved macro-F1
+  - status: unsupported
+  - reason: Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.
+  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.
+- SSL improved calibration
+  - status: unsupported
+  - reason: Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.
+  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.
+- SSL improved execution-aware proxy metrics
+  - status: needs_real_evidence
+  - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.
+  - safe wording: Report execution-v3 proxy rows descriptively and avoid SSL improvement language unless a real matched aggregate table explicitly supports it.
+- Feature group X improved performance
+  - status: partially_supported
+  - reason: Some feature-delta rows are positive, but the placeholder claim must name the exact group, model, horizon, split and ablation mode.
+  - safe wording: Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored FI-2010 snapshot diagnostics.
+- profitable trading strategy
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+- live trading system
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline research software and stored-artefact diagnostics only.
+- production execution simulator
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline research software and stored-artefact diagnostics only.
+- state-of-the-art
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe the implemented research platform and audited artefacts conservatively.
+- foundation model
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe the implemented research platform and audited artefacts conservatively.
+- true OFI on FI-2010
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+- queue-position modelling on FI-2010
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+- tradable alpha
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline predictive or proxy diagnostics; do not imply returns.
+- PnL
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline predictive or proxy diagnostics; do not imply returns.

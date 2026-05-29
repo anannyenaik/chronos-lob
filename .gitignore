@@ -61,11 +61,15 @@ mlruns/
 # whole.
 experiments/fi2010_midprice_h10/predictions.csv
 experiments/fi2010_midprice_h10/predictions.parquet
+experiments/fi2010_neural_full_grid/runs/
+experiments/fi2010_feature_ablations/runs/
+experiments/fi2010_feature_ablations/features/
 experiments/fi2010_midprice_h10_ablations/experiments/
 experiments/fi2010_midprice_h10_systems/child_experiments/
 experiments/paper_experiment_*/
 experiments/paper_ablation_*/
 experiments/system_benchmark_*/
+reports/evidence_pack/[c]v_bullets_*.md
 
 # Model artefacts and large generated files
 *.ckpt

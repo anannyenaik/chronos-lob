@@ -1,0 +1,8 @@
+{
+  "created_at": "2026-05-29T15:05:06.241456+00:00",
+  "figure_id": "feature_group_delta_macro_f1",
+  "smoke_test": false,
+  "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/feature_group_delta_macro_f1.csv",
+  "source_sha256": "93988a975f9a67ba0221c81ad0a5fb560e3ea55c3a9933c763d027d296c3f809",
+  "title": "Feature Group Delta Macro-F1"
+}

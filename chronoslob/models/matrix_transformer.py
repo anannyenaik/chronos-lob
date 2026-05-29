@@ -119,8 +119,17 @@ class MatrixTransformerClassifier(_TORCH_MODULE_BASE):
         """Return the validated model configuration."""
         return self._config
 
-    def forward(self, x: Any) -> Any:
-        """Run a forward pass over ``[batch, window, feature]`` tensors."""
+    def encode(self, x: Any) -> Any:
+        """Return per-position encoder hidden states ``[batch, window, model_dim]``.
+
+        This is the shared backbone representation consumed by the supervised
+        classifier head and, identically, by the self-supervised pretraining
+        heads in :mod:`chronoslob.models.matrix_ssl`. Exposing it lets a
+        pretrained encoder be transferred byte-for-byte into this classifier.
+        """
+        return self._encode(x)
+
+    def _encode(self, x: Any) -> Any:
         torch_module = _require_torch()
         if not torch_module.is_tensor(x):
             raise TypeError("x must be a torch.Tensor")
@@ -144,7 +153,11 @@ class MatrixTransformerClassifier(_TORCH_MODULE_BASE):
             )
         hidden = self.input_projection(x)
         hidden = hidden + self.position_embedding[:, :window_length, :]
-        encoded = self.encoder(hidden)
+        return self.encoder(hidden)
+
+    def forward(self, x: Any) -> Any:
+        """Run a forward pass over ``[batch, window, feature]`` tensors."""
+        encoded = self._encode(x)
         pooled = encoded.mean(dim=1)
         return self.classifier(pooled)
 

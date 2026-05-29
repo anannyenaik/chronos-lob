@@ -29,19 +29,40 @@ _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=Tru
 
 _SECTION_TITLES: tuple[str, ...] = (
     "Evidence Snapshot",
+    "Evidence Pack Audit",
     "Research Question",
     "Dataset And Split Protocol",
     "Model Families",
     "Main Result Table",
+    "Self-Supervised Pretraining",
+    "Full Neural Grid",
+    "Figure Index",
     "Uncertainty Summary",
     "Ablation Summary",
+    "Feature Ablation Summary",
     "Execution-Aware Proxy Summary",
     "External Benchmark Context",
-    "What This Proves",
-    "What This Does Not Prove",
+    "What This Supports",
+    "What This Does Not Claim",
     "Limitations",
     "Artefact Traceability",
     "Reproduction Commands",
+)
+
+# SSL rows are admitted only when these artefacts exist and the recorded
+# encoder-checkpoint SHA256 matches the checkpoint actually on disk.
+_REQUIRED_SSL_FILES = (
+    "summary.json",
+    "results_summary.csv",
+    "comparison_summary.csv",
+)
+_REQUIRED_FULL_GRID_FILES = (
+    "summary.json",
+    "results_summary.csv",
+    "aggregate_summary.csv",
+    "aggregate_summary.json",
+    "ssl_comparison.csv",
+    "failures.csv",
 )
 
 _REQUIRED_CLASSICAL_FILES = ("summary.json", "results_summary.csv")
@@ -60,6 +81,14 @@ _OPTIONAL_ABLATION_FILES = (
     "execution_cost_latency_ablation.csv",
     "skipped_ablations.json",
 )
+_OPTIONAL_FEATURE_ABLATION_FILES = (
+    "summary.json",
+    "results_summary.csv",
+    "aggregate_summary.csv",
+    "feature_delta_summary.csv",
+    "ablation_manifest.json",
+    "failures.json",
+)
 _OPTIONAL_EXECUTION_FILES = (
     "summary.json",
     "degradation_summary.csv",
@@ -67,6 +96,18 @@ _OPTIONAL_EXECUTION_FILES = (
     "turnover_summary.csv",
     "fill_assumption_summary.csv",
     "adverse_selection_summary.csv",
+    "skipped_diagnostics.json",
+)
+_OPTIONAL_EXECUTION_V3_FILES = (
+    "summary.json",
+    "execution_v3_manifest.json",
+    "confidence_threshold_summary.csv",
+    "confidence_threshold_aggregate.csv",
+    "cost_sensitivity_summary.csv",
+    "latency_sensitivity_summary.csv",
+    "fill_assumption_summary.csv",
+    "adverse_selection_summary.csv",
+    "regime_execution_summary.csv",
     "skipped_diagnostics.json",
 )
 _OPTIONAL_EXTERNAL_FILES = (
@@ -117,13 +158,79 @@ class _OptionalArtefacts:
 
 
 @dataclass
+class _SSLArtefacts:
+    """Validated self-supervised pretraining artefacts.
+
+    ``admitted`` is ``True`` only when the SSL directory, its summary, results
+    and comparison tables all exist and at least one pretrained encoder
+    checkpoint's recorded SHA256 matches the checkpoint on disk. The report
+    refuses to render SSL rows unless ``admitted`` is ``True``.
+    """
+
+    admitted: bool = False
+    reason: str = "SSL input not supplied"
+    directory: Path | None = None
+    summary: dict[str, Any] | None = None
+    results_rows: list[dict[str, str]] = field(default_factory=list)
+    comparison_rows: list[dict[str, str]] = field(default_factory=list)
+    verified_runs: list[str] = field(default_factory=list)
+
+
+@dataclass
+class _FullGridArtefacts:
+    """Validated full supervised-vs-SSL neural grid aggregate artefacts."""
+
+    available: bool = False
+    evidence_level: str = "missing"
+    reason: str = "full neural grid input not supplied"
+    directory: Path | None = None
+    summary: dict[str, Any] | None = None
+    results_rows: list[dict[str, str]] = field(default_factory=list)
+    aggregate_rows: list[dict[str, str]] = field(default_factory=list)
+    comparison_rows: list[dict[str, str]] = field(default_factory=list)
+    failure_rows: list[dict[str, str]] = field(default_factory=list)
+
+
+@dataclass
+class _FigureArtefacts:
+    """Optional generated figure manifest loaded for the final report."""
+
+    available: bool = False
+    reason: str = "figure manifest not supplied"
+    directory: Path | None = None
+    manifest_path: Path | None = None
+    manifest: dict[str, Any] | None = None
+    entries: list[dict[str, Any]] = field(default_factory=list)
+    smoke_test_only: bool = False
+
+
+@dataclass
+class _EvidencePackArtefacts:
+    """Optional release evidence-pack artefacts loaded for report caveats."""
+
+    available: bool = False
+    reason: str = "evidence pack not supplied"
+    directory: Path | None = None
+    manifest: dict[str, Any] | None = None
+    claim_audit: dict[str, Any] | None = None
+    supported_claims: str | None = None
+    unsupported_claims: str | None = None
+
+
+@dataclass
 class _FinalReportData:
     classical_dir: Path
     neural_dir: Path
     uncertainty_dir: Path
     ablation: _OptionalArtefacts
+    feature_ablation: _OptionalArtefacts
     execution: _OptionalArtefacts
+    execution_v3: _OptionalArtefacts
     external: _OptionalArtefacts
+    ssl: _SSLArtefacts
+    full_grid: _FullGridArtefacts
+    figures: _FigureArtefacts
+    evidence_pack: _EvidencePackArtefacts
     report_path: Path
     summary_path: Path
     generated_at: datetime
@@ -150,11 +257,21 @@ def build_final_empirical_report(
     uncertainty_dir: Path,
     out_path: Path,
     ablation_dir: Path | None = None,
+    feature_ablation_dir: Path | None = None,
     execution_dir: Path | None = None,
+    execution_v3_dir: Path | None = None,
     external_dir: Path | None = None,
+    ssl_dir: Path | None = None,
+    neural_full_grid_dir: Path | None = None,
+    evidence_pack_dir: Path | None = None,
     overwrite: bool = False,
 ) -> FinalEmpiricalReportSummary:
-    """Build the final Markdown empirical report and companion JSON summary."""
+    """Build the final Markdown empirical report and companion JSON summary.
+
+    When ``ssl_dir`` is supplied and contains valid, SHA256-verified
+    self-supervised pretraining artefacts, an SSL comparison row is admitted.
+    Otherwise the SSL section is marked skipped and no SSL result is claimed.
+    """
     report_path = Path(out_path)
     summary_path = _summary_path_for(report_path)
     if report_path.exists() and report_path.is_dir():
@@ -175,8 +292,21 @@ def build_final_empirical_report(
         neural_dir=Path(neural_dir),
         uncertainty_dir=Path(uncertainty_dir),
         ablation_dir=Path(ablation_dir) if ablation_dir is not None else None,
+        feature_ablation_dir=(
+            Path(feature_ablation_dir) if feature_ablation_dir is not None else None
+        ),
         execution_dir=Path(execution_dir) if execution_dir is not None else None,
+        execution_v3_dir=(
+            Path(execution_v3_dir) if execution_v3_dir is not None else None
+        ),
         external_dir=Path(external_dir) if external_dir is not None else None,
+        ssl_dir=Path(ssl_dir) if ssl_dir is not None else None,
+        neural_full_grid_dir=(
+            Path(neural_full_grid_dir) if neural_full_grid_dir is not None else None
+        ),
+        evidence_pack_dir=(
+            Path(evidence_pack_dir) if evidence_pack_dir is not None else None
+        ),
         report_path=report_path,
         summary_path=summary_path,
     )
@@ -210,8 +340,13 @@ def _load_final_report_data(
     neural_dir: Path,
     uncertainty_dir: Path,
     ablation_dir: Path | None,
+    feature_ablation_dir: Path | None,
     execution_dir: Path | None,
+    execution_v3_dir: Path | None,
     external_dir: Path | None,
+    ssl_dir: Path | None,
+    neural_full_grid_dir: Path | None,
+    evidence_pack_dir: Path | None,
     report_path: Path,
     summary_path: Path,
 ) -> _FinalReportData:
@@ -287,11 +422,33 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    feature_ablation = _load_optional_artefacts(
+        directory=feature_ablation_dir,
+        label="feature_ablations",
+        section_title="Feature Ablation Summary",
+        expected_files=_OPTIONAL_FEATURE_ABLATION_FILES,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
     execution = _load_optional_artefacts(
         directory=execution_dir,
         label="execution",
         section_title="Execution-Aware Proxy Summary",
         expected_files=_OPTIONAL_EXECUTION_FILES,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
+    execution_v3 = _load_optional_artefacts(
+        directory=execution_v3_dir,
+        label="execution_v3",
+        section_title="Execution-Aware Proxy Summary",
+        expected_files=_OPTIONAL_EXECUTION_V3_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
         warnings=warnings,
@@ -310,15 +467,54 @@ def _load_final_report_data(
         missing_sections=missing_sections,
     )
     recorded_skips.extend(_extract_recorded_skips(ablation, "ablation"))
+    recorded_skips.extend(_extract_recorded_skips(feature_ablation, "feature_ablation"))
     recorded_skips.extend(_extract_recorded_skips(execution, "execution"))
+    recorded_skips.extend(_extract_recorded_skips(execution_v3, "execution_v3"))
+
+    ssl = _load_ssl_artefacts(
+        directory=ssl_dir,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
+    full_grid = _load_full_grid_artefacts(
+        directory=neural_full_grid_dir,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
+    figures = _load_figure_artefacts(
+        neural_full_grid_dir=neural_full_grid_dir,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+    )
+    evidence_pack = _load_evidence_pack_artefacts(
+        directory=evidence_pack_dir,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
 
     return _FinalReportData(
         classical_dir=classical,
         neural_dir=neural,
         uncertainty_dir=uncertainty,
         ablation=ablation,
+        feature_ablation=feature_ablation,
         execution=execution,
+        execution_v3=execution_v3,
         external=external,
+        ssl=ssl,
+        full_grid=full_grid,
+        figures=figures,
+        evidence_pack=evidence_pack,
         report_path=report_path,
         summary_path=summary_path,
         generated_at=datetime.now(UTC),
@@ -392,6 +588,349 @@ def _load_optional_artefacts(
     return artefacts
 
 
+_SSL_SECTION_TITLE = "Self-Supervised Pretraining"
+
+
+def _verify_ssl_checkpoints(directory: Path) -> list[str]:
+    """Return run ids whose encoder checkpoint SHA256 matches its manifest.
+
+    A run is verified only when ``pretrain/artefact_manifest.json`` records a
+    SHA256 for ``pretrained_encoder.pt`` and the checkpoint on disk hashes to
+    exactly that value. Missing files, unreadable manifests or hash mismatches
+    leave the run unverified.
+    """
+    runs_dir = directory / "runs"
+    if not runs_dir.is_dir():
+        return []
+    verified: list[str] = []
+    for run_dir in sorted(runs_dir.iterdir()):
+        manifest_path = run_dir / "pretrain" / "artefact_manifest.json"
+        encoder_path = run_dir / "pretrain" / "pretrained_encoder.pt"
+        if not manifest_path.is_file() or not encoder_path.is_file():
+            continue
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(manifest, dict):
+            continue
+        recorded = manifest.get("sha256")
+        if not isinstance(recorded, dict):
+            continue
+        expected = recorded.get("pretrained_encoder.pt")
+        if not isinstance(expected, str) or not expected:
+            continue
+        if sha256_file(encoder_path) == expected:
+            verified.append(run_dir.name)
+    return verified
+
+
+def _load_ssl_artefacts(
+    *,
+    directory: Path | None,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+    warnings: list[str],
+    skipped_sections: list[str],
+    missing_sections: list[str],
+) -> _SSLArtefacts:
+    """Strictly validate SSL artefacts; refuse to admit rows unless valid."""
+
+    def _refuse(reason: str) -> _SSLArtefacts:
+        warnings.append(f"{reason}; {_SSL_SECTION_TITLE} will be marked skipped.")
+        skipped_sections.append(_SSL_SECTION_TITLE)
+        missing_sections.append(reason)
+        return _SSLArtefacts(admitted=False, reason=reason)
+
+    if directory is None:
+        return _refuse("SSL input not supplied")
+    candidate = Path(directory)
+    if not candidate.exists() or not candidate.is_dir():
+        return _refuse(f"SSL artefact directory missing: {_display_path(candidate)}")
+    for filename in _REQUIRED_SSL_FILES:
+        if not (candidate / filename).is_file():
+            return _refuse(
+                f"SSL artefacts incomplete: missing "
+                f"{_display_path(candidate / filename)}"
+            )
+
+    verified_runs = _verify_ssl_checkpoints(candidate)
+    if not verified_runs:
+        return _refuse(
+            "SSL artefacts present but no pretrained encoder checkpoint could be "
+            "SHA256-verified against its manifest"
+        )
+
+    summary = _read_json(
+        candidate / "summary.json",
+        "ssl_summary",
+        input_paths,
+        file_hashes,
+    )
+    results_rows = _read_csv(
+        candidate / "results_summary.csv",
+        "ssl_results_summary",
+        input_paths,
+        file_hashes,
+    )
+    comparison_rows = _read_csv(
+        candidate / "comparison_summary.csv",
+        "ssl_comparison_summary",
+        input_paths,
+        file_hashes,
+    )
+    has_ssl_row = any(
+        str(row.get("model_name", "")).strip() == "ssl_transformer"
+        for row in results_rows
+    )
+    if not has_ssl_row:
+        return _refuse(
+            "SSL results_summary.csv does not contain an ssl_transformer row"
+        )
+
+    input_paths["ssl_dir"] = _display_path(candidate)
+    return _SSLArtefacts(
+        admitted=True,
+        reason="verified",
+        directory=candidate,
+        summary=summary,
+        results_rows=results_rows,
+        comparison_rows=comparison_rows,
+        verified_runs=verified_runs,
+    )
+
+
+_FULL_GRID_SECTION_TITLE = "Full Neural Grid"
+
+
+def _load_full_grid_artefacts(
+    *,
+    directory: Path | None,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+    warnings: list[str],
+    skipped_sections: list[str],
+    missing_sections: list[str],
+) -> _FullGridArtefacts:
+    """Load full neural grid aggregates without promoting unsupported claims."""
+
+    def _refuse(reason: str) -> _FullGridArtefacts:
+        warnings.append(f"{reason}; {_FULL_GRID_SECTION_TITLE} will make no claim.")
+        skipped_sections.append(_FULL_GRID_SECTION_TITLE)
+        missing_sections.append(reason)
+        return _FullGridArtefacts(available=False, reason=reason)
+
+    if directory is None:
+        return _refuse("full neural grid input not supplied")
+    candidate = Path(directory)
+    if not candidate.exists() or not candidate.is_dir():
+        return _refuse(
+            f"full neural grid artefact directory missing: {_display_path(candidate)}"
+        )
+    for filename in _REQUIRED_FULL_GRID_FILES:
+        if not (candidate / filename).is_file():
+            return _refuse(
+                "full neural grid artefacts incomplete: missing "
+                f"{_display_path(candidate / filename)}"
+            )
+
+    summary = _read_json(
+        candidate / "summary.json",
+        "neural_full_grid_summary",
+        input_paths,
+        file_hashes,
+    )
+    results_rows = _read_csv(
+        candidate / "results_summary.csv",
+        "neural_full_grid_results_summary",
+        input_paths,
+        file_hashes,
+    )
+    aggregate_rows = _read_csv(
+        candidate / "aggregate_summary.csv",
+        "neural_full_grid_aggregate_summary",
+        input_paths,
+        file_hashes,
+    )
+    _read_json(
+        candidate / "aggregate_summary.json",
+        "neural_full_grid_aggregate_summary_json",
+        input_paths,
+        file_hashes,
+    )
+    comparison_rows = _read_csv(
+        candidate / "ssl_comparison.csv",
+        "neural_full_grid_ssl_comparison",
+        input_paths,
+        file_hashes,
+    )
+    failure_rows = _read_csv(
+        candidate / "failures.csv",
+        "neural_full_grid_failures",
+        input_paths,
+        file_hashes,
+    )
+    input_paths["neural_full_grid_dir"] = _display_path(candidate)
+
+    smoke = bool(summary.get("smoke_test")) or str(
+        summary.get("execution_mode", "")
+    ).lower() == "smoke"
+    if smoke:
+        warnings.append(
+            "full neural grid artefacts are marked smoke-test-only; no empirical "
+            "full-grid result is claimed."
+        )
+        skipped_sections.append(_FULL_GRID_SECTION_TITLE)
+        evidence_level = "smoke_test_only"
+    else:
+        evidence_level = str(summary.get("evidence_level", "real_grid"))
+    return _FullGridArtefacts(
+        available=True,
+        evidence_level=evidence_level,
+        reason="loaded",
+        directory=candidate,
+        summary=summary,
+        results_rows=results_rows,
+        aggregate_rows=aggregate_rows,
+        comparison_rows=comparison_rows,
+        failure_rows=failure_rows,
+    )
+
+
+def _load_figure_artefacts(
+    *,
+    neural_full_grid_dir: Path | None,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+    warnings: list[str],
+) -> _FigureArtefacts:
+    """Load an optional FI-2010 figure manifest when one exists."""
+    candidates: list[Path] = []
+    if neural_full_grid_dir is not None:
+        grid_dir = Path(neural_full_grid_dir)
+        candidates.extend(
+            [
+                grid_dir / "figure_manifest.json",
+                grid_dir / "figures" / "figure_manifest.json",
+            ]
+        )
+    candidates.append(
+        project_root() / "reports" / "figures" / "fi2010_neural_full_grid" / "figure_manifest.json"
+    )
+    manifest_path = next((path for path in candidates if path.is_file()), None)
+    if manifest_path is None:
+        return _FigureArtefacts(reason="figure manifest not found")
+    try:
+        manifest = _read_json(
+            manifest_path,
+            "fi2010_figure_manifest",
+            input_paths,
+            file_hashes,
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        warnings.append(f"figure manifest could not be loaded: {exc}")
+        return _FigureArtefacts(reason="figure manifest invalid")
+    raw_entries = manifest.get("figures")
+    entries: list[dict[str, Any]] = []
+    if isinstance(raw_entries, list):
+        entries = [
+            cast(dict[str, Any], dict(entry))
+            for entry in raw_entries
+            if isinstance(entry, Mapping)
+        ]
+    smoke = bool(manifest.get("smoke_test")) or (
+        bool(entries) and all(bool(entry.get("smoke_test")) for entry in entries)
+    )
+    input_paths["fi2010_figure_dir"] = _display_path(manifest_path.parent)
+    return _FigureArtefacts(
+        available=True,
+        reason="loaded",
+        directory=manifest_path.parent,
+        manifest_path=manifest_path,
+        manifest=manifest,
+        entries=entries,
+        smoke_test_only=smoke,
+    )
+
+
+def _load_evidence_pack_artefacts(
+    *,
+    directory: Path | None,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+    warnings: list[str],
+    skipped_sections: list[str],
+    missing_sections: list[str],
+) -> _EvidencePackArtefacts:
+    if directory is None:
+        skipped_sections.append("Evidence Pack Audit")
+        missing_sections.append("evidence pack input not supplied")
+        return _EvidencePackArtefacts()
+    candidate = Path(directory)
+    if not candidate.exists():
+        warnings.append(f"evidence pack directory missing: {_display_path(candidate)}")
+        skipped_sections.append("Evidence Pack Audit")
+        missing_sections.append(f"evidence pack directory missing: {_display_path(candidate)}")
+        return _EvidencePackArtefacts(reason="evidence pack directory missing")
+    if not candidate.is_dir():
+        warnings.append(f"evidence pack path is not a directory: {_display_path(candidate)}")
+        skipped_sections.append("Evidence Pack Audit")
+        missing_sections.append(
+            f"evidence pack path is not a directory: {_display_path(candidate)}"
+        )
+        return _EvidencePackArtefacts(reason="evidence pack path is not a directory")
+
+    manifest_path = candidate / "evidence_pack_manifest.json"
+    claim_audit_path = candidate / "claim_audit.json"
+    if not manifest_path.is_file() or not claim_audit_path.is_file():
+        warnings.append("evidence pack is missing manifest or claim audit JSON")
+        skipped_sections.append("Evidence Pack Audit")
+        missing_sections.append("evidence pack manifest or claim audit missing")
+        return _EvidencePackArtefacts(directory=candidate, reason="required files missing")
+
+    try:
+        manifest = _read_json(
+            manifest_path,
+            "evidence_pack_manifest",
+            input_paths,
+            file_hashes,
+        )
+        claim_audit = _read_json(
+            claim_audit_path,
+            "evidence_pack_claim_audit",
+            input_paths,
+            file_hashes,
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        warnings.append(f"evidence pack could not be loaded: {exc}")
+        skipped_sections.append("Evidence Pack Audit")
+        missing_sections.append("evidence pack JSON invalid")
+        return _EvidencePackArtefacts(directory=candidate, reason="invalid JSON")
+
+    supported = _read_optional_text(
+        candidate / "supported_claims.md",
+        "evidence_pack_supported_claims",
+        input_paths,
+        file_hashes,
+    )
+    unsupported = _read_optional_text(
+        candidate / "unsupported_claims.md",
+        "evidence_pack_unsupported_claims",
+        input_paths,
+        file_hashes,
+    )
+    input_paths["evidence_pack_dir"] = _display_path(candidate)
+    return _EvidencePackArtefacts(
+        available=True,
+        reason="loaded",
+        directory=candidate,
+        manifest=manifest,
+        claim_audit=claim_audit,
+        supported_claims=supported,
+        unsupported_claims=unsupported,
+    )
+
+
 def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> str:
     lines: list[str] = [
         "# ChronosLOB Final Empirical Report",
@@ -400,16 +939,23 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
         "",
     ]
     lines.extend(_section("Evidence Snapshot", _render_evidence_snapshot(data, headline_metrics)))
+    lines.extend(_section("Evidence Pack Audit", _render_evidence_pack_audit(data)))
     lines.extend(_section("Research Question", _render_research_question()))
     lines.extend(_section("Dataset And Split Protocol", _render_dataset_protocol(data)))
     lines.extend(_section("Model Families", _render_model_families(data)))
     lines.extend(_section("Main Result Table", _render_main_results(data)))
+    lines.extend(_section(_SSL_SECTION_TITLE, _render_ssl(data)))
+    lines.extend(_section(_FULL_GRID_SECTION_TITLE, _render_full_grid(data)))
+    lines.extend(_section("Figure Index", _render_figure_index(data)))
     lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
     lines.extend(_section("Ablation Summary", _render_ablations(data)))
+    lines.extend(_section("Feature Ablation Summary", _render_feature_ablations(data)))
     lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
     lines.extend(_section("External Benchmark Context", _render_external(data)))
-    lines.extend(_section("What This Proves", _render_what_this_proves()))
-    lines.extend(_section("What This Does Not Prove", _render_what_this_does_not_prove()))
+    lines.extend(_section("What This Supports", _render_what_this_proves(data)))
+    lines.extend(
+        _section("What This Does Not Claim", _render_what_this_does_not_prove(data))
+    )
     lines.extend(_section("Limitations", _render_limitations(data)))
     lines.extend(_section("Artefact Traceability", _render_traceability(data)))
     lines.extend(_section("Reproduction Commands", _render_reproduction_commands()))
@@ -431,11 +977,22 @@ def _render_evidence_snapshot(
         if data.execution.directory is not None and data.execution.summary is not None
         else "skipped"
     )
+    execution_v3_status = _execution_v3_status(data)
     external_status = (
         "protocol context loaded"
         if data.external.directory is not None and data.external.summary is not None
         else "skipped"
     )
+    if not data.full_grid.available:
+        full_grid_status = "not supplied; no full-grid neural result claimed"
+    elif data.full_grid.evidence_level == "smoke_test_only":
+        full_grid_status = "smoke-test-only; not empirical evidence"
+    else:
+        full_grid_status = (
+            "loaded; "
+            f"{_mapping_str(data.full_grid.summary, 'completed_run_count')} completed, "
+            f"{_mapping_str(data.full_grid.summary, 'failed_run_count')} failed"
+        )
     rows = [
         ("generated_at", data.generated_at.isoformat()),
         ("git_commit", data.git_commit or "not available"),
@@ -447,14 +1004,51 @@ def _render_evidence_snapshot(
         ("neural_scope", "reduced-scope supervised neural, single-seed"),
         ("best_neural_test_macro_f1", _metric_snapshot(neural, include_lookback=True)),
         ("execution_scope", f"{execution_status}; metrics are proxy diagnostics"),
+        ("execution_v3_scope", execution_v3_status),
         (
             "external_scope",
             f"{external_status}; protocol context only, not ranking claims",
         ),
+        ("full_neural_grid", full_grid_status),
         ("report_path", _display_path(data.report_path)),
         ("summary_path", _display_path(data.summary_path)),
     ]
     return _markdown_table(("field", "value"), rows)
+
+
+def _render_evidence_pack_audit(data: _FinalReportData) -> list[str]:
+    pack = data.evidence_pack
+    if not pack.available or pack.manifest is None or pack.claim_audit is None:
+        return [
+            "Skipped: evidence-pack artefacts were not supplied or were unavailable.",
+            "Release claim status should be checked with `build-evidence-pack` before public use.",
+        ]
+    artefact_counts = _nested_mapping(pack.manifest, "artefact_status_counts") or {}
+    claim_counts = _nested_mapping(pack.claim_audit, "claim_status_counts") or {}
+    rows = [
+        ("evidence_pack_status", pack.reason),
+        ("evidence_pack_dir", _display_path(pack.directory) if pack.directory else "n/a"),
+        ("artefact_status_counts", _format_mapping_counts(artefact_counts)),
+        ("claim_status_counts", _format_mapping_counts(claim_counts)),
+        (
+            "supported_claims",
+            _first_markdown_bullets(pack.supported_claims, fallback="none fully supported"),
+        ),
+        (
+            "unsupported_or_limited_claims",
+            _first_markdown_bullets(pack.unsupported_claims, fallback="see claim audit"),
+        ),
+    ]
+    caveats = [
+        "",
+        "Release caveats from the evidence pack:",
+        "",
+        "- Smoke diagnostics are not empirical evidence.",
+        "- SSL improvement language requires real aggregate comparison artefacts.",
+        "- Execution-v3 metrics remain offline proxy diagnostics.",
+        "- FI-2010 snapshot features do not expose event-level order flow or queue position.",
+    ]
+    return [*_markdown_table(("field", "value"), rows), *caveats]
 
 
 def _render_research_question() -> list[str]:
@@ -581,6 +1175,327 @@ def _render_main_results(data: _FinalReportData) -> list[str]:
     return intro + table
 
 
+def _render_ssl(data: _FinalReportData) -> list[str]:
+    ssl = data.ssl
+    if not ssl.admitted:
+        return [
+            f"Skipped: {ssl.reason}.",
+            "",
+            "The final report builder refuses to admit self-supervised rows "
+            "unless a pretrained encoder checkpoint is SHA256-verified against "
+            "its manifest. No SSL result is claimed in this report.",
+        ]
+
+    rows: list[tuple[str, ...]] = []
+    for row in ssl.comparison_rows:
+        if str(row.get("status", "")).strip() not in ("", "ok"):
+            continue
+        rows.append(
+            (
+                row.get("fold_id", ""),
+                _empty_to_na(row.get("seed", "")),
+                _empty_to_na(row.get("lookback", "")),
+                _format_float(_row_float(row, "ssl_macro_f1")),
+                _format_float(_row_float(row, "supervised_macro_f1")),
+                _format_float(_row_float(row, "macro_f1_delta")),
+            )
+        )
+    intro = [
+        "Self-supervised pretraining used official training rows only; the "
+        "validation pretraining loss is carved from training rows and the "
+        "official split-aware test evaluation is preserved. The fine-tuned "
+        "ssl_transformer and the supervised baseline share one architecture, "
+        "set of folds, horizons, seeds and preprocessing.",
+        "",
+        f"Verified pretrained encoder checkpoints: {len(ssl.verified_runs)}.",
+        "",
+        "These are reduced-scope SSL artefacts. The macro-F1 deltas below "
+        "report a like-for-like comparison and are not a self-supervised "
+        "effectiveness or SOTA claim.",
+        "",
+    ]
+    table = _markdown_table(
+        (
+            "fold",
+            "seed",
+            "lookback",
+            "ssl_transformer test macro-F1",
+            "supervised test macro-F1",
+            "macro-F1 delta",
+        ),
+        rows,
+    )
+    return intro + table
+
+
+def _render_full_grid(data: _FinalReportData) -> list[str]:
+    grid = data.full_grid
+    if not grid.available:
+        return [
+            f"Status: unavailable. {grid.reason}.",
+            "",
+            "No full-grid neural result is claimed.",
+        ]
+    summary = grid.summary or {}
+    smoke = grid.evidence_level == "smoke_test_only"
+    status_lines = [
+        f"Status: {'smoke-test-only' if smoke else 'loaded'}.",
+        (
+            "These artefacts are code-path smoke outputs and are not empirical "
+            "evidence."
+            if smoke
+            else "These artefacts are loaded as aggregate full-grid evidence, "
+            "subject to the failures table below."
+        ),
+        "",
+    ]
+    status_rows = [
+        ("execution_mode", _mapping_str(summary, "execution_mode")),
+        ("folds", _join_values(_mapping_list(summary, "folds"))),
+        ("horizons", _join_values(_mapping_list(summary, "horizons"))),
+        ("seeds", _join_values(_mapping_list(summary, "seeds"))),
+        ("lookbacks", _join_values(_mapping_list(summary, "lookbacks"))),
+        ("objectives", _join_values(_mapping_list(summary, "objectives"))),
+        ("pretrain_epochs", _mapping_str(summary, "pretrain_epochs")),
+        ("fine_tune_epochs", _mapping_str(summary, "max_epochs")),
+        ("completed_runs", str(summary.get("completed_run_count", "not available"))),
+        ("failed_runs", str(summary.get("failed_run_count", "not available"))),
+        ("core_grid_complete", str(summary.get("core_grid_complete", "not available"))),
+    ]
+    lines = status_lines + _markdown_table(("field", "value"), status_rows)
+    lines.extend(["", "Aggregate supervised-vs-SSL rows:", ""])
+    aggregate_rows = []
+    for row in grid.aggregate_rows:
+        aggregate_rows.append(
+            (
+                row.get("horizon", ""),
+                row.get("lookback", ""),
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("completed_run_count", ""),
+                row.get("failed_run_count", ""),
+                _format_float(_row_float(row, "mean_macro_f1")),
+                _format_float(_row_float(row, "std_macro_f1")),
+                _format_float(_row_float(row, "mean_mcc")),
+                _format_float(_row_float(row, "mean_ece")),
+            )
+        )
+    lines.extend(
+        _markdown_table(
+            (
+                "horizon",
+                "lookback",
+                "model",
+                "pretraining",
+                "completed",
+                "failed",
+                "mean macro-F1",
+                "std macro-F1",
+                "mean MCC",
+                "mean ECE",
+            ),
+            aggregate_rows,
+        )
+    )
+    lines.extend(["", "Matched SSL deltas:", ""])
+    matched_rows = [
+        row for row in grid.comparison_rows if row.get("status") == "matched"
+    ]
+    delta_rows = []
+    for row in matched_rows:
+        delta_rows.append(
+            (
+                row.get("horizon", ""),
+                row.get("lookback", ""),
+                row.get("ssl_objective", ""),
+                _format_float(_row_float(row, "delta_macro_f1")),
+                _format_float(_row_float(row, "delta_mcc")),
+                _format_float(_row_float(row, "delta_ece")),
+                row.get("macro_f1_outcome", ""),
+                row.get("mcc_outcome", ""),
+                row.get("ece_outcome", ""),
+            )
+        )
+    lines.extend(
+        _markdown_table(
+            (
+                "horizon",
+                "lookback",
+                "SSL objective",
+                "delta macro-F1",
+                "delta MCC",
+                "delta ECE",
+                "macro-F1",
+                "MCC",
+                "ECE",
+            ),
+            delta_rows,
+        )
+    )
+    lines.extend(["", "Failure summary:", ""])
+    invalid_failures = [
+        row
+        for row in grid.failure_rows
+        if str(row.get("invalidates_aggregate_claims", "")).lower() == "true"
+    ]
+    failure_rows = [
+        (
+            row.get("fold", ""),
+            row.get("horizon", ""),
+            row.get("seed", ""),
+            row.get("objective", ""),
+            row.get("status", ""),
+            _empty_to_na(row.get("reason", "")),
+        )
+        for row in grid.failure_rows[:10]
+    ]
+    if failure_rows:
+        lines.extend(
+            _markdown_table(
+                ("fold", "horizon", "seed", "objective", "status", "reason"),
+                failure_rows,
+            )
+        )
+        if len(grid.failure_rows) > 10:
+            lines.append(f"{len(grid.failure_rows) - 10} additional rows are in failures.csv.")
+    else:
+        lines.append("No failed or reused-existing runs are recorded.")
+    lines.extend(["", *_full_grid_interpretation(grid, matched_rows, invalid_failures)])
+    return lines
+
+
+def _render_figure_index(data: _FinalReportData) -> list[str]:
+    figures = data.figures
+    if not figures.available:
+        return [
+            f"Skipped: {figures.reason}.",
+            "No diagnostic figure evidence is implied without a figure manifest.",
+        ]
+    completed = [
+        entry for entry in figures.entries if str(entry.get("status", "")) == "completed"
+    ]
+    skipped = [
+        entry for entry in figures.entries if str(entry.get("status", "")) == "skipped"
+    ]
+    lines: list[str] = []
+    if figures.smoke_test_only:
+        lines.extend(
+            [
+                "Figures are smoke-test diagnostics only and are not empirical evidence.",
+                "",
+            ]
+        )
+    if completed:
+        rows = [
+            (
+                str(entry.get("figure_id", "")),
+                str(entry.get("title", "")),
+                _empty_to_na(_optional_entry_str(entry, "file_path")),
+                _figure_description(entry),
+            )
+            for entry in completed
+        ]
+        lines.extend(_markdown_table(("figure", "title", "path", "description"), rows))
+    else:
+        lines.append("No completed figures are recorded in the manifest.")
+    if skipped:
+        lines.extend(["", "Skipped plots:", ""])
+        skipped_rows = [
+            (
+                str(entry.get("figure_id", "")),
+                _empty_to_na(_optional_entry_str(entry, "reason")),
+            )
+            for entry in skipped
+        ]
+        lines.extend(_markdown_table(("figure", "reason"), skipped_rows))
+    return lines
+
+
+def _optional_entry_str(entry: Mapping[str, Any], key: str) -> str:
+    value = entry.get(key)
+    return "" if value is None else str(value)
+
+
+def _figure_description(entry: Mapping[str, Any]) -> str:
+    figure_id = str(entry.get("figure_id", ""))
+    descriptions = {
+        "reliability_curve": "confidence calibration from stored predictions",
+        "macro_f1_by_fold": "fold-level macro-F1 diagnostic",
+        "macro_f1_by_horizon": "mean macro-F1 across horizons",
+        "ece_by_horizon": "mean calibration error across horizons",
+        "ssl_matched_delta": "matched supervised-vs-SSL deltas only",
+        "confidence_threshold_eligible_fraction": "retained sample fraction by confidence",
+        "confidence_threshold_macro_f1": "macro-F1 on retained high-confidence samples",
+        "cost_adjusted_proxy": "proxy diagnostics only when artefacts exist",
+        "regime_breakdown": "regime-labelled predictions only when present",
+    }
+    if figure_id.startswith("confusion_matrix_h"):
+        return "canonical up/stationary/down confusion matrix"
+    return descriptions.get(figure_id, "stored-artefact diagnostic figure")
+
+
+def _full_grid_interpretation(
+    grid: _FullGridArtefacts,
+    matched_rows: Sequence[Mapping[str, str]],
+    invalid_failures: Sequence[Mapping[str, str]],
+) -> list[str]:
+    if grid.evidence_level == "smoke_test_only":
+        return ["Interpretation: smoke-test-only; no empirical SSL claim is made."]
+    if invalid_failures:
+        return [
+            "Interpretation: failed runs are present, so aggregate claims are "
+            "limited to completed runs and should not be described as a complete grid."
+        ]
+    if not matched_rows:
+        return [
+            "Interpretation: no matched supervised-vs-SSL pairs are available, "
+            "so no SSL delta claim is made."
+        ]
+    lines = ["Interpretation:"]
+    for objective in ("masked_reconstruction", "next_field"):
+        rows = [row for row in matched_rows if row.get("ssl_objective") == objective]
+        if not rows:
+            lines.append(f"- {objective}: no matched rows.")
+            continue
+        macro = _outcome_counts(rows, "macro_f1_outcome")
+        mcc = _outcome_counts(rows, "mcc_outcome")
+        ece = _outcome_counts(rows, "ece_outcome")
+        macro_mean = _mean_delta(rows, "delta_macro_f1")
+        mcc_mean = _mean_delta(rows, "delta_mcc")
+        ece_mean = _mean_delta(rows, "delta_ece")
+        lines.append(
+            f"- {objective}: mean deltas macro-F1 {_format_float(macro_mean)}, "
+            f"MCC {_format_float(mcc_mean)}, ECE {_format_float(ece_mean)}; "
+            f"outcomes macro-F1 {macro}, MCC {mcc}, ECE {ece}."
+        )
+        lines.append(
+            "  No overall SSL improvement is supported; report any deltas "
+            "metric-by-metric."
+        )
+    return lines
+
+
+def _mean_delta(rows: Sequence[Mapping[str, str]], column: str) -> float | None:
+    values = [
+        value
+        for row in rows
+        for value in [_row_float(row, column)]
+        if value is not None
+    ]
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def _outcome_counts(rows: Sequence[Mapping[str, str]], column: str) -> str:
+    counts = {"win": 0, "loss": 0, "tie": 0}
+    for row in rows:
+        value = row.get(column, "")
+        if value in counts:
+            counts[value] += 1
+    return f"{counts['win']} win/{counts['loss']} loss/{counts['tie']} tie"
+
+
 def _render_uncertainty(data: _FinalReportData) -> list[str]:
     best_classical = _best_metric_row(data.classical_results, lookback_column=None)
     best_neural = _best_metric_row(data.neural_results, lookback_column="lookback")
@@ -690,10 +1605,230 @@ def _render_ablations(data: _FinalReportData) -> list[str]:
     return lines
 
 
-def _render_execution(data: _FinalReportData) -> list[str]:
-    if data.execution.directory is None or data.execution.summary is None:
-        return ["Skipped: execution artefacts were not supplied or were unavailable."]
+def _render_feature_ablations(data: _FinalReportData) -> list[str]:
+    if data.feature_ablation.directory is None or data.feature_ablation.summary is None:
+        return [
+            "Skipped: FI-2010 microstructure feature-ablation artefacts were not "
+            "supplied or were unavailable.",
+        ]
 
+    summary = data.feature_ablation.summary
+    aggregate_rows = data.feature_ablation.csv_rows.get("aggregate_summary.csv", [])
+    delta_rows = data.feature_ablation.csv_rows.get("feature_delta_summary.csv", [])
+    smoke = bool(summary.get("smoke_test"))
+    lines = [
+        "Feature ablations are leakage-safe diagnostics over FI-2010 snapshot "
+        "columns. Unsupported event-level groups remain explicit.",
+        "The `snapshot_order_flow_proxy` group is a snapshot-delta proxy, not "
+        "true event-level order-flow imbalance.",
+        "Current stored feature-ablation evidence is `partial_real`: it covers "
+        "folds 1-5 at horizon 10 for logistic and ridge models, with horizons "
+        "20/50 and slower model families left for future expansion.",
+        "",
+    ]
+    if smoke:
+        lines.extend(
+            [
+                "Only smoke-test artefacts were supplied, so this section is a "
+                "pipeline check rather than empirical evidence.",
+                "",
+            ]
+        )
+    status_rows = [
+        ("runner_version", _mapping_str(summary, "runner_version")),
+        ("smoke_test", str(smoke)),
+        ("completed_run_count", _mapping_str(summary, "completed_run_count")),
+        ("failed_run_count", _mapping_str(summary, "failed_run_count")),
+        ("feature_groups", _join_values(_mapping_list(summary, "feature_groups"))),
+        ("proxy_groups", _join_values(_mapping_list(summary, "proxy_groups"))),
+        (
+            "unsupported_groups",
+            _join_values(_mapping_list(summary, "unsupported_groups")),
+        ),
+    ]
+    lines.extend(_markdown_table(("field", "value"), status_rows))
+    if aggregate_rows:
+        lines.extend(["", "Aggregate rows:", ""])
+        rows = []
+        for row in aggregate_rows[:10]:
+            rows.append(
+                (
+                    row.get("horizon", ""),
+                    row.get("model", ""),
+                    row.get("ablation_mode", ""),
+                    row.get("feature_group", ""),
+                    row.get("completed_runs", ""),
+                    _format_float(_row_float(row, "mean_macro_f1")),
+                    _format_float(_row_float(row, "mean_mcc")),
+                )
+            )
+        lines.extend(
+            _markdown_table(
+                (
+                    "horizon",
+                    "model",
+                    "mode",
+                    "feature group",
+                    "completed",
+                    "mean macro-F1",
+                    "mean MCC",
+                ),
+                rows,
+            )
+        )
+    if delta_rows:
+        lines.extend(["", "Matched deltas versus all-features baseline:", ""])
+        rows = []
+        for row in delta_rows[:10]:
+            rows.append(
+                (
+                    row.get("horizon", ""),
+                    row.get("model", ""),
+                    row.get("ablation_mode", ""),
+                    row.get("feature_group", ""),
+                    _format_float(_row_float(row, "delta_macro_f1")),
+                    _format_float(_row_float(row, "delta_mcc")),
+                    row.get("interpretation", ""),
+                )
+            )
+        lines.extend(
+            _markdown_table(
+                (
+                    "horizon",
+                    "model",
+                    "mode",
+                    "feature group",
+                    "delta macro-F1",
+                    "delta MCC",
+                    "interpretation",
+                ),
+                rows,
+            )
+        )
+    return lines
+
+
+def _render_execution(data: _FinalReportData) -> list[str]:
+    lines = [
+        "Execution-aware sections are offline execution-aware proxy diagnostics only.",
+        (
+            "They separate classification performance from confidence-filtered signal "
+            "quality and cost-adjusted proxy diagnostics, and they do not support "
+            "live-trading, profitability or PnL claims."
+        ),
+        "",
+    ]
+    lines.extend(["Execution-v3 status:", ""])
+    lines.extend(_markdown_table(("field", "value"), _execution_v3_status_rows(data)))
+    if data.execution_v3.directory is not None and data.execution_v3.summary is not None:
+        lines.extend(["", "Confidence filtering:", ""])
+        lines.extend(
+            _markdown_table(
+                (
+                    "model",
+                    "objective",
+                    "horizon",
+                    "threshold",
+                    "active fraction",
+                    "macro-F1",
+                    "cost-adjusted proxy",
+                    "status",
+                ),
+                _execution_v3_confidence_rows(data.execution_v3),
+            )
+        )
+        lines.extend(["", "Cost sensitivity:", ""])
+        lines.extend(
+            _markdown_table(
+                (
+                    "model",
+                    "objective",
+                    "horizon",
+                    "fee bps",
+                    "spread x",
+                    "gross proxy",
+                    "cost-adjusted proxy",
+                    "cost mode",
+                ),
+                _execution_v3_cost_rows(data.execution_v3),
+            )
+        )
+        latency_rows = _execution_v3_latency_rows(data.execution_v3)
+        if latency_rows:
+            lines.extend(["", "Latency sensitivity:", ""])
+            lines.extend(
+                _markdown_table(
+                    (
+                        "model",
+                        "objective",
+                        "horizon",
+                        "latency",
+                        "active trades",
+                        "hit rate",
+                        "cost-adjusted proxy",
+                        "status",
+                    ),
+                    latency_rows,
+                )
+            )
+        lines.extend(["", "Fill assumptions:", ""])
+        lines.extend(
+            _markdown_table(
+                (
+                    "model",
+                    "objective",
+                    "fill mode",
+                    "filled",
+                    "fill fraction",
+                    "hit rate",
+                    "cost-adjusted proxy",
+                    "status",
+                ),
+                _execution_v3_fill_rows(data.execution_v3),
+            )
+        )
+        adverse_rows = _execution_v3_adverse_rows(data.execution_v3)
+        if adverse_rows:
+            lines.extend(["", "Adverse-selection proxy:", ""])
+            lines.extend(
+                _markdown_table(
+                    (
+                        "model",
+                        "objective",
+                        "horizon",
+                        "confidence bucket",
+                        "fill assumption",
+                        "adverse fraction",
+                        "mode",
+                    ),
+                    adverse_rows,
+                )
+            )
+    elif data.execution_v3.directory is None:
+        lines.append("")
+        lines.append(
+            "Execution-v3 artefacts were not supplied, so no execution-v3 claim is made."
+        )
+
+    if data.execution.directory is not None and data.execution.summary is not None:
+        lines.extend(["", "Legacy execution-v2 proxy snapshot:", ""])
+        lines.extend(_render_execution_v2_table(data))
+    skipped_rows = _execution_v3_skipped_rows(data.execution_v3)
+    if skipped_rows:
+        lines.extend(["", "Skipped diagnostics:", ""])
+        lines.extend(_markdown_table(("diagnostic", "scope", "reason"), skipped_rows))
+    lines.extend(
+        [
+            "",
+            "Conservative interpretation: execution-v3 can show how stored FI-2010 "
+            "signals respond to confidence filters, costs, latency and fill proxy "
+            "assumptions. It does not establish deployable execution quality.",
+        ]
+    )
+    return lines
+
+
+def _render_execution_v2_table(data: _FinalReportData) -> list[str]:
     rows = []
     for row in data.execution.csv_rows.get("degradation_summary.csv", []):
         rows.append(
@@ -707,38 +1842,174 @@ def _render_execution(data: _FinalReportData) -> list[str]:
                 _format_float(_row_float(row, "relative_degradation_proxy")),
             )
         )
-    lines = [
-        "Execution-aware metrics are proxy diagnostics only. They are not a backtest "
-        "and make no profitability or tradability claim.",
-        "",
-    ]
-    lines.extend(
-        _markdown_table(
-            (
-                "model",
-                "source",
-                "status",
-                "test macro-F1",
-                "base proxy",
-                "stress proxy",
-                "relative degradation",
-            ),
-            rows,
-        )
-    )
-    lines.append("")
-    summary = data.execution.summary
-    assumption_rows = [
-        ("proxy_diagnostics", str(summary.get("proxy_diagnostics", "not available"))),
-        ("fill_assumption", _mapping_str(summary, "fill_assumption")),
-        ("checkpoints_required", str(summary.get("checkpoints_required", "not available"))),
+    return _markdown_table(
         (
-            "full_predictions_required",
-            str(summary.get("full_predictions_required", "not available")),
+            "model",
+            "source",
+            "status",
+            "test macro-F1",
+            "base proxy",
+            "stress proxy",
+            "relative degradation",
+        ),
+        rows,
+    )
+
+
+def _execution_v3_status(data: _FinalReportData) -> str:
+    artefacts = data.execution_v3
+    if artefacts.directory is None or artefacts.summary is None:
+        return "not supplied; no execution-v3 claim is made"
+    summary = artefacts.summary
+    if bool(summary.get("smoke_test")):
+        return "smoke-test-only; not empirical evidence"
+    return (
+        "offline execution-aware proxy diagnostic loaded; "
+        f"payoff_mode={_mapping_str(summary, 'payoff_mode')}, "
+        f"cost_mode={_mapping_str(summary, 'cost_mode')}"
+    )
+
+
+def _execution_v3_status_rows(data: _FinalReportData) -> list[tuple[str, str]]:
+    artefacts = data.execution_v3
+    if artefacts.directory is None or artefacts.summary is None:
+        return [
+            ("status", "missing"),
+            ("claim", "no execution-v3 claim is made"),
+            ("reason", "execution-v3 artefacts were not supplied or were unavailable"),
+        ]
+    summary = artefacts.summary
+    return [
+        ("status", _execution_v3_status(data)),
+        ("payoff_mode", _mapping_str(summary, "payoff_mode")),
+        ("cost_mode", _mapping_str(summary, "cost_mode")),
+        ("smoke_test_status", _mapping_str(summary, "smoke_test_status")),
+        (
+            "diagnostics_produced",
+            _join_values(_mapping_list(summary, "diagnostics_produced")),
+        ),
+        (
+            "diagnostics_skipped",
+            _join_values(_mapping_list(summary, "diagnostics_skipped")),
         ),
     ]
-    lines.extend(_markdown_table(("field", "value"), assumption_rows))
-    return lines
+
+
+def _execution_v3_confidence_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, ...]]:
+    rows = artefacts.csv_rows.get("confidence_threshold_aggregate.csv", [])
+    rendered: list[tuple[str, ...]] = []
+    for row in rows[:10]:
+        rendered.append(
+            (
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("horizon", ""),
+                row.get("threshold", ""),
+                _format_float(_row_float(row, "mean_active_trade_fraction")),
+                _format_float(_row_float(row, "mean_macro_f1")),
+                _format_float(_row_float(row, "mean_net_cost_adjusted_proxy")),
+                row.get("status", ""),
+            )
+        )
+    return rendered
+
+
+def _execution_v3_cost_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, ...]]:
+    rows = artefacts.csv_rows.get("cost_sensitivity_summary.csv", [])
+    rendered: list[tuple[str, ...]] = []
+    for row in rows[:10]:
+        rendered.append(
+            (
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("horizon", ""),
+                row.get("fee_bps", ""),
+                row.get("spread_multiplier", ""),
+                _format_float(_row_float(row, "gross_proxy")),
+                _format_float(_row_float(row, "net_proxy")),
+                row.get("cost_mode", ""),
+            )
+        )
+    return rendered
+
+
+def _execution_v3_latency_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, ...]]:
+    rows = artefacts.csv_rows.get("latency_sensitivity_summary.csv", [])
+    rendered: list[tuple[str, ...]] = []
+    for row in rows[:10]:
+        rendered.append(
+            (
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("horizon", ""),
+                row.get("latency_step", ""),
+                row.get("active_trades", ""),
+                _format_float(_row_float(row, "directional_hit_rate")),
+                _format_float(_row_float(row, "net_proxy")),
+                row.get("status", ""),
+            )
+        )
+    return rendered
+
+
+def _execution_v3_fill_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, ...]]:
+    rows = artefacts.csv_rows.get("fill_assumption_summary.csv", [])
+    rendered: list[tuple[str, ...]] = []
+    for row in rows[:10]:
+        rendered.append(
+            (
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("fill_mode", ""),
+                row.get("filled_count", ""),
+                _format_float(_row_float(row, "fill_fraction")),
+                _format_float(_row_float(row, "directional_hit_rate_on_filled_trades")),
+                _format_float(_row_float(row, "net_proxy")),
+                row.get("status", ""),
+            )
+        )
+    return rendered
+
+
+def _execution_v3_adverse_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, ...]]:
+    rows = artefacts.csv_rows.get("adverse_selection_summary.csv", [])
+    rendered: list[tuple[str, ...]] = []
+    for row in rows[:10]:
+        if row.get("status") != "ok":
+            continue
+        rendered.append(
+            (
+                row.get("model_family", ""),
+                row.get("pretraining_objective", ""),
+                row.get("horizon", ""),
+                row.get("confidence_bucket", ""),
+                row.get("fill_assumption", ""),
+                _format_float(_row_float(row, "adverse_fraction")),
+                row.get("adverse_selection_mode", ""),
+            )
+        )
+    return rendered
+
+
+def _execution_v3_skipped_rows(artefacts: _OptionalArtefacts) -> list[tuple[str, str, str]]:
+    payload = artefacts.json_payloads.get("skipped_diagnostics.json")
+    if not payload:
+        return []
+    raw = payload.get("skipped")
+    if not isinstance(raw, list):
+        return []
+    rows: list[tuple[str, str, str]] = []
+    for item in raw[:20]:
+        if not isinstance(item, Mapping):
+            continue
+        rows.append(
+            (
+                str(item.get("diagnostic", "")),
+                str(item.get("scope", "")),
+                str(item.get("skip_reason", "")),
+            )
+        )
+    return rows
 
 
 def _render_external(data: _FinalReportData) -> list[str]:
@@ -768,21 +2039,63 @@ def _render_external(data: _FinalReportData) -> list[str]:
     return lines
 
 
-def _render_what_this_proves() -> list[str]:
-    return [
+def _render_what_this_proves(data: _FinalReportData) -> list[str]:
+    lines = [
         "- The committed artefacts support a traceable multi-fold classical FI-2010 result.",
         "- The committed artefacts support reduced-scope, single-seed supervised neural evidence.",
         "- The uncertainty, ablation and proxy-diagnostic layers are generated from stored tables.",
         "- External references are used only to document protocol context.",
     ]
+    if data.ssl.admitted:
+        lines.append(
+            "- A leakage-safe self-supervised pretraining and fine-tuning path "
+            "produced SHA256-verified encoder checkpoints and a like-for-like "
+            "ssl_transformer vs supervised comparison.",
+        )
+    if data.full_grid.available and data.full_grid.evidence_level != "smoke_test_only":
+        lines.append(
+            "- The full neural grid artefacts compare supervised and SSL "
+            "matrix-transformer variants under matched fold, horizon, seed, "
+            "lookback, architecture and preprocessing keys.",
+        )
+    if (
+        data.execution_v3.directory is not None
+        and data.execution_v3.summary is not None
+        and not bool(data.execution_v3.summary.get("smoke_test"))
+    ):
+        lines.append(
+            "- Execution-v3 artefacts support an offline execution-aware proxy "
+            "diagnostic over stored FI-2010 full-grid predictions.",
+        )
+    if (
+        data.feature_ablation.directory is not None
+        and data.feature_ablation.summary is not None
+        and not bool(data.feature_ablation.summary.get("smoke_test"))
+    ):
+        lines.append(
+            "- Feature-ablation artefacts support leakage-safe FI-2010 snapshot "
+            "feature-family diagnostics with proxy features labelled as proxies.",
+        )
+    return lines
 
 
-def _render_what_this_does_not_prove() -> list[str]:
+def _render_what_this_does_not_prove(data: _FinalReportData) -> list[str]:
+    ssl_line = (
+        "- Self-supervised superiority or SOTA status; the SSL section "
+        "reports a like-for-like delta only."
+        if data.ssl.admitted
+        else "- SSL improvement or SOTA status."
+    )
     return [
         "- Profitability or tradability in deployed markets.",
         "- Production execution quality or market-impact realism.",
+        "- Unsupported live-trading claims from execution-v3 proxy diagnostics.",
         "- Foundation-model status.",
-        "- SSL or SOTA performance.",
+        ssl_line,
+        "- A full-grid SSL improvement claim when the full-grid directory is missing, "
+        "smoke-only or contains failed matched runs.",
+        "- True order-flow, cancellation, trade-imbalance or queue-position claims "
+        "from FI-2010 feature ablations; absent event-level fields remain unsupported.",
         "- Neural superiority over the classical family.",
     ]
 
@@ -799,7 +2112,8 @@ def _render_limitations(data: _FinalReportData) -> list[str]:
         ),
         (
             "execution_scope",
-            "proxy diagnostics only; queue, impact and venue mechanics are not modelled",
+            "offline execution-aware proxy diagnostics only; queue, impact and "
+            "venue mechanics are not modelled",
         ),
         (
             "external_scope",
@@ -808,6 +2122,16 @@ def _render_limitations(data: _FinalReportData) -> list[str]:
         (
             "prediction_checkpoint_policy",
             "full predictions and checkpoints are not required by this report builder",
+        ),
+        (
+            "full_neural_grid_scope",
+            "reported only when aggregate artefacts are supplied; smoke artefacts "
+            "are not empirical evidence",
+        ),
+        (
+            "feature_ablation_scope",
+            "snapshot-derived FI-2010 diagnostics only; snapshot-flow columns are "
+            "proxies and unsupported event-level groups remain unavailable",
         ),
     ]
     return _markdown_table(("limitation", "detail"), rows)
@@ -830,7 +2154,10 @@ def _render_reproduction_commands() -> list[str]:
         "  --uncertainty experiments/fi2010_uncertainty \\",
         "  --ablations experiments/fi2010_brutal_ablations \\",
         "  --execution experiments/fi2010_execution_v2 \\",
+        "  --execution-v3 experiments/fi2010_execution_v3 \\",
         "  --external experiments/fi2010_external_context \\",
+        "  --neural-full-grid experiments/fi2010_neural_full_grid \\",
+        "  --feature-ablations experiments/fi2010_feature_ablations \\",
         "  --out reports/chronoslob_final_empirical_report.md \\",
         "  --overwrite",
         "",
@@ -1072,6 +2399,18 @@ def _read_csv(
         ]
 
 
+def _read_optional_text(
+    path: Path,
+    key: str,
+    input_paths: dict[str, str],
+    file_hashes: dict[str, str],
+) -> str | None:
+    if not path.is_file():
+        return None
+    _record_file(path, key, input_paths, file_hashes)
+    return path.read_text(encoding="utf-8")
+
+
 def _record_file(
     path: Path,
     key: str,
@@ -1175,6 +2514,25 @@ def _join_values(values: Sequence[Any]) -> str:
     if not values:
         return "not available"
     return ", ".join(str(value) for value in values)
+
+
+def _format_mapping_counts(payload: Mapping[str, Any]) -> str:
+    if not payload:
+        return "not available"
+    return ", ".join(f"{key}={value}" for key, value in sorted(payload.items()))
+
+
+def _first_markdown_bullets(text: str | None, *, fallback: str) -> str:
+    if not text:
+        return fallback
+    bullets = [
+        line.removeprefix("- ").strip()
+        for line in text.splitlines()
+        if line.startswith("- ")
+    ]
+    if not bullets:
+        return fallback
+    return "; ".join(bullets[:3])
 
 
 def _row_float(row: Mapping[str, str], key: str) -> float | None:

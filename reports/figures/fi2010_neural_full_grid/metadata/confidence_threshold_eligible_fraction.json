@@ -1,0 +1,12 @@
+{
+  "class_order": [
+    "up",
+    "stationary",
+    "down"
+  ],
+  "created_at": "2026-05-29T16:03:38.735867+00:00",
+  "figure_id": "confidence_threshold_eligible_fraction",
+  "smoke_test": false,
+  "source_data_path": "reports/figures/fi2010_neural_full_grid/source_data/confidence_threshold_eligible_fraction.csv",
+  "title": "Confidence Threshold Vs Eligible Fraction"
+}

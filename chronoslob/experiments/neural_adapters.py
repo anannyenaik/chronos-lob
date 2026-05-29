@@ -96,6 +96,8 @@ except ImportError:  # pragma: no cover - exercised when torch is unavailable
 
 __all__ = [
     "NeuralPaperModelResult",
+    "effective_matrix_window_length",
+    "run_matrix_transformer_finetune",
     "run_neural_paper_model",
 ]
 
@@ -387,6 +389,24 @@ def _make_sequence_dataset(
             raise ValueError(reason)
         return None, reason
     return dataset, None
+
+
+def effective_matrix_window_length(
+    *,
+    configured_window_length: int,
+    split: SplitIndices,
+) -> int:
+    """Public wrapper so the SSL runner reuses the exact window-length rule.
+
+    The SSL encoder's ``max_sequence_length`` must equal the supervised
+    fine-tuning classifier's window length for the encoder transfer to be
+    architecturally valid. Both therefore derive the effective window from this
+    single function.
+    """
+    return _effective_matrix_window_length(
+        configured_window_length=configured_window_length,
+        split=split,
+    )
 
 
 def _effective_matrix_window_length(
@@ -741,6 +761,9 @@ def _run_matrix_transformer(
     class_count_test: int,
     test_timestamps: Sequence[str] | None,
     settings: PaperNeuralSettings,
+    pretrained_encoder_state: Mapping[str, Any] | None = None,
+    init_source: str = "random_init",
+    model_type: str = "normalised_matrix_transformer",
 ) -> NeuralPaperModelResult:
     _require_torch()
     feature_frame, label_frame = _build_sequence_frames(
@@ -837,6 +860,14 @@ def _run_matrix_transformer(
     if settings.deterministic:
         set_torch_deterministic(config.seed)
     model = create_matrix_transformer(model_config)
+    transferred_encoder_keys: list[str] = []
+    if pretrained_encoder_state is not None:
+        from chronoslob.models.matrix_ssl import load_encoder_state_into_classifier
+
+        transferred_encoder_keys = load_encoder_state_into_classifier(
+            model,
+            pretrained_encoder_state,
+        )
     training_started = time.perf_counter()
     history = fit_torch_classifier(
         model,
@@ -855,6 +886,13 @@ def _run_matrix_transformer(
     metadata: dict[str, Any] = {
         "neural_family": "normalised_fi2010_matrix_transformer",
         "baseline_kind": "supervised transformer baseline",
+        "pretraining": {
+            "init_source": init_source,
+            "encoder_initialised_from_pretraining": bool(
+                pretrained_encoder_state is not None
+            ),
+            "transferred_encoder_key_count": len(transferred_encoder_keys),
+        },
         "matrix_path": "normalised FI-2010 matrix path",
         "raw_snapshot_construction": False,
         "sample_counts": {
@@ -902,7 +940,7 @@ def _run_matrix_transformer(
     }
     return _result_from_evaluation(
         model_name=model_name,
-        model_type="normalised_matrix_transformer",
+        model_type=model_type,
         evaluation=evaluation,
         row_indices=row_indices,
         class_to_index=class_mapping,
@@ -911,6 +949,46 @@ def _run_matrix_transformer(
         class_count_test=class_count_test,
         test_timestamps=test_timestamps,
         metadata=metadata,
+    )
+
+
+def run_matrix_transformer_finetune(
+    *,
+    model_name: str,
+    frame: pd.DataFrame,
+    config: FI2010BenchmarkConfig,
+    split: SplitIndices,
+    feature_columns: Sequence[str],
+    all_labels: Sequence[Any],
+    class_count_train: int,
+    class_count_test: int,
+    test_timestamps: Sequence[str] | None,
+    settings: PaperNeuralSettings,
+    pretrained_encoder_state: Mapping[str, Any] | None,
+    init_source: str,
+    model_type: str,
+) -> NeuralPaperModelResult:
+    """Fit a matrix transformer, optionally from a pretrained encoder.
+
+    This is the shared supervised path used by both the SSL fine-tune (with a
+    pretrained encoder) and the supervised baseline (random init). Routing both
+    through one function guarantees identical preprocessing, windowing, splits,
+    seeds and training for a fair comparison.
+    """
+    return _run_matrix_transformer(
+        model_name=model_name,
+        frame=frame,
+        config=config,
+        split=split,
+        feature_columns=feature_columns,
+        all_labels=all_labels,
+        class_count_train=class_count_train,
+        class_count_test=class_count_test,
+        test_timestamps=test_timestamps,
+        settings=settings,
+        pretrained_encoder_state=pretrained_encoder_state,
+        init_source=init_source,
+        model_type=model_type,
     )
 
 

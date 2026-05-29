@@ -1,0 +1,6 @@
+model_family,pretraining_objective,horizon,regime_type,regime_label,sample_count,active_trade_count,directional_hit_rate,gross_proxy,net_proxy,payoff_mode,cost_mode,status,skipped_reason
+all,all,,volatility_regime,unavailable,0,0,,,,unit_payoff,unit_proxy,skipped,volatility_regime labels unavailable in prediction artefacts
+all,all,,spread_regime,unavailable,0,0,,,,unit_payoff,unit_proxy,skipped,spread_regime labels unavailable in prediction artefacts
+all,all,,imbalance_regime,unavailable,0,0,,,,unit_payoff,unit_proxy,skipped,imbalance_regime labels unavailable in prediction artefacts
+all,all,,liquidity_regime,unavailable,0,0,,,,unit_payoff,unit_proxy,skipped,liquidity_regime labels unavailable in prediction artefacts
+all,all,,regime,unavailable,0,0,,,,unit_payoff,unit_proxy,skipped,regime labels unavailable in prediction artefacts

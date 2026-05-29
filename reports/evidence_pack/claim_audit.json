@@ -1,0 +1,292 @@
+{
+  "builder_version": "release/evidence-pack/v1",
+  "claim_status_counts": {
+    "forbidden": 9,
+    "needs_real_evidence": 1,
+    "partially_supported": 4,
+    "supported": 6,
+    "unsupported": 2
+  },
+  "claims": [
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.reproducible_platform",
+      "claim_text": "ChronosLOB is a reproducible LOB research platform",
+      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "required_artefacts": [
+        "project_audit_archive"
+      ],
+      "safe_rewording": "ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.",
+      "status": "partially_supported",
+      "supporting_artefacts": [
+        "project_audit_archive"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.leakage_safe_fi2010",
+      "claim_text": "ChronosLOB uses leakage-safe FI-2010 evaluation",
+      "reason": "Stored FI-2010 benchmark artefacts are present.",
+      "required_artefacts": [
+        "fi2010_classical_benchmarks"
+      ],
+      "safe_rewording": "ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and leakage-control documentation.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_classical_benchmarks"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.train_only_ssl",
+      "claim_text": "ChronosLOB includes train-only SSL pretraining",
+      "reason": "Real SSL artefacts or full-grid SSL objectives are present.",
+      "required_artefacts": [
+        "fi2010_ssl_runner_outputs",
+        "fi2010_neural_full_grid"
+      ],
+      "safe_rewording": "ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real non-smoke SSL artefacts.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.supervised_vs_ssl_transformers",
+      "claim_text": "ChronosLOB compares supervised and SSL transformers",
+      "reason": "Full-grid aggregate and SSL comparison artefacts are present.",
+      "required_artefacts": [
+        "fi2010_neural_full_grid"
+      ],
+      "safe_rewording": "ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched FI-2010 settings.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.execution_proxy_diagnostics",
+      "claim_text": "ChronosLOB includes execution-aware proxy diagnostics",
+      "reason": "Execution-v3 artefacts are present.",
+      "required_artefacts": [
+        "execution_v3_outputs"
+      ],
+      "safe_rewording": "ChronosLOB includes offline execution-aware proxy diagnostics with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_v3_outputs"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.feature_ablations",
+      "claim_text": "ChronosLOB includes microstructure feature ablations",
+      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "required_artefacts": [
+        "feature_ablation_outputs"
+      ],
+      "safe_rewording": "ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.",
+      "status": "partially_supported",
+      "supporting_artefacts": [
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.model_macro_f1",
+      "claim_text": "Model X achieved macro-F1 Y",
+      "reason": "Stored result tables contain macro-F1 values, but this template claim requires the exact model, metric value, scope and artefact path.",
+      "required_artefacts": [
+        "fi2010_classical_benchmarks",
+        "fi2010_neural_full_grid"
+      ],
+      "safe_rewording": "Quote model, split, fold/seed scope and macro-F1 directly from artefact_inventory.csv and the referenced result table.",
+      "status": "partially_supported",
+      "supporting_artefacts": [
+        "fi2010_classical_benchmarks",
+        "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_improved_macro_f1",
+      "claim_text": "SSL improved macro-F1",
+      "reason": "Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.",
+      "required_artefacts": [
+        "fi2010_neural_full_grid",
+        "ssl_comparison.csv"
+      ],
+      "safe_rewording": "Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.",
+      "status": "unsupported",
+      "supporting_artefacts": [
+        "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_improved_calibration",
+      "claim_text": "SSL improved calibration",
+      "reason": "Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.",
+      "required_artefacts": [
+        "fi2010_neural_full_grid",
+        "ssl_comparison.csv"
+      ],
+      "safe_rewording": "Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.",
+      "status": "unsupported",
+      "supporting_artefacts": [
+        "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_execution_proxy",
+      "claim_text": "SSL improved execution-aware proxy metrics",
+      "reason": "Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.",
+      "required_artefacts": [
+        "fi2010_neural_full_grid",
+        "execution_v3_outputs"
+      ],
+      "safe_rewording": "Report execution-v3 proxy rows descriptively and avoid SSL improvement language unless a real matched aggregate table explicitly supports it.",
+      "status": "needs_real_evidence",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.gradient_boosting_best",
+      "claim_text": "Gradient boosting remained the strongest classical baseline",
+      "reason": "Gradient boosting is the best stored classical test macro-F1 row.",
+      "required_artefacts": [
+        "fi2010_classical_benchmarks",
+        "results_summary.csv"
+      ],
+      "safe_rewording": "Name the best classical model from the stored result table and include the metric, split and scope.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_classical_benchmarks"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.feature_group_improved",
+      "claim_text": "Feature group X improved performance",
+      "reason": "Some feature-delta rows are positive, but the placeholder claim must name the exact group, model, horizon, split and ablation mode.",
+      "required_artefacts": [
+        "feature_ablation_outputs",
+        "feature_delta_summary.csv"
+      ],
+      "safe_rewording": "Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored FI-2010 snapshot diagnostics.",
+      "status": "partially_supported",
+      "supporting_artefacts": [
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.confidence_filtering",
+      "claim_text": "Confidence filtering improved cost-adjusted proxy",
+      "reason": "Stored threshold aggregates show higher cost-adjusted proxy at a filter.",
+      "required_artefacts": [
+        "execution_v3_outputs",
+        "confidence_threshold_aggregate.csv"
+      ],
+      "safe_rewording": "Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_v3_outputs"
+      ]
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.1",
+      "claim_text": "profitable trading strategy",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.2",
+      "claim_text": "live trading system",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline research software and stored-artefact diagnostics only.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.3",
+      "claim_text": "production execution simulator",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline research software and stored-artefact diagnostics only.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.4",
+      "claim_text": "state-of-the-art",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe the implemented research platform and audited artefacts conservatively.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.5",
+      "claim_text": "foundation model",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe the implemented research platform and audited artefacts conservatively.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.6",
+      "claim_text": "true OFI on FI-2010",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.7",
+      "claim_text": "queue-position modelling on FI-2010",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.8",
+      "claim_text": "tradable alpha",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline predictive or proxy diagnostics; do not imply returns.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "forbidden.9",
+      "claim_text": "PnL",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline predictive or proxy diagnostics; do not imply returns.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    }
+  ],
+  "generated_at": "2026-05-29T16:14:51.008140+00:00"
+}

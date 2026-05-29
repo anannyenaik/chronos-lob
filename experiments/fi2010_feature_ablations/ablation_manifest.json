@@ -1,0 +1,3398 @@
+{
+  "created_at": "2026-05-29T14:56:57.242978+00:00",
+  "input_folds": [
+    {
+      "fold": "fold_1",
+      "path": "data\\processed\\fi2010\\fold1_combined.csv",
+      "sha256": "49a24198d14b929d8484d58ea2ff5fb5e1853a02f4d519ef9ba46ba27ee5bdb0"
+    },
+    {
+      "fold": "fold_2",
+      "path": "data\\processed\\fi2010\\fold2_combined.csv",
+      "sha256": "13893030307586e562133f3f281f35a4c1d46c2201b00618ac48f89a7aa1c762"
+    },
+    {
+      "fold": "fold_3",
+      "path": "data\\processed\\fi2010\\fold3_combined.csv",
+      "sha256": "1dc455fd0e8de7e6b45d10bfb790f57c8361cb646f489f745b1e5a87c3c025b6"
+    },
+    {
+      "fold": "fold_4",
+      "path": "data\\processed\\fi2010\\fold4_combined.csv",
+      "sha256": "f8e4278246f074a8dd74a84a4dc2654436d1522ba70da7fa8748dcf1acdbf2f3"
+    },
+    {
+      "fold": "fold_5",
+      "path": "data\\processed\\fi2010\\fold5_combined.csv",
+      "sha256": "701075030dc3df292cc0791054ab61a2ab11fb555e1ebfa76711379b86018294"
+    }
+  ],
+  "runner_version": "fi2010-microstructure-feature-ablations/v2",
+  "runs": [
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_logistic_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s0_ridge_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_logistic_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s1_ridge_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_1_h10_s2_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_logistic_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_remove_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_price_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_size_levels",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_top_of_book",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_midprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_microprice",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_depth_slope",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_liquidity_concentration",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_only_one_group_volatility_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_raw_lob_only_raw_lob",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s0_ridge_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s1_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_2_h10_s2_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s0_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s1_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_3_h10_s2_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s0_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s1_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_4_h10_s2_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s0_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s1_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_remove_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_price_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_size_levels",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_top_of_book",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_midprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_microprice",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_top_of_book_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_depth_imbalance",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_depth_slope",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_liquidity_concentration",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_only_one_group_volatility_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_raw_lob_only_raw_lob",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_derived_microstructure_only_derived_microstructure",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations\\runs\\fold_5_h10_s2_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    }
+  ],
+  "status_counts": {
+    "completed": 672,
+    "failed": 0,
+    "skipped_existing": 168
+  }
+}

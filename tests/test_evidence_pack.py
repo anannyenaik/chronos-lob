@@ -1,0 +1,434 @@
+from __future__ import annotations
+
+import csv
+import json
+import os
+import time
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from chronoslob.experiments.evidence_pack import (
+    EvidencePackConfig,
+    EvidencePackError,
+    audit_claims,
+    build_evidence_pack,
+    discover_artefacts,
+)
+from chronoslob.experiments.manifests import sha256_file
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _write_csv(path: Path, headers: list[str], rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=headers)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
+def _touch_report(path: Path, *, forbidden: bool = False) -> None:
+    text = "# Final Report\n\nStored artefact summary only.\n"
+    if forbidden:
+        text += "\nThis is a state-of-the-art system.\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    _write_json(
+        path.with_name(f"{path.stem}_summary.json"),
+        {"created_at": "2026-05-27T00:00:00Z", "input_file_hashes": {}},
+    )
+
+
+def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
+    return EvidencePackConfig(
+        out_dir=tmp_path / "pack",
+        classical_dir=tmp_path / "classical",
+        ssl_dir=tmp_path / "ssl",
+        neural_full_grid_dir=tmp_path / "grid",
+        figures_dir=tmp_path / "figures",
+        execution_v3_dir=tmp_path / "execution_v3",
+        feature_audit_dir=None,
+        feature_ablations_dir=tmp_path / "feature_ablations",
+        ablation_figures_dir=tmp_path / "ablation_figures",
+        final_report_path=tmp_path / "final_report.md",
+        project_audit_dir=None,
+        strict=False,
+        allow_smoke_test=True,
+        overwrite=True,
+    )
+
+
+def _write_complete_classical(path: Path) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "failure_count": 0,
+            "result_rows": 2,
+            "smoke_test": False,
+        },
+    )
+    _write_csv(
+        path / "results_summary.csv",
+        ["model_name", "split", "macro_f1_mean"],
+        [
+            {"model_name": "logistic", "split": "test", "macro_f1_mean": 0.4},
+            {"model_name": "gradient_boosting", "split": "test", "macro_f1_mean": 0.6},
+        ],
+    )
+
+
+def _write_complete_grid(path: Path, *, smoke: bool = False, ssl_delta: float = 0.05) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": smoke,
+            "completed_run_count": 3,
+            "failed_run_count": 0,
+            "core_grid_complete": not smoke,
+            "evidence_level": "smoke_test_only" if smoke else "full_grid_complete",
+            "objectives": ["supervised", "masked_reconstruction", "next_field"],
+        },
+    )
+    _write_csv(
+        path / "results_summary.csv",
+        ["model_family", "split", "mean_macro_f1"],
+        [{"model_family": "matrix_transformer", "split": "test", "mean_macro_f1": 0.7}],
+    )
+    _write_csv(
+        path / "aggregate_summary.csv",
+        ["model_family", "pretraining_objective", "mean_macro_f1"],
+        [
+            {
+                "model_family": "matrix_transformer",
+                "pretraining_objective": "none",
+                "mean_macro_f1": 0.7,
+            }
+        ],
+    )
+    _write_json(
+        path / "aggregate_summary.json",
+        {"created_at": "2026-05-27T00:00:00Z", "completed_run_count": 3},
+    )
+    _write_csv(
+        path / "ssl_comparison.csv",
+        ["status", "delta_macro_f1", "delta_ece"],
+        [{"status": "ok", "delta_macro_f1": ssl_delta, "delta_ece": -0.01}],
+    )
+    _write_csv(path / "failures.csv", ["status"], [])
+
+
+def _write_complete_ssl(path: Path) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "execution_mode": "benchmark",
+            "completed_run_count": 1,
+            "failure_count": 0,
+        },
+    )
+    _write_csv(path / "results_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(path / "comparison_summary.csv", ["status"], [{"status": "ok"}])
+
+
+def _write_complete_figures(path: Path) -> None:
+    _write_json(
+        path / "figure_manifest.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "figures": [{"figure_id": "f1", "status": "completed", "smoke_test": False}],
+        },
+    )
+
+
+def _write_complete_execution(path: Path) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "diagnostics_produced": ["confidence_threshold"],
+        },
+    )
+    _write_json(
+        path / "execution_v3_manifest.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "output_file_hashes": {},
+        },
+    )
+    _write_csv(
+        path / "confidence_threshold_aggregate.csv",
+        [
+            "model_family",
+            "pretraining_objective",
+            "horizon",
+            "threshold",
+            "status",
+            "mean_net_cost_adjusted_proxy",
+        ],
+        [
+            {
+                "model_family": "matrix_transformer",
+                "pretraining_objective": "none",
+                "horizon": 10,
+                "threshold": 0.0,
+                "status": "ok",
+                "mean_net_cost_adjusted_proxy": 1.0,
+            },
+            {
+                "model_family": "matrix_transformer",
+                "pretraining_objective": "none",
+                "horizon": 10,
+                "threshold": 0.7,
+                "status": "ok",
+                "mean_net_cost_adjusted_proxy": 1.5,
+            },
+        ],
+    )
+
+
+def _write_complete_feature_ablations(path: Path) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "completed_run_count": 5040,
+            "failed_run_count": 0,
+            "folds": ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"],
+            "horizons": [10, 20, 50],
+            "seeds": [0, 1, 2],
+            "models": ["logistic", "ridge", "elastic_net", "gradient_boosting"],
+        },
+    )
+    _write_csv(path / "results_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(path / "aggregate_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(
+        path / "feature_delta_summary.csv",
+        ["feature_group", "delta_macro_f1"],
+        [{"feature_group": "spread", "delta_macro_f1": 0.02}],
+    )
+    _write_json(path / "ablation_manifest.json", {"created_at": "2026-05-27T00:00:00Z"})
+    _write_json(path / "failures.json", {"failure_count": 0, "failures": []})
+
+
+def _write_all_complete(config: EvidencePackConfig) -> None:
+    _write_complete_classical(config.classical_dir)
+    _write_complete_ssl(config.ssl_dir)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _write_complete_figures(config.figures_dir)
+    _write_complete_execution(config.execution_v3_dir)
+    _write_complete_feature_ablations(config.feature_ablations_dir)
+    _write_complete_figures(config.ablation_figures_dir)
+    _touch_report(config.final_report_path)
+
+
+def _record(records: list[Any], name: str) -> Any:
+    return next(record for record in records if record.artefact_name == name)
+
+
+def test_artefact_discovery_classifies_missing(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "missing"
+
+
+def test_smoke_test_only_classification(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir, smoke=True)
+
+    records = discover_artefacts(config)
+
+    grid = _record(records, "fi2010_neural_full_grid")
+    assert grid.status == "smoke_test_only"
+    assert grid.smoke_test is True
+
+
+def test_complete_real_classification(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "complete_real"
+
+
+def test_partial_real_classification(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_json(
+        config.neural_full_grid_dir / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "completed_run_count": 1,
+            "failed_run_count": 1,
+        },
+    )
+    _write_csv(config.neural_full_grid_dir / "results_summary.csv", ["status"], [])
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "partial_real"
+
+
+def test_invalid_artefact_classification(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    config.neural_full_grid_dir.mkdir(parents=True)
+    (config.neural_full_grid_dir / "summary.json").write_text("{bad json", encoding="utf-8")
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "invalid"
+
+
+def test_stale_artefact_detection_from_hash(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    source = tmp_path / "source.csv"
+    source.write_text("old\n", encoding="utf-8")
+    source_hash = sha256_file(source)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _write_json(
+        config.neural_full_grid_dir / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "completed_run_count": 3,
+            "failed_run_count": 0,
+            "core_grid_complete": True,
+            "input_file_hashes": {str(source): source_hash},
+        },
+    )
+    source.write_text("new\n", encoding="utf-8")
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "stale"
+
+
+def test_claim_audit_supported_smoke_unsupported_and_forbidden(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+    records = discover_artefacts(config)
+    claims = audit_claims(records)
+    by_id = {claim.claim_id: claim for claim in claims}
+
+    assert by_id["empirical.gradient_boosting_best"].status == "supported"
+    assert by_id["empirical.ssl_improved_macro_f1"].status == "supported"
+    assert by_id["forbidden.1"].status == "forbidden"
+    assert by_id["forbidden.1"].safe_rewording
+
+    smoke_config = _minimal_config(tmp_path / "smoke")
+    _write_complete_grid(smoke_config.neural_full_grid_dir, smoke=True)
+    smoke_claims = {
+        claim.claim_id: claim for claim in audit_claims(discover_artefacts(smoke_config))
+    }
+    assert smoke_claims["empirical.ssl_improved_macro_f1"].status == "smoke_only"
+
+    missing_records = discover_artefacts(_minimal_config(tmp_path / "missing"))
+    missing_claims = {claim.claim_id: claim for claim in audit_claims(missing_records)}
+    assert missing_claims["empirical.ssl_improved_macro_f1"].status == "needs_real_evidence"
+
+
+def test_build_outputs_are_conservative_and_complete(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+
+    result = build_evidence_pack(config)
+
+    output_names = {path.name for path in result.files_written}
+    assert "artefact_inventory.csv" in output_names
+    assert "claim_audit.json" in output_names
+    assert "readme_result_snapshot.md" in output_names
+    assert "reproduction_commands.md" in output_names
+    assert "release_checklist.md" in output_names
+
+    snapshot = (config.out_dir / "readme_result_snapshot.md").read_text(encoding="utf-8")
+    assert "no broad SSL improvement claim" not in snapshot
+    assert "offline proxy diagnostics" in snapshot
+
+    conservative = (config.out_dir / "public_bullets_conservative.md").read_text(
+        encoding="utf-8"
+    )
+    assert "profitable" not in conservative.lower()
+    assert "state-of-the-art" not in conservative.lower()
+
+    strong = (config.out_dir / "public_bullets_strong_if_supported.md").read_text(
+        encoding="utf-8"
+    )
+    assert "supported only if" in strong
+    assert "Safe fallback" in strong
+
+    commands = (config.out_dir / "reproduction_commands.md").read_text(encoding="utf-8")
+    assert "Smoke-test version" in commands
+    assert "Real-run version" in commands
+
+    checklist = (config.out_dir / "release_checklist.md").read_text(encoding="utf-8")
+    assert "Git Hygiene" in checklist
+    assert "Unsupported claims removed" in checklist
+    assert "Do not automatically delete or stage" in checklist
+
+
+def test_strict_mode_fails_on_invalid_artefact(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    config = EvidencePackConfig(**{**config.__dict__, "strict": True})
+    config.neural_full_grid_dir.mkdir(parents=True)
+    (config.neural_full_grid_dir / "summary.json").write_text("{bad", encoding="utf-8")
+
+    with pytest.raises(EvidencePackError, match="invalid artefact"):
+        build_evidence_pack(config)
+
+
+def test_strict_and_non_strict_forbidden_public_claims(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+    _touch_report(config.final_report_path, forbidden=True)
+    strict_config = EvidencePackConfig(**{**config.__dict__, "strict": True})
+
+    with pytest.raises(EvidencePackError, match="forbidden public claim"):
+        build_evidence_pack(strict_config)
+
+    non_strict = EvidencePackConfig(
+        **{**config.__dict__, "strict": False, "out_dir": tmp_path / "pack2"}
+    )
+    result = build_evidence_pack(non_strict)
+
+    assert any("forbidden public claim" in warning for warning in result.warnings)
+
+
+def test_stale_detection_from_newer_input_timestamp(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    source = tmp_path / "input.txt"
+    source.write_text("source\n", encoding="utf-8")
+    source_hash = sha256_file(source)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _write_json(
+        config.neural_full_grid_dir / "summary.json",
+        {
+            "created_at": "2026-05-27T00:00:00Z",
+            "smoke_test": False,
+            "completed_run_count": 3,
+            "failed_run_count": 0,
+            "core_grid_complete": True,
+            "input_file_hashes": {str(source): source_hash},
+        },
+    )
+    old_time = time.time() - 100
+    os.utime(config.neural_full_grid_dir / "summary.json", (old_time, old_time))
+    new_time = time.time()
+    os.utime(source, (new_time, new_time))
+
+    records = discover_artefacts(config)
+
+    assert _record(records, "fi2010_neural_full_grid").status == "stale"

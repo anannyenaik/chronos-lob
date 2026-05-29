@@ -1,0 +1,10 @@
+horizon,model_key,mean_macro_f1,std_macro_f1,run_count,folds,seeds
+10,matrix_transformer/masked_reconstruction,0.32327758541382196,0.024457602905547805,15,"1,2,3,4,5","0,1,2"
+10,matrix_transformer/next_field,0.273269787401566,0.026253181094532604,15,"1,2,3,4,5","0,1,2"
+10,matrix_transformer/supervised,0.33360731814589617,0.04587802595723302,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/masked_reconstruction,0.35466020870184706,0.0423995589677256,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/next_field,0.2805151636127316,0.06367851525022979,15,"1,2,3,4,5","0,1,2"
+20,matrix_transformer/supervised,0.3711322885696212,0.05142615445648787,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/masked_reconstruction,0.41475508660939525,0.04400270095243838,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/next_field,0.3822988716148037,0.07810713861965356,15,"1,2,3,4,5","0,1,2"
+50,matrix_transformer/supervised,0.4179687985365532,0.044318812792067536,15,"1,2,3,4,5","0,1,2"

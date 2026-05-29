@@ -2,15 +2,15 @@
 
 This report documents the Phase 17 analysis layer added under
 `chronoslob/analysis/`. The layer organises and summarises supplied
-experiment-result records. It does not train models, does not run
-backtests and does not generate evidence by itself.
+experiment-result records. It does not train models, does not run live-market
+tests and does not generate evidence by itself.
 
 ## Purpose
 
 Earlier phases produced predictive metrics (accuracy, macro-F1, MCC,
 NLL), calibration metrics (Brier score, expected calibration error) and
-execution-aware validation metrics (coverage, fill rate, simulated net
-PnL, turnover, adverse-selection rate, max drawdown). To turn those
+execution-aware proxy metrics (coverage, fill rate, cost-adjusted signal proxy,
+turnover, adverse-selection rate, max drawdown proxy). To turn those
 metrics into a research story rather than a single headline number, we
 must be able to ask:
 
@@ -24,7 +24,8 @@ must be able to ask:
 
 The analysis layer answers these questions over structured records. It
 keeps predictive and execution metrics clearly separated so that a
-calibration improvement is never confused with a tradability claim.
+calibration improvement is never confused with a deployment or profitability
+claim.
 
 ## Why robustness analysis matters for microstructure
 
@@ -143,8 +144,8 @@ The summary layer registers each supported metric with an explicit
 direction:
 
 - predictive: accuracy, macro_f1, mcc, nll, brier_score, ece
-- execution: coverage, fill_rate, simulated_net_pnl, total_cost,
-  turnover, adverse_selection_rate, max_drawdown, latency_steps
+- execution: coverage, fill_rate, cost_adjusted_signal_proxy, total_cost,
+  turnover, adverse_selection_rate, max_drawdown_proxy, latency_steps
 
 Predictive and execution names do not overlap. The layer refuses to
 accept records containing forbidden combined-score fields such as

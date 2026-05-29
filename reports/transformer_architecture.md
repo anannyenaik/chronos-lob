@@ -3,7 +3,7 @@
 Phase 12 adds a small supervised transformer encoder over the field-wise
 token batches prepared in Phase 11. It is strictly an architecture and
 integration phase: no self-supervised pretraining, masked event modelling,
-next-event prediction, calibration, execution simulation, backtesting or
+next-event prediction, calibration, execution simulation, live-market testing or
 market-signal claim is implemented here.
 
 ## Purpose
@@ -131,17 +131,18 @@ exercised end to end without depending on any real label engine. The
 smoke metric reported (loss, optional accuracy) measures only that the
 training path is wired correctly; it is not a forecast quality measurement.
 
-## Why This Is Not A Backtest Result
+## Why This Is Not An Execution Result
 
 * No real market labels are used.
 * No execution model, slippage, queue position or fill probability is
   modelled.
-* No realised PnL, Sharpe ratio or trade list is computed.
+* No cost-adjusted proxy, risk-adjusted return metric or trade list is computed.
 * The bundled JSONL fixture is a synthetic engineering example, not
   real venue data.
 
-ChronosLOB keeps prediction and tradability conceptually separate. A
-working transformer encoder does not, on its own, imply tradable signal.
+ChronosLOB keeps prediction quality and execution-aware diagnostics
+conceptually separate. A working transformer encoder does not, on its own,
+imply a deployable signal.
 
 ## Why SSL Objectives Are Left for Phase 13
 
@@ -165,7 +166,7 @@ encoder defined here.
   and the smoke runner.
 * No checkpoint writing, TensorBoard, Weights & Biases or distributed
   training is implemented.
-* No backtest, execution-aware validation or PnL is implemented.
+* No execution-aware proxy diagnostic or return calculation is implemented.
 * Smoke labels do not measure forecast skill. Real-label experiments
   belong in a later phase that integrates the existing leakage-safe
   splitters and label engine.

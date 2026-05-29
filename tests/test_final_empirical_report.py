@@ -640,3 +640,50 @@ def test_cli_build_final_empirical_report(
     assert "ChronosLOB final empirical report builder" in completed.stdout
     assert report_path.is_file()
     assert report_path.with_name("cli_final_summary.json").is_file()
+
+
+def test_final_report_consumes_evidence_pack_summary(
+    tiny_final_artefacts: dict[str, Path],
+    tmp_path: Path,
+) -> None:
+    evidence_pack = tmp_path / "evidence_pack"
+    _write_json(
+        evidence_pack / "evidence_pack_manifest.json",
+        {
+            "artefact_status_counts": {"complete_real": 2},
+            "claim_boundary": "stored artefact audit",
+        },
+    )
+    _write_json(
+        evidence_pack / "claim_audit.json",
+        {
+            "claim_status_counts": {"supported": 1, "forbidden": 1},
+            "claims": [],
+        },
+    )
+    (evidence_pack / "supported_claims.md").write_text(
+        "# Supported Claims\n\n- ChronosLOB includes claim audit support.\n",
+        encoding="utf-8",
+    )
+    (evidence_pack / "unsupported_claims.md").write_text(
+        "# Unsupported Claims\n\n- Stronger result claims remain unsupported.\n",
+        encoding="utf-8",
+    )
+
+    report_path = tmp_path / "with_evidence_pack.md"
+    build_final_empirical_report(
+        classical_dir=tiny_final_artefacts["classical"],
+        neural_dir=tiny_final_artefacts["neural"],
+        uncertainty_dir=tiny_final_artefacts["uncertainty"],
+        ablation_dir=tiny_final_artefacts["ablations"],
+        execution_dir=tiny_final_artefacts["execution"],
+        external_dir=tiny_final_artefacts["external"],
+        evidence_pack_dir=evidence_pack,
+        out_path=report_path,
+        overwrite=True,
+    )
+
+    text = report_path.read_text(encoding="utf-8")
+    assert "## Evidence Pack Audit" in text
+    assert "supported=1" in text
+    assert "Release caveats from the evidence pack" in text
