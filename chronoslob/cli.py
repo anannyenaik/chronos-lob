@@ -1088,6 +1088,9 @@ def _run_fi2010_feature_ablations_impl(
     reuse_completed: bool,
     strict: bool,
     smoke_test: bool,
+    save_predictions: bool,
+    save_heavy_artefacts: bool,
+    summary_only: bool,
 ) -> int:
     """Run the FI-2010 microstructure feature ablation pipeline."""
     from chronoslob.experiments.fi2010_feature_ablations import (
@@ -1111,6 +1114,9 @@ def _run_fi2010_feature_ablations_impl(
             reuse_completed=reuse_completed,
             strict=strict,
             smoke_test=smoke_test,
+            save_predictions=save_predictions,
+            save_heavy_artefacts=save_heavy_artefacts,
+            summary_only=summary_only,
         )
     except FileNotFoundError as exc:
         print(f"File not found: {exc}", file=sys.stderr)
@@ -1142,6 +1148,12 @@ def _run_fi2010_feature_ablations_impl(
     print(f"  planned rows:        {summary.run_count}")
     print(f"  completed rows:      {summary.completed_run_count}")
     print(f"  failed rows:         {summary.failed_run_count}")
+    print(f"  summary only:        {'yes' if summary.summary_only else 'no'}")
+    print(f"  raw predictions:     {'written' if summary.save_predictions else 'not written'}")
+    print(
+        "  feature matrices:    "
+        f"{'written' if summary.save_heavy_artefacts else 'not written'}"
+    )
     print("  artefacts written:")
     for key, relative_path in summary.artefacts.items():
         print(f"    {key}: {relative_path}")
@@ -1202,6 +1214,66 @@ def _build_fi2010_ablation_figures_impl(
             print(f"    - {warning}")
     else:
         print("  warnings:            none")
+    print("  network calls:       none performed")
+    return 0
+
+
+def _analyse_fi2010_feature_ablations_impl(
+    *,
+    feature_ablations: Path,
+    extra_feature_ablations: str | None,
+    out: Path,
+    figures: bool,
+    overwrite: bool,
+    allow_smoke_test: bool,
+) -> int:
+    """Build feature-ablation stability analysis from lightweight artefacts."""
+    from chronoslob.analysis.fi2010_feature_ablation_analysis import (
+        analyse_fi2010_feature_ablations,
+    )
+
+    try:
+        summary = analyse_fi2010_feature_ablations(
+            ablation_dir=feature_ablations,
+            extra_ablation_dirs=extra_feature_ablations,
+            out_dir=out,
+            figures=figures,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"FI-2010 feature-ablation analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 feature-ablation stability analysis")
+    print(f"  feature ablations:   {summary.ablation_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  evidence status:     {summary.evidence_status}")
+    print(f"  completed runs:      {summary.completed_run_count}")
+    print(f"  failed runs:         {summary.failed_run_count}")
+    print(f"  horizons:            {summary.horizons}")
+    print(f"  models:              {', '.join(summary.models)}")
+    print(
+        "  raw predictions:     "
+        f"{'available' if summary.raw_predictions_available else 'not available'}"
+    )
+    print(f"  completed figures:   {len(summary.figures_completed)}")
+    print(f"  skipped figures:     {len(summary.figures_skipped)}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  files written:")
+    for key, path in summary.files_written.items():
+        print(f"    {key}: {path}")
     print("  network calls:       none performed")
     return 0
 
@@ -2497,6 +2569,7 @@ def _build_final_empirical_report_impl(
     out: Path,
     ablations: Path | None,
     feature_ablations: Path | None,
+    feature_ablation_analysis: Path | None,
     execution: Path | None,
     execution_v3: Path | None,
     external: Path | None,
@@ -2517,6 +2590,11 @@ def _build_final_empirical_report_impl(
             ablation_dir=Path(ablations) if ablations is not None else None,
             feature_ablation_dir=(
                 Path(feature_ablations) if feature_ablations is not None else None
+            ),
+            feature_ablation_analysis_dir=(
+                Path(feature_ablation_analysis)
+                if feature_ablation_analysis is not None
+                else None
             ),
             execution_dir=Path(execution) if execution is not None else None,
             execution_v3_dir=(Path(execution_v3) if execution_v3 is not None else None),
@@ -2576,6 +2654,7 @@ def _build_evidence_pack_impl(
     figures: Path,
     execution_v3: Path,
     feature_ablations: Path,
+    feature_ablation_analysis: Path,
     ablation_figures: Path,
     final_report: Path,
     strict: bool,
@@ -2606,6 +2685,7 @@ def _build_evidence_pack_impl(
                 execution_v3_dir=Path(execution_v3),
                 feature_audit_dir=feature_audit,
                 feature_ablations_dir=Path(feature_ablations),
+                feature_ablation_analysis_dir=Path(feature_ablation_analysis),
                 ablation_figures_dir=Path(ablation_figures),
                 final_report_path=Path(final_report),
                 project_audit_dir=project_audit,
@@ -4177,6 +4257,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "audit-fi2010-features|"
             "run-fi2010-feature-ablations|"
             "build-fi2010-ablation-figures|"
+            "analyse-fi2010-feature-ablations|"
             "analyse-fi2010-uncertainty|"
             "analyse-fi2010-ssl-results|"
             "analyse-fi2010-execution-v3|"
@@ -5071,6 +5152,31 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--strict", dest="strict", action="store_true", default=True)
         parser.add_argument("--no-strict", dest="strict", action="store_false")
         parser.add_argument("--smoke-test", action="store_true")
+        parser.add_argument("--save-predictions", dest="save_predictions", action="store_true")
+        parser.add_argument(
+            "--no-save-predictions",
+            dest="save_predictions",
+            action="store_false",
+            default=False,
+        )
+        parser.add_argument(
+            "--save-heavy-artefacts",
+            dest="save_heavy_artefacts",
+            action="store_true",
+        )
+        parser.add_argument(
+            "--no-save-heavy-artefacts",
+            dest="save_heavy_artefacts",
+            action="store_false",
+            default=False,
+        )
+        parser.add_argument(
+            "--summary-only",
+            dest="summary_only",
+            action="store_true",
+            default=True,
+        )
+        parser.add_argument("--no-summary-only", dest="summary_only", action="store_false")
         parsed = parser.parse_args(args[1:])
         return _run_fi2010_feature_ablations_impl(
             config_path=parsed.config,
@@ -5086,6 +5192,9 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             reuse_completed=bool(parsed.reuse_completed),
             strict=bool(parsed.strict),
             smoke_test=bool(parsed.smoke_test),
+            save_predictions=bool(parsed.save_predictions),
+            save_heavy_artefacts=bool(parsed.save_heavy_artefacts),
+            summary_only=bool(parsed.summary_only),
         )
     if command == "build-fi2010-ablation-figures":
         parser = argparse.ArgumentParser(
@@ -5111,6 +5220,41 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         return _build_fi2010_ablation_figures_impl(
             ablations=parsed.feature_ablations,
             out=parsed.out,
+            overwrite=bool(parsed.overwrite),
+            allow_smoke_test=bool(parsed.allow_smoke_test),
+        )
+    if command == "analyse-fi2010-feature-ablations":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob analyse-fi2010-feature-ablations",
+            description=(
+                "Build a scoped FI-2010 feature-stability analysis from retained "
+                "feature-ablation tables. Raw predictions are not required."
+            ),
+        )
+        parser.add_argument(
+            "--feature-ablations",
+            "--ablations",
+            dest="feature_ablations",
+            type=Path,
+            default=Path("experiments/fi2010_feature_ablations"),
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/feature_ablation_analysis"),
+        )
+        parser.add_argument("--extra-feature-ablations", type=str, default=None)
+        parser.add_argument("--figures", dest="figures", action="store_true", default=True)
+        parser.add_argument("--no-figures", dest="figures", action="store_false")
+        parser.add_argument("--overwrite", dest="overwrite", action="store_true", default=False)
+        parser.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+        parser.add_argument("--allow-smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _analyse_fi2010_feature_ablations_impl(
+            feature_ablations=parsed.feature_ablations,
+            extra_feature_ablations=parsed.extra_feature_ablations,
+            out=parsed.out,
+            figures=bool(parsed.figures),
             overwrite=bool(parsed.overwrite),
             allow_smoke_test=bool(parsed.allow_smoke_test),
         )
@@ -5512,6 +5656,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--uncertainty", type=Path, required=True)
         parser.add_argument("--ablations", type=Path, default=None)
         parser.add_argument("--feature-ablations", type=Path, default=None)
+        parser.add_argument("--feature-ablation-analysis", type=Path, default=None)
         parser.add_argument("--execution", type=Path, default=None)
         parser.add_argument("--execution-v3", type=Path, default=None)
         parser.add_argument("--external", type=Path, default=None)
@@ -5561,6 +5706,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             uncertainty=parsed.uncertainty,
             ablations=parsed.ablations,
             feature_ablations=parsed.feature_ablations,
+            feature_ablation_analysis=parsed.feature_ablation_analysis,
             execution=parsed.execution,
             execution_v3=parsed.execution_v3,
             external=parsed.external,
@@ -5588,6 +5734,11 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--figures", type=Path, required=True)
         parser.add_argument("--execution-v3", type=Path, required=True)
         parser.add_argument("--feature-ablations", type=Path, required=True)
+        parser.add_argument(
+            "--feature-ablation-analysis",
+            type=Path,
+            default=Path("reports/feature_ablation_analysis"),
+        )
         parser.add_argument("--ablation-figures", type=Path, required=True)
         parser.add_argument("--final-report", type=Path, required=True)
         parser.add_argument(
@@ -5624,6 +5775,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             figures=parsed.figures,
             execution_v3=parsed.execution_v3,
             feature_ablations=parsed.feature_ablations,
+            feature_ablation_analysis=parsed.feature_ablation_analysis,
             ablation_figures=parsed.ablation_figures,
             final_report=parsed.final_report,
             classical=parsed.classical,
@@ -6740,6 +6892,21 @@ if typer is not None:
         "--smoke-test",
         help="Use a tiny synthetic fixture when prepared FI-2010 inputs are absent.",
     )
+    _FEATURE_ABLATIONS_SAVE_PREDICTIONS_OPTION = typer.Option(
+        False,
+        "--save-predictions/--no-save-predictions",
+        help="Write per-run row-level prediction files.",
+    )
+    _FEATURE_ABLATIONS_SAVE_HEAVY_OPTION = typer.Option(
+        False,
+        "--save-heavy-artefacts/--no-save-heavy-artefacts",
+        help="Write cached feature matrices and other heavy regenerable artefacts.",
+    )
+    _FEATURE_ABLATIONS_SUMMARY_ONLY_OPTION = typer.Option(
+        True,
+        "--summary-only/--no-summary-only",
+        help="Keep feature-ablation outputs storage-light by skipping heavy artefacts.",
+    )
     _BUILD_ABLATION_FIGURES_INPUT_OPTION = typer.Option(
         Path("experiments/fi2010_feature_ablations"),
         "--feature-ablations",
@@ -6760,6 +6927,37 @@ if typer is not None:
         False,
         "--allow-smoke-test",
         help="Permit smoke-test ablation artefacts and label figures as diagnostics only.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_INPUT_OPTION = typer.Option(
+        Path("experiments/fi2010_feature_ablations"),
+        "--feature-ablations",
+        "--ablations",
+        help="Feature-ablation artefact directory.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_OUT_OPTION = typer.Option(
+        Path("reports/feature_ablation_analysis"),
+        "--out",
+        help="Output directory for feature-ablation stability analysis.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_EXTRA_OPTION = typer.Option(
+        None,
+        "--extra-feature-ablations",
+        help="Optional comma-separated extra feature-ablation directories to merge.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_FIGURES_OPTION = typer.Option(
+        True,
+        "--figures/--no-figures",
+        help="Generate aggregate feature-ablation stability figures.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite/--no-overwrite",
+        help="Replace existing feature-ablation analysis outputs.",
+    )
+    _ANALYSE_FEATURE_ABLATIONS_ALLOW_SMOKE_OPTION = typer.Option(
+        False,
+        "--allow-smoke-test",
+        help="Permit smoke-test ablation artefacts and label outputs as diagnostics only.",
     )
     _ANALYSE_UNCERTAINTY_CLASSICAL_OPTION = typer.Option(
         None,
@@ -7214,6 +7412,11 @@ if typer is not None:
         "--feature-ablations",
         help="Optional path to FI-2010 microstructure feature-ablation artefacts.",
     )
+    _BUILD_FINAL_REPORT_FEATURE_ABLATION_ANALYSIS_OPTION = typer.Option(
+        None,
+        "--feature-ablation-analysis",
+        help="Optional path to FI-2010 feature-ablation stability analysis artefacts.",
+    )
     _BUILD_FINAL_REPORT_EXECUTION_OPTION = typer.Option(
         None,
         "--execution",
@@ -7292,6 +7495,11 @@ if typer is not None:
         ...,
         "--feature-ablations",
         help="Path to FI-2010 feature-ablation artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_FEATURE_ABLATION_ANALYSIS_OPTION = typer.Option(
+        Path("reports/feature_ablation_analysis"),
+        "--feature-ablation-analysis",
+        help="Path to FI-2010 feature-ablation stability analysis artefacts.",
     )
     _BUILD_EVIDENCE_PACK_ABLATION_FIGURES_OPTION = typer.Option(
         ...,
@@ -7817,6 +8025,9 @@ if typer is not None:
         reuse_completed: bool = _FEATURE_ABLATIONS_REUSE_OPTION,
         strict: bool = _FEATURE_ABLATIONS_STRICT_OPTION,
         smoke_test: bool = _FEATURE_ABLATIONS_SMOKE_OPTION,
+        save_predictions: bool = _FEATURE_ABLATIONS_SAVE_PREDICTIONS_OPTION,
+        save_heavy_artefacts: bool = _FEATURE_ABLATIONS_SAVE_HEAVY_OPTION,
+        summary_only: bool = _FEATURE_ABLATIONS_SUMMARY_ONLY_OPTION,
     ) -> None:
         """Run classical FI-2010 microstructure feature ablations."""
         exit_code = _run_fi2010_feature_ablations_impl(
@@ -7833,6 +8044,9 @@ if typer is not None:
             reuse_completed=reuse_completed,
             strict=strict,
             smoke_test=smoke_test,
+            save_predictions=save_predictions,
+            save_heavy_artefacts=save_heavy_artefacts,
+            summary_only=summary_only,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -7847,6 +8061,26 @@ if typer is not None:
         exit_code = _build_fi2010_ablation_figures_impl(
             ablations=feature_ablations,
             out=out,
+            overwrite=overwrite,
+            allow_smoke_test=allow_smoke_test,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def analyse_fi2010_feature_ablations(
+        feature_ablations: Path = _ANALYSE_FEATURE_ABLATIONS_INPUT_OPTION,
+        extra_feature_ablations: str | None = _ANALYSE_FEATURE_ABLATIONS_EXTRA_OPTION,
+        out: Path = _ANALYSE_FEATURE_ABLATIONS_OUT_OPTION,
+        figures: bool = _ANALYSE_FEATURE_ABLATIONS_FIGURES_OPTION,
+        overwrite: bool = _ANALYSE_FEATURE_ABLATIONS_OVERWRITE_OPTION,
+        allow_smoke_test: bool = _ANALYSE_FEATURE_ABLATIONS_ALLOW_SMOKE_OPTION,
+    ) -> None:
+        """Build FI-2010 feature-ablation stability analysis from stored tables."""
+        exit_code = _analyse_fi2010_feature_ablations_impl(
+            feature_ablations=feature_ablations,
+            extra_feature_ablations=extra_feature_ablations,
+            out=out,
+            figures=figures,
             overwrite=overwrite,
             allow_smoke_test=allow_smoke_test,
         )
@@ -8126,6 +8360,9 @@ if typer is not None:
         uncertainty: Path = _BUILD_FINAL_REPORT_UNCERTAINTY_OPTION,
         ablations: Path | None = _BUILD_FINAL_REPORT_ABLATIONS_OPTION,
         feature_ablations: Path | None = _BUILD_FINAL_REPORT_FEATURE_ABLATIONS_OPTION,
+        feature_ablation_analysis: Path | None = (
+            _BUILD_FINAL_REPORT_FEATURE_ABLATION_ANALYSIS_OPTION
+        ),
         execution: Path | None = _BUILD_FINAL_REPORT_EXECUTION_OPTION,
         execution_v3: Path | None = _BUILD_FINAL_REPORT_EXECUTION_V3_OPTION,
         external: Path | None = _BUILD_FINAL_REPORT_EXTERNAL_OPTION,
@@ -8143,6 +8380,7 @@ if typer is not None:
             uncertainty=uncertainty,
             ablations=ablations,
             feature_ablations=feature_ablations,
+            feature_ablation_analysis=feature_ablation_analysis,
             execution=execution,
             execution_v3=execution_v3,
             external=external,
@@ -8162,6 +8400,9 @@ if typer is not None:
         figures: Path = _BUILD_EVIDENCE_PACK_FIGURES_OPTION,
         execution_v3: Path = _BUILD_EVIDENCE_PACK_EXECUTION_V3_OPTION,
         feature_ablations: Path = _BUILD_EVIDENCE_PACK_FEATURE_ABLATIONS_OPTION,
+        feature_ablation_analysis: Path = (
+            _BUILD_EVIDENCE_PACK_FEATURE_ABLATION_ANALYSIS_OPTION
+        ),
         ablation_figures: Path = _BUILD_EVIDENCE_PACK_ABLATION_FIGURES_OPTION,
         final_report: Path = _BUILD_EVIDENCE_PACK_FINAL_REPORT_OPTION,
         classical: Path = _BUILD_EVIDENCE_PACK_CLASSICAL_OPTION,
@@ -8180,6 +8421,7 @@ if typer is not None:
             figures=figures,
             execution_v3=execution_v3,
             feature_ablations=feature_ablations,
+            feature_ablation_analysis=feature_ablation_analysis,
             ablation_figures=ablation_figures,
             final_report=final_report,
             classical=classical,
@@ -9452,6 +9694,7 @@ else:
         uncertainty: Path,
         ablations: Path | None = None,
         feature_ablations: Path | None = None,
+        feature_ablation_analysis: Path | None = None,
         execution: Path | None = None,
         execution_v3: Path | None = None,
         external: Path | None = None,
@@ -9469,6 +9712,7 @@ else:
             uncertainty=uncertainty,
             ablations=ablations,
             feature_ablations=feature_ablations,
+            feature_ablation_analysis=feature_ablation_analysis,
             execution=execution,
             execution_v3=execution_v3,
             external=external,
@@ -9488,6 +9732,7 @@ else:
         figures: Path = Path("reports/figures/fi2010_neural_full_grid"),
         execution_v3: Path = Path("experiments/fi2010_execution_v3"),
         feature_ablations: Path = Path("experiments/fi2010_feature_ablations"),
+        feature_ablation_analysis: Path = Path("reports/feature_ablation_analysis"),
         ablation_figures: Path = Path("reports/figures/fi2010_feature_ablations"),
         final_report: Path = Path("reports/chronoslob_final_empirical_report.md"),
         classical: Path = Path("experiments/fi2010_multifold_classical"),
@@ -9506,6 +9751,7 @@ else:
             figures=figures,
             execution_v3=execution_v3,
             feature_ablations=feature_ablations,
+            feature_ablation_analysis=feature_ablation_analysis,
             ablation_figures=ablation_figures,
             final_report=final_report,
             classical=classical,
@@ -9578,6 +9824,7 @@ if typer is not None:
     app.command("audit-fi2010-features")(audit_fi2010_features)
     app.command("run-fi2010-feature-ablations")(run_fi2010_feature_ablations)
     app.command("build-fi2010-ablation-figures")(build_fi2010_ablation_figures)
+    app.command("analyse-fi2010-feature-ablations")(analyse_fi2010_feature_ablations)
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
     app.command("analyse-fi2010-ssl-results")(analyse_fi2010_ssl_results)
     app.command("analyse-fi2010-execution-v3")(analyse_fi2010_execution_v3)

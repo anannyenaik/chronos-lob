@@ -6,8 +6,8 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-30T01:18:04.243326+00:00 |
-| git_commit | 31f5f688a83e3fabbc4275d921674b145d8be601 |
+| generated_at | 2026-05-30T07:25:22.720548+00:00 |
+| git_commit | 21807a9b92170110cfda4c7c3605bcb5bb544af3 |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
@@ -15,9 +15,9 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
 | legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
 | best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
-| execution_scope | skipped; metrics are proxy diagnostics |
+| execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
 | execution_v3_scope | offline execution-aware proxy diagnostic loaded; payoff_mode=unit_payoff, cost_mode=unit_proxy |
-| external_scope | skipped; protocol context only, not ranking claims |
+| external_scope | protocol context loaded; protocol context only, not ranking claims |
 | report_path | reports/chronoslob_final_empirical_report.md |
 | summary_path | reports/chronoslob_final_empirical_report_summary.json |
 
@@ -36,7 +36,7 @@ What is partial (`partial_real`):
 
 - Proper-training neural subset: documented partial longer-training modelling evidence with validation-only early stopping; exact folds, horizons, seeds, lookbacks and objectives are listed in its
   section.
-- FI-2010 snapshot feature ablations: currently folds 1-5 at horizon 10 for logistic and ridge only; wider model/horizon scope unfinished.
+- FI-2010 snapshot feature-ablation evidence: partial_real; folds fold_1, fold_2, fold_3, fold_4, fold_5, horizons 10, 20, 50, seeds 0, 1, 2, models logistic, ridge.
 
 What is separate legacy / reduced-scope evidence:
 
@@ -59,9 +59,9 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | complete_real=4, missing=2, partial_real=1, stale=5, unknown_staleness=1 |
-| claim_status_counts | forbidden=9, needs_real_evidence=1, partially_supported=11, supported=2, unsupported=2 |
-| supported_claims | ChronosLOB includes a richer execution-aware proxy analysis report; SSL was implemented and evaluated under matched FI-2010 settings. |
+| artefact_status_counts | complete_real=5, missing=2, partial_real=2, stale=4, unknown_staleness=1 |
+| claim_status_counts | forbidden=11, needs_real_evidence=1, partially_supported=11, supported=6, unsupported=2 |
+| supported_claims | ChronosLOB includes a richer execution-aware proxy analysis report; Feature-ablation infrastructure is available; SSL was implemented and evaluated under matched FI-2010 settings. |
 | unsupported_or_limited_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 
 Release caveats from the evidence pack:
@@ -83,7 +83,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | variant | NoAuction ZScore |
 | task | midprice_direction |
 | target_horizon | 10 |
-| split_protocol | official split column with validation carved from train only |
+| split_protocol | official split column; validation carved from train only |
 | folds | 1, 2, 3, 4, 5 |
 | classical_protocol | multi-fold; one stored classical seed across completed folds |
 | neural_protocol | matched one-epoch full grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field; separate earlier 25-epoch reduced-scope supervised benchmark (single seed, lookback 20) reported separately |
@@ -419,23 +419,98 @@ Seed variance is not available in the stored evidence; intervals are fold-level 
 
 ## Ablation Summary
 
-Skipped: ablation artefacts were not supplied or were unavailable.
+Stored ablations are diagnostic stress checks; skipped ablations remain explicit.
 
-## Feature Ablation Summary
+| family | stored rows | summary |
+| --- | --- | --- |
+| feature_groups | 180 | -0.0884 to 0.0000 test macro-F1 delta |
+| model_class | 180 | -0.2191 to 0.0000 test macro-F1 delta |
+| horizon | 90 | 0.0000 to 0.1454 test macro-F1 delta |
+| calibration | 225 | ECE diagnostics |
+| execution | 600 | cost/latency proxy diagnostics |
 
-Feature ablations are leakage-safe diagnostics over FI-2010 snapshot columns. Unsupported event-level groups remain explicit.
-The `snapshot_order_flow_proxy` group is a snapshot-delta proxy, not true event-level order-flow imbalance.
-Current stored feature-ablation evidence is `partial_real`: it covers folds 1-5 at horizon 10 for logistic and ridge models, with horizons 20/50 and slower model families left for future expansion.
+| field | value |
+| --- | --- |
+| families_run | feature_groups, horizon, model_class, calibration, execution |
+| families_skipped | lookback |
+| checkpoints_written | False |
+
+| recorded skip |
+| --- |
+| ablation lookback_sweep: neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it |
+| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
+| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
+| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
+| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
+| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
+| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
+| execution_v3 regime_execution: volatility_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: spread_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: imbalance_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: liquidity_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: regime labels unavailable in prediction artefacts |
+
+## Feature Ablation and Stability Analysis
+
+Feature-ablation evidence is reported as a scoped feature-stability analysis over FI-2010 snapshot columns. Unsupported event-level groups remain explicit.
+`snapshot_order_flow_proxy` is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance; it is not true event-level order-flow imbalance evidence.
+The analysis is not causal feature importance and does not establish universal feature importance across all models or horizons.
 
 | field | value |
 | --- | --- |
 | runner_version | fi2010-microstructure-feature-ablations/v2 |
+| evidence_status | partial_real |
 | smoke_test | False |
-| completed_run_count | 840 |
+| completed_run_count | 2580 |
 | failed_run_count | 0 |
+| folds | fold_1, fold_2, fold_3, fold_4, fold_5 |
+| horizons | 10, 20, 50 |
+| seeds | 0, 1, 2 |
+| models | gradient_boosting, logistic, ridge |
+| horizon_20_50_added | yes |
+| non_linear_model_evidence | gradient_boosting |
 | feature_groups | price_levels, size_levels, top_of_book, spread, midprice, microprice, top_of_book_imbalance, depth_imbalance, depth_slope, liquidity_concentration, snapshot_order_flow_proxy, volatility_proxy |
 | proxy_groups | snapshot_order_flow_proxy |
 | unsupported_groups | time_context, true_order_flow_imbalance, cancellation_imbalance, trade_imbalance, queue_position |
+| raw_predictions_saved | False |
+
+Feature-stability artefact:
+
+- `reports/feature_ablation_analysis`
+
+Feature-claim assessment:
+
+| claim | status | reason |
+| --- | --- | --- |
+| feature_ablation_infrastructure | supported | required feature-ablation summary and delta tables were loaded |
+| horizon10_logistic_ridge_snapshot_proxy_importance | supported | removing snapshot_order_flow_proxy degraded macro-F1 in every matched row |
+| broader_horizon_snapshot_proxy_importance | supported | removing snapshot_order_flow_proxy degraded macro-F1 in every matched row |
+| nonlinear_model_feature_stability | supported | removing snapshot_order_flow_proxy degraded macro-F1 in every matched row |
+| causal_feature_importance | forbidden | ablation deltas are associational diagnostics, not causal evidence |
+| true_event_level_ofi | forbidden | snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance. |
+
+`snapshot_order_flow_proxy` scope:
+
+- Removing the labelled snapshot proxy degraded macro-F1 in 100/100 matched rows in the analysed scope.
+- Horizon 20/50 status: supported.
+- Non-linear model status: supported.
+
+Feature-group stability rows:
+
+| feature group | mean delta macro-F1 | mean delta MCC | degradation fraction | stability score |
+| --- | --- | --- | --- | --- |
+| snapshot_order_flow_proxy | -0.1510 | -0.1966 | 1.0000 | 1.0000 |
+| size_levels | -0.0087 | -0.0115 | 0.8667 | 1.0000 |
+| spread | -0.0075 | -0.0045 | 0.8400 | 1.0000 |
+| price_levels | -0.0060 | -0.0067 | 0.7000 | 1.0000 |
+| liquidity_concentration | 0.0004 | 0.0004 | 0.3667 | 0.1250 |
+| top_of_book_imbalance | 0.0002 | 0.0003 | 0.1800 | 0.1333 |
+| volatility_proxy | 0.0001 | 0.0007 | 0.4667 | 0.1833 |
+| depth_imbalance | -0.0000 | 0.0001 | 0.4300 | 0.5167 |
+| depth_slope | 0.0000 | 0.0001 | 0.2333 | 0.2667 |
+| microprice | 0.0000 | 0.0000 | 0.5667 | 0.3083 |
+
+Execution-aware ablation diagnostics require retained prediction-level outputs or a targeted rerun.
 
 Aggregate rows:
 
@@ -568,6 +643,18 @@ Adverse-selection proxy:
 | matrix_transformer | masked_reconstruction | 50.0 | 0.70-0.85 | aggressive_crossing | 0.2536 | label_proxy |
 | matrix_transformer | masked_reconstruction | 50.0 | 0.85-1.00 | aggressive_crossing | 0.2019 | label_proxy |
 
+Legacy execution-v2 proxy snapshot:
+
+| model | source | status | test macro-F1 | base proxy | stress proxy | relative degradation |
+| --- | --- | --- | --- | --- | --- | --- |
+| elastic_net | classical | ok | 0.3260 | 19.6975 | 14.5384 | 0.2619 |
+| gradient_boosting | classical | ok | 0.4654 | 13.0288 | 5.5975 | 0.5704 |
+| logistic | classical | ok | 0.3261 | 19.6985 | 14.5426 | 0.2617 |
+| majority | classical | ok | 0.2514 | 21.2862 | 16.2858 | 0.2349 |
+| random_forest | classical | ok | 0.4547 | 9.8244 | 4.9636 | 0.4948 |
+| deeplob_style | neural | skipped | 0.4753 | n/a | n/a | n/a |
+| matrix_transformer | neural | skipped | 0.7337 | n/a | n/a | n/a |
+
 Skipped diagnostics:
 
 | diagnostic | scope | reason |
@@ -582,7 +669,15 @@ Conservative interpretation: execution-v3 can show how stored FI-2010 signals re
 
 ## External Benchmark Context
 
-Skipped: external context artefacts were not supplied or were unavailable.
+External comparisons are protocol context, not ranking claims. No external numeric metrics are imported into this report.
+
+| source | type | numeric metrics included |
+| --- | --- | --- |
+| Ntakaris et al. FI-2010 dataset and baselines | paper_and_dataset | False |
+| Tsantekidis et al. stationary-feature LOB forecasting | paper | False |
+| Zhang, Zohren and Roberts DeepLOB | paper | False |
+| Wallbridge TransLOB | paper | False |
+| Sangadiev et al. DeepFolio | paper | False |
 
 ## What This Supports
 
@@ -623,14 +718,30 @@ Skipped: external context artefacts were not supplied or were unavailable.
 
 | artefact | path | sha256 |
 | --- | --- | --- |
+| ablations_calibration_threshold_ablation | experiments/fi2010_brutal_ablations/calibration_threshold_ablation.csv | 0f7163d1c72deb1c336d6d029ea6476573bb3f5d1ae18b33ddf85c7cb73ce9d1 |
+| ablations_dir | experiments/fi2010_brutal_ablations | directory |
+| ablations_execution_cost_latency_ablation | experiments/fi2010_brutal_ablations/execution_cost_latency_ablation.csv | beed6a1e458328d06d0c0cbc7c9368150e9730ed5d60da0ea697ade2f03470b4 |
+| ablations_feature_group_ablation | experiments/fi2010_brutal_ablations/feature_group_ablation.csv | f41a7bf4a6e280be21904bd9e6e91b99f6a367b95d2a6a53d65fd34a54a837d0 |
+| ablations_horizon_ablation | experiments/fi2010_brutal_ablations/horizon_ablation.csv | 53b8642ac849de2ecb9da150108fca8fcb372d37822101f333f3c3ca39fdf6c2 |
+| ablations_model_class_ablation | experiments/fi2010_brutal_ablations/model_class_ablation.csv | d73a3dfdb2d2ae68a4a7348e8757973d88b666da72cf38417833185eabcc8328 |
+| ablations_skipped_ablations | experiments/fi2010_brutal_ablations/skipped_ablations.json | d3d4927131c2733e10c2efbcd77ea7e067439d4e26b9f389488daeb5cd9c0fd9 |
+| ablations_summary | experiments/fi2010_brutal_ablations/summary.json | b2ada55d9802da545dc67435bf30a93357203c23bb92c55ae4e847d45cc0716d |
 | classical_dir | experiments/fi2010_multifold_classical | directory |
 | classical_results_summary | experiments/fi2010_multifold_classical/results_summary.csv | 7a4d3c042805ecb4d8735fe9ad95f1ccc9bf50a0d4a83acd646f4d6417a9e03e |
 | classical_summary | experiments/fi2010_multifold_classical/summary.json | 6e82bc2ff4b6656b28619338b7486b850d9eca1baf4e4f53fc3ea397794b155a |
-| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | b05df88625f5d1e4b6c255a2bdbd2ea84e48f4a92f26bbd0d8c62b66bf824ac5 |
+| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | 976905ea3c1887def10368eba65f43215cc13fe0553040b7f2dcbcc917c4aa57 |
 | evidence_pack_dir | reports/evidence_pack | directory |
-| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | 971bd62b14f0f2c82e0f4a477844be0acdc1be07bfc433ee3b4c8d3ef19f26af |
-| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | 2f9de4ea0e9d80e1c1ea0f2949f832d7346ee3b62ae0b2eac331ca836d773c34 |
-| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | dcafc8b62c909eb641968cf58b0052e38ff22940627349098ba83302ccf2e72c |
+| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | 5a8bece6146d7c599b8a3a119eea33cd4035a707f85d12b3ef25b5a1ea8a1ea2 |
+| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | adfcb00e589907a6194b2d9d0d5b0e37084aee9c7e2614656f48ca88aeadfa21 |
+| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | 08c03353d7d7c942b44a869e6977e024b15b58a6897ea0d3a63523a7c5ded6b0 |
+| execution_adverse_selection_summary | experiments/fi2010_execution_v2/adverse_selection_summary.csv | 57bd2c42e591e64bdc1e4be6aa3a2d8902f031178521d699f5e5dde9965d1be8 |
+| execution_confidence_threshold_summary | experiments/fi2010_execution_v2/confidence_threshold_summary.csv | 7aca37c1b7030e6120f631e3d49ea96611b534bf81b9a2a212854cb8b4a9b669 |
+| execution_degradation_summary | experiments/fi2010_execution_v2/degradation_summary.csv | 02c313f2bb64beb09f490e9f81f57f29978d4d0046de28d27818384c36c06df1 |
+| execution_dir | experiments/fi2010_execution_v2 | directory |
+| execution_fill_assumption_summary | experiments/fi2010_execution_v2/fill_assumption_summary.csv | cd5fe1dc63de3dc522defee688605069c4a5b3afc3627c52c56a2192fd9a5d6c |
+| execution_skipped_diagnostics | experiments/fi2010_execution_v2/skipped_diagnostics.json | 4830309d22260be7dd982f704f8569cd5479e51937ae414e55ec02962cc36d40 |
+| execution_summary | experiments/fi2010_execution_v2/summary.json | 39c9b74944fba54daf1a4d49b55af403514deb6a180ef1af7ccd88cedd66ae86 |
+| execution_turnover_summary | experiments/fi2010_execution_v2/turnover_summary.csv | d961acc368b842bf22d48fefc1ecf45fde1b39962a5d5511efe37df39700393f |
 | execution_v3_adverse_selection_summary | experiments/fi2010_execution_v3/adverse_selection_summary.csv | 94e339bc4749faa27c8e4a8ace6b7aac076754166edfc0a8d57a058374c9e014 |
 | execution_v3_confidence_threshold_aggregate | experiments/fi2010_execution_v3/confidence_threshold_aggregate.csv | bbd14f3a458531f3722f435fcda296b7ddf882a37783470cf1854810ce18549f |
 | execution_v3_confidence_threshold_summary | experiments/fi2010_execution_v3/confidence_threshold_summary.csv | 6603b546e9aec28bdb14df0fd12189467cc9b42a20f17c3b9e8e37f6a3127fff |
@@ -642,13 +753,27 @@ Skipped: external context artefacts were not supplied or were unavailable.
 | execution_v3_regime_execution_summary | experiments/fi2010_execution_v3/regime_execution_summary.csv | d8b59fd77d21b802059096f84105943115cc7326abcdf69bb0c3195ae1771c4e |
 | execution_v3_skipped_diagnostics | experiments/fi2010_execution_v3/skipped_diagnostics.json | 5b9cdc8684ad217047e0761c9033ea9257a4db00f3def62f7c6d7a5abd4307b5 |
 | execution_v3_summary | experiments/fi2010_execution_v3/summary.json | 89d6b8d2ae5e1d96f9f15be4f0ba3852b98d51fa9b2542595aeaa1f07567f6be |
-| feature_ablations_ablation_manifest | experiments/fi2010_feature_ablations/ablation_manifest.json | a307502c4c87cfa770c8c22fe3fcba8efe6624d578303a03fd7f9feb319dfdb5 |
-| feature_ablations_aggregate_summary | experiments/fi2010_feature_ablations/aggregate_summary.csv | a89c5b6510dc25c72d21909783b6043319696e8dc55e082ef1684063ab5a4d92 |
+| external_benchmark_context | experiments/fi2010_external_context/benchmark_context.json | 2e1f4e0c4914378f31dbf50b3bc03df33b9d4254ebeda0944e5a06225fe30c8e |
+| external_dir | experiments/fi2010_external_context | directory |
+| external_protocol_comparison | experiments/fi2010_external_context/protocol_comparison.csv | 756c3ce98cbd4e15e1afaa5a0a2d4007ea775d58b89dc5409c513e2a8cdd460c |
+| feature_ablation_analysis_dir | reports/feature_ablation_analysis | directory |
+| feature_ablation_analysis_feature_ablation_analysis | reports/feature_ablation_analysis/feature_ablation_analysis.md | 01d6bd0f5e72c51273d321f72c552bb37dc00ebbf8c03f0b5275be9286b52bf5 |
+| feature_ablation_analysis_feature_claim_assessment | reports/feature_ablation_analysis/feature_claim_assessment.json | 8ba09c675dbb9211067c59fd88efd29836c80cbeaa7270398c24289cb738327f |
+| feature_ablation_analysis_feature_delta_by_fold | reports/feature_ablation_analysis/feature_delta_by_fold.csv | d64ffb0af41183a25f6d80d337cd226c32d5bc3a673eef4ceab67a54e7f3613f |
+| feature_ablation_analysis_feature_delta_by_horizon | reports/feature_ablation_analysis/feature_delta_by_horizon.csv | 76841a524ed4b8287b2cb4e5d914ef81507a4fddee9933cf14150520c2810326 |
+| feature_ablation_analysis_feature_delta_by_model | reports/feature_ablation_analysis/feature_delta_by_model.csv | f557ebe127ae7e92dae8c032d9afe52e91fc40cf958f41252a7fec3c8be890d0 |
+| feature_ablation_analysis_feature_delta_by_seed | reports/feature_ablation_analysis/feature_delta_by_seed.csv | aea5de2d1938f2d124dd89590783f00fb606a8e5839a0766720f427066c0e056 |
+| feature_ablation_analysis_feature_group_stability | reports/feature_ablation_analysis/feature_group_stability.csv | 1a4c100d90fae8f53b418302f0261d8cea3eb46cbb330f3d52d6a744562aef9d |
+| feature_ablation_analysis_figure_manifest | reports/feature_ablation_analysis/figure_manifest.json | e7e16b29b40df28431e514093355bbe03062bb02b4203652effeb4c884c4628f |
+| feature_ablation_analysis_snapshot_order_flow_proxy_scope | reports/feature_ablation_analysis/snapshot_order_flow_proxy_scope.csv | 93202239e952cc46b8ad9d73f8afa8a4eb2eb25ff6b547b722339f3acbe360ef |
+| feature_ablation_analysis_summary | reports/feature_ablation_analysis/summary.json | fb31c3d26bf9a0bac223df65e1d0f73d1668dd739c77fa8695df31a6e946762d |
+| feature_ablations_ablation_manifest | experiments/fi2010_feature_ablations/ablation_manifest.json | 8fabd233a22955d5b8172cf74d6e9ca1213470c0607c5d28170ceddf14bc8a34 |
+| feature_ablations_aggregate_summary | experiments/fi2010_feature_ablations/aggregate_summary.csv | e80623423ead76b43547ad95119dcb2d2d487e42381e905171dd8a958d995127 |
 | feature_ablations_dir | experiments/fi2010_feature_ablations | directory |
 | feature_ablations_failures | experiments/fi2010_feature_ablations/failures.json | 36c25df88555a025cc8b83e815b6cddd81195b2aa2004be3d20a1eedb968dbde |
-| feature_ablations_feature_delta_summary | experiments/fi2010_feature_ablations/feature_delta_summary.csv | afa03ef115948fcbd08104d619e9d564b0c2631dcdebd9a3521f61a14dad0b26 |
-| feature_ablations_results_summary | experiments/fi2010_feature_ablations/results_summary.csv | f484e3232ecbd7d5b5b375e1008af8a2454e76a6f79f58c13388cfe43b2142af |
-| feature_ablations_summary | experiments/fi2010_feature_ablations/summary.json | ea1707aaa5f7c37c51fd5061ae178315ef518b6fd947b1059903010bf569fca5 |
+| feature_ablations_feature_delta_summary | experiments/fi2010_feature_ablations/feature_delta_summary.csv | 0ba03bc879495aaa015137a9f242aa50542e983a4cd5ace885561f039cccab0d |
+| feature_ablations_results_summary | experiments/fi2010_feature_ablations/results_summary.csv | 2b504871256bbe6e7a0913c3309c1b68905eef30354d618ccd0f1f3769adcb1c |
+| feature_ablations_summary | experiments/fi2010_feature_ablations/summary.json | bce138a84d09947bee8e1229f702bc3bd3431dbcb521e54c8f6e4ef80bd22291 |
 | fi2010_figure_dir | reports/figures/fi2010_neural_full_grid | directory |
 | fi2010_figure_manifest | reports/figures/fi2010_neural_full_grid/figure_manifest.json | d1289ae54c0d04efb46f1a2758cd334078f22c4244f07bc7c37b7e3d3dc00306 |
 | neural_dir | experiments/fi2010_multifold_neural | directory |
@@ -687,6 +812,7 @@ python -m chronoslob.cli build-final-empirical-report \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
   --feature-ablations experiments/fi2010_feature_ablations \
+  --feature-ablation-analysis reports/feature_ablation_analysis \
   --out reports/chronoslob_final_empirical_report.md \
   --overwrite
 

@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-05-30T07:13:11.715443+00:00",
+  "figure_id": "feature_group_delta_by_horizon",
+  "source_data_path": "reports/feature_ablation_analysis/source_data/feature_group_delta_by_horizon.csv",
+  "source_sha256": "76841a524ed4b8287b2cb4e5d914ef81507a4fddee9933cf14150520c2810326",
+  "title": "Feature Group Delta By Horizon"
+}

@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-05-30T07:11:42.089234+00:00",
+  "figure_id": "stability_heatmap",
+  "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/stability_heatmap.csv",
+  "source_sha256": "4a3cab9bb684ed53549c09956c4efdd5b57c35aac8cfaeea8e03f50f5d32cddd",
+  "title": "Feature Stability Heatmap"
+}

@@ -1,0 +1,285 @@
+{
+  "artefact_policy": {
+    "feature_matrix_files_written": 0,
+    "heavy_feature_matrices_saved": false,
+    "prediction_files_written": 0,
+    "raw_predictions_saved": false,
+    "summary_only": true
+  },
+  "created_at": "2026-05-30T07:11:28.314303+00:00",
+  "input_folds": [
+    {
+      "fold": "fold_1",
+      "path": "data\\processed\\fi2010\\fold1_combined.csv",
+      "sha256": "49a24198d14b929d8484d58ea2ff5fb5e1853a02f4d519ef9ba46ba27ee5bdb0"
+    },
+    {
+      "fold": "fold_2",
+      "path": "data\\processed\\fi2010\\fold2_combined.csv",
+      "sha256": "13893030307586e562133f3f281f35a4c1d46c2201b00618ac48f89a7aa1c762"
+    },
+    {
+      "fold": "fold_3",
+      "path": "data\\processed\\fi2010\\fold3_combined.csv",
+      "sha256": "1dc455fd0e8de7e6b45d10bfb790f57c8361cb646f489f745b1e5a87c3c025b6"
+    },
+    {
+      "fold": "fold_4",
+      "path": "data\\processed\\fi2010\\fold4_combined.csv",
+      "sha256": "f8e4278246f074a8dd74a84a4dc2654436d1522ba70da7fa8748dcf1acdbf2f3"
+    },
+    {
+      "fold": "fold_5",
+      "path": "data\\processed\\fi2010\\fold5_combined.csv",
+      "sha256": "701075030dc3df292cc0791054ab61a2ab11fb555e1ebfa76711379b86018294"
+    }
+  ],
+  "runner_version": "fi2010-microstructure-feature-ablations/v2",
+  "runs": [
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h10_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_1_h50_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h10_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_2_h50_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h10_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_3_h50_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h10_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_4_h50_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h10_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_all_features_all",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_remove_one_group_snapshot_order_flow_proxy",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_remove_one_group_spread",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_remove_one_group_depth_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_remove_one_group_top_of_book_imbalance",
+      "status": "skipped_existing"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice\\runs\\fold_5_h50_s0_gradient_boosting_no_proxy_features_no_proxy",
+      "status": "skipped_existing"
+    }
+  ],
+  "status_counts": {
+    "completed": 0,
+    "failed": 0,
+    "skipped_existing": 60
+  }
+}

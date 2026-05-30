@@ -1,0 +1,53 @@
+{
+  "ablation_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice",
+  "analysis_version": "fi2010-feature-ablation-stability/v1",
+  "claim_boundary": "snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance.",
+  "completed_run_count": 60,
+  "created_at": "2026-05-30T07:11:42.485178Z",
+  "evidence_status": "partial_real",
+  "failed_run_count": 0,
+  "feature_claim_assessment_path": "reports/feature_ablation_analysis_nonlinear_slice/feature_claim_assessment.json",
+  "figures_completed": [
+    "feature_group_delta_by_horizon",
+    "feature_group_delta_by_model",
+    "snapshot_order_flow_proxy_delta_by_horizon_fold",
+    "stability_heatmap",
+    "top_feature_groups_by_absolute_delta"
+  ],
+  "figures_skipped": [
+    "unsupported_event_level_groups"
+  ],
+  "files_written": {
+    "feature_ablation_analysis": "reports/feature_ablation_analysis_nonlinear_slice/feature_ablation_analysis.md",
+    "feature_claim_assessment": "reports/feature_ablation_analysis_nonlinear_slice/feature_claim_assessment.json",
+    "feature_delta_by_fold": "reports/feature_ablation_analysis_nonlinear_slice/feature_delta_by_fold.csv",
+    "feature_delta_by_horizon": "reports/feature_ablation_analysis_nonlinear_slice/feature_delta_by_horizon.csv",
+    "feature_delta_by_model": "reports/feature_ablation_analysis_nonlinear_slice/feature_delta_by_model.csv",
+    "feature_delta_by_seed": "reports/feature_ablation_analysis_nonlinear_slice/feature_delta_by_seed.csv",
+    "feature_group_stability": "reports/feature_ablation_analysis_nonlinear_slice/feature_group_stability.csv",
+    "figure_manifest": "reports/feature_ablation_analysis_nonlinear_slice/figure_manifest.json",
+    "snapshot_order_flow_proxy_scope": "reports/feature_ablation_analysis_nonlinear_slice/snapshot_order_flow_proxy_scope.csv",
+    "summary": "reports/feature_ablation_analysis_nonlinear_slice/summary.json",
+    "unsupported_event_level_groups": "reports/feature_ablation_analysis_nonlinear_slice/unsupported_event_level_groups.csv"
+  },
+  "folds": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "horizons": [
+    10,
+    50
+  ],
+  "models": [
+    "gradient_boosting"
+  ],
+  "output_dir": "reports\\feature_ablation_analysis_nonlinear_slice",
+  "raw_predictions_available": false,
+  "seeds": [
+    0
+  ],
+  "warnings": []
+}

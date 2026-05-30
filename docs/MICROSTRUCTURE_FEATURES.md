@@ -8,8 +8,9 @@ FI-2010 NoAuction is a normalised snapshot benchmark. It does not provide true
 event messages, trades, cancellations or queue position in the converted
 snapshot CSV layout, so the registry records those concepts as unsupported.
 All `snapshot_order_flow_proxy` columns are snapshot-to-snapshot visible-book
-deltas only. They should not be abbreviated into true OFI language in public
-writing.
+deltas only. `snapshot_order_flow_proxy` is a labelled snapshot proxy derived
+from FI-2010 matrices. It should not be interpreted as true event-level
+order-flow imbalance.
 
 ## Groups
 
@@ -25,7 +26,7 @@ writing.
 | `depth_imbalance` | derived | supported where levels exist | same imbalance over levels 1, 5 and 10 | Visible depth only. |
 | `depth_slope` | derived | supported with at least two levels | linear slope of displayed sizes across levels | Shape proxy, not queue dynamics. |
 | `liquidity_concentration` | derived | supported where levels exist | top-1/top-5 visible depth divided by total visible depth | Hidden liquidity is not observed. |
-| `snapshot_order_flow_proxy` | proxy | supported as proxy | same-row-safe deltas of visible price/size columns versus previous row in the same partition | Not true OFI; does not identify submissions, trades or cancellations. |
+| `snapshot_order_flow_proxy` | proxy | supported as proxy | same-row-safe deltas of visible price/size columns versus previous row in the same partition | Labelled snapshot proxy; does not identify submissions, trades or cancellations. |
 | `volatility_proxy` | rolling | supported | rolling standard deviation of past/current midprice returns within partition | Uses no future rows. |
 | `time_context` | derived | skipped unless timestamp/session columns exist | time-of-day seconds and session position | Canonical FI-2010 matrices do not include true timestamps. |
 

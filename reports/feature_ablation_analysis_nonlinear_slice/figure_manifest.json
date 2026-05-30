@@ -1,0 +1,68 @@
+{
+  "ablation_dir": "experiments/fi2010_feature_ablations_nonlinear_slice",
+  "analysis_version": "fi2010-feature-ablation-stability/v1",
+  "created_at": "2026-05-30T07:11:42.471188+00:00",
+  "figures": [
+    {
+      "figure_id": "feature_group_delta_by_horizon",
+      "file_path": "reports/feature_ablation_analysis_nonlinear_slice/feature_group_delta_by_horizon.png",
+      "metadata_path": "reports/feature_ablation_analysis_nonlinear_slice/metadata/feature_group_delta_by_horizon.json",
+      "reason": "",
+      "row_count": 8,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/feature_group_delta_by_horizon.csv",
+      "status": "completed",
+      "title": "Feature Group Delta By Horizon"
+    },
+    {
+      "figure_id": "feature_group_delta_by_model",
+      "file_path": "reports/feature_ablation_analysis_nonlinear_slice/feature_group_delta_by_model.png",
+      "metadata_path": "reports/feature_ablation_analysis_nonlinear_slice/metadata/feature_group_delta_by_model.json",
+      "reason": "",
+      "row_count": 4,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/feature_group_delta_by_model.csv",
+      "status": "completed",
+      "title": "Feature Group Delta By Model"
+    },
+    {
+      "figure_id": "snapshot_order_flow_proxy_delta_by_horizon_fold",
+      "file_path": "reports/feature_ablation_analysis_nonlinear_slice/snapshot_order_flow_proxy_delta_by_horizon_fold.png",
+      "metadata_path": "reports/feature_ablation_analysis_nonlinear_slice/metadata/snapshot_order_flow_proxy_delta_by_horizon_fold.json",
+      "reason": "",
+      "row_count": 10,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/snapshot_order_flow_proxy_delta_by_horizon_fold.csv",
+      "status": "completed",
+      "title": "snapshot_order_flow_proxy Delta By Horizon/Fold"
+    },
+    {
+      "figure_id": "stability_heatmap",
+      "file_path": "reports/feature_ablation_analysis_nonlinear_slice/stability_heatmap.png",
+      "metadata_path": "reports/feature_ablation_analysis_nonlinear_slice/metadata/stability_heatmap.json",
+      "reason": "",
+      "row_count": 4,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/stability_heatmap.csv",
+      "status": "completed",
+      "title": "Feature Stability Heatmap"
+    },
+    {
+      "figure_id": "top_feature_groups_by_absolute_delta",
+      "file_path": "reports/feature_ablation_analysis_nonlinear_slice/top_feature_groups_by_absolute_delta.png",
+      "metadata_path": "reports/feature_ablation_analysis_nonlinear_slice/metadata/top_feature_groups_by_absolute_delta.json",
+      "reason": "",
+      "row_count": 4,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/top_feature_groups_by_absolute_delta.csv",
+      "status": "completed",
+      "title": "Top Feature Groups By Absolute Delta"
+    },
+    {
+      "figure_id": "unsupported_event_level_groups",
+      "file_path": null,
+      "metadata_path": null,
+      "reason": "unsupported event-level groups are marked in source CSV",
+      "row_count": 5,
+      "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/unsupported_event_level_groups.csv",
+      "status": "csv_only",
+      "title": "Unsupported Event-Level Groups"
+    }
+  ],
+  "output_dir": "reports/feature_ablation_analysis_nonlinear_slice"
+}

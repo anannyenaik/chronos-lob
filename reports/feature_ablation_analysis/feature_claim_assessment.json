@@ -1,0 +1,122 @@
+{
+  "actual_scope": {
+    "completed_result_rows": 2580,
+    "completed_run_count": 2580,
+    "failed_run_count": 0,
+    "folds": [
+      "fold_1",
+      "fold_2",
+      "fold_3",
+      "fold_4",
+      "fold_5"
+    ],
+    "horizons": [
+      10,
+      20,
+      50
+    ],
+    "models": [
+      "gradient_boosting",
+      "logistic",
+      "ridge"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "analysis_version": "fi2010-feature-ablation-stability/v1",
+  "claims": {
+    "broader_horizon_snapshot_proxy_importance": {
+      "degraded_count": 65,
+      "degraded_fraction": 1.0,
+      "mean_delta_macro_f1": -0.10316713836252127,
+      "mean_delta_mcc": -0.13301070615387464,
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "run_count": 65,
+      "status": "supported"
+    },
+    "causal_feature_importance": {
+      "reason": "ablation deltas are associational diagnostics, not causal evidence",
+      "status": "forbidden"
+    },
+    "execution_aware_ablation_diagnostics": {
+      "reason": "Execution-aware ablation diagnostics require retained prediction-level outputs or a targeted rerun.",
+      "status": "needs_prediction_outputs"
+    },
+    "feature_ablation_infrastructure": {
+      "reason": "required feature-ablation summary and delta tables were loaded",
+      "status": "supported"
+    },
+    "horizon10_logistic_ridge_snapshot_proxy_importance": {
+      "degraded_count": 30,
+      "degraded_fraction": 1.0,
+      "mean_delta_macro_f1": -0.19567617682032287,
+      "mean_delta_mcc": -0.2634225994218373,
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "run_count": 30,
+      "status": "supported"
+    },
+    "nonlinear_model_feature_stability": {
+      "degraded_count": 10,
+      "degraded_fraction": 1.0,
+      "mean_delta_macro_f1": -0.3369478300376981,
+      "mean_delta_mcc": -0.4347831413550975,
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "run_count": 10,
+      "status": "supported"
+    },
+    "true_event_level_ofi": {
+      "reason": "snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance.",
+      "status": "forbidden"
+    }
+  },
+  "created_at": "2026-05-30T07:13:11.286616+00:00",
+  "evidence_status": "partial_real",
+  "proxy_scope_note": "snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance.",
+  "strongest_negative_remove_effects": [
+    {
+      "feature_group": "snapshot_order_flow_proxy",
+      "mean_delta_macro_f1": -0.15096671093101388
+    },
+    {
+      "feature_group": "size_levels",
+      "mean_delta_macro_f1": -0.00865923768097311
+    },
+    {
+      "feature_group": "spread",
+      "mean_delta_macro_f1": -0.007489207014912997
+    },
+    {
+      "feature_group": "price_levels",
+      "mean_delta_macro_f1": -0.006039974672456903
+    },
+    {
+      "feature_group": "depth_imbalance",
+      "mean_delta_macro_f1": -4.416459776067349e-05
+    }
+  ],
+  "strongest_positive_remove_effects": [
+    {
+      "feature_group": "liquidity_concentration",
+      "mean_delta_macro_f1": 0.0004199124007771286
+    },
+    {
+      "feature_group": "top_of_book_imbalance",
+      "mean_delta_macro_f1": 0.0002313359674998922
+    },
+    {
+      "feature_group": "volatility_proxy",
+      "mean_delta_macro_f1": 0.00011525751878827182
+    },
+    {
+      "feature_group": "depth_slope",
+      "mean_delta_macro_f1": 4.006331789087288e-05
+    },
+    {
+      "feature_group": "microprice",
+      "mean_delta_macro_f1": 2.6782473687796407e-05
+    }
+  ]
+}

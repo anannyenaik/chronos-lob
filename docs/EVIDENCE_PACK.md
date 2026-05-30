@@ -16,6 +16,7 @@ python -m chronoslob.cli build-evidence-pack \
   --figures reports/figures/fi2010_neural_full_grid \
   --execution-v3 experiments/fi2010_execution_v3 \
   --feature-ablations experiments/fi2010_feature_ablations \
+  --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
   --final-report reports/chronoslob_final_empirical_report.md \
   --strict \
@@ -85,6 +86,10 @@ FI-2010 snapshot-derived features must remain described as snapshot diagnostics
 or proxies. They do not establish true event-level order flow, cancellation
 imbalance, trade imbalance or queue position.
 
+Feature-ablation claim statuses also block causal feature-importance language.
+The current `snapshot_order_flow_proxy` evidence is a scoped feature-stability
+analysis over a labelled snapshot proxy, not an event-level or causal claim.
+
 ## Public Bullet Files
 
 Two public summary-bullet files are generated:
@@ -100,10 +105,11 @@ profile copy.
 ## Current Release Reading
 
 At the current public-release point, the neural full grid and execution-v3 are
-`complete_real`, feature ablations are `partial_real`, figure outputs are real
-with unsupported regime plots skipped, and the manual paper has not yet been
-written. The matched full grid supports the existence of a supervised-vs-SSL
-comparison, but it does not support SSL improvement language.
+`complete_real`, feature ablations are `partial_real`, feature-ablation analysis
+is `partial_real`, figure outputs are real with unsupported regime plots
+skipped, and the manual paper has not yet been written. The matched full grid
+supports the existence of a supervised-vs-SSL comparison, but it does not
+support SSL improvement language.
 
 A dedicated SSL analysis artefact (`ssl_failure_analysis_report`, built by
 `analyse-fi2010-ssl-results` into `reports/ssl_failure_analysis/`) is recorded in
@@ -120,6 +126,14 @@ carries per-diagnostic claim statuses (cost, latency, fill and adverse-selection
 sensitivity supported from real tables; regime diagnostics explicitly skipped).
 All of its statements stay within offline execution-aware proxy diagnostics and
 make no PnL, profitability or live-trading claim.
+
+A dedicated feature-ablation stability artefact
+(`feature_ablation_analysis_report`, built by
+`analyse-fi2010-feature-ablations` into `reports/feature_ablation_analysis/`) is
+recorded in the inventory. It reads retained lightweight tables from the
+logistic/ridge expansion and the small gradient-boosting slice. Claim audit rows
+support the exact scoped `snapshot_order_flow_proxy` findings and keep causal
+feature-importance and true event-level order-flow claims forbidden.
 
 ## Preparing A Release
 

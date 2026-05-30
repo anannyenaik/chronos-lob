@@ -1,0 +1,13 @@
+feature_group,fold_consistency,seed_consistency,horizon_consistency,model_consistency
+snapshot_order_flow_proxy,1.0,1.0,1.0,1.0
+size_levels,1.0,1.0,1.0,1.0
+spread,1.0,1.0,1.0,1.0
+price_levels,1.0,1.0,1.0,1.0
+liquidity_concentration,0.0,0.0,0.0,0.5
+top_of_book_imbalance,0.2,0.0,0.0,0.3333333333333333
+volatility_proxy,0.4,0.0,0.3333333333333333,0.0
+depth_imbalance,0.4,0.3333333333333333,0.6666666666666666,0.6666666666666666
+depth_slope,0.4,0.0,0.6666666666666666,0.0
+microprice,0.4,0.0,0.3333333333333333,0.5
+top_of_book,0.6,0.0,0.6666666666666666,0.5
+midprice,0.4,1.0,0.6666666666666666,0.5

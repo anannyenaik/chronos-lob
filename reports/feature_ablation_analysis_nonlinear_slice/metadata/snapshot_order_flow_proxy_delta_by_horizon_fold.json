@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-05-30T07:11:41.914700+00:00",
+  "figure_id": "snapshot_order_flow_proxy_delta_by_horizon_fold",
+  "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/snapshot_order_flow_proxy_delta_by_horizon_fold.csv",
+  "source_sha256": "c78255103cede8c3f041d6cc16d37a709e3534ea179b4dcc448ab9ab51d4be32",
+  "title": "snapshot_order_flow_proxy Delta By Horizon/Fold"
+}

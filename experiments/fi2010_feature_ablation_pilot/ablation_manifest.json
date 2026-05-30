@@ -1,0 +1,57 @@
+{
+  "artefact_policy": {
+    "feature_matrix_files_written": 0,
+    "heavy_feature_matrices_saved": false,
+    "prediction_files_written": 0,
+    "raw_predictions_saved": false,
+    "summary_only": true
+  },
+  "created_at": "2026-05-30T02:21:51.813730+00:00",
+  "input_folds": [
+    {
+      "fold": "fold_1",
+      "path": "data\\processed\\fi2010\\fold1_combined.csv",
+      "sha256": "49a24198d14b929d8484d58ea2ff5fb5e1853a02f4d519ef9ba46ba27ee5bdb0"
+    }
+  ],
+  "runner_version": "fi2010-microstructure-feature-ablations/v2",
+  "runs": [
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_logistic_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_logistic_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_logistic_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_logistic_no_proxy_features_no_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_ridge_all_features_all",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_ridge_remove_one_group_spread",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_ridge_remove_one_group_snapshot_order_flow_proxy",
+      "status": "completed"
+    },
+    {
+      "run_dir": "experiments\\fi2010_feature_ablation_pilot\\runs\\fold_1_h20_s0_ridge_no_proxy_features_no_proxy",
+      "status": "completed"
+    }
+  ],
+  "status_counts": {
+    "completed": 8,
+    "failed": 0,
+    "skipped_existing": 0
+  }
+}

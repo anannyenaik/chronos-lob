@@ -1,0 +1,5 @@
+feature_group,fold_consistency,seed_consistency,horizon_consistency,model_consistency
+snapshot_order_flow_proxy,1.0,1.0,1.0,1.0
+spread,1.0,1.0,0.5,1.0
+depth_imbalance,0.8,1.0,1.0,1.0
+top_of_book_imbalance,0.4,1.0,1.0,1.0

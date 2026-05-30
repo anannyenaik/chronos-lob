@@ -91,6 +91,12 @@ horizon-specific feature-importance plots when the supporting CSV rows exist.
 Every completed plot has a PNG, source CSV, metadata JSON and manifest entry;
 unavailable plots are skipped with a reason.
 
+The scoped feature-stability analysis also writes figures under
+`reports/feature_ablation_analysis/`, including feature-group delta by horizon,
+feature-group delta by model, `snapshot_order_flow_proxy` delta by horizon/fold,
+a stability heatmap and top absolute-delta groups. Unsupported event-level
+groups are marked in CSV source data rather than plotted as supported features.
+
 ## Evidence-Pack Use
 
 The evidence pack reads each `figure_manifest.json`, records smoke status,

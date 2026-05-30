@@ -13,7 +13,8 @@
 | execution_v3_outputs | stale | no |
 | execution_v3_analysis_report | complete_real | no |
 | feature_registry_audit_outputs | missing | no |
-| feature_ablation_outputs | stale | no |
+| feature_ablation_outputs | partial_real | no |
+| feature_ablation_analysis_report | complete_real | no |
 | ablation_figures | complete_real | no |
 | final_empirical_report | complete_real | no |
 | project_audit_archive | unknown_staleness | no |
@@ -24,7 +25,7 @@
 - Best neural full-grid result: not cleanly supported (stale).
 - SSL comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
 - Execution-v3: stale.
-- Feature ablations: stale.
+- Feature ablations: partial_real.
 - Figures: partial_real.
 
 ## Limitations

@@ -1,0 +1,5 @@
+feature_group,run_count,mean_delta_macro_f1,mean_delta_mcc,abs_mean_delta_macro_f1,macro_f1_degradation_count,macro_f1_improvement_count,macro_f1_degradation_fraction,mcc_degradation_count,mcc_improvement_count,mcc_degradation_fraction,fold_consistency,seed_consistency,horizon_consistency,model_consistency,stability_score,folds_covered,seeds_covered,horizons_covered,models_covered
+snapshot_order_flow_proxy,10,-0.3369478300376982,-0.4347831413550975,0.3369478300376982,10,0,1.0,10,0,1.0,1.0,1.0,1.0,1.0,1.0,"fold_1,fold_2,fold_3,fold_4,fold_5",0,"10,50",gradient_boosting
+spread,10,-0.002313747672159729,-0.0023784480578453275,0.002313747672159729,6,4,0.6,4,6,0.4,1.0,1.0,0.5,1.0,0.875,"fold_1,fold_2,fold_3,fold_4,fold_5",0,"10,50",gradient_boosting
+depth_imbalance,10,-0.0004431737213718984,-0.00028393503771117237,0.0004431737213718984,4,6,0.4,4,6,0.4,0.8,1.0,1.0,1.0,0.95,"fold_1,fold_2,fold_3,fold_4,fold_5",0,"10,50",gradient_boosting
+top_of_book_imbalance,10,-2.7396563850848783e-05,-5.7317493973513895e-05,2.7396563850848783e-05,3,2,0.3,3,2,0.3,0.4,1.0,1.0,1.0,0.85,"fold_1,fold_2,fold_3,fold_4,fold_5",0,"10,50",gradient_boosting

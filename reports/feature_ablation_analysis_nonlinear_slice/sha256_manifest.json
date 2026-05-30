@@ -1,0 +1,31 @@
+{
+  "files": {
+    "feature_ablation_analysis.md": "5fee6e7141e400aa1ca9d3a87cfc6ae62f5cc9d13f80b68a300ec915ed96778f",
+    "feature_claim_assessment.json": "abe3c49274706387f87a2490cdd73a8a15873ca0d4bb5f259818074b01f0c659",
+    "feature_delta_by_fold.csv": "a81431f809cc3799b2ba3bab3e5fd73ae1e4f340c5bf6a8aa251c4a5c4725f42",
+    "feature_delta_by_horizon.csv": "862ed377cdaf7104b8c5a44d58f49b0d2d5902dfb1e7d81e925206bd9e1f6749",
+    "feature_delta_by_model.csv": "22ec34dc6ad8dfb2bac831785e20053ff52db3f34c31c42d58973fed71a27a90",
+    "feature_delta_by_seed.csv": "297d27ae0882862833986b4ebf8929b62f32b516430d86ff403e38f512f309d0",
+    "feature_group_delta_by_horizon.png": "d6e66ae6b2c7e18ceb8fa0111328e6cc4b19158e2760e29038d7394783c17392",
+    "feature_group_delta_by_model.png": "04626101ac4b4d98b36bc470122594cc09de2d4062c449b14ac57c177f008e70",
+    "feature_group_stability.csv": "8a471b8749a232876aaf490cb47028e43923b5fba8571f2bde0108ef196b0fda",
+    "figure_manifest.json": "af6bba74e0cbecc3b105e6af354f9073754b0c29f4dfdf22740e808aa6959a2a",
+    "metadata/feature_group_delta_by_horizon.json": "26db70b56b6da8561825094e14f105ce62c6672e9fc93ea846199711ed1dfdc4",
+    "metadata/feature_group_delta_by_model.json": "696f87ad299865c7b4355ffc809d90317a66cb84e7ad284d269dafac30cb7c05",
+    "metadata/snapshot_order_flow_proxy_delta_by_horizon_fold.json": "bd41125a51f077e07830f09b55bdc9c7848a20a0fa34736d29d59feaef28a6f9",
+    "metadata/stability_heatmap.json": "39314087bfeec418987230dd118f53aede1e98f754bdd99b567769ed18b24ee9",
+    "metadata/top_feature_groups_by_absolute_delta.json": "e71a132c689d2971d1770890962ee42ca9e4393eba8f127a9c05257e422ddcb9",
+    "snapshot_order_flow_proxy_delta_by_horizon_fold.png": "5aa3d2c8349c9e59dd76b8caf3f5f2f1c7df6a2cf4e018700c9c4849ef78a38c",
+    "snapshot_order_flow_proxy_scope.csv": "de3350d1d2f1fd346c412dd2dd96a09bc64b498a5cc8b869a56fd00b32db6427",
+    "source_data/feature_group_delta_by_horizon.csv": "862ed377cdaf7104b8c5a44d58f49b0d2d5902dfb1e7d81e925206bd9e1f6749",
+    "source_data/feature_group_delta_by_model.csv": "22ec34dc6ad8dfb2bac831785e20053ff52db3f34c31c42d58973fed71a27a90",
+    "source_data/snapshot_order_flow_proxy_delta_by_horizon_fold.csv": "c78255103cede8c3f041d6cc16d37a709e3534ea179b4dcc448ab9ab51d4be32",
+    "source_data/stability_heatmap.csv": "4a3cab9bb684ed53549c09956c4efdd5b57c35aac8cfaeea8e03f50f5d32cddd",
+    "source_data/top_feature_groups_by_absolute_delta.csv": "8a471b8749a232876aaf490cb47028e43923b5fba8571f2bde0108ef196b0fda",
+    "source_data/unsupported_event_level_groups.csv": "38c45bf5b978c165893e836841fc0db9b6121a2edd2841455d2d4c6c44380b5a",
+    "stability_heatmap.png": "7bcb9ef485767a3628269ecb8ef66332392a2c080fe99665995e3309ad00c4b9",
+    "summary.json": "a0953e829f18d5d42b24a5bc54f9dbe555613595eec1f64eaf44cbb788a04e07",
+    "top_feature_groups_by_absolute_delta.png": "75fdcb7d28ed481344a68abc026fca1dc9efff87e147dea49dc68ecbc10da401",
+    "unsupported_event_level_groups.csv": "38c45bf5b978c165893e836841fc0db9b6121a2edd2841455d2d4c6c44380b5a"
+  }
+}

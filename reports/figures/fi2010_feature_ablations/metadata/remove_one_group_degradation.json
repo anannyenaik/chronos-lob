@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-05-29T15:05:09.687778+00:00",
+  "created_at": "2026-05-30T07:13:37.565413+00:00",
   "figure_id": "remove_one_group_degradation",
   "smoke_test": false,
   "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/remove_one_group_degradation.csv",
-  "source_sha256": "60a37d0c453f71f90ceb1addf70abbddc4505a01da262e40141e63b61b51d43d",
+  "source_sha256": "c9116712bfe7a9efb1f16e1d88c50f43bc22ade3cfb780eab6d05d427ee3ddcd",
   "title": "Remove-One-Group Degradation"
 }

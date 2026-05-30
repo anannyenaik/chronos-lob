@@ -145,6 +145,11 @@ class FeatureAblationSummary(BaseModel):
     feature_groups: list[str]
     ablation_modes: list[str]
     smoke_test: bool
+    save_predictions: bool
+    save_heavy_artefacts: bool
+    summary_only: bool
+    prediction_files_written: int = 0
+    feature_matrix_files_written: int = 0
     artefacts: dict[str, str]
     warnings: list[str] = Field(default_factory=list)
     created_at: datetime
@@ -247,10 +252,16 @@ def run_fi2010_feature_ablations(
     reuse_completed: bool = True,
     strict: bool = True,
     smoke_test: bool = False,
+    save_predictions: bool = False,
+    save_heavy_artefacts: bool = False,
+    summary_only: bool = True,
 ) -> FeatureAblationSummary:
     """Run classical FI-2010 feature ablations and write artefacts."""
     output_dir = Path(out_dir)
     _prepare_output_dir(output_dir, reuse_completed=reuse_completed)
+    if summary_only:
+        save_predictions = False
+        save_heavy_artefacts = False
     selected_folds = _parse_folds(folds)
     selected_horizons = _parse_ints(horizons, default=(10,), positive=True)
     selected_seeds = _parse_ints(seeds, default=(0,), positive=False)
@@ -303,6 +314,8 @@ def run_fi2010_feature_ablations(
             fold_input=fold_input,
             feature_result=feature_result,
             strict=strict,
+            save_heavy_artefacts=save_heavy_artefacts,
+            summary_only=summary_only,
         )
         specs = expand_ablation_specs(
             feature_result.group_columns,
@@ -347,6 +360,7 @@ def run_fi2010_feature_ablations(
                             model_name=model_name,
                             unsupported_groups=unsupported,
                             reuse_completed=reuse_completed,
+                            save_predictions=save_predictions,
                         )
                         all_rows.append(run_result["row"])
                         run_entries.append(run_result["entry"])
@@ -366,10 +380,19 @@ def run_fi2010_feature_ablations(
         stable_json_dumps({"failure_count": len(failure_rows), "failures": failure_rows}),
         encoding="utf-8",
     )
+    prediction_files_written = sum(1 for _ in output_dir.glob("runs/*/predictions.csv"))
+    feature_matrix_files_written = sum(
+        1 for _ in output_dir.glob("features/*/artefacts/features.csv")
+    )
     manifest_path = _write_root_manifest(
         output_dir=output_dir,
         run_entries=run_entries,
         input_folds=fold_inputs,
+        save_predictions=save_predictions,
+        save_heavy_artefacts=save_heavy_artefacts,
+        summary_only=summary_only,
+        prediction_files_written=prediction_files_written,
+        feature_matrix_files_written=feature_matrix_files_written,
     )
 
     artefacts = {
@@ -396,6 +419,11 @@ def run_fi2010_feature_ablations(
         feature_groups=list(selected_groups),
         ablation_modes=list(selected_modes),
         smoke_test=smoke_test,
+        save_predictions=save_predictions,
+        save_heavy_artefacts=save_heavy_artefacts,
+        summary_only=summary_only,
+        prediction_files_written=prediction_files_written,
+        feature_matrix_files_written=feature_matrix_files_written,
         artefacts=artefacts,
         warnings=warnings,
         created_at=datetime.now(UTC),
@@ -410,6 +438,13 @@ def run_fi2010_feature_ablations(
         "Feature ablations are leakage-safe diagnostics over FI-2010 snapshots. "
         "Snapshot deltas are proxies, not true order-flow imbalance."
     )
+    summary_payload["artefact_policy"] = {
+        "raw_predictions_saved": save_predictions,
+        "heavy_feature_matrices_saved": save_heavy_artefacts,
+        "summary_only": summary_only,
+        "final_report_requires_raw_predictions": False,
+        "evidence_pack_requires_raw_predictions": False,
+    }
     (output_dir / "summary.json").write_text(
         stable_json_dumps(summary_payload),
         encoding="utf-8",
@@ -517,6 +552,7 @@ def _run_one_spec(
     model_name: str,
     unsupported_groups: str,
     reuse_completed: bool,
+    save_predictions: bool,
 ) -> dict[str, Any]:
     run_dir = (
         output_dir
@@ -536,10 +572,20 @@ def _run_one_spec(
             status_payload = _read_json(status_path)
             metrics_payload = _read_json(metrics_path)
             if status_payload.get("status") == "completed":
-                return {
-                    "row": dict(metrics_payload["results_summary_row"]),
-                    "entry": _run_entry(run_dir, status="skipped_existing"),
-                }
+                existing_prediction_file = metrics_payload.get("prediction_file")
+                prediction_path = (
+                    run_dir / str(existing_prediction_file)
+                    if isinstance(existing_prediction_file, str) and existing_prediction_file
+                    else None
+                )
+                needs_prediction_rerun = save_predictions and (
+                    prediction_path is None or not prediction_path.is_file()
+                )
+                if not needs_prediction_rerun:
+                    return {
+                        "row": dict(metrics_payload["results_summary_row"]),
+                        "entry": _run_entry(run_dir, status="skipped_existing"),
+                    }
         except (OSError, ValueError, KeyError, TypeError):
             pass
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -606,9 +652,13 @@ def _run_one_spec(
             seed=seed,
             spec=spec,
             unsupported_groups=unsupported_groups,
+            build_predictions=save_predictions,
         )
-        predictions_path = run_dir / "predictions.csv"
-        predictions.to_csv(predictions_path, index=False)
+        prediction_file: str | None = None
+        if save_predictions and predictions is not None:
+            predictions_path = run_dir / "predictions.csv"
+            predictions.to_csv(predictions_path, index=False)
+            prediction_file = "predictions.csv"
         metrics_payload = {
             "status": "completed",
             "results_summary_row": row,
@@ -619,7 +669,8 @@ def _run_one_spec(
                 "ece": row["ece"],
                 "brier_score": row["brier_score"],
             },
-            "prediction_file": "predictions.csv",
+            "prediction_file": prediction_file,
+            "predictions_saved": prediction_file is not None,
         }
         metrics_path = run_dir / "metrics.json"
         metrics_path.write_text(stable_json_dumps(metrics_payload), encoding="utf-8")
@@ -681,7 +732,8 @@ def _evaluate_model(
     seed: int,
     spec: AblationSpec,
     unsupported_groups: str,
-) -> tuple[dict[str, Any], pd.DataFrame]:
+    build_predictions: bool,
+) -> tuple[dict[str, Any], pd.DataFrame | None]:
     test_indices = list(split.test)
     if not test_indices:
         test_indices = list(split.validation)
@@ -717,19 +769,23 @@ def _evaluate_model(
         "brier_score": brier,
         "status": "completed",
     }
-    predictions = _prediction_frame(
-        fold_input=fold_input,
-        feature_frame=feature_frame,
-        row_indices=test_indices,
-        y_true=y_true,
-        y_pred=y_pred,
-        probabilities=probabilities,
-        model_name=model_name,
-        horizon=horizon,
-        seed=seed,
-        spec=spec,
-        feature_columns=feature_columns,
-        proxy_columns=proxy_columns,
+    predictions = (
+        _prediction_frame(
+            fold_input=fold_input,
+            feature_frame=feature_frame,
+            row_indices=test_indices,
+            y_true=y_true,
+            y_pred=y_pred,
+            probabilities=probabilities,
+            model_name=model_name,
+            horizon=horizon,
+            seed=seed,
+            spec=spec,
+            feature_columns=feature_columns,
+            proxy_columns=proxy_columns,
+        )
+        if build_predictions
+        else None
     )
     return row, predictions
 
@@ -1054,11 +1110,42 @@ def _write_fold_features(
     fold_input: _FoldInput,
     feature_result: Any,
     strict: bool,
+    save_heavy_artefacts: bool,
+    summary_only: bool,
 ) -> None:
     fold_dir = output_dir / "features" / fold_input.fold
     if fold_dir.exists():
         shutil.rmtree(fold_dir)
     if fold_input.sha256 is None:
+        return
+    if not save_heavy_artefacts:
+        artefact_dir = fold_dir / "artefacts"
+        artefact_dir.mkdir(parents=True, exist_ok=True)
+        metadata = dict(feature_result.metadata)
+        metadata["input_path"] = str(fold_input.path)
+        metadata["input_sha256"] = fold_input.sha256
+        metadata["features_path"] = None
+        metadata["features_sha256"] = None
+        metadata["features_written"] = False
+        metadata["summary_only"] = summary_only
+        metadata["warnings"] = list(feature_result.warnings)
+        metadata_path = artefact_dir / "feature_metadata.json"
+        metadata_path.write_text(stable_json_dumps(metadata), encoding="utf-8")
+        manifest = dict(feature_result.group_manifest)
+        manifest["metadata_path"] = str(metadata_path)
+        manifest["features_path"] = None
+        manifest["features_written"] = False
+        manifest["summary_only"] = summary_only
+        manifest_path = artefact_dir / "feature_group_manifest.json"
+        manifest_path.write_text(stable_json_dumps(manifest), encoding="utf-8")
+        hashes = {
+            "feature_metadata.json": sha256_file(metadata_path),
+            "feature_group_manifest.json": sha256_file(manifest_path),
+        }
+        (artefact_dir / "sha256_manifest.json").write_text(
+            stable_json_dumps({"files": hashes}),
+            encoding="utf-8",
+        )
         return
     temp_path = fold_dir / "_input.csv"
     fold_dir.mkdir(parents=True, exist_ok=True)
@@ -1089,6 +1176,11 @@ def _write_root_manifest(
     output_dir: Path,
     run_entries: Sequence[Mapping[str, Any]],
     input_folds: Sequence[_FoldInput],
+    save_predictions: bool,
+    save_heavy_artefacts: bool,
+    summary_only: bool,
+    prediction_files_written: int,
+    feature_matrix_files_written: int,
 ) -> Path:
     path = output_dir / "ablation_manifest.json"
     payload = {
@@ -1098,6 +1190,13 @@ def _write_root_manifest(
             {"fold": item.fold, "path": str(item.path), "sha256": item.sha256}
             for item in input_folds
         ],
+        "artefact_policy": {
+            "raw_predictions_saved": save_predictions,
+            "heavy_feature_matrices_saved": save_heavy_artefacts,
+            "summary_only": summary_only,
+            "prediction_files_written": prediction_files_written,
+            "feature_matrix_files_written": feature_matrix_files_written,
+        },
         "runs": list(run_entries),
         "status_counts": {
             "completed": sum(1 for entry in run_entries if entry.get("status") == "completed"),

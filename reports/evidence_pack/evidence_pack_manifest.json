@@ -1,10 +1,10 @@
 {
   "allow_smoke_test": false,
   "artefact_status_counts": {
-    "complete_real": 4,
+    "complete_real": 5,
     "missing": 2,
-    "partial_real": 1,
-    "stale": 5,
+    "partial_real": 2,
+    "stale": 4,
     "unknown_staleness": 1
   },
   "artefacts": [
@@ -262,20 +262,20 @@
     {
       "artefact_name": "feature_ablation_outputs",
       "artefact_type": "feature_ablations",
-      "completed_runs": 840,
+      "completed_runs": 2520,
       "exists": true,
       "failed_runs": 0,
-      "generated_at": "2026-05-29T14:56:57.253251Z",
-      "git_commit": "a72d46f0a1d7e0ccb62853eee6004375f7b5358c",
+      "generated_at": "2026-05-30T05:38:43.788746Z",
+      "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
       "input_hashes_present": false,
       "limitations": "FI-2010 snapshot features cannot prove true event-level OFI, trade imbalance, cancellation imbalance or queue position.",
-      "notes": "Recorded git commit differs from the current repository commit.",
+      "notes": "Generated timestamp is present.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_feature_ablations",
       "required_files_missing": [],
-      "skipped_runs": 168,
+      "skipped_runs": 2520,
       "smoke_test": false,
-      "status": "stale",
+      "status": "partial_real",
       "supporting_files": [
         "experiments/fi2010_feature_ablations/summary.json",
         "experiments/fi2010_feature_ablations/results_summary.csv",
@@ -285,8 +285,47 @@
         "experiments/fi2010_feature_ablations/failures.json"
       ],
       "supports_claims": [
+        "broader_horizon_snapshot_proxy_importance",
         "empirical.feature_group_improved",
-        "general.feature_ablations"
+        "feature_ablation_infrastructure",
+        "general.feature_ablations",
+        "horizon10_logistic_ridge_snapshot_proxy_importance",
+        "nonlinear_model_feature_stability"
+      ]
+    },
+    {
+      "artefact_name": "feature_ablation_analysis_report",
+      "artefact_type": "feature_ablation_analysis",
+      "completed_runs": 2580,
+      "exists": true,
+      "failed_runs": 0,
+      "generated_at": "2026-05-30T07:13:13.280270Z",
+      "git_commit": "",
+      "input_hashes_present": false,
+      "limitations": "Scoped feature-stability analysis over retained feature-ablation tables; not causal feature importance and not event-level OFI evidence.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "reports/feature_ablation_analysis",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "complete_real",
+      "supporting_files": [
+        "reports/feature_ablation_analysis/summary.json",
+        "reports/feature_ablation_analysis/feature_ablation_analysis.md",
+        "reports/feature_ablation_analysis/feature_delta_by_horizon.csv",
+        "reports/feature_ablation_analysis/feature_delta_by_model.csv",
+        "reports/feature_ablation_analysis/feature_delta_by_fold.csv",
+        "reports/feature_ablation_analysis/feature_delta_by_seed.csv",
+        "reports/feature_ablation_analysis/feature_group_stability.csv",
+        "reports/feature_ablation_analysis/snapshot_order_flow_proxy_scope.csv",
+        "reports/feature_ablation_analysis/feature_claim_assessment.json",
+        "reports/feature_ablation_analysis/figure_manifest.json"
+      ],
+      "supports_claims": [
+        "broader_horizon_snapshot_proxy_importance",
+        "horizon10_logistic_ridge_snapshot_proxy_importance",
+        "nonlinear_model_feature_stability"
       ]
     },
     {
@@ -295,7 +334,7 @@
       "completed_runs": 6,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-29T15:05:10.395170+00:00",
+      "generated_at": "2026-05-30T07:13:38.145224+00:00",
       "git_commit": "",
       "input_hashes_present": false,
       "limitations": "Ablation figures visualise stored ablation tables only.",
@@ -317,8 +356,8 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-30T01:18:04.243326Z",
-      "git_commit": "31f5f688a83e3fabbc4275d921674b145d8be601",
+      "generated_at": "2026-05-30T07:25:22.720548Z",
+      "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Generated timestamp is present.",
@@ -366,18 +405,19 @@
   "builder_version": "release/evidence-pack/v1",
   "claim_boundary": "Smoke diagnostics are not empirical evidence. Execution metrics are offline proxies. FI-2010 snapshot features do not expose event-level order flow, cancellations, trades or queue position.",
   "claim_status_counts": {
-    "forbidden": 9,
+    "forbidden": 11,
     "needs_real_evidence": 1,
     "partially_supported": 11,
-    "supported": 2,
+    "supported": 6,
     "unsupported": 2
   },
-  "generated_at": "2026-05-30T01:18:12.163008+00:00",
-  "git_commit": "31f5f688a83e3fabbc4275d921674b145d8be601",
+  "generated_at": "2026-05-30T07:25:34.996383+00:00",
+  "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "classical_dir": "experiments/fi2010_multifold_classical",
     "execution_v3_dir": "experiments/fi2010_execution_v3",
+    "feature_ablation_analysis_dir": "reports/feature_ablation_analysis",
     "feature_ablations_dir": "experiments/fi2010_feature_ablations",
     "feature_audit_dir": "reports/feature_audit",
     "figures_dir": "reports/figures/fi2010_neural_full_grid",
@@ -412,7 +452,6 @@
     "fi2010_neural_proper_training_subset: stale",
     "execution_v3_outputs: stale",
     "feature_registry_audit_outputs: missing",
-    "feature_ablation_outputs: stale",
     "project_audit_archive: unknown_staleness"
   ]
 }

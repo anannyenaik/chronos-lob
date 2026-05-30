@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-05-30T07:11:41.734155+00:00",
+  "figure_id": "feature_group_delta_by_model",
+  "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/feature_group_delta_by_model.csv",
+  "source_sha256": "22ec34dc6ad8dfb2bac831785e20053ff52db3f34c31c42d58973fed71a27a90",
+  "title": "Feature Group Delta By Model"
+}

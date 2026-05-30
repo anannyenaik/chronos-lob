@@ -580,6 +580,145 @@ def test_report_does_not_add_unsupported_claims(
         assert phrase not in lowered
 
 
+def test_report_includes_actual_feature_ablation_stability_scope(
+    tiny_final_artefacts: dict[str, Path],
+    tmp_path: Path,
+) -> None:
+    feature = tmp_path / "feature_ablations"
+    analysis = tmp_path / "feature_ablation_analysis"
+    _write_json(
+        feature / "summary.json",
+        {
+            "runner_version": "test",
+            "smoke_test": False,
+            "completed_run_count": 2520,
+            "failed_run_count": 0,
+            "folds": ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"],
+            "horizons": [10, 20, 50],
+            "seeds": [0, 1, 2],
+            "models": ["logistic", "ridge"],
+            "feature_groups": ["snapshot_order_flow_proxy", "spread"],
+            "proxy_groups": ["snapshot_order_flow_proxy"],
+            "unsupported_groups": ["true_order_flow_imbalance", "queue_position"],
+            "artefact_policy": {"raw_predictions_saved": False},
+        },
+    )
+    _write_csv(feature / "results_summary.csv", ["status"], [{"status": "completed"}])
+    _write_csv(
+        feature / "aggregate_summary.csv",
+        ["horizon", "model", "ablation_mode", "feature_group", "completed_runs"],
+        [
+            {
+                "horizon": 20,
+                "model": "logistic",
+                "ablation_mode": "remove_one_group",
+                "feature_group": "snapshot_order_flow_proxy",
+                "completed_runs": 15,
+            }
+        ],
+    )
+    _write_csv(
+        feature / "feature_delta_summary.csv",
+        ["horizon", "model", "ablation_mode", "feature_group", "delta_macro_f1", "delta_mcc"],
+        [
+            {
+                "horizon": 20,
+                "model": "logistic",
+                "ablation_mode": "remove_one_group",
+                "feature_group": "snapshot_order_flow_proxy",
+                "delta_macro_f1": -0.01,
+                "delta_mcc": -0.02,
+            }
+        ],
+    )
+    _write_json(feature / "ablation_manifest.json", {"created_at": "2026-05-30T00:00:00Z"})
+    _write_json(feature / "failures.json", {"failure_count": 0, "failures": []})
+
+    _write_json(
+        analysis / "summary.json",
+        {"evidence_status": "partial_real", "raw_predictions_available": False},
+    )
+    _write_csv(
+        analysis / "feature_group_stability.csv",
+        [
+            "feature_group",
+            "mean_delta_macro_f1",
+            "mean_delta_mcc",
+            "macro_f1_degradation_fraction",
+            "stability_score",
+        ],
+        [
+            {
+                "feature_group": "snapshot_order_flow_proxy",
+                "mean_delta_macro_f1": -0.01,
+                "mean_delta_mcc": -0.02,
+                "macro_f1_degradation_fraction": 1.0,
+                "stability_score": 1.0,
+            }
+        ],
+    )
+    for filename in (
+        "feature_delta_by_horizon.csv",
+        "feature_delta_by_model.csv",
+        "feature_delta_by_fold.csv",
+        "feature_delta_by_seed.csv",
+    ):
+        _write_csv(
+            analysis / filename,
+            ["feature_group", "mean_delta_macro_f1"],
+            [{"feature_group": "snapshot_order_flow_proxy", "mean_delta_macro_f1": -0.01}],
+        )
+    _write_csv(
+        analysis / "snapshot_order_flow_proxy_scope.csv",
+        ["macro_f1_degraded_when_removed"],
+        [{"macro_f1_degraded_when_removed": "true"}],
+    )
+    _write_json(
+        analysis / "feature_claim_assessment.json",
+        {
+            "claims": {
+                "broader_horizon_snapshot_proxy_importance": {
+                    "status": "supported",
+                    "reason": "horizon 20/50 rows support it",
+                },
+                "nonlinear_model_feature_stability": {
+                    "status": "needs_real_evidence",
+                    "reason": "non-linear slice absent",
+                },
+                "causal_feature_importance": {
+                    "status": "forbidden",
+                    "reason": "not causal",
+                },
+                "true_event_level_ofi": {
+                    "status": "forbidden",
+                    "reason": "not event-level",
+                },
+            }
+        },
+    )
+    _write_json(analysis / "figure_manifest.json", {"figures": []})
+    (analysis / "feature_ablation_analysis.md").write_text("analysis", encoding="utf-8")
+
+    report_path = tmp_path / "feature_scope.md"
+    build_final_empirical_report(
+        classical_dir=tiny_final_artefacts["classical"],
+        neural_dir=tiny_final_artefacts["neural"],
+        uncertainty_dir=tiny_final_artefacts["uncertainty"],
+        feature_ablation_dir=feature,
+        feature_ablation_analysis_dir=analysis,
+        out_path=report_path,
+        overwrite=True,
+    )
+
+    text = report_path.read_text(encoding="utf-8")
+    assert "## Feature Ablation and Stability Analysis" in text
+    assert "partial_real" in text
+    assert "10, 20, 50" in text
+    assert "not causal feature importance" in text
+    assert "labelled snapshot proxy" in text
+    assert "Execution-aware ablation diagnostics require retained prediction-level outputs" in text
+
+
 def test_overwrite_protection(
     tiny_final_artefacts: dict[str, Path],
     tmp_path: Path,

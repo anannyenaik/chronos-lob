@@ -56,6 +56,14 @@
   - status: partially_supported
   - reason: Stored threshold aggregates show an improvement, but evidence is not clean complete.
   - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.
+- Feature ablations prove causal feature importance
+  - status: forbidden
+  - reason: Feature ablations are scoped diagnostics and do not identify causal effects.
+  - safe wording: Use feature-ablation evidence language with exact scope and proxy caveats.
+- snapshot_order_flow_proxy is true event-level OFI
+  - status: forbidden
+  - reason: snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices and is not true event-level order-flow imbalance.
+  - safe wording: Use feature-ablation evidence language with exact scope and proxy caveats.
 - profitable trading strategy
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.

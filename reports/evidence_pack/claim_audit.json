@@ -1,10 +1,10 @@
 {
   "builder_version": "release/evidence-pack/v1",
   "claim_status_counts": {
-    "forbidden": 9,
+    "forbidden": 11,
     "needs_real_evidence": 1,
     "partially_supported": 11,
-    "supported": 2,
+    "supported": 6,
     "unsupported": 2
   },
   "claims": [
@@ -103,6 +103,20 @@
       ],
       "safe_rewording": "ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.",
       "status": "partially_supported",
+      "supporting_artefacts": [
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "infrastructure",
+      "claim_id": "feature_ablation_infrastructure",
+      "claim_text": "Feature-ablation infrastructure is available",
+      "reason": "Feature-ablation runner outputs and summary tables are present.",
+      "required_artefacts": [
+        "feature_ablation_outputs"
+      ],
+      "safe_rewording": "ChronosLOB includes FI-2010 feature-ablation evidence infrastructure with proxy and unsupported groups labelled.",
+      "status": "supported",
       "supporting_artefacts": [
         "feature_ablation_outputs"
       ]
@@ -230,6 +244,56 @@
     },
     {
       "category": "empirical result",
+      "claim_id": "horizon10_logistic_ridge_snapshot_proxy_importance",
+      "claim_text": "snapshot_order_flow_proxy remains important at horizon 10 for logistic/ridge",
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "required_artefacts": [
+        "feature_ablation_outputs",
+        "feature_delta_summary.csv"
+      ],
+      "safe_rewording": "State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "feature_ablation_analysis_report",
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "broader_horizon_snapshot_proxy_importance",
+      "claim_text": "snapshot_order_flow_proxy importance survives horizons 20 and 50",
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "required_artefacts": [
+        "feature_ablation_outputs",
+        "feature_ablation_analysis_report",
+        "snapshot_order_flow_proxy_scope.csv"
+      ],
+      "safe_rewording": "State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "feature_ablation_analysis_report",
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "nonlinear_model_feature_stability",
+      "claim_text": "Feature-ablation effects appear in a non-linear model slice",
+      "reason": "removing snapshot_order_flow_proxy degraded macro-F1 in every matched row",
+      "required_artefacts": [
+        "feature_ablation_outputs",
+        "feature_ablation_analysis_report",
+        "feature_claim_assessment.json"
+      ],
+      "safe_rewording": "State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "feature_ablation_analysis_report",
+        "feature_ablation_outputs"
+      ]
+    },
+    {
+      "category": "empirical result",
       "claim_id": "empirical.confidence_filtering",
       "claim_text": "Confidence filtering improved cost-adjusted proxy",
       "reason": "Stored threshold aggregates show an improvement, but evidence is not clean complete.",
@@ -242,6 +306,26 @@
       "supporting_artefacts": [
         "execution_v3_outputs"
       ]
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "causal_feature_importance",
+      "claim_text": "Feature ablations prove causal feature importance",
+      "reason": "Feature ablations are scoped diagnostics and do not identify causal effects.",
+      "required_artefacts": [],
+      "safe_rewording": "Use feature-ablation evidence language with exact scope and proxy caveats.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "true_event_level_ofi",
+      "claim_text": "snapshot_order_flow_proxy is true event-level OFI",
+      "reason": "snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices and is not true event-level order-flow imbalance.",
+      "required_artefacts": [],
+      "safe_rewording": "Use feature-ablation evidence language with exact scope and proxy caveats.",
+      "status": "forbidden",
+      "supporting_artefacts": []
     },
     {
       "category": "forbidden or high-risk",
@@ -334,5 +418,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T01:18:12.255761+00:00"
+  "generated_at": "2026-05-30T07:25:35.062150+00:00"
 }

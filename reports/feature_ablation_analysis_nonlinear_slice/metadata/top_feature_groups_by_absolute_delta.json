@@ -1,0 +1,7 @@
+{
+  "created_at": "2026-05-30T07:11:42.296681+00:00",
+  "figure_id": "top_feature_groups_by_absolute_delta",
+  "source_data_path": "reports/feature_ablation_analysis_nonlinear_slice/source_data/top_feature_groups_by_absolute_delta.csv",
+  "source_sha256": "8a471b8749a232876aaf490cb47028e43923b5fba8571f2bde0108ef196b0fda",
+  "title": "Top Feature Groups By Absolute Delta"
+}

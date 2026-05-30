@@ -157,6 +157,7 @@ class EvidencePackConfig:
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
     execution_v3_analysis_dir: Path = Path("reports/execution_v3_analysis")
     feature_ablations_dir: Path = Path("experiments/fi2010_feature_ablations")
+    feature_ablation_analysis_dir: Path = Path("reports/feature_ablation_analysis")
     ablation_figures_dir: Path = Path("reports/figures/fi2010_feature_ablations")
     final_report_path: Path = Path("reports/chronoslob_final_empirical_report.md")
     classical_dir: Path = Path("experiments/fi2010_multifold_classical")
@@ -425,6 +426,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             "with proxy and unsupported groups labelled.",
             reason_supported="Feature-ablation artefacts are present.",
         ),
+        _audit_feature_ablation_infrastructure_claim(by_name),
     ]
 
     entries.extend(
@@ -437,7 +439,55 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             _audit_ssl_execution_claim(by_name),
             _audit_gradient_boosting_claim(by_name),
             _audit_feature_group_improvement_claim(by_name),
+            _audit_snapshot_proxy_claim(
+                by_name,
+                claim_id="horizon10_logistic_ridge_snapshot_proxy_importance",
+                claim_text=(
+                    "snapshot_order_flow_proxy remains important at horizon 10 "
+                    "for logistic/ridge"
+                ),
+                analysis_key="horizon10_logistic_ridge_snapshot_proxy_importance",
+                required=["feature_ablation_outputs", "feature_delta_summary.csv"],
+                fallback_horizon10=True,
+            ),
+            _audit_snapshot_proxy_claim(
+                by_name,
+                claim_id="broader_horizon_snapshot_proxy_importance",
+                claim_text="snapshot_order_flow_proxy importance survives horizons 20 and 50",
+                analysis_key="broader_horizon_snapshot_proxy_importance",
+                required=[
+                    "feature_ablation_outputs",
+                    "feature_ablation_analysis_report",
+                    "snapshot_order_flow_proxy_scope.csv",
+                ],
+                fallback_horizon10=False,
+            ),
+            _audit_snapshot_proxy_claim(
+                by_name,
+                claim_id="nonlinear_model_feature_stability",
+                claim_text="Feature-ablation effects appear in a non-linear model slice",
+                analysis_key="nonlinear_model_feature_stability",
+                required=[
+                    "feature_ablation_outputs",
+                    "feature_ablation_analysis_report",
+                    "feature_claim_assessment.json",
+                ],
+                fallback_horizon10=False,
+            ),
             _audit_confidence_filtering_claim(by_name),
+            _forbidden_named_claim(
+                "causal_feature_importance",
+                "Feature ablations prove causal feature importance",
+                "Feature ablations are scoped diagnostics and do not identify causal effects.",
+            ),
+            _forbidden_named_claim(
+                "true_event_level_ofi",
+                "snapshot_order_flow_proxy is true event-level OFI",
+                (
+                    "snapshot_order_flow_proxy is a labelled snapshot proxy derived from "
+                    "FI-2010 matrices and is not true event-level order-flow imbalance."
+                ),
+            ),
         ]
     )
     entries.extend(_forbidden_claim_entries())
@@ -593,6 +643,31 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             limitations=(
                 "FI-2010 snapshot features cannot prove true event-level OFI, "
                 "trade imbalance, cancellation imbalance or queue position."
+            ),
+        ),
+        _ArtefactSpec(
+            name="feature_ablation_analysis_report",
+            artefact_type="feature_ablation_analysis",
+            path=config.feature_ablation_analysis_dir,
+            required_files=(
+                "summary.json",
+                "feature_ablation_analysis.md",
+                "feature_delta_by_horizon.csv",
+                "feature_delta_by_model.csv",
+                "feature_delta_by_fold.csv",
+                "feature_delta_by_seed.csv",
+                "feature_group_stability.csv",
+                "snapshot_order_flow_proxy_scope.csv",
+                "feature_claim_assessment.json",
+            ),
+            metadata_files=(
+                "summary.json",
+                "feature_claim_assessment.json",
+                "figure_manifest.json",
+            ),
+            limitations=(
+                "Scoped feature-stability analysis over retained feature-ablation tables; "
+                "not causal feature importance and not event-level OFI evidence."
             ),
         ),
         _ArtefactSpec(
@@ -1680,6 +1755,174 @@ def _audit_feature_group_improvement_claim(
     )
 
 
+def _audit_feature_ablation_infrastructure_claim(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> ClaimAuditEntry:
+    record = by_name.get("feature_ablation_outputs")
+    required = ["feature_ablation_outputs"]
+    claim_text = "Feature-ablation infrastructure is available"
+    if record is None or record.status in _BAD_STATUSES:
+        return _needs_real_evidence("feature_ablation_infrastructure", claim_text, required)
+    status: ClaimStatus = "smoke_only" if record.status == "smoke_test_only" else "supported"
+    return ClaimAuditEntry(
+        claim_id="feature_ablation_infrastructure",
+        claim_text=claim_text,
+        status=status,
+        supporting_artefacts=["feature_ablation_outputs"],
+        required_artefacts=required,
+        reason="Feature-ablation runner outputs and summary tables are present.",
+        safe_rewording=(
+            "ChronosLOB includes FI-2010 feature-ablation evidence infrastructure with "
+            "proxy and unsupported groups labelled."
+        ),
+        category="infrastructure",
+    )
+
+
+def _audit_snapshot_proxy_claim(
+    by_name: Mapping[str, ArtefactInventoryRow],
+    *,
+    claim_id: str,
+    claim_text: str,
+    analysis_key: str,
+    required: Sequence[str],
+    fallback_horizon10: bool,
+) -> ClaimAuditEntry:
+    analysis = by_name.get("feature_ablation_analysis_report")
+    analysis_payload = (
+        analysis.payloads.get("feature_claim_assessment", {})
+        if analysis is not None and analysis.status not in _BAD_STATUSES
+        else {}
+    )
+    claims_payload = analysis_payload.get("claims") if isinstance(analysis_payload, Mapping) else {}
+    scoped = claims_payload.get(analysis_key) if isinstance(claims_payload, Mapping) else None
+    if isinstance(scoped, Mapping):
+        status = _claim_status_from_analysis(str(scoped.get("status", "needs_real_evidence")))
+        return ClaimAuditEntry(
+            claim_id=claim_id,
+            claim_text=claim_text,
+            status=status,
+            supporting_artefacts=["feature_ablation_analysis_report", "feature_ablation_outputs"],
+            required_artefacts=list(required),
+            reason=str(scoped.get("reason", "feature-ablation analysis claim assessment loaded")),
+            safe_rewording=(
+                "State the exact feature group, horizons, models, folds and seeds; "
+                "describe snapshot_order_flow_proxy as a labelled snapshot proxy."
+            ),
+            category="empirical result",
+        )
+    if fallback_horizon10:
+        fallback = _horizon10_snapshot_proxy_fallback(by_name.get("feature_ablation_outputs"))
+        if fallback is not None:
+            status, reason, degraded, total = fallback
+            return ClaimAuditEntry(
+                claim_id=claim_id,
+                claim_text=claim_text,
+                status=status,
+                supporting_artefacts=["feature_ablation_outputs"],
+                required_artefacts=list(required),
+                reason=f"{reason} ({degraded}/{total} matched rows degraded when removed).",
+                safe_rewording=(
+                    "In the stored horizon-10 logistic/ridge slice, removing "
+                    "snapshot_order_flow_proxy degraded macro-F1; this is a "
+                    "horizon/model-specific effect for a labelled snapshot proxy."
+                ),
+                category="empirical result",
+            )
+    return _needs_real_evidence(
+        claim_id,
+        claim_text,
+        required,
+        reason="Feature-ablation stability analysis artefacts were not available for this claim.",
+    )
+
+
+def _claim_status_from_analysis(status: str) -> ClaimStatus:
+    cleaned = status.strip().lower()
+    if cleaned == "supported":
+        return "supported"
+    if cleaned == "partially_supported":
+        return "partially_supported"
+    if cleaned == "unsupported":
+        return "unsupported"
+    if cleaned == "forbidden":
+        return "forbidden"
+    if cleaned == "needs_real_evidence":
+        return "needs_real_evidence"
+    if cleaned == "smoke_only":
+        return "smoke_only"
+    if cleaned == "needs_prediction_outputs":
+        return "needs_real_evidence"
+    return "needs_real_evidence"
+
+
+def _horizon10_snapshot_proxy_fallback(
+    record: ArtefactInventoryRow | None,
+) -> tuple[ClaimStatus, str, int, int] | None:
+    if record is None or record.status in _BAD_STATUSES or record.status == "smoke_test_only":
+        return None
+    rows = record.csv_rows.get("feature_delta_summary", [])
+    matched = [
+        row
+        for row in rows
+        if row.get("ablation_mode") == "remove_one_group"
+        and row.get("feature_group") == "snapshot_order_flow_proxy"
+        and _row_float(row, "horizon") == 10.0
+        and row.get("model") in {"logistic", "ridge"}
+    ]
+    if not matched:
+        return None
+    degraded = sum(
+        1
+        for row in matched
+        if (_row_float(row, "delta_macro_f1") is not None)
+        and (_row_float(row, "delta_macro_f1") or 0.0) < 0.0
+    )
+    total = len(matched)
+    if degraded == total:
+        return (
+            "supported",
+            "Retained horizon-10 logistic/ridge tables support the snapshot proxy finding",
+            degraded,
+            total,
+        )
+    if degraded > total / 2:
+        return (
+            "partially_supported",
+            (
+                "Retained horizon-10 logistic/ridge tables partially support "
+                "the snapshot proxy finding"
+            ),
+            degraded,
+            total,
+        )
+    return (
+        "unsupported",
+        "Retained horizon-10 logistic/ridge tables do not support the snapshot proxy finding",
+        degraded,
+        total,
+    )
+
+
+def _forbidden_named_claim(
+    claim_id: str,
+    claim_text: str,
+    reason: str,
+) -> ClaimAuditEntry:
+    return ClaimAuditEntry(
+        claim_id=claim_id,
+        claim_text=claim_text,
+        status="forbidden",
+        supporting_artefacts=[],
+        required_artefacts=[],
+        reason=reason,
+        safe_rewording=(
+            "Use feature-ablation evidence language with exact scope and proxy caveats."
+        ),
+        category="forbidden or high-risk",
+    )
+
+
 def _audit_confidence_filtering_claim(
     by_name: Mapping[str, ArtefactInventoryRow],
 ) -> ClaimAuditEntry:
@@ -2391,6 +2634,19 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "Requires stored feature-ablation tables.",
         ),
         (
+            "Feature Ablation Analysis",
+            "python -m chronoslob.cli analyse-fi2010-feature-ablations "
+            f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--out {config.feature_ablation_analysis_dir.as_posix()} "
+            "--allow-smoke-test --overwrite",
+            "python -m chronoslob.cli analyse-fi2010-feature-ablations "
+            f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--out {config.feature_ablation_analysis_dir.as_posix()} --overwrite",
+            config.feature_ablation_analysis_dir.as_posix(),
+            "Consumes retained lightweight feature-ablation tables; prediction-level "
+            "execution-aware diagnostics require a targeted prediction-retaining rerun.",
+        ),
+        (
             "Final Empirical Report",
             "python -m chronoslob.cli build-final-empirical-report "
             "--classical experiments/fi2010_multifold_classical "
@@ -2399,6 +2655,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
             f"--proper-training {config.proper_training_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--out {config.final_report_path.as_posix()} --overwrite",
             "python -m chronoslob.cli build-final-empirical-report "
@@ -2410,6 +2667,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
             f"--proper-training {config.proper_training_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--evidence-pack {config.out_dir.as_posix()} "
             f"--out {config.final_report_path.as_posix()} --overwrite",
@@ -2424,6 +2682,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--figures {config.figures_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--ablation-figures {config.ablation_figures_dir.as_posix()} "
             f"--final-report {config.final_report_path.as_posix()} "
             "--allow-smoke-test --no-strict --overwrite",
@@ -2433,6 +2692,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--figures {config.figures_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
+            f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--ablation-figures {config.ablation_figures_dir.as_posix()} "
             f"--final-report {config.final_report_path.as_posix()} "
             "--strict --overwrite",
@@ -2567,6 +2827,7 @@ def _strict_violations(
                 "fi2010_figures",
                 "execution_v3_outputs",
                 "feature_ablation_outputs",
+                "feature_ablation_analysis_report",
                 "ablation_figures",
             }
         ):
@@ -2636,6 +2897,7 @@ def _config_paths(config: EvidencePackConfig) -> dict[str, str | None]:
             None if config.feature_audit_dir is None else _display_path(config.feature_audit_dir)
         ),
         "feature_ablations_dir": _display_path(config.feature_ablations_dir),
+        "feature_ablation_analysis_dir": _display_path(config.feature_ablation_analysis_dir),
         "ablation_figures_dir": _display_path(config.ablation_figures_dir),
         "final_report_path": _display_path(config.final_report_path),
         "project_audit_dir": (

@@ -30,11 +30,10 @@ calibration and execution-aware evaluation.
   10/20/50 and seeds 0-2 comparing supervised, masked-SSL and next-field-SSL
   transformer variants; this is matched comparison evidence and supports no SSL
   improvement claim.
-- A first partial-real proper-training neural subset, separate from the
-  one-epoch full grid, covering fold 1, horizon 10, seed 0, lookback 10 and all
+- A partial-real proper-training neural subset v2, separate from the one-epoch
+  full grid, covering fold 1, horizons 10 and 50, seed 0, lookback 50 and all
   three objectives with validation-only early stopping, best-checkpoint
-  restoration and per-epoch curves. In this exact slice SSL did not improve
-  macro-F1 or MCC; masked reconstruction improved ECE only in that row.
+  restoration and per-epoch curves.
 - A dedicated SSL failure-analysis report (`reports/ssl_failure_analysis/`, built
   by `analyse-fi2010-ssl-results`) generated from retained lightweight comparison
   tables only. It separates the completed one-epoch matched grid from the partial
@@ -52,6 +51,10 @@ calibration and execution-aware evaluation.
   retained execution-v3 tables, covering confidence filtering, active fraction,
   turnover, cost, latency, fill and adverse-selection proxies, with regime
   diagnostics explicitly skipped and no PnL or live-trading claim.
+- A storage-light FI-2010 scoped feature-stability analysis: logistic/ridge
+  folds 1-5, horizons 10/20/50 and seeds 0-2, plus a small gradient-boosting
+  slice over key groups. `snapshot_order_flow_proxy` remains a labelled snapshot
+  proxy and the analysis is not causal feature importance.
 - A final empirical report generated from stored multi-fold FI-2010 classical,
   the matched one-epoch neural full grid, the separate reduced-scope neural
   benchmark, uncertainty, ablation, execution-proxy and external-context
@@ -60,9 +63,11 @@ calibration and execution-aware evaluation.
 ## In Progress and Next
 
 - Broaden the proper-training neural subset beyond the current fold-1,
-  horizon-10, seed-0, lookback-10 slice, while keeping official split-aware
+  horizons-10/50, seed-0, lookback-50 slice, while keeping official split-aware
   evaluation, train-only preprocessing and validation-only model selection
   intact.
+- Broaden non-linear feature-ablation coverage beyond the current small
+  gradient-boosting slice before making broader model-family statements.
 - Extend evidence beyond FI-2010 to other limit order book datasets where data
   access and licensing allow.
 - Broaden genuine train-only SSL pretraining and supervised fine-tuning

@@ -1,0 +1,6 @@
+feature_group,status,reason
+time_context,unsupported,FI-2010 snapshot matrices do not contain event messages or queue position.
+true_order_flow_imbalance,unsupported,FI-2010 snapshot matrices do not contain event messages or queue position.
+cancellation_imbalance,unsupported,FI-2010 snapshot matrices do not contain event messages or queue position.
+trade_imbalance,unsupported,FI-2010 snapshot matrices do not contain event messages or queue position.
+queue_position,unsupported,FI-2010 snapshot matrices do not contain event messages or queue position.

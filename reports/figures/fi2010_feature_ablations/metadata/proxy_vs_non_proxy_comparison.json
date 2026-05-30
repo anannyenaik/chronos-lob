@@ -1,8 +1,8 @@
 {
-  "created_at": "2026-05-29T15:05:09.951276+00:00",
+  "created_at": "2026-05-30T07:13:37.770792+00:00",
   "figure_id": "proxy_vs_non_proxy_comparison",
   "smoke_test": false,
   "source_data_path": "reports/figures/fi2010_feature_ablations/source_data/proxy_vs_non_proxy_comparison.csv",
-  "source_sha256": "96e7799a4247934ba88091d25fa82eccdb92645a993a5223117fedcf222af570",
+  "source_sha256": "1f4de9e24226c87c5185a546ec3b83956970bb29c20ae6095f87b45f8789a7c5",
   "title": "Proxy Versus Non-Proxy Feature Comparison"
 }

@@ -45,7 +45,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Figure Index",
     "Uncertainty Summary",
     "Ablation Summary",
-    "Feature Ablation Summary",
+    "Feature Ablation and Stability Analysis",
     "Execution-Aware Proxy Summary",
     "External Benchmark Context",
     "What This Supports",
@@ -105,6 +105,18 @@ _OPTIONAL_FEATURE_ABLATION_FILES = (
     "feature_delta_summary.csv",
     "ablation_manifest.json",
     "failures.json",
+)
+_OPTIONAL_FEATURE_ABLATION_ANALYSIS_FILES = (
+    "summary.json",
+    "feature_ablation_analysis.md",
+    "feature_delta_by_horizon.csv",
+    "feature_delta_by_model.csv",
+    "feature_delta_by_fold.csv",
+    "feature_delta_by_seed.csv",
+    "feature_group_stability.csv",
+    "snapshot_order_flow_proxy_scope.csv",
+    "feature_claim_assessment.json",
+    "figure_manifest.json",
 )
 _OPTIONAL_EXECUTION_FILES = (
     "summary.json",
@@ -262,6 +274,7 @@ class _FinalReportData:
     uncertainty_dir: Path
     ablation: _OptionalArtefacts
     feature_ablation: _OptionalArtefacts
+    feature_ablation_analysis: _OptionalArtefacts
     execution: _OptionalArtefacts
     execution_v3: _OptionalArtefacts
     external: _OptionalArtefacts
@@ -297,6 +310,7 @@ def build_final_empirical_report(
     out_path: Path,
     ablation_dir: Path | None = None,
     feature_ablation_dir: Path | None = None,
+    feature_ablation_analysis_dir: Path | None = None,
     execution_dir: Path | None = None,
     execution_v3_dir: Path | None = None,
     external_dir: Path | None = None,
@@ -334,6 +348,11 @@ def build_final_empirical_report(
         ablation_dir=Path(ablation_dir) if ablation_dir is not None else None,
         feature_ablation_dir=(
             Path(feature_ablation_dir) if feature_ablation_dir is not None else None
+        ),
+        feature_ablation_analysis_dir=(
+            Path(feature_ablation_analysis_dir)
+            if feature_ablation_analysis_dir is not None
+            else None
         ),
         execution_dir=Path(execution_dir) if execution_dir is not None else None,
         execution_v3_dir=(Path(execution_v3_dir) if execution_v3_dir is not None else None),
@@ -380,6 +399,7 @@ def _load_final_report_data(
     uncertainty_dir: Path,
     ablation_dir: Path | None,
     feature_ablation_dir: Path | None,
+    feature_ablation_analysis_dir: Path | None,
     execution_dir: Path | None,
     execution_v3_dir: Path | None,
     external_dir: Path | None,
@@ -465,13 +485,28 @@ def _load_final_report_data(
     feature_ablation = _load_optional_artefacts(
         directory=feature_ablation_dir,
         label="feature_ablations",
-        section_title="Feature Ablation Summary",
+        section_title="Feature Ablation and Stability Analysis",
         expected_files=_OPTIONAL_FEATURE_ABLATION_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
         warnings=warnings,
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
+    )
+    feature_ablation_analysis = (
+        _load_optional_artefacts(
+            directory=feature_ablation_analysis_dir,
+            label="feature_ablation_analysis",
+            section_title="Feature Ablation and Stability Analysis",
+            expected_files=_OPTIONAL_FEATURE_ABLATION_ANALYSIS_FILES,
+            input_paths=input_paths,
+            file_hashes=file_hashes,
+            warnings=warnings,
+            skipped_sections=skipped_sections,
+            missing_sections=missing_sections,
+        )
+        if feature_ablation_analysis_dir is not None
+        else _OptionalArtefacts()
     )
     execution = _load_optional_artefacts(
         directory=execution_dir,
@@ -508,6 +543,9 @@ def _load_final_report_data(
     )
     recorded_skips.extend(_extract_recorded_skips(ablation, "ablation"))
     recorded_skips.extend(_extract_recorded_skips(feature_ablation, "feature_ablation"))
+    recorded_skips.extend(
+        _extract_recorded_skips(feature_ablation_analysis, "feature_ablation_analysis")
+    )
     recorded_skips.extend(_extract_recorded_skips(execution, "execution"))
     recorded_skips.extend(_extract_recorded_skips(execution_v3, "execution_v3"))
 
@@ -556,6 +594,7 @@ def _load_final_report_data(
         uncertainty_dir=uncertainty,
         ablation=ablation,
         feature_ablation=feature_ablation,
+        feature_ablation_analysis=feature_ablation_analysis,
         execution=execution,
         execution_v3=execution_v3,
         external=external,
@@ -1098,7 +1137,9 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section("Figure Index", _render_figure_index(data)))
     lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
     lines.extend(_section("Ablation Summary", _render_ablations(data)))
-    lines.extend(_section("Feature Ablation Summary", _render_feature_ablations(data)))
+    lines.extend(
+        _section("Feature Ablation and Stability Analysis", _render_feature_ablations(data))
+    )
     lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
     lines.extend(_section("External Benchmark Context", _render_external(data)))
     lines.extend(_section("What This Supports", _render_what_this_proves(data)))
@@ -1283,9 +1324,15 @@ def _render_evidence_status_summary(data: _FinalReportData) -> list[str]:
             "not empirical longer-training evidence."
         )
     if data.feature_ablation.directory is not None and data.feature_ablation.summary is not None:
+        summary = data.feature_ablation.summary
+        analysis_summary = data.feature_ablation_analysis.summary or {}
+        status = _mapping_str(analysis_summary, "evidence_status", default="partial_real")
         partial_bullets.append(
-            "- FI-2010 snapshot feature ablations: currently folds 1-5 at horizon "
-            "10 for logistic and ridge only; wider model/horizon scope unfinished."
+            "- FI-2010 snapshot feature-ablation evidence: "
+            f"{status}; folds {_join_values(_mapping_list(summary, 'folds'))}, horizons "
+            f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+            f"{_join_values(_mapping_list(summary, 'seeds'))}, models "
+            f"{_join_values(_mapping_list(summary, 'models'))}."
         )
 
     not_claimed_bullets = [
@@ -2424,17 +2471,49 @@ def _render_feature_ablations(data: _FinalReportData) -> list[str]:
         ]
 
     summary = data.feature_ablation.summary
+    analysis_summary = data.feature_ablation_analysis.summary or {}
+    claim_assessment = data.feature_ablation_analysis.json_payloads.get(
+        "feature_claim_assessment.json",
+        {},
+    )
+    claims = claim_assessment.get("claims", {}) if isinstance(claim_assessment, Mapping) else {}
     aggregate_rows = data.feature_ablation.csv_rows.get("aggregate_summary.csv", [])
     delta_rows = data.feature_ablation.csv_rows.get("feature_delta_summary.csv", [])
+    stability_rows = data.feature_ablation_analysis.csv_rows.get("feature_group_stability.csv", [])
+    snapshot_rows = data.feature_ablation_analysis.csv_rows.get(
+        "snapshot_order_flow_proxy_scope.csv",
+        [],
+    )
     smoke = bool(summary.get("smoke_test"))
+    evidence_status = _mapping_str(analysis_summary, "evidence_status", default="partial_real")
+    scope_summary = analysis_summary if analysis_summary else summary
+    horizons = _mapping_list(scope_summary, "horizons")
+    models = _mapping_list(scope_summary, "models")
+    folds = _mapping_list(scope_summary, "folds")
+    seeds = _mapping_list(scope_summary, "seeds")
+    nonlinear_models = [model for model in models if str(model) == "gradient_boosting"]
+    added_horizons = sorted(str(horizon) for horizon in horizons if str(horizon) in {"20", "50"})
+    broader_snapshot = (
+        claims.get("broader_horizon_snapshot_proxy_importance", {})
+        if isinstance(claims, Mapping)
+        else {}
+    )
+    nonlinear_claim = (
+        claims.get("nonlinear_model_feature_stability", {})
+        if isinstance(claims, Mapping)
+        else {}
+    )
+    artefact_policy = _nested_mapping(summary, "artefact_policy") or {}
     lines = [
-        "Feature ablations are leakage-safe diagnostics over FI-2010 snapshot "
-        "columns. Unsupported event-level groups remain explicit.",
-        "The `snapshot_order_flow_proxy` group is a snapshot-delta proxy, not "
-        "true event-level order-flow imbalance.",
-        "Current stored feature-ablation evidence is `partial_real`: it covers "
-        "folds 1-5 at horizon 10 for logistic and ridge models, with horizons "
-        "20/50 and slower model families left for future expansion.",
+        "Feature-ablation evidence is reported as a scoped feature-stability "
+        "analysis over FI-2010 snapshot columns. Unsupported event-level groups "
+        "remain explicit.",
+        "`snapshot_order_flow_proxy` is a labelled snapshot proxy derived from "
+        "FI-2010 matrices. It should not be interpreted as true event-level "
+        "order-flow imbalance; it is not true event-level order-flow "
+        "imbalance evidence.",
+        "The analysis is not causal feature importance and does not establish "
+        "universal feature importance across all models or horizons.",
         "",
     ]
     if smoke:
@@ -2447,22 +2526,124 @@ def _render_feature_ablations(data: _FinalReportData) -> list[str]:
         )
     status_rows = [
         ("runner_version", _mapping_str(summary, "runner_version")),
+        ("evidence_status", evidence_status),
         ("smoke_test", str(smoke)),
-        ("completed_run_count", _mapping_str(summary, "completed_run_count")),
-        ("failed_run_count", _mapping_str(summary, "failed_run_count")),
+        (
+            "completed_run_count",
+            _mapping_str(scope_summary, "completed_run_count", default="not available"),
+        ),
+        (
+            "failed_run_count",
+            _mapping_str(scope_summary, "failed_run_count", default="not available"),
+        ),
+        ("folds", _join_values(folds)),
+        ("horizons", _join_values(horizons)),
+        ("seeds", _join_values(seeds)),
+        ("models", _join_values(models)),
+        ("horizon_20_50_added", "yes" if added_horizons else "no"),
+        ("non_linear_model_evidence", _join_values(nonlinear_models)),
         ("feature_groups", _join_values(_mapping_list(summary, "feature_groups"))),
         ("proxy_groups", _join_values(_mapping_list(summary, "proxy_groups"))),
         (
             "unsupported_groups",
             _join_values(_mapping_list(summary, "unsupported_groups")),
         ),
+        ("raw_predictions_saved", str(bool(artefact_policy.get("raw_predictions_saved")))),
     ]
     lines.extend(_markdown_table(("field", "value"), status_rows))
+    if data.feature_ablation_analysis.directory is not None:
+        lines.extend(
+            [
+                "",
+                "Feature-stability artefact:",
+                "",
+                f"- `{_display_path(data.feature_ablation_analysis.directory)}`",
+            ]
+        )
+    if claims:
+        lines.extend(["", "Feature-claim assessment:", ""])
+        claim_rows: list[tuple[str, str, str]] = []
+        for claim_id in (
+            "feature_ablation_infrastructure",
+            "horizon10_logistic_ridge_snapshot_proxy_importance",
+            "broader_horizon_snapshot_proxy_importance",
+            "nonlinear_model_feature_stability",
+            "causal_feature_importance",
+            "true_event_level_ofi",
+        ):
+            payload = claims.get(claim_id, {}) if isinstance(claims, Mapping) else {}
+            if isinstance(payload, Mapping):
+                claim_rows.append(
+                    (
+                        claim_id,
+                        str(payload.get("status", "")),
+                        str(payload.get("reason", "")),
+                    )
+                )
+        lines.extend(_markdown_table(("claim", "status", "reason"), claim_rows))
+    if snapshot_rows:
+        degraded = sum(
+            1
+            for row in snapshot_rows
+            if str(row.get("macro_f1_degraded_when_removed", "")).lower() == "true"
+        )
+        lines.extend(
+            [
+                "",
+                "`snapshot_order_flow_proxy` scope:",
+                "",
+                (
+                    f"- Removing the labelled snapshot proxy degraded macro-F1 in "
+                    f"{degraded}/{len(snapshot_rows)} matched rows in the analysed scope."
+                ),
+                (
+                    "- Horizon 20/50 status: "
+                    f"{broader_snapshot.get('status', 'not available')}."
+                ),
+                (
+                    "- Non-linear model status: "
+                    f"{nonlinear_claim.get('status', 'not available')}."
+                ),
+            ]
+        )
+    if stability_rows:
+        lines.extend(["", "Feature-group stability rows:", ""])
+        stability_table_rows: list[tuple[str, str, str, str, str]] = []
+        for row in stability_rows[:10]:
+            stability_table_rows.append(
+                (
+                    row.get("feature_group", ""),
+                    _format_float(_row_float(row, "mean_delta_macro_f1")),
+                    _format_float(_row_float(row, "mean_delta_mcc")),
+                    _format_float(_row_float(row, "macro_f1_degradation_fraction")),
+                    _format_float(_row_float(row, "stability_score")),
+                )
+            )
+        lines.extend(
+            _markdown_table(
+                (
+                    "feature group",
+                    "mean delta macro-F1",
+                    "mean delta MCC",
+                    "degradation fraction",
+                    "stability score",
+                ),
+                stability_table_rows,
+            )
+        )
+    if not bool(artefact_policy.get("raw_predictions_saved")):
+        lines.extend(
+            [
+                "",
+                "Execution-aware ablation diagnostics require retained prediction-level "
+                "outputs or a targeted rerun.",
+            ]
+        )
     if aggregate_rows:
         lines.extend(["", "Aggregate rows:", ""])
-        rows = []
+        aggregate_table_rows: list[tuple[str, str, str, str, str, str, str]] = []
         for row in aggregate_rows[:10]:
-            rows.append(
+            aggregate_table_rows.append(
                 (
                     row.get("horizon", ""),
                     row.get("model", ""),
@@ -2484,14 +2665,14 @@ def _render_feature_ablations(data: _FinalReportData) -> list[str]:
                     "mean macro-F1",
                     "mean MCC",
                 ),
-                rows,
+                aggregate_table_rows,
             )
         )
     if delta_rows:
         lines.extend(["", "Matched deltas versus all-features baseline:", ""])
-        rows = []
+        delta_table_rows: list[tuple[str, str, str, str, str, str, str]] = []
         for row in delta_rows[:10]:
-            rows.append(
+            delta_table_rows.append(
                 (
                     row.get("horizon", ""),
                     row.get("model", ""),
@@ -2513,7 +2694,7 @@ def _render_feature_ablations(data: _FinalReportData) -> list[str]:
                     "delta MCC",
                     "interpretation",
                 ),
-                rows,
+                delta_table_rows,
             )
         )
     return lines
@@ -2993,6 +3174,7 @@ def _render_reproduction_commands() -> list[str]:
         "  --external experiments/fi2010_external_context \\",
         "  --neural-full-grid experiments/fi2010_neural_full_grid \\",
         "  --feature-ablations experiments/fi2010_feature_ablations \\",
+        "  --feature-ablation-analysis reports/feature_ablation_analysis \\",
         "  --out reports/chronoslob_final_empirical_report.md \\",
         "  --overwrite",
         "",

@@ -57,6 +57,7 @@ def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
         execution_v3_dir=tmp_path / "execution_v3",
         feature_audit_dir=None,
         feature_ablations_dir=tmp_path / "feature_ablations",
+        feature_ablation_analysis_dir=tmp_path / "feature_ablation_analysis",
         ablation_figures_dir=tmp_path / "ablation_figures",
         final_report_path=tmp_path / "final_report.md",
         project_audit_dir=None,
@@ -264,6 +265,81 @@ def _write_complete_feature_ablations(path: Path) -> None:
     _write_json(path / "failures.json", {"failure_count": 0, "failures": []})
 
 
+def _write_complete_feature_ablation_analysis(path: Path) -> None:
+    _write_json(
+        path / "summary.json",
+        {
+            "evidence_status": "partial_real",
+            "completed_run_count": 2520,
+            "failed_run_count": 0,
+            "folds": ["fold_1", "fold_2", "fold_3", "fold_4", "fold_5"],
+            "horizons": [10, 20, 50],
+            "seeds": [0, 1, 2],
+            "models": ["logistic", "ridge"],
+            "raw_predictions_available": False,
+        },
+    )
+    _write_csv(
+        path / "feature_group_stability.csv",
+        ["feature_group", "mean_delta_macro_f1", "stability_score"],
+        [
+            {
+                "feature_group": "snapshot_order_flow_proxy",
+                "mean_delta_macro_f1": -0.01,
+                "stability_score": 1.0,
+            }
+        ],
+    )
+    for filename in (
+        "feature_delta_by_horizon.csv",
+        "feature_delta_by_model.csv",
+        "feature_delta_by_fold.csv",
+        "feature_delta_by_seed.csv",
+    ):
+        _write_csv(
+            path / filename,
+            ["feature_group", "mean_delta_macro_f1"],
+            [{"feature_group": "snapshot_order_flow_proxy", "mean_delta_macro_f1": -0.01}],
+        )
+    _write_csv(
+        path / "snapshot_order_flow_proxy_scope.csv",
+        ["feature_group", "horizon", "model", "macro_f1_degraded_when_removed"],
+        [
+            {
+                "feature_group": "snapshot_order_flow_proxy",
+                "horizon": 20,
+                "model": "logistic",
+                "macro_f1_degraded_when_removed": "true",
+            }
+        ],
+    )
+    _write_json(
+        path / "feature_claim_assessment.json",
+        {
+            "claims": {
+                "horizon10_logistic_ridge_snapshot_proxy_importance": {
+                    "status": "supported",
+                    "reason": "retained h10 rows support the proxy finding",
+                },
+                "broader_horizon_snapshot_proxy_importance": {
+                    "status": "supported",
+                    "reason": "horizon 20/50 rows support the proxy finding",
+                },
+                "nonlinear_model_feature_stability": {
+                    "status": "needs_real_evidence",
+                    "reason": "non-linear slice absent",
+                },
+            }
+        },
+    )
+    _write_json(path / "figure_manifest.json", {"figures": []})
+    (path / "feature_ablation_analysis.md").parent.mkdir(parents=True, exist_ok=True)
+    (path / "feature_ablation_analysis.md").write_text(
+        "snapshot_order_flow_proxy is a labelled snapshot proxy.",
+        encoding="utf-8",
+    )
+
+
 def _write_all_complete(config: EvidencePackConfig) -> None:
     _write_complete_classical(config.classical_dir)
     _write_complete_ssl(config.ssl_dir)
@@ -271,6 +347,7 @@ def _write_all_complete(config: EvidencePackConfig) -> None:
     _write_complete_figures(config.figures_dir)
     _write_complete_execution(config.execution_v3_dir)
     _write_complete_feature_ablations(config.feature_ablations_dir)
+    _write_complete_feature_ablation_analysis(config.feature_ablation_analysis_dir)
     _write_complete_figures(config.ablation_figures_dir)
     _touch_report(config.final_report_path)
 
@@ -396,6 +473,12 @@ def test_claim_audit_supported_smoke_unsupported_and_forbidden(tmp_path: Path) -
 
     assert by_id["empirical.gradient_boosting_best"].status == "supported"
     assert by_id["empirical.ssl_improved_macro_f1"].status == "supported"
+    assert by_id["feature_ablation_infrastructure"].status == "supported"
+    assert by_id["horizon10_logistic_ridge_snapshot_proxy_importance"].status == "supported"
+    assert by_id["broader_horizon_snapshot_proxy_importance"].status == "supported"
+    assert by_id["nonlinear_model_feature_stability"].status == "needs_real_evidence"
+    assert by_id["causal_feature_importance"].status == "forbidden"
+    assert by_id["true_event_level_ofi"].status == "forbidden"
     assert by_id["forbidden.1"].status == "forbidden"
     assert by_id["forbidden.1"].safe_rewording
 

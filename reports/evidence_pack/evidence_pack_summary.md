@@ -17,7 +17,8 @@ Smoke rows remain code-path checks only.
 | execution_v3_outputs | stale | no | 4800519 | 0 | Recorded git commit differs from the current repository commit. |
 | execution_v3_analysis_report | complete_real | no | 6 |  | Generated timestamp is present. |
 | feature_registry_audit_outputs | missing | no |  |  | The CLI feature audit is read-only unless a caller stores its output. Artefact path is missing. |
-| feature_ablation_outputs | stale | no | 840 | 0 | Recorded git commit differs from the current repository commit. |
+| feature_ablation_outputs | partial_real | no | 2520 | 0 | Generated timestamp is present. |
+| feature_ablation_analysis_report | complete_real | no | 2580 | 0 | Generated timestamp is present. |
 | ablation_figures | complete_real | no | 6 |  | Generated timestamp is present. |
 | final_empirical_report | complete_real | no |  |  | Generated timestamp is present. |
 | project_audit_archive | unknown_staleness | no |  |  | No commit, input-hash or timestamp evidence was available for staleness. |

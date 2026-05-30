@@ -40,7 +40,8 @@ The current FI-2010 artefacts live under
 [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/),
 [`experiments/fi2010_neural_full_grid/`](../experiments/fi2010_neural_full_grid/),
 [`experiments/fi2010_execution_v3/`](../experiments/fi2010_execution_v3/),
-[`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/) and
+[`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/),
+[`experiments/fi2010_feature_ablations_nonlinear_slice/`](../experiments/fi2010_feature_ablations_nonlinear_slice/) and
 [`experiments/fi2010_external_context/`](../experiments/fi2010_external_context/).
 The generated final report is
 [`reports/chronoslob_final_empirical_report.md`](../reports/chronoslob_final_empirical_report.md).
@@ -65,9 +66,11 @@ overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 
 Execution-v3 is `complete_real` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
-current evidence supports a scoped statement that `snapshot_order_flow_proxy`
-matters in the logistic/ridge horizon-10 setting, but it is not true
-event-level OFI.
+current feature-ablation evidence covers logistic/ridge folds 1-5, horizons
+10/20/50 and seeds 0-2, plus a small gradient-boosting slice for folds 1-5,
+horizons 10/50 and seed 0. The scoped feature-stability analysis supports a
+horizon/model-specific effect for `snapshot_order_flow_proxy`; it is a labelled
+snapshot proxy, not true event-level OFI or causal feature importance.
 
 ## Data Assumptions
 
@@ -95,6 +98,7 @@ event-level OFI.
 
 ## Next
 
-Future work is focused on broader feature ablations, additional limit order book
-dataset adapters where data access allows, richer execution modelling and
-genuine regime analysis when explicit regime labels are available.
+Future work is focused on broader non-linear feature-ablation coverage,
+additional limit order book dataset adapters where data access allows, richer
+execution modelling and genuine regime analysis when explicit regime labels are
+available.

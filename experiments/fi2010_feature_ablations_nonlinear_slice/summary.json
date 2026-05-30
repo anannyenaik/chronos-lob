@@ -1,0 +1,73 @@
+{
+  "ablation_modes": [
+    "all_features",
+    "remove_one_group",
+    "no_proxy_features"
+  ],
+  "artefact_policy": {
+    "evidence_pack_requires_raw_predictions": false,
+    "final_report_requires_raw_predictions": false,
+    "heavy_feature_matrices_saved": false,
+    "raw_predictions_saved": false,
+    "summary_only": true
+  },
+  "artefacts": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "failures": "failures.json",
+    "feature_delta_summary": "feature_delta_summary.csv",
+    "manifest": "ablation_manifest.json",
+    "results_summary": "results_summary.csv",
+    "runs": "runs/",
+    "summary": "summary.json"
+  },
+  "claim_boundary": "Feature ablations are leakage-safe diagnostics over FI-2010 snapshots. Snapshot deltas are proxies, not true order-flow imbalance.",
+  "completed_run_count": 60,
+  "created_at": "2026-05-30T07:11:28.315300Z",
+  "failed_run_count": 0,
+  "feature_groups": [
+    "snapshot_order_flow_proxy",
+    "spread",
+    "depth_imbalance",
+    "top_of_book_imbalance"
+  ],
+  "feature_matrix_files_written": 0,
+  "folds": [
+    "fold_1",
+    "fold_2",
+    "fold_3",
+    "fold_4",
+    "fold_5"
+  ],
+  "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
+  "horizons": [
+    10,
+    50
+  ],
+  "models": [
+    "gradient_boosting"
+  ],
+  "output_dir": "experiments\\fi2010_feature_ablations_nonlinear_slice",
+  "package_version": "0.1.0",
+  "prediction_files_written": 0,
+  "proxy_groups": [
+    "snapshot_order_flow_proxy"
+  ],
+  "run_count": 60,
+  "runner_version": "fi2010-microstructure-feature-ablations/v2",
+  "save_heavy_artefacts": false,
+  "save_predictions": false,
+  "seeds": [
+    0
+  ],
+  "skipped_existing_count": 60,
+  "smoke_test": false,
+  "summary_only": true,
+  "unsupported_groups": [
+    "time_context",
+    "true_order_flow_imbalance",
+    "cancellation_imbalance",
+    "trade_imbalance",
+    "queue_position"
+  ],
+  "warnings": []
+}

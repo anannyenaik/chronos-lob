@@ -7,6 +7,10 @@ import pandas as pd
 
 from chronoslob.analysis.execution_v3 import load_feature_ablation_predictions
 from chronoslob.analysis.fi2010_ablation_figures import build_fi2010_ablation_figures
+from chronoslob.analysis.fi2010_feature_ablation_analysis import (
+    SNAPSHOT_PROXY_SCOPE_NOTE,
+    analyse_fi2010_feature_ablations,
+)
 from chronoslob.experiments.fi2010_feature_ablations import (
     build_aggregate_summary,
     build_feature_delta_summary,
@@ -92,6 +96,9 @@ def test_runner_smoke_outputs_and_execution_schema(tmp_path: Path) -> None:
         reuse_completed=False,
         strict=True,
         smoke_test=True,
+        save_predictions=True,
+        save_heavy_artefacts=False,
+        summary_only=False,
     )
     assert summary.completed_run_count == 2
     assert (out / "results_summary.csv").is_file()
@@ -108,6 +115,9 @@ def test_runner_smoke_outputs_and_execution_schema(tmp_path: Path) -> None:
         reuse_completed=True,
         strict=True,
         smoke_test=True,
+        save_predictions=True,
+        save_heavy_artefacts=False,
+        summary_only=False,
     )
     assert second_run.completed_run_count == 2
     assert second_run.skipped_existing_count == 2
@@ -119,6 +129,82 @@ def test_runner_smoke_outputs_and_execution_schema(tmp_path: Path) -> None:
     assert not warnings
     assert {"ablation_mode", "feature_group", "prob_up", "prob_stationary", "prob_down"} <= set(
         predictions.columns
+    )
+
+
+def test_runner_summary_only_skips_predictions_and_feature_matrices(tmp_path: Path) -> None:
+    out = tmp_path / "ablations"
+    summary = run_fi2010_feature_ablations(
+        out_dir=out,
+        data_path=Path("tests/fixtures/fi2010/tiny_fi2010_like.csv"),
+        folds="1",
+        horizons="10",
+        seeds="0",
+        models="logistic",
+        feature_groups="spread,midprice,snapshot_order_flow_proxy",
+        ablation_modes="all_features,no_proxy_features",
+        reuse_completed=False,
+        strict=True,
+        smoke_test=True,
+        save_predictions=False,
+        save_heavy_artefacts=False,
+        summary_only=True,
+    )
+
+    assert summary.summary_only is True
+    assert summary.prediction_files_written == 0
+    assert summary.feature_matrix_files_written == 0
+    assert not list(out.glob("runs/*/predictions.csv"))
+    assert not list(out.glob("features/*/artefacts/features.csv"))
+
+    metrics = json.loads(next(out.glob("runs/*/metrics.json")).read_text(encoding="utf-8"))
+    assert metrics["prediction_file"] is None
+    assert metrics["predictions_saved"] is False
+
+    predictions, paths, warnings = load_feature_ablation_predictions(out)
+    assert predictions.empty
+    assert paths == []
+    assert warnings == ["no feature-ablation prediction files were available"]
+
+
+def test_feature_ablation_analysis_consumes_lightweight_artefacts(tmp_path: Path) -> None:
+    ablations = tmp_path / "ablations"
+    run_fi2010_feature_ablations(
+        out_dir=ablations,
+        data_path=Path("tests/fixtures/fi2010/tiny_fi2010_like.csv"),
+        folds="1",
+        horizons="10",
+        seeds="0",
+        models="logistic",
+        feature_groups="spread,snapshot_order_flow_proxy",
+        ablation_modes="all_features,remove_one_group",
+        reuse_completed=False,
+        strict=True,
+        smoke_test=True,
+        summary_only=True,
+    )
+
+    out = tmp_path / "analysis"
+    summary = analyse_fi2010_feature_ablations(
+        ablation_dir=ablations,
+        out_dir=out,
+        figures=False,
+        allow_smoke_test=True,
+    )
+
+    assert summary.raw_predictions_available is False
+    assert (out / "feature_delta_by_horizon.csv").is_file()
+    assert (out / "feature_group_stability.csv").is_file()
+    assert (out / "snapshot_order_flow_proxy_scope.csv").is_file()
+    assert SNAPSHOT_PROXY_SCOPE_NOTE in (out / "feature_ablation_analysis.md").read_text(
+        encoding="utf-8"
+    )
+    claims = json.loads((out / "feature_claim_assessment.json").read_text(encoding="utf-8"))
+    assert claims["claims"]["causal_feature_importance"]["status"] == "forbidden"
+    assert claims["claims"]["true_event_level_ofi"]["status"] == "forbidden"
+    assert (
+        claims["claims"]["execution_aware_ablation_diagnostics"]["status"]
+        == "needs_prediction_outputs"
     )
 
 

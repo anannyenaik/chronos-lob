@@ -28,7 +28,7 @@ integration and not automated order-placement software.
 | SSL comparison | `complete_real` | Tested in the matched grid; no SSL improvement is supported. |
 | Execution-v3 | `complete_real` | Offline execution-aware proxy diagnostic only. |
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
-| Feature ablations | `partial_real` | Broad horizon-10 logistic/ridge evidence; wider model/horizon scope unfinished. |
+| Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
 | Manual paper | not yet written | Public reports are artefact summaries, not a manual paper. |
 
@@ -57,9 +57,10 @@ integration and not automated order-placement software.
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or
   live-trading evidence.
-- Expanded feasible feature ablations show `snapshot_order_flow_proxy` is
-  important in the tested logistic/ridge horizon-10 setting, but this is not
-  true event-level OFI.
+- Feature-ablation evidence now supports a scoped feature-stability analysis:
+  removing `snapshot_order_flow_proxy` degraded macro-F1 across the tested
+  logistic/ridge horizons 10/20/50 and in a small gradient-boosting slice. It is
+  a labelled snapshot proxy, not true event-level OFI.
 
 ## What This Does Not Claim
 
@@ -81,6 +82,7 @@ integration and not automated order-placement software.
 | Evidence pack summary | [reports/evidence_pack/evidence_pack_summary.md](reports/evidence_pack/evidence_pack_summary.md) |
 | Proper-training neural subset | [experiments/fi2010_neural_proper_training_subset_v2/README.md](experiments/fi2010_neural_proper_training_subset_v2/README.md) |
 | Claim audit | [reports/evidence_pack/claim_audit.md](reports/evidence_pack/claim_audit.md) |
+| Feature-ablation stability analysis | [reports/feature_ablation_analysis/feature_ablation_analysis.md](reports/feature_ablation_analysis/feature_ablation_analysis.md) |
 | Reproduction commands | [reports/evidence_pack/reproduction_commands.md](reports/evidence_pack/reproduction_commands.md) |
 | Figure index | [docs/FIGURE_INDEX.md](docs/FIGURE_INDEX.md) |
 | Execution-v3 docs | [docs/EXECUTION_VALIDATION_V3.md](docs/EXECUTION_VALIDATION_V3.md) |
@@ -121,6 +123,7 @@ python -m chronoslob.cli build-evidence-pack \
   --figures reports/figures/fi2010_neural_full_grid \
   --execution-v3 experiments/fi2010_execution_v3 \
   --feature-ablations experiments/fi2010_feature_ablations \
+  --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
   --final-report reports/chronoslob_final_empirical_report.md \
   --strict \
