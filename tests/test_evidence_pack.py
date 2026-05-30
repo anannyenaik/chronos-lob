@@ -586,3 +586,240 @@ def test_stale_detection_from_newer_input_timestamp(tmp_path: Path) -> None:
     records = discover_artefacts(config)
 
     assert _record(records, "fi2010_neural_full_grid").status == "stale"
+
+
+_GIT_COMMIT_PATH = "chronoslob.experiments.evidence_pack._current_git_commit"
+
+
+def _set_summary_field(path: Path, **fields: Any) -> None:
+    summary = json.loads((path / "summary.json").read_text(encoding="utf-8"))
+    summary.update(fields)
+    _write_json(path / "summary.json", summary)
+
+
+def test_older_commit_summary_is_archived_not_stale(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: "f" * 40)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(config.neural_full_grid_dir, git_commit="a" * 40)
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "archived_valid"
+    assert grid.freshness == "archived"
+    assert "older" in grid.notes.lower()
+
+
+def test_deleted_raw_prediction_hashes_are_archived_not_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(
+        config.neural_full_grid_dir,
+        input_file_hashes={
+            "experiments/fi2010_neural_full_grid/runs/fold_1/predictions.csv": "a" * 64,
+        },
+    )
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "archived_valid"
+    assert grid.freshness == "archived"
+    assert "intentionally removed" in grid.notes.lower()
+
+
+def test_missing_non_heavy_hashed_input_is_stale(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(
+        config.neural_full_grid_dir,
+        input_file_hashes={str(tmp_path / "source.csv"): "a" * 64},
+    )
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "stale"
+    assert "hash path is missing" in grid.notes.lower()
+
+
+def test_changed_retained_content_is_still_stale(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    config = _minimal_config(tmp_path)
+    retained = tmp_path / "retained.csv"
+    retained.write_text("old\n", encoding="utf-8")
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(
+        config.neural_full_grid_dir,
+        input_file_hashes={str(retained): sha256_file(retained)},
+    )
+    retained.write_text("changed\n", encoding="utf-8")
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "stale"
+
+
+def test_missing_legacy_ssl_runner_is_obsolete_superseded(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+
+    record = _record(discover_artefacts(config), "fi2010_ssl_runner_outputs")
+
+    assert record.status == "obsolete_superseded"
+    assert record.freshness == "absent"
+
+
+def test_missing_optional_feature_audit_is_optional_missing(tmp_path: Path) -> None:
+    config = EvidencePackConfig(
+        **{**_minimal_config(tmp_path).__dict__, "feature_audit_dir": tmp_path / "feature_audit"}
+    )
+
+    record = _record(discover_artefacts(config), "feature_registry_audit_outputs")
+
+    assert record.status == "optional_missing"
+
+
+def test_missing_required_artefact_still_missing(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+
+    record = _record(discover_artefacts(config), "fi2010_classical_benchmarks")
+
+    assert record.status == "missing"
+
+
+def test_obsolete_ssl_runner_does_not_downgrade_train_only_ssl(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+
+    claims = {claim.claim_id: claim for claim in audit_claims(discover_artefacts(config))}
+
+    assert _record(discover_artefacts(config), "fi2010_ssl_runner_outputs").status == (
+        "obsolete_superseded"
+    )
+    assert claims["general.train_only_ssl"].status == "supported"
+
+
+def test_archived_grid_with_mixed_ssl_deltas_blocks_broad_improvement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: "f" * 40)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(config.neural_full_grid_dir, git_commit="a" * 40)
+    _write_csv(
+        config.neural_full_grid_dir / "ssl_comparison.csv",
+        ["status", "delta_macro_f1", "delta_ece"],
+        [
+            {"status": "ok", "delta_macro_f1": 0.02, "delta_ece": -0.01},
+            {"status": "ok", "delta_macro_f1": -0.05, "delta_ece": 0.03},
+        ],
+    )
+
+    records = discover_artefacts(config)
+    by_id = {claim.claim_id: claim for claim in audit_claims(records)}
+
+    assert _record(records, "fi2010_neural_full_grid").status == "archived_valid"
+    assert by_id["empirical.ssl_improved_macro_f1"].status == "unsupported"
+    assert by_id["empirical.ssl_improved_calibration"].status == "unsupported"
+
+
+def test_forbidden_and_high_risk_claims_never_supported(tmp_path: Path) -> None:
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+
+    claims = audit_claims(discover_artefacts(config))
+    by_id = {claim.claim_id: claim for claim in claims}
+
+    forbidden_ids = [cid for cid in by_id if cid.startswith("forbidden.")]
+    assert forbidden_ids
+    for cid in forbidden_ids:
+        assert by_id[cid].status == "forbidden"
+    for claim in claims:
+        if claim.category == "forbidden or high-risk":
+            assert claim.status == "forbidden"
+        if claim.status == "supported":
+            assert claim.category != "forbidden or high-risk"
+
+
+def test_manifest_status_counts_match_inventory(tmp_path: Path) -> None:
+    from collections import Counter
+
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+
+    result = build_evidence_pack(config)
+    manifest = json.loads(
+        (config.out_dir / "evidence_pack_manifest.json").read_text(encoding="utf-8")
+    )
+
+    expected = dict(sorted(Counter(record.status for record in result.inventory).items()))
+    assert manifest["artefact_status_counts"] == expected
+
+
+def test_summary_has_archived_section_and_safe_lines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: "f" * 40)
+    config = _minimal_config(tmp_path)
+    _write_all_complete(config)
+    _set_summary_field(config.neural_full_grid_dir, git_commit="a" * 40)
+
+    build_evidence_pack(config)
+    summary = (config.out_dir / "evidence_pack_summary.md").read_text(encoding="utf-8")
+
+    assert "Status vocabulary" in summary
+    assert "Archived or summary-valid artefacts" in summary
+    assert "archived_valid" in summary
+    for line in summary.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("|", "http")):
+            continue
+        assert len(line) <= 220
+
+
+def test_real_repo_pack_has_no_spurious_stale_or_missing(tmp_path: Path) -> None:
+    base = EvidencePackConfig()
+    if not Path(base.classical_dir).exists():
+        pytest.skip("real repository artefacts are not present")
+    config = EvidencePackConfig(
+        **{**base.__dict__, "out_dir": tmp_path / "pack", "strict": False, "overwrite": True}
+    )
+
+    records = discover_artefacts(config)
+    by_name = {record.artefact_name: record for record in records}
+
+    for name in (
+        "fi2010_classical_benchmarks",
+        "fi2010_neural_full_grid",
+        "execution_v3_outputs",
+    ):
+        assert by_name[name].status in {"archived_valid", "complete_real"}, (
+            name,
+            by_name[name].status,
+        )
+    assert by_name["fi2010_ssl_runner_outputs"].status == "obsolete_superseded"
+    assert by_name["feature_registry_audit_outputs"].status == "optional_missing"
+
+    claims = {claim.claim_id: claim for claim in audit_claims(records)}
+    for cid in (
+        "general.reproducible_platform",
+        "general.leakage_safe_fi2010",
+        "general.supervised_vs_ssl_transformers",
+        "general.train_only_ssl",
+        "general.execution_proxy_diagnostics",
+        "general.feature_ablations",
+    ):
+        assert claims[cid].status == "supported", (cid, claims[cid].status)
+    assert claims["empirical.ssl_improved_macro_f1"].status == "unsupported"
+    assert claims["empirical.ssl_improved_calibration"].status == "unsupported"

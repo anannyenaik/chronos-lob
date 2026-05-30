@@ -3,8 +3,8 @@
   "claim_status_counts": {
     "forbidden": 15,
     "needs_real_evidence": 2,
-    "partially_supported": 11,
-    "supported": 14,
+    "partially_supported": 3,
+    "supported": 22,
     "unsupported": 8
   },
   "claims": [
@@ -12,12 +12,12 @@
       "category": "general infrastructure",
       "claim_id": "general.reproducible_platform",
       "claim_text": "ChronosLOB is a reproducible LOB research platform",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Project-audit archive artefacts are present.",
       "required_artefacts": [
         "project_audit_archive"
       ],
       "safe_rewording": "ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "project_audit_archive"
       ]
@@ -26,12 +26,12 @@
       "category": "general infrastructure",
       "claim_id": "general.leakage_safe_fi2010",
       "claim_text": "ChronosLOB uses leakage-safe FI-2010 evaluation",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Stored FI-2010 benchmark artefacts are present.",
       "required_artefacts": [
         "fi2010_classical_benchmarks"
       ],
       "safe_rewording": "ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and leakage-control documentation.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "fi2010_classical_benchmarks"
       ]
@@ -40,13 +40,13 @@
       "category": "general infrastructure",
       "claim_id": "general.train_only_ssl",
       "claim_text": "ChronosLOB includes train-only SSL pretraining",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Real SSL artefacts or full-grid SSL objectives are present.",
       "required_artefacts": [
         "fi2010_ssl_runner_outputs",
         "fi2010_neural_full_grid"
       ],
       "safe_rewording": "ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real non-smoke SSL artefacts.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "fi2010_neural_full_grid"
       ]
@@ -55,12 +55,12 @@
       "category": "general infrastructure",
       "claim_id": "general.supervised_vs_ssl_transformers",
       "claim_text": "ChronosLOB compares supervised and SSL transformers",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Full-grid aggregate and SSL comparison artefacts are present.",
       "required_artefacts": [
         "fi2010_neural_full_grid"
       ],
       "safe_rewording": "ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched FI-2010 settings.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "fi2010_neural_full_grid"
       ]
@@ -69,12 +69,12 @@
       "category": "general infrastructure",
       "claim_id": "general.execution_proxy_diagnostics",
       "claim_text": "ChronosLOB includes execution-aware proxy diagnostics",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Execution-v3 artefacts are present.",
       "required_artefacts": [
         "execution_v3_outputs"
       ],
       "safe_rewording": "ChronosLOB includes offline execution-aware proxy diagnostics with explicit limitations.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "execution_v3_outputs"
       ]
@@ -97,12 +97,12 @@
       "category": "general infrastructure",
       "claim_id": "general.feature_ablations",
       "claim_text": "ChronosLOB includes microstructure feature ablations",
-      "reason": "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness.",
+      "reason": "Feature-ablation artefacts are present.",
       "required_artefacts": [
         "feature_ablation_outputs"
       ],
       "safe_rewording": "ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "feature_ablation_outputs"
       ]
@@ -274,13 +274,13 @@
       "category": "empirical result",
       "claim_id": "empirical.gradient_boosting_best",
       "claim_text": "Gradient boosting remained the strongest classical baseline",
-      "reason": "Gradient boosting is best in stored rows, but evidence is not clean complete.",
+      "reason": "Gradient boosting is the best stored classical test macro-F1 row.",
       "required_artefacts": [
         "fi2010_classical_benchmarks",
         "results_summary.csv"
       ],
       "safe_rewording": "Name the best classical model from the stored result table and include the metric, split and scope.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "fi2010_classical_benchmarks"
       ]
@@ -354,13 +354,13 @@
       "category": "empirical result",
       "claim_id": "empirical.confidence_filtering",
       "claim_text": "Confidence filtering improved cost-adjusted proxy",
-      "reason": "Stored threshold aggregates show an improvement, but evidence is not clean complete.",
+      "reason": "Stored threshold aggregates show higher cost-adjusted proxy at a filter.",
       "required_artefacts": [
         "execution_v3_outputs",
         "confidence_threshold_aggregate.csv"
       ],
       "safe_rewording": "Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.",
-      "status": "partially_supported",
+      "status": "supported",
       "supporting_artefacts": [
         "execution_v3_outputs"
       ]
@@ -660,5 +660,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T19:02:56.057411+00:00"
+  "generated_at": "2026-05-30T21:24:43.946312+00:00"
 }

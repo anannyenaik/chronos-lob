@@ -23,7 +23,7 @@
 ## Artefact Hashes
 
 - [ ] Confirm input hashes are present where artefacts record source files.
-- [ ] Investigate stale and unknown-staleness rows in artefact_inventory.csv.
+- [ ] Investigate genuinely stale rows in artefact_inventory.csv; archived_valid, optional_missing and obsolete_superseded rows are expected and do not block release.
 
 ## Smoke And Real Separation
 

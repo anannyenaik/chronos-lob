@@ -1,8 +1,26 @@
 # Supported Claims
 
+- ChronosLOB is a reproducible LOB research platform
+  - support: project_audit_archive
+  - safe wording: ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.
+- ChronosLOB uses leakage-safe FI-2010 evaluation
+  - support: fi2010_classical_benchmarks
+  - safe wording: ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and leakage-control documentation.
+- ChronosLOB includes train-only SSL pretraining
+  - support: fi2010_neural_full_grid
+  - safe wording: ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real non-smoke SSL artefacts.
+- ChronosLOB compares supervised and SSL transformers
+  - support: fi2010_neural_full_grid
+  - safe wording: ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched FI-2010 settings.
+- ChronosLOB includes execution-aware proxy diagnostics
+  - support: execution_v3_outputs
+  - safe wording: ChronosLOB includes offline execution-aware proxy diagnostics with explicit limitations.
 - ChronosLOB includes a richer execution-aware proxy analysis report
   - support: execution_v3_analysis_report
   - safe wording: ChronosLOB includes a richer offline execution-aware proxy analysis covering confidence, turnover, cost, latency, fill and adverse-selection proxies; regime diagnostics are explicitly skipped.
+- ChronosLOB includes microstructure feature ablations
+  - support: feature_ablation_outputs
+  - safe wording: ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.
 - Feature-ablation infrastructure is available
   - support: feature_ablation_outputs
   - safe wording: ChronosLOB includes FI-2010 feature-ablation evidence infrastructure with proxy and unsupported groups labelled.
@@ -15,6 +33,9 @@
 - SSL-v2 was evaluated in a scoped FI-2010 benchmark.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
   - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+- Gradient boosting remained the strongest classical baseline
+  - support: fi2010_classical_benchmarks
+  - safe wording: Name the best classical model from the stored result table and include the metric, split and scope.
 - snapshot_order_flow_proxy remains important at horizon 10 for logistic/ridge
   - support: feature_ablation_analysis_report, feature_ablation_outputs
   - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
@@ -24,6 +45,9 @@
 - Feature-ablation effects appear in a non-linear model slice
   - support: feature_ablation_analysis_report, feature_ablation_outputs
   - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
+- Confidence filtering improved cost-adjusted proxy
+  - support: execution_v3_outputs
+  - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.
 - ChronosLOB supports a synthetic event-level LOB pipeline
   - support: synthetic_lob_extension_report
   - safe wording: ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on controlled synthetic regimes; not real-market data.

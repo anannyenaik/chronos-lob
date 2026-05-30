@@ -36,8 +36,9 @@ signal quality are reported as separate evidence streams.
 
 - Benchmark metrics are run-specific and depend on the recorded dataset,
   split, config, seed and local environment.
-- Implemented self-supervised objectives are infrastructure; the paper
-  runner does not currently report an SSL model result.
+- Implemented self-supervised objectives are evaluated only within their stored
+  scopes. The current SSL-v1 and SSL-v2 evidence does not support a broad SSL
+  improvement or SSL calibration-improvement claim.
 - Forecast accuracy, calibration error and confidence-filtering
   diagnostics do not in themselves characterise tradability.
 
@@ -59,3 +60,5 @@ Any reported metric must trace to a versioned config, data source,
 seed, code commit and stored output artefact. Predictive, calibration
 and execution-aware validation outputs are reported as separate
 evidence types rather than collapsed into a single score.
+Older generating commits do not by themselves invalidate retained summaries;
+hash mismatches, changed retained content or newer required inputs do.

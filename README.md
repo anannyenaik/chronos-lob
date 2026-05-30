@@ -20,18 +20,22 @@ integration and not automated order-placement software.
 
 ## Evidence Status
 
+`archived_valid` means the retained summary/manifest evidence is complete and
+content-valid, but the heavy compute was generated at an older commit or large
+raw run artefacts were intentionally removed. It is not a broken-evidence status.
+
 | Component | Current status | Notes |
 | --- | --- | --- |
-| Classical benchmark | `complete_real` | FI-2010 folds 1-5 with stored aggregate artefacts. |
-| Neural full grid | `complete_real` | Folds 1-5, horizons 10/20/50, seeds 0-2, one-epoch matched grid. |
+| Classical benchmark | `archived_valid` | FI-2010 folds 1-5 with stored aggregate artefacts. |
+| Neural full grid | `archived_valid` | Folds 1-5, horizons 10/20/50, seeds 0-2, one-epoch matched grid. |
 | Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50, max 25 epochs, patience 5; matched SSL comparisons are exact-scope only. |
-| SSL comparison | `complete_real` | Tested in the matched grid; no SSL improvement is supported. |
+| SSL comparison | `archived_valid` | Tested in the matched grid; no SSL improvement is supported. |
 | SSL-v2 benchmark | `partial_real` | Failure-analysis-motivated market-state SSL objective, fold 1 horizons 10/50 seed 0; evaluated but no predictive or calibration improvement claim is supported. |
-| Execution-v3 | `complete_real` | Offline execution-aware proxy diagnostic only. |
+| Execution-v3 | `archived_valid` | Offline execution-aware proxy diagnostic only. |
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
 | Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
-| Synthetic event-level extension | synthetic | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
+| Synthetic event-level extension | `archived_valid` | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
 | Binance Spot L2 replay path | `partial_real` | Offline snapshot-plus-diff replay path with fixture sample; supports user-supplied local Binance captures; not equity, not live trading, not profitability. |
 | Manual paper | not yet written | Public reports are artefact summaries, not a manual paper. |
 

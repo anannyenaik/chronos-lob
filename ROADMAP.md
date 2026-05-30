@@ -75,6 +75,10 @@ calibration and execution-aware evaluation.
   caveats. It is aggregated L2 depth-stream engineering evidence only, not
   equity evidence, live trading, profitability evidence or predictive-success
   evidence.
+- Evidence-pack trust repair: artefact completeness is now separated from
+  freshness, so older but content-valid retained summaries are `archived_valid`,
+  optional stored copies are `optional_missing` and superseded legacy outputs are
+  `obsolete_superseded` rather than appearing as broken evidence.
 
 ## In Progress and Next
 
@@ -99,7 +103,8 @@ calibration and execution-aware evaluation.
 - Add richer regime analysis based on genuine stored regime features rather
   than row-number or timestamp-derived substitutes.
 - Continue tightening report generation so public tables and summaries are
-  rebuilt directly from stored artefacts.
+  rebuilt directly from stored artefacts and keep the archived/optional/superseded
+  taxonomy easy for reviewers to audit.
 
 ## Evaluation Principles
 

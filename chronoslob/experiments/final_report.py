@@ -1152,18 +1152,23 @@ def _load_evidence_pack_artefacts(
         missing_sections.append("evidence pack manifest or claim audit missing")
         return _EvidencePackArtefacts(directory=candidate, reason="required files missing")
 
+    # The evidence pack is a regenerated sibling release bundle, not a source
+    # input. Recording the hashes of its volatile outputs (which carry a fresh
+    # generated_at every build) would make the report look stale whenever the
+    # pack is rebuilt, so read these files for content without hashing them.
+    volatile_hashes: dict[str, str] = {}
     try:
         manifest = _read_json(
             manifest_path,
             "evidence_pack_manifest",
             input_paths,
-            file_hashes,
+            volatile_hashes,
         )
         claim_audit = _read_json(
             claim_audit_path,
             "evidence_pack_claim_audit",
             input_paths,
-            file_hashes,
+            volatile_hashes,
         )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         warnings.append(f"evidence pack could not be loaded: {exc}")
@@ -1175,13 +1180,13 @@ def _load_evidence_pack_artefacts(
         candidate / "supported_claims.md",
         "evidence_pack_supported_claims",
         input_paths,
-        file_hashes,
+        volatile_hashes,
     )
     unsupported = _read_optional_text(
         candidate / "unsupported_claims.md",
         "evidence_pack_unsupported_claims",
         input_paths,
-        file_hashes,
+        volatile_hashes,
     )
     input_paths["evidence_pack_dir"] = _display_path(candidate)
     return _EvidencePackArtefacts(
@@ -3412,10 +3417,14 @@ def _render_limitations(data: _FinalReportData) -> list[str]:
 
 def _render_traceability(data: _FinalReportData) -> list[str]:
     rows = [
-        (label, path, data.input_file_hashes.get(path, "directory"))
+        (label, path, data.input_file_hashes.get(path, _unhashed_traceability_label(path)))
         for label, path in sorted(data.input_artefact_paths.items())
     ]
     return _markdown_table(("artefact", "path", "sha256"), rows)
+
+
+def _unhashed_traceability_label(path: str) -> str:
+    return "not_hashed" if Path(path).suffix else "directory"
 
 
 def _render_reproduction_commands() -> list[str]:

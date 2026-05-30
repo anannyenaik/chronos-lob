@@ -4,38 +4,38 @@
 
 | component | status | smoke |
 | --- | --- | --- |
-| fi2010_classical_benchmarks | stale | no |
-| fi2010_ssl_runner_outputs | missing | no |
-| fi2010_neural_full_grid | stale | no |
-| fi2010_neural_proper_training_subset | stale | no |
+| fi2010_classical_benchmarks | archived_valid | no |
+| fi2010_ssl_runner_outputs | obsolete_superseded | no |
+| fi2010_neural_full_grid | archived_valid | no |
+| fi2010_neural_proper_training_subset | partial_real | no |
 | ssl_failure_analysis_report | complete_real | no |
 | fi2010_ssl_v2_benchmark | partial_real | no |
 | ssl_v2_analysis_report | partial_real | no |
 | fi2010_figures | partial_real | no |
-| execution_v3_outputs | stale | no |
+| execution_v3_outputs | archived_valid | no |
 | execution_v3_analysis_report | complete_real | no |
-| feature_registry_audit_outputs | missing | no |
-| feature_ablation_outputs | stale | no |
+| feature_registry_audit_outputs | optional_missing | no |
+| feature_ablation_outputs | partial_real | no |
 | feature_ablation_analysis_report | complete_real | no |
 | ablation_figures | complete_real | no |
 | final_empirical_report | complete_real | no |
-| synthetic_lob_extension_report | stale | no |
-| binance_l2_extension_report | stale | no |
+| synthetic_lob_extension_report | archived_valid | no |
+| binance_l2_extension_report | partial_real | no |
 | project_audit_archive | unknown_staleness | no |
 
 ## Results
 
-- Best classical result: not cleanly supported (stale).
-- Best neural full-grid result: not cleanly supported (stale).
+- Best classical result: gradient_boosting macro-F1 0.4654 from stored artefacts.
+- Best neural full-grid result: matrix_transformer macro-F1 0.4922 from stored artefacts.
 - SSL comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
-- Execution-v3: stale.
-- Feature ablations: stale.
+- Execution-v3: complete real artefacts retained (generated at an older commit).
+- Feature ablations: partial_real.
 - Figures: partial_real.
 
 ## Limitations
 
 - Smoke diagnostics are labelled as smoke diagnostics and are not empirical evidence.
-- Missing real full-grid artefacts mean no full-grid empirical result is claimed.
+- Full-grid neural artefacts are present, but public wording must quote stored scope and metrics exactly.
 - SSL improvement language is blocked unless real aggregate deltas support it.
 - Execution-v3 metrics are offline proxy diagnostics, not deployed execution results.
 - FI-2010 snapshot features do not expose event-level order flow or queue position.

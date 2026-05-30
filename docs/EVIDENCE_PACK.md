@@ -35,17 +35,33 @@ the chosen output directory.
 
 ## Artefact Classification
 
-Each artefact group is classified as:
+Each artefact group has a completeness status and a separate freshness state.
+This keeps valid retained summaries from looking broken just because their
+generating commit is older than the current repository commit.
 
-- `missing`: expected evidence path or required evidence files are absent.
-- `smoke_test_only`: explicit smoke metadata is present.
 - `complete_real`: required non-smoke artefacts are present and completion checks pass.
+- `archived_valid`: complete retained summaries/manifests remain content-valid,
+  but the generating commit is older or heavy raw predictions/checkpoints were
+  intentionally removed. This carries the same evidential weight as
+  `complete_real`.
 - `partial_real`: real non-smoke artefacts exist, but the scope is incomplete,
   mixed or has explicit skipped diagnostics.
+- `optional_missing`: an optional artefact was never stored; no core public
+  claim depends on it.
+- `obsolete_superseded`: a legacy artefact is superseded by newer matched
+  evidence.
+- `smoke_test_only`: explicit smoke metadata is present.
+- `missing`: expected required evidence path or required evidence files are absent.
 - `invalid`: metadata cannot be parsed or the artefact shape is unusable.
-- `stale`: commit hashes, input hashes or source timestamps indicate drift.
+- `stale`: retained content changed, a non-archival recorded hash path is
+  missing, or an input is newer than its derived output.
 - `unsupported`: the artefact path is intentionally not configured.
 - `unknown_staleness`: there is not enough hash or timestamp evidence to call it clean.
+
+The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`.
+Older generating commits are `archived` when retained hashes, files and summaries
+are consistent. Missing non-heavy hashed inputs and hash mismatches remain
+genuine `stale` evidence and require recomputation.
 
 Classification is based on stored summaries, manifests, status files, smoke
 markers, run counts, hashes and timestamps where available.
@@ -71,9 +87,9 @@ Smoke artefacts remain useful for release diagnostics, but the pack labels them
 as `smoke_test_only`. The README snapshot and public bullet files must not turn
 smoke outputs into result claims.
 
-If real full-grid artefacts are missing, the snapshot says so directly. If SSL
-deltas are mixed, negative, stale or unavailable, the pack avoids improvement
-language.
+If required real full-grid artefacts are missing, the snapshot says so directly.
+If SSL deltas are mixed, negative, genuinely stale or unavailable, the pack
+avoids improvement language.
 
 ## Forbidden Claims
 
@@ -123,10 +139,10 @@ profile copy.
 ## Current Release Reading
 
 At the current public-release point, the neural full grid and execution-v3 are
-`complete_real`, feature ablations are `partial_real`, feature-ablation analysis
-is `partial_real`, figure outputs are real with unsupported regime plots
-skipped, and the manual paper has not yet been written. The matched full grid
-supports the existence of a supervised-vs-SSL comparison, but it does not
+`archived_valid`, feature ablations are `partial_real`, feature-ablation
+analysis is `complete_real`, figure outputs are real with unsupported regime
+plots skipped, and the manual paper has not yet been written. The matched full
+grid supports the existence of a supervised-vs-SSL comparison, but it does not
 support SSL improvement language.
 
 A dedicated SSL analysis artefact (`ssl_failure_analysis_report`, built by
@@ -167,6 +183,11 @@ engineering evidence: it exercises the Binance-shaped replay path and claim
 boundaries, but a user-supplied local capture is needed before the real
 captured-stream claim is supported.
 
+The legacy standalone SSL runner path is `obsolete_superseded` because the
+matched neural full grid and SSL-v2 benchmark are the retained SSL evidence. The
+stored feature-audit path is `optional_missing`; no core public claim depends on
+that optional copy.
+
 ## Preparing A Release
 
 Before release:
@@ -176,7 +197,9 @@ Before release:
 - Run doctor, release readiness and strict project audit.
 - Build or refresh real artefacts where needed.
 - Rebuild figures, report and evidence pack after upstream artefacts change.
-- Review stale and unknown-staleness inventory rows.
+- Review genuinely stale and unknown-staleness inventory rows. `archived_valid`,
+  `optional_missing` and `obsolete_superseded` rows are expected release states
+  when their notes explain the retained evidence.
 - Remove unsupported public claims.
 - Keep the manual paper out of scope until the stored evidence is ready.
 - Regenerate evidence-pack Markdown files from artefacts rather than manually

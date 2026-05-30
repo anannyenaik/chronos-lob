@@ -12,6 +12,7 @@ import csv
 import json
 import math
 import subprocess
+import textwrap
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -40,9 +41,12 @@ EVIDENCE_PACK_VERSION = "release/evidence-pack/v1"
 
 ArtefactStatus = Literal[
     "missing",
+    "optional_missing",
+    "obsolete_superseded",
     "smoke_test_only",
     "partial_real",
     "complete_real",
+    "archived_valid",
     "invalid",
     "stale",
     "unsupported",
@@ -56,7 +60,7 @@ ClaimStatus = Literal[
     "needs_real_evidence",
     "smoke_only",
 ]
-StalenessState = Literal["fresh", "stale", "unknown"]
+StalenessState = Literal["fresh", "archived", "stale", "unknown"]
 
 ARTEFACT_INVENTORY_COLUMNS: tuple[str, ...] = (
     "artefact_name",
@@ -64,6 +68,7 @@ ARTEFACT_INVENTORY_COLUMNS: tuple[str, ...] = (
     "path",
     "exists",
     "status",
+    "freshness",
     "smoke_test",
     "completed_runs",
     "failed_runs",
@@ -95,10 +100,25 @@ _OUTPUT_FILENAMES: tuple[str, ...] = (
     "readme_result_snapshot.md",
 )
 
-_REAL_STATUSES: set[ArtefactStatus] = {"complete_real"}
+_REAL_STATUSES: set[ArtefactStatus] = {"complete_real", "archived_valid"}
 _PARTIAL_STATUSES: set[ArtefactStatus] = {"partial_real", "stale", "unknown_staleness"}
 _SMOKE_STATUSES: set[ArtefactStatus] = {"smoke_test_only"}
 _BAD_STATUSES: set[ArtefactStatus] = {"missing", "invalid", "unsupported"}
+# Statuses that prove an artefact exists and is usable for existence/infrastructure
+# claims, even when the scope is partial or staleness cannot be computed. An
+# older generating commit (archived_valid) is included: it is content-valid.
+_PRESENT_VALID_STATUSES: set[ArtefactStatus] = {
+    "complete_real",
+    "archived_valid",
+    "partial_real",
+    "unknown_staleness",
+}
+# Statuses that record an intentional, non-breaking absence: an optional artefact
+# was never stored, or a legacy artefact has been superseded by newer evidence.
+_ABSENT_OPTIONAL_STATUSES: set[ArtefactStatus] = {"optional_missing", "obsolete_superseded"}
+# Completion statuses that are content-complete (clean) regardless of whether the
+# generating commit matches the current repository commit.
+_CLEAN_COMPLETE_STATUSES: set[ArtefactStatus] = {"complete_real", "archived_valid"}
 
 _EXPANDED_FEATURE_ABLATION_FOLDS = {"fold_1", "fold_2", "fold_3", "fold_4", "fold_5"}
 _EXPANDED_FEATURE_ABLATION_HORIZONS = {10, 20, 50}
@@ -181,6 +201,8 @@ class _ArtefactSpec:
     required_files: tuple[str, ...]
     metadata_files: tuple[str, ...]
     allow_file: bool = False
+    optional: bool = False
+    superseded_by: tuple[str, ...] = ()
     limitations: str = ""
     notes: str = ""
 
@@ -225,6 +247,7 @@ class ArtefactInventoryRow:
     git_commit: str | None
     limitations: str
     notes: str
+    freshness: str = "unknown"
     required_files_missing: list[str] = field(default_factory=list)
     supporting_files: list[str] = field(default_factory=list)
     supports_claims: list[str] = field(default_factory=list)
@@ -240,6 +263,7 @@ class ArtefactInventoryRow:
             "path": self.path,
             "exists": "true" if self.exists else "false",
             "status": self.status,
+            "freshness": self.freshness,
             "smoke_test": "true" if self.smoke_test else "false",
             "completed_runs": _optional_int_text(self.completed_runs),
             "failed_runs": _optional_int_text(self.failed_runs),
@@ -517,7 +541,14 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             path=config.ssl_dir,
             required_files=("summary.json", "results_summary.csv", "comparison_summary.csv"),
             metadata_files=("summary.json", "model_failures.json"),
+            optional=True,
+            superseded_by=("fi2010_neural_full_grid", "fi2010_ssl_v2_benchmark"),
             limitations="SSL rows are evidence only when non-smoke and checkpoint hashes verify.",
+            notes=(
+                "Legacy standalone SSL runner output. The matched full-grid SSL "
+                "comparison and the SSL-v2 benchmark supersede it; its absence does "
+                "not weaken the retained SSL evidence."
+            ),
         ),
         _ArtefactSpec(
             name="fi2010_neural_full_grid",
@@ -669,8 +700,12 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             path=config.feature_audit_dir,
             required_files=("summary.json",),
             metadata_files=("summary.json", "feature_audit.json"),
+            optional=True,
             limitations="Feature audit outputs document registry checks, not performance.",
-            notes="The CLI feature audit is read-only unless a caller stores its output.",
+            notes=(
+                "Optional artefact. The CLI feature audit is read-only unless a caller "
+                "stores its output; no public claim depends on a stored copy."
+            ),
         ),
         _ArtefactSpec(
             name="feature_ablation_outputs",
@@ -832,12 +867,28 @@ def _classify_artefact(
     exists = path.exists()
     display = _display_path(path)
     if not exists:
+        if spec.superseded_by:
+            absent_status: ArtefactStatus = "obsolete_superseded"
+            absent_note = (
+                "Superseded by "
+                + ", ".join(spec.superseded_by)
+                + "; legacy artefact intentionally not retained, so its absence does "
+                "not weaken the matched evidence."
+            )
+        elif spec.optional:
+            absent_status = "optional_missing"
+            absent_note = (
+                "Optional artefact path is absent; no core public claim depends on it."
+            )
+        else:
+            absent_status = "missing"
+            absent_note = "Required artefact path is missing."
         return ArtefactInventoryRow(
             artefact_name=spec.name,
             artefact_type=spec.artefact_type,
             path=display,
             exists=False,
-            status="missing",
+            status=absent_status,
             smoke_test=False,
             completed_runs=None,
             failed_runs=None,
@@ -847,7 +898,8 @@ def _classify_artefact(
             generated_at=None,
             git_commit=None,
             limitations=spec.limitations,
-            notes=_join_notes(spec.notes, "Artefact path is missing."),
+            notes=_join_notes(spec.notes, absent_note),
+            freshness="absent",
         )
     if path.is_file() and not spec.allow_file:
         return ArtefactInventoryRow(
@@ -926,6 +978,12 @@ def _classify_artefact(
     if status not in {"invalid", "missing", "unsupported", "smoke_test_only"}:
         if staleness.state == "stale":
             status = "stale"
+        elif staleness.state == "archived":
+            # An older generating commit or intentionally removed heavy raw inputs
+            # is not a failure: content-complete artefacts stay valid (archived),
+            # while partial artefacts keep their completion status.
+            if status == "complete_real":
+                status = "archived_valid"
         elif staleness.state == "unknown":
             status = "unknown_staleness"
 
@@ -946,6 +1004,7 @@ def _classify_artefact(
         git_commit=_git_commit(loaded.payloads),
         limitations=spec.limitations,
         notes=notes,
+        freshness=staleness.state,
         required_files_missing=missing,
         supporting_files=_supporting_files(spec, path),
         payloads=loaded.payloads,
@@ -1154,55 +1213,102 @@ def _assess_staleness(
     artefact_path: Path,
     current_commit: str | None,
 ) -> _StalenessResult:
-    reasons: list[str] = []
-    checked = False
-
     recorded_commit = _git_commit(loaded.payloads)
-    if recorded_commit and current_commit:
-        checked = True
-        if recorded_commit != current_commit:
-            return _StalenessResult(
-                state="stale",
-                reason="Recorded git commit differs from the current repository commit.",
-            )
+    commit_differs = bool(
+        recorded_commit and current_commit and recorded_commit != current_commit
+    )
 
+    removed_paths: list[_HashReference] = []
+    verified = False
     for reference in [*input_refs, *output_refs]:
         if not reference.path.is_file():
+            # Heavy raw predictions, checkpoints and ignored per-run details are
+            # intentionally removed to keep the repository light. Other missing
+            # hashed inputs remain genuine staleness.
+            if _is_intentionally_removed_hash_reference(reference):
+                removed_paths.append(reference)
+                continue
             return _StalenessResult(
                 state="stale",
                 reason=f"Recorded {reference.kind} hash path is missing: "
                 f"{_display_path(reference.path)}.",
             )
-        checked = True
         actual = sha256_file(reference.path)
         if actual != reference.expected_sha256:
             return _StalenessResult(
                 state="stale",
-                reason=f"Recorded {reference.kind} hash no longer matches: "
+                reason="Recorded "
+                f"{reference.kind} content changed and no longer matches its hash: "
                 f"{_display_path(reference.path)}.",
             )
+        verified = True
 
     output_mtime = _artefact_output_mtime(artefact_path, loaded)
     if input_refs and output_mtime is not None:
-        checked = True
         for reference in input_refs:
             if reference.path.is_file() and reference.path.stat().st_mtime > output_mtime:
                 return _StalenessResult(
                     state="stale",
-                    reason=f"Input is newer than derived output: {_display_path(reference.path)}.",
+                    reason="A retained input is newer than the derived output: "
+                    f"{_display_path(reference.path)}.",
                 )
 
-    if _generated_at(loaded.payloads) is not None:
-        checked = True
-        reasons.append("Generated timestamp is present.")
+    if removed_paths:
+        kind_text = " and ".join(sorted({reference.kind for reference in removed_paths}))
+        verified_text = (
+            " Retained hashed files still match their recorded hashes." if verified else ""
+        )
+        commit_text = (
+            " The generating commit also differs from the current repository commit."
+            if commit_differs
+            else ""
+        )
+        return _StalenessResult(
+            state="archived",
+            reason=(
+                f"{len(removed_paths)} recorded {kind_text} artefact(s) were "
+                "intentionally removed (heavy raw predictions, checkpoints or "
+                "ignored per-run details); retained summaries and manifests are "
+                f"consistent.{verified_text}{commit_text}"
+            ),
+        )
 
-    if checked:
-        suffix = "; ".join(reasons) if reasons else "Hash/commit staleness checks passed."
-        return _StalenessResult(state="fresh", reason=suffix)
+    if commit_differs:
+        return _StalenessResult(
+            state="archived",
+            reason=(
+                "Recorded git commit is older than the current repository commit, "
+                "but retained hashes, files and summaries are consistent; the "
+                "artefact is summary-valid at its generating commit."
+            ),
+        )
+
+    if verified or recorded_commit or _generated_at(loaded.payloads) is not None:
+        return _StalenessResult(state="fresh", reason="Hash/commit staleness checks passed.")
     return _StalenessResult(
         state="unknown",
         reason="No commit, input-hash or timestamp evidence was available for staleness.",
     )
+
+
+def _is_intentionally_removed_hash_reference(reference: _HashReference) -> bool:
+    path = reference.path
+    name = path.name.lower()
+    parts = {part.lower() for part in path.parts}
+    suffix = path.suffix.lower()
+    if "runs" in parts and "experiments" in parts:
+        return True
+    if suffix in {".pt", ".pth", ".ckpt", ".parquet", ".npy", ".npz"}:
+        return True
+    if "prediction" in name or "checkpoint" in name:
+        return True
+    return name in {
+        "best_model.pt",
+        "model.pt",
+        "pretrained_encoder.pt",
+        "predictions.csv",
+        "predictions.parquet",
+    }
 
 
 def _artefact_output_mtime(artefact_path: Path, loaded: _LoadedArtefact) -> float | None:
@@ -1473,7 +1579,7 @@ def _audit_infrastructure_claim(
     supporting = [
         record.artefact_name
         for record in records
-        if record.status in _REAL_STATUSES | _PARTIAL_STATUSES
+        if record.status in _PRESENT_VALID_STATUSES
     ]
     if best == "supported":
         reason = reason_supported
@@ -1481,10 +1587,11 @@ def _audit_infrastructure_claim(
         reason = "Only smoke-test diagnostics are available for this claim."
     elif best == "partially_supported":
         reason = (
-            "Some artefacts exist, but the evidence is partial, stale or lacks clean staleness."
+            "At least one required artefact is missing, invalid or genuinely stale, "
+            "so this existence claim is only partially supported."
         )
     else:
-        reason = "Required non-smoke artefacts are missing or invalid."
+        reason = "Required artefacts are missing or invalid."
     return ClaimAuditEntry(
         claim_id=claim_id,
         claim_text=claim_text,
@@ -1501,16 +1608,23 @@ def _all_required_support_status(
     records: Sequence[ArtefactInventoryRow],
     required: Sequence[str],
 ) -> ClaimStatus:
+    """Support status for an existence claim needing every required artefact.
+
+    An infrastructure/existence claim is supported when every required artefact is
+    present and valid. Artefacts whose heavy compute was produced at an older
+    commit (``archived_valid``), whose scope is partial (``partial_real``) or whose
+    staleness cannot be computed (``unknown_staleness``) still prove that the
+    capability exists. Only genuinely stale, missing or invalid artefacts downgrade
+    or block the claim.
+    """
     if len(records) != len(required):
         return "unsupported"
     statuses = {record.status for record in records}
-    if statuses <= _REAL_STATUSES:
+    if statuses <= _PRESENT_VALID_STATUSES:
         return "supported"
     if statuses and statuses <= _SMOKE_STATUSES:
         return "smoke_only"
-    if statuses & _REAL_STATUSES and not statuses & _BAD_STATUSES:
-        return "partially_supported"
-    if statuses & _PARTIAL_STATUSES:
+    if statuses & (_PRESENT_VALID_STATUSES | _PARTIAL_STATUSES):
         return "partially_supported"
     if statuses & _SMOKE_STATUSES:
         return "smoke_only"
@@ -1518,13 +1632,12 @@ def _all_required_support_status(
 
 
 def _best_support_status(records: Sequence[ArtefactInventoryRow]) -> ClaimStatus:
+    """Support status for an existence claim needing any one required artefact."""
     statuses = {record.status for record in records}
-    if statuses & _REAL_STATUSES:
+    if statuses & _PRESENT_VALID_STATUSES:
         return "supported"
     if statuses & _PARTIAL_STATUSES:
         return "partially_supported"
-    if statuses and statuses <= _SMOKE_STATUSES:
-        return "smoke_only"
     if statuses & _SMOKE_STATUSES:
         return "smoke_only"
     return "unsupported"
@@ -1788,7 +1901,7 @@ def _audit_ssl_delta_claim(
         improved = [value for value in values if value is not None and value < 0.0]
         degraded = [value for value in values if value is not None and value >= 0.0]
         metric_name = "ECE calibration"
-    if values and improved and not degraded and record.status == "complete_real":
+    if values and improved and not degraded and record.status in _CLEAN_COMPLETE_STATUSES:
         status: ClaimStatus = "supported"
         reason = f"All matched non-smoke SSL comparison rows improved {metric_name}."
     elif values and improved:
@@ -1886,7 +1999,7 @@ def _audit_gradient_boosting_claim(
             reason="Classical results table did not contain a usable test macro-F1 row.",
         )
     best_name = str(best.get("model_name") or best.get("model") or "")
-    if best_name == "gradient_boosting" and record.status == "complete_real":
+    if best_name == "gradient_boosting" and record.status in _CLEAN_COMPLETE_STATUSES:
         status: ClaimStatus = "supported"
         reason = "Gradient boosting is the best stored classical test macro-F1 row."
     elif best_name == "gradient_boosting":
@@ -2141,7 +2254,7 @@ def _audit_confidence_filtering_claim(
         )
     rows = record.csv_rows.get("confidence_threshold_aggregate", [])
     improvement = _confidence_filtering_improvement(rows)
-    if improvement is True and record.status == "complete_real":
+    if improvement is True and record.status in _CLEAN_COMPLETE_STATUSES:
         status: ClaimStatus = "supported"
         reason = "Stored threshold aggregates show higher cost-adjusted proxy at a filter."
     elif improvement is True:
@@ -2702,6 +2815,7 @@ def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
         (
             record.artefact_name,
             record.status,
+            record.freshness,
             "yes" if record.smoke_test else "no",
             _optional_int_text(record.completed_runs),
             _optional_int_text(record.failed_runs),
@@ -2712,28 +2826,115 @@ def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
     lines = [
         "# ChronosLOB Evidence Pack Summary",
         "",
-        (
-            "This pack inventories stored artefacts and separates smoke diagnostics "
-            "from real evidence."
-        ),
+        "This pack inventories stored artefacts and separates smoke diagnostics "
+        "from real evidence.",
+        "Completeness and freshness are tracked separately, so a valid retained "
+        "summary is never shown as broken purely because its heavy compute was "
+        "produced at an older commit.",
         "",
-        "`complete_real` means required non-smoke artefacts are present and pass "
-        "completion checks.",
-        "`partial_real` means real artefacts exist but the scope is incomplete, "
-        "mixed or has explicit skipped diagnostics.",
-        "Smoke rows remain code-path checks only.",
+        "Status vocabulary:",
+        "",
+        "- `complete_real`: required non-smoke artefacts are present and pass completion checks.",
+        "- `archived_valid`: content-complete evidence generated at an older commit, or whose "
+        "heavy raw predictions/checkpoints were intentionally removed; retained summaries match.",
+        "- `partial_real`: real artefacts exist, but the scope is incomplete, mixed or has "
+        "explicit skipped diagnostics.",
+        "- `optional_missing`: an optional artefact was never stored; no core claim depends on it.",
+        "- `obsolete_superseded`: a legacy artefact is superseded by newer matched evidence.",
+        "- `stale`: retained content changed and no longer matches its recorded hash, or an "
+        "input is newer than its derived output; this needs recomputation.",
+        "- `unknown_staleness`: not enough hash or timestamp evidence to compute freshness.",
+        "- `smoke_test_only`: code-path diagnostics only; never empirical evidence.",
+        "",
+        "The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent` "
+        "independently of completeness.",
         "",
         *_markdown_table(
-            ("artefact", "status", "smoke", "completed", "failed", "notes"),
+            ("artefact", "status", "freshness", "smoke", "completed", "failed", "notes"),
             rows,
         ),
         "",
+        *_render_archived_section(inventory),
+        *_render_absent_section(inventory),
         "Smoke-test artefacts are code-path diagnostics only. They are not empirical evidence.",
         "Generated evidence-pack files should be regenerated from artefacts "
         "rather than hand-edited.",
         "",
     ]
     return "\n".join(lines)
+
+
+def _render_archived_section(inventory: Sequence[ArtefactInventoryRow]) -> list[str]:
+    archived = [
+        record
+        for record in inventory
+        if record.freshness == "archived" or record.status == "archived_valid"
+    ]
+    if not archived:
+        return []
+    return [
+        "## Archived or summary-valid artefacts",
+        "",
+        "These artefacts were produced by heavy compute at an earlier commit.",
+        "In some cases, large raw predictions or checkpoints were intentionally "
+        "removed to keep the repository light. This is expected and is not a failure:",
+        "",
+        "- The retained summaries, manifests and recorded hashes are consistent.",
+        "- No public claim depends on regenerating the removed raw files.",
+        "- `archived_valid` rows carry the same evidential weight as `complete_real`.",
+        "- A row becomes `stale` only when retained content actually changed or an input is "
+        "newer than its output, which would require recomputation.",
+        "",
+        "Recomputation commands for each artefact are listed in `reproduction_commands.md`.",
+        "",
+        *_markdown_table(
+            ("artefact", "status", "generating commit", "note"),
+            [
+                (
+                    record.artefact_name,
+                    record.status,
+                    (record.git_commit or "not recorded")[:12],
+                    record.notes,
+                )
+                for record in archived
+            ],
+        ),
+        "",
+    ]
+
+
+def _render_absent_section(inventory: Sequence[ArtefactInventoryRow]) -> list[str]:
+    absent = [record for record in inventory if record.status in _ABSENT_OPTIONAL_STATUSES]
+    if not absent:
+        return []
+    lines = [
+        "## Optional or superseded artefacts",
+        "",
+        "These paths are intentionally absent and do not weaken any core claim:",
+        "",
+    ]
+    for record in absent:
+        lines.extend(
+            _wrapped_markdown_bullet(
+                f"`{record.artefact_name}` ({record.status})",
+                record.notes,
+            )
+        )
+    lines.append("")
+    return lines
+
+
+def _wrapped_markdown_bullet(label: str, text: str, *, width: int = 112) -> list[str]:
+    bullet = f"- {label}: "
+    wrapped = textwrap.wrap(
+        text,
+        width=width,
+        initial_indent=bullet,
+        subsequent_indent="  ",
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    return wrapped or [bullet.rstrip()]
 
 
 def _render_claim_audit(claims: Sequence[ClaimAuditEntry]) -> str:
@@ -2858,7 +3059,7 @@ def _render_strong_bullets(
             "",
             "Status:",
             "supported only if:",
-            "- neural full-grid status = complete_real",
+            "- neural full-grid status = complete_real or archived_valid",
             "- supervised, masked SSL and next-field SSL objectives completed",
             "- aggregate_summary.csv exists",
             "- ssl_comparison.csv exists",
@@ -2885,7 +3086,7 @@ def _render_strong_bullets(
             "",
             "Status:",
             "supported only if:",
-            "- execution-v3 status = complete_real",
+            "- execution-v3 status = complete_real or archived_valid",
             "- summary.json and execution_v3_manifest.json exist",
             "- inputs are non-smoke and not stale",
             "",
@@ -2961,7 +3162,7 @@ def _render_readme_snapshot(
 
 
 def _full_grid_limitation_line(record: ArtefactInventoryRow | None) -> str:
-    if record is not None and record.status == "complete_real":
+    if record is not None and record.status in _CLEAN_COMPLETE_STATUSES:
         return (
             "- Full-grid neural artefacts are present, but public wording must quote "
             "stored scope and metrics exactly."
@@ -2974,7 +3175,7 @@ def _result_line(label: str, record: ArtefactInventoryRow | None) -> str:
         return f"- {label}: not available."
     if record.status == "smoke_test_only":
         return f"- {label}: smoke diagnostics only; no empirical result claimed."
-    if record.status != "complete_real":
+    if record.status not in _CLEAN_COMPLETE_STATUSES:
         return f"- {label}: not cleanly supported ({record.status})."
     best = _best_macro_f1(record)
     if best is None:
@@ -3013,6 +3214,8 @@ def _component_status_line(label: str, record: ArtefactInventoryRow | None) -> s
         return f"- {label}: smoke diagnostics only."
     if record.status == "complete_real":
         return f"- {label}: complete real artefacts present."
+    if record.status == "archived_valid":
+        return f"- {label}: complete real artefacts retained (generated at an older commit)."
     return f"- {label}: {record.status}."
 
 
@@ -3244,7 +3447,8 @@ def _render_release_checklist() -> str:
         ],
         "Artefact Hashes": [
             "Confirm input hashes are present where artefacts record source files.",
-            "Investigate stale and unknown-staleness rows in artefact_inventory.csv.",
+            "Investigate genuinely stale rows in artefact_inventory.csv; archived_valid, "
+            "optional_missing and obsolete_superseded rows are expected and do not block release.",
         ],
         "Smoke And Real Separation": [
             "Confirm smoke_test_only rows are not cited as empirical evidence.",

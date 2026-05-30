@@ -1,7 +1,7 @@
 {
   "builder_version": "phase-k/final-empirical-report/v1",
-  "generated_at": "2026-05-30T19:02:43.697478Z",
-  "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
+  "generated_at": "2026-05-30T21:16:32.930946Z",
+  "git_commit": "d49a86ea258ba8e03b3dd8c16f364a1ae8e987f1",
   "headline_metrics": {
     "best_classical": {
       "accuracy_mean": 0.640951393883556,
@@ -14,6 +14,21 @@
       "model_name": "gradient_boosting",
       "run_count": 5,
       "scope": "multi-fold classical",
+      "split": "test"
+    },
+    "best_neural": {
+      "accuracy_mean": 0.8008005014065495,
+      "accuracy_std": 0.02232019592561012,
+      "fold_count": 5,
+      "lookback": 20,
+      "macro_f1_mean": 0.733732432176707,
+      "macro_f1_std": 0.02803430253346521,
+      "mcc_mean": 0.6288492829430028,
+      "mcc_std": 0.03535016828824416,
+      "model_name": "matrix_transformer",
+      "run_count": 5,
+      "scope": "reduced-scope supervised neural",
+      "seed_count": 1,
       "split": "test"
     },
     "execution_proxy": {
@@ -91,7 +106,7 @@
     "feature_ablations_summary": "experiments/fi2010_feature_ablations/summary.json",
     "fi2010_figure_dir": "reports/figures/fi2010_neural_full_grid",
     "fi2010_figure_manifest": "reports/figures/fi2010_neural_full_grid/figure_manifest.json",
-    "neural_dir": "experiments/fi2010_neural_full_grid",
+    "neural_dir": "experiments/fi2010_multifold_neural",
     "neural_full_grid_aggregate_summary": "experiments/fi2010_neural_full_grid/aggregate_summary.csv",
     "neural_full_grid_aggregate_summary_json": "experiments/fi2010_neural_full_grid/aggregate_summary.json",
     "neural_full_grid_dir": "experiments/fi2010_neural_full_grid",
@@ -99,8 +114,8 @@
     "neural_full_grid_results_summary": "experiments/fi2010_neural_full_grid/results_summary.csv",
     "neural_full_grid_ssl_comparison": "experiments/fi2010_neural_full_grid/ssl_comparison.csv",
     "neural_full_grid_summary": "experiments/fi2010_neural_full_grid/summary.json",
-    "neural_results_summary": "experiments/fi2010_neural_full_grid/results_summary.csv",
-    "neural_summary": "experiments/fi2010_neural_full_grid/summary.json",
+    "neural_results_summary": "experiments/fi2010_multifold_neural/results_summary.csv",
+    "neural_summary": "experiments/fi2010_multifold_neural/summary.json",
     "proper_training_aggregate_summary": "experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.csv",
     "proper_training_config_snapshot": "experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json",
     "proper_training_curves_summary": "experiments/fi2010_neural_proper_training_subset_v2/training_curves_summary.csv",
@@ -164,6 +179,8 @@
     "experiments/fi2010_feature_ablations/summary.json": "bce138a84d09947bee8e1229f702bc3bd3431dbcb521e54c8f6e4ef80bd22291",
     "experiments/fi2010_multifold_classical/results_summary.csv": "7a4d3c042805ecb4d8735fe9ad95f1ccc9bf50a0d4a83acd646f4d6417a9e03e",
     "experiments/fi2010_multifold_classical/summary.json": "6e82bc2ff4b6656b28619338b7486b850d9eca1baf4e4f53fc3ea397794b155a",
+    "experiments/fi2010_multifold_neural/results_summary.csv": "bd6c0a52a6ea5eb5e01a66b91671cd84ee79b316ed202a9eadd198604a7f1e0c",
+    "experiments/fi2010_multifold_neural/summary.json": "9647aad87ff4bc8255d3971626850ff0c5b0eb76586a0e239141a64a9602b59e",
     "experiments/fi2010_neural_full_grid/aggregate_summary.csv": "40dbe7f03d3aa2cd700341ba9a4ebef17011bdacfaa500e933c7c1ac45e8f452",
     "experiments/fi2010_neural_full_grid/aggregate_summary.json": "97fa54bf4573a3edec3294ea3fe68a124067ae3b5d8ce97af0a59ff0cd8bb736",
     "experiments/fi2010_neural_full_grid/failures.csv": "2829b70da9d7da1e989b94f6afc4259e687ffee4cd4af64c4471deded82d7a92",
@@ -185,10 +202,6 @@
     "reports/binance_l2_extension/replay_quality.json": "69fff0aaece5acc5348b52b1664c3e112fa37af4086092ebc0ad2c7422ba655d",
     "reports/binance_l2_extension/summary.json": "6862e2290211d3c6a242ee356b07dcfe4931323c3e0fbcde2c4e4ededb4da7dd",
     "reports/binance_l2_extension/update_continuity_summary.csv": "4a95823cd920d5ffdff7b79d80a40424688d0cfa0516d91acdec9808bd8d33f5",
-    "reports/evidence_pack/claim_audit.json": "3ff66846554f8b283f876f9ce1913c654d43ad0f006a043b6ce0358576d64908",
-    "reports/evidence_pack/evidence_pack_manifest.json": "d1d7680ab350e5d7a6b0a4a767fb1cecf6f4600c893889ad350e5d408aa90f1c",
-    "reports/evidence_pack/supported_claims.md": "1906833230925fa12905bbdef552250f34a5aeeaf4963430cb6dcf711c597583",
-    "reports/evidence_pack/unsupported_claims.md": "59b7d1a7f6e12b9ae493d8b8570f11c9241221b792d40f94eee5b46b9b0a79af",
     "reports/feature_ablation_analysis/feature_ablation_analysis.md": "01d6bd0f5e72c51273d321f72c552bb37dc00ebbf8c03f0b5275be9286b52bf5",
     "reports/feature_ablation_analysis/feature_claim_assessment.json": "8ba09c675dbb9211067c59fd88efd29836c80cbeaa7270398c24289cb738327f",
     "reports/feature_ablation_analysis/feature_delta_by_fold.csv": "d64ffb0af41183a25f6d80d337cd226c32d5bc3a673eef4ceab67a54e7f3613f",
@@ -215,7 +228,7 @@
     "reports/synthetic_lob_extension/synthetic_replay_quality.json": "3b444bdf399e3e949807fc883a75fa68f8b781397fa126aaa9c850e265292146"
   },
   "missing_sections": [
-    "SSL artefact directory missing: experiments/fi2010_ssl"
+    "SSL input not supplied"
   ],
   "report_path": "reports/chronoslob_final_empirical_report.md",
   "sections_written": [
@@ -264,6 +277,6 @@
   ],
   "summary_path": "reports/chronoslob_final_empirical_report_summary.json",
   "warnings": [
-    "SSL artefact directory missing: experiments/fi2010_ssl; Self-Supervised Pretraining will be marked skipped."
+    "SSL input not supplied; Self-Supervised Pretraining will be marked skipped."
   ]
 }
