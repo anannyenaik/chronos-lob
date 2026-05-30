@@ -1,0 +1,37 @@
+{
+  "builder_version": "synthetic-lob-extension/v1",
+  "claims": {
+    "fi2010_true_event_level_ofi": {
+      "reason": "FI-2010 snapshots expose only proxies, never true event-level order flow.",
+      "status": "forbidden"
+    },
+    "live_trading_or_profitability": {
+      "reason": "No returns, tradability or live trading is implied or claimed.",
+      "status": "forbidden"
+    },
+    "no_lookahead_labels": {
+      "reason": "Labels use windows strictly after the feature timestamp.",
+      "status": "supported"
+    },
+    "real_market_event_level_generalisation": {
+      "reason": "All data is synthetic; nothing here transfers to real markets.",
+      "status": "unsupported"
+    },
+    "synthetic_event_level_features": {
+      "reason": "Order-flow, cancellation and trade imbalance are computed from events.",
+      "status": "supported"
+    },
+    "synthetic_event_level_pipeline": {
+      "reason": "Deterministic generation, replay, features and labels are produced.",
+      "status": "supported"
+    },
+    "synthetic_regime_diagnostics": {
+      "reason": "Per-regime execution-aware proxy diagnostics over known regimes.",
+      "status": "supported"
+    },
+    "synthetic_to_real_transfer": {
+      "reason": "Synthetic results do not transfer to real markets.",
+      "status": "unsupported"
+    }
+  }
+}

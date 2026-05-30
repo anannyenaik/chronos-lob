@@ -1,0 +1,11 @@
+{
+  "crossed_snapshot_count": 0,
+  "empty_book_snapshot_count": 35,
+  "errors": [],
+  "event_count": 21010,
+  "negative_depth_event_count": 0,
+  "ok": true,
+  "sequence_gap_count": 0,
+  "snapshot_count": 4202,
+  "unknown_event_type_count": 0
+}

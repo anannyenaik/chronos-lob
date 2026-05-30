@@ -30,6 +30,7 @@ integration and not automated order-placement software.
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
 | Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
+| Synthetic event-level extension | synthetic | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
 | Manual paper | not yet written | Public reports are artefact summaries, not a manual paper. |
 
 ## Main Findings
@@ -73,6 +74,13 @@ integration and not automated order-placement software.
 - No tradable-alpha claim.
 - No true event-level OFI from FI-2010.
 - No queue-position modelling from FI-2010.
+- No claim that synthetic results transfer to real markets.
+
+A separate synthetic event-level extension adds a deterministic synthetic
+limit-order-book simulator with known regimes and genuine event-level features.
+It is a controlled stress-test environment, not real-market evidence, and it does
+not change any FI-2010 limitation. See
+[docs/SYNTHETIC_LOB_EXTENSION.md](docs/SYNTHETIC_LOB_EXTENSION.md).
 
 ## Inspect The Evidence
 
@@ -83,6 +91,8 @@ integration and not automated order-placement software.
 | Proper-training neural subset | [experiments/fi2010_neural_proper_training_subset_v2/README.md](experiments/fi2010_neural_proper_training_subset_v2/README.md) |
 | Claim audit | [reports/evidence_pack/claim_audit.md](reports/evidence_pack/claim_audit.md) |
 | Feature-ablation stability analysis | [reports/feature_ablation_analysis/feature_ablation_analysis.md](reports/feature_ablation_analysis/feature_ablation_analysis.md) |
+| Synthetic event-level extension | [docs/SYNTHETIC_LOB_EXTENSION.md](docs/SYNTHETIC_LOB_EXTENSION.md) |
+| Synthetic extension report | [reports/synthetic_lob_extension/synthetic_lob_report.md](reports/synthetic_lob_extension/synthetic_lob_report.md) |
 | Reproduction commands | [reports/evidence_pack/reproduction_commands.md](reports/evidence_pack/reproduction_commands.md) |
 | Figure index | [docs/FIGURE_INDEX.md](docs/FIGURE_INDEX.md) |
 | Execution-v3 docs | [docs/EXECUTION_VALIDATION_V3.md](docs/EXECUTION_VALIDATION_V3.md) |

@@ -82,6 +82,12 @@ experiments/paper_ablation_*/
 experiments/system_benchmark_*/
 reports/evidence_pack/[c]v_bullets_*.md
 
+# Synthetic LOB extension: keep committed summaries/samples, ignore full dumps
+reports/synthetic_lob_extension/synthetic_events_full.*
+reports/synthetic_lob_extension/synthetic_snapshots_full.*
+reports/synthetic_lob_extension/*_full.parquet
+reports/synthetic_lob_extension_*/
+
 # Model artefacts and large generated files
 *.ckpt
 *.pt

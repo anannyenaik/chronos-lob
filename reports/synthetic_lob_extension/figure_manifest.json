@@ -1,0 +1,20 @@
+{
+  "builder_version": "synthetic-lob-extension/v1",
+  "figures": [
+    {
+      "name": "event_intensity_by_regime",
+      "path": "event_intensity_by_regime.png",
+      "status": "completed"
+    },
+    {
+      "name": "spread_by_regime",
+      "path": "spread_by_regime.png",
+      "status": "completed"
+    },
+    {
+      "name": "macro_f1_by_model",
+      "path": "macro_f1_by_model.png",
+      "status": "completed"
+    }
+  ]
+}

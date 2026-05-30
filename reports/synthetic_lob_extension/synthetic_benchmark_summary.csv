@@ -1,0 +1,13 @@
+model_name,split,n_samples,accuracy,macro_f1,mcc,brier_score,expected_calibration_error
+majority,validation,836,0.30622,0.156288,0.0,,0.69378
+majority,test,837,0.461171,0.210412,0.0,,0.538829
+logistic,validation,836,0.611244,0.413277,0.281848,,0.056218
+logistic,test,837,0.48865,0.344505,0.08444,,0.20904
+ridge,validation,836,0.610048,0.413861,0.291499,,
+ridge,test,837,0.501792,0.353916,0.105648,,
+gradient_boosting,validation,836,0.569378,0.458204,0.271523,,0.089198
+gradient_boosting,test,837,0.541219,0.480495,0.182998,,0.189559
+majority,regime_holdout_test,1180,0.30678,0.156507,0.0,,0.69322
+logistic,regime_holdout_test,1180,0.533898,0.370728,0.284472,,0.222837
+ridge,regime_holdout_test,1180,0.542373,0.376616,0.288591,,
+gradient_boosting,regime_holdout_test,1180,0.575424,0.496176,0.343664,,0.091504

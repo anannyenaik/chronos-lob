@@ -33,6 +33,12 @@ order-flow imbalance.
 Explicitly unsupported registry entries include `true_order_flow_imbalance`,
 `cancellation_imbalance`, `trade_imbalance` and `queue_position`.
 
+These remain unsupported for FI-2010, which exposes snapshot proxies only. True
+event-level features (event order-flow imbalance, cancellation imbalance, trade
+imbalance, event intensity) are available only on synthetic event streams in the
+separate synthetic event-level extension, which is synthetic and not real-market
+evidence. See [SYNTHETIC_LOB_EXTENSION.md](SYNTHETIC_LOB_EXTENSION.md).
+
 ## Leakage Controls
 
 - Label and future-horizon columns are excluded before feature construction.

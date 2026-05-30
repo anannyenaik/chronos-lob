@@ -2577,6 +2577,7 @@ def _build_final_empirical_report_impl(
     neural_full_grid: Path | None = None,
     proper_training: Path | None = None,
     evidence_pack: Path | None = None,
+    synthetic_lob: Path | None = None,
     overwrite: bool,
 ) -> int:
     """Build the final empirical report from stored FI-2010 artefacts."""
@@ -2599,6 +2600,7 @@ def _build_final_empirical_report_impl(
             execution_dir=Path(execution) if execution is not None else None,
             execution_v3_dir=(Path(execution_v3) if execution_v3 is not None else None),
             external_dir=Path(external) if external is not None else None,
+            synthetic_lob_dir=(Path(synthetic_lob) if synthetic_lob is not None else None),
             ssl_dir=Path(ssl) if ssl is not None else None,
             neural_full_grid_dir=(Path(neural_full_grid) if neural_full_grid is not None else None),
             proper_training_dir=(Path(proper_training) if proper_training is not None else None),
@@ -2717,6 +2719,71 @@ def _build_evidence_pack_impl(
     print(f"  warnings:           {len(result.warnings)}")
     for warning in result.warnings:
         print(f"    - {warning}")
+    print("  network calls:      none performed")
+    return 0
+
+
+def _run_synthetic_lob_benchmark_impl(
+    *,
+    out: Path,
+    events_per_regime: int,
+    seed: int,
+    horizon: int,
+    smoke: bool,
+    make_figures: bool,
+    overwrite: bool,
+) -> int:
+    """Run the synthetic event-level LOB pipeline and write artefacts."""
+    from chronoslob.synthetic.events import SyntheticEventConfig, default_regime_plan
+    from chronoslob.synthetic.pipeline import (
+        SyntheticLobConfig,
+        run_synthetic_lob_pipeline,
+        smoke_config,
+    )
+
+    if smoke:
+        config = smoke_config(events_per_regime=events_per_regime)
+    else:
+        config = SyntheticLobConfig(
+            event_config=SyntheticEventConfig(
+                seed=seed,
+                regime_plan=default_regime_plan(events_per_regime),
+            ),
+            horizon=horizon,
+            benchmark_seed=seed,
+        )
+
+    try:
+        result = run_synthetic_lob_pipeline(
+            Path(out),
+            config,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Synthetic LOB pipeline failed: {exc}", file=sys.stderr)
+        return 1
+
+    chronological_test = [m for m in result.benchmark.chronological if m.split == "test"]
+    print("ChronosLOB synthetic event-level extension")
+    print(f"  output directory:   {result.out_dir}")
+    print(f"  files written:      {len(result.files_written)}")
+    print(f"  events generated:   {result.event_count}")
+    print(f"  snapshots:          {result.snapshot_count}")
+    print(f"  feature rows:       {result.feature_row_count}")
+    print(f"  label rows:         {result.label_row_count}")
+    print(f"  replay invariants:  {'ok' if result.replay_ok else 'violations recorded'}")
+    print(f"  no-lookahead check: {'ok' if result.leakage_ok else 'violations recorded'}")
+    print(f"  regimes:            {', '.join(result.summary['regimes'])}")
+    for metric in chronological_test:
+        print(
+            f"    test {metric.model_name:>17}: "
+            f"macro_f1={metric.macro_f1:.4f} accuracy={metric.accuracy:.4f}"
+        )
+    print("  note: synthetic controlled stress test; not real-market evidence.")
     print("  network calls:      none performed")
     return 0
 
@@ -4270,6 +4337,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-paper-report|"
             "build-final-empirical-report|"
             "build-evidence-pack|"
+            "run-synthetic-lob-benchmark|"
             "inspect-paper-report] [...]"
         )
         return 0
@@ -5693,6 +5761,12 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             default=None,
             help="Optional evidence-pack directory to include release claim audit.",
         )
+        parser.add_argument(
+            "--synthetic-lob",
+            type=Path,
+            default=None,
+            help="Optional synthetic event-level extension artefact directory.",
+        )
         parser.add_argument("--out", type=Path, required=True)
         parser.add_argument(
             "--overwrite",
@@ -5714,6 +5788,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             neural_full_grid=parsed.neural_full_grid,
             proper_training=parsed.proper_training,
             evidence_pack=parsed.evidence_pack,
+            synthetic_lob=parsed.synthetic_lob,
             out=parsed.out,
             overwrite=bool(parsed.overwrite),
         )
@@ -5795,6 +5870,32 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--report", type=Path, required=True)
         parsed = parser.parse_args(args[1:])
         return _inspect_paper_report_impl(report=parsed.report)
+    if command == "run-synthetic-lob-benchmark":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-synthetic-lob-benchmark",
+            description=(
+                "Run the synthetic event-level LOB pipeline (generation, replay, "
+                "features, labels, baselines and regime diagnostics). Synthetic "
+                "controlled stress test only; not real-market evidence."
+            ),
+        )
+        parser.add_argument("--out", type=Path, default=Path("reports/synthetic_lob_extension"))
+        parser.add_argument("--events-per-regime", type=int, default=3000)
+        parser.add_argument("--seed", type=int, default=0)
+        parser.add_argument("--horizon", type=int, default=20)
+        parser.add_argument("--smoke", action="store_true")
+        parser.add_argument("--make-figures", action="store_true")
+        parser.add_argument("--overwrite", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _run_synthetic_lob_benchmark_impl(
+            out=parsed.out,
+            events_per_regime=parsed.events_per_regime,
+            seed=parsed.seed,
+            horizon=parsed.horizon,
+            smoke=parsed.smoke,
+            make_figures=parsed.make_figures,
+            overwrite=parsed.overwrite,
+        )
     if command == "inspect-event-log":
         parser = argparse.ArgumentParser(
             prog="chronoslob inspect-event-log",
@@ -7461,6 +7562,11 @@ if typer is not None:
         "--evidence-pack",
         help="Optional evidence-pack directory for release claim audit summary.",
     )
+    _BUILD_FINAL_REPORT_SYNTHETIC_LOB_OPTION = typer.Option(
+        None,
+        "--synthetic-lob",
+        help="Optional synthetic event-level extension artefact directory.",
+    )
     _BUILD_FINAL_REPORT_OUT_OPTION = typer.Option(
         ...,
         "--out",
@@ -8370,6 +8476,7 @@ if typer is not None:
         neural_full_grid: Path | None = _BUILD_FINAL_REPORT_FULL_GRID_OPTION,
         proper_training: Path | None = _BUILD_FINAL_REPORT_PROPER_TRAINING_OPTION,
         evidence_pack: Path | None = _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION,
+        synthetic_lob: Path | None = _BUILD_FINAL_REPORT_SYNTHETIC_LOB_OPTION,
         out: Path = _BUILD_FINAL_REPORT_OUT_OPTION,
         overwrite: bool = _BUILD_FINAL_REPORT_OVERWRITE_OPTION,
     ) -> None:
@@ -8388,6 +8495,7 @@ if typer is not None:
             neural_full_grid=neural_full_grid,
             proper_training=proper_training,
             evidence_pack=evidence_pack,
+            synthetic_lob=synthetic_lob,
             out=out,
             overwrite=overwrite,
         )
@@ -8441,6 +8549,64 @@ if typer is not None:
     ) -> None:
         """Inspect a generated empirical report summary."""
         exit_code = _inspect_paper_report_impl(report=report)
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _SYNTHETIC_LOB_OUT_OPTION = typer.Option(
+        Path("reports/synthetic_lob_extension"),
+        "--out",
+        help="Output directory for synthetic LOB extension artefacts.",
+    )
+    _SYNTHETIC_LOB_EVENTS_OPTION = typer.Option(
+        3000,
+        "--events-per-regime",
+        help="Synthetic events generated per regime.",
+    )
+    _SYNTHETIC_LOB_SEED_OPTION = typer.Option(
+        0,
+        "--seed",
+        help="Deterministic generation and benchmark seed.",
+    )
+    _SYNTHETIC_LOB_HORIZON_OPTION = typer.Option(
+        20,
+        "--horizon",
+        help="Future label horizon in snapshot steps.",
+    )
+    _SYNTHETIC_LOB_SMOKE_OPTION = typer.Option(
+        False,
+        "--smoke",
+        help="Run a tiny fast smoke configuration.",
+    )
+    _SYNTHETIC_LOB_FIGURES_OPTION = typer.Option(
+        False,
+        "--make-figures",
+        help="Render compact figures when matplotlib is available.",
+    )
+    _SYNTHETIC_LOB_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Overwrite an existing synthetic report directory.",
+    )
+
+    def run_synthetic_lob_benchmark(
+        out: Path = _SYNTHETIC_LOB_OUT_OPTION,
+        events_per_regime: int = _SYNTHETIC_LOB_EVENTS_OPTION,
+        seed: int = _SYNTHETIC_LOB_SEED_OPTION,
+        horizon: int = _SYNTHETIC_LOB_HORIZON_OPTION,
+        smoke: bool = _SYNTHETIC_LOB_SMOKE_OPTION,
+        make_figures: bool = _SYNTHETIC_LOB_FIGURES_OPTION,
+        overwrite: bool = _SYNTHETIC_LOB_OVERWRITE_OPTION,
+    ) -> None:
+        """Run the synthetic event-level LOB pipeline and write artefacts."""
+        exit_code = _run_synthetic_lob_benchmark_impl(
+            out=out,
+            events_per_regime=events_per_regime,
+            seed=seed,
+            horizon=horizon,
+            smoke=smoke,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
         if exit_code != 0:
             raise SystemExit(exit_code)
 
@@ -9840,6 +10006,7 @@ if typer is not None:
     app.command("build-paper-report")(build_paper_report)
     app.command("build-final-empirical-report")(build_final_empirical_report)
     app.command("build-evidence-pack")(build_evidence_pack)
+    app.command("run-synthetic-lob-benchmark")(run_synthetic_lob_benchmark)
     app.command("inspect-paper-report")(inspect_paper_report)
 else:
 

@@ -59,6 +59,11 @@ calibration and execution-aware evaluation.
   the matched one-epoch neural full grid, the separate reduced-scope neural
   benchmark, uncertainty, ablation, execution-proxy and external-context
   artefacts.
+- A synthetic event-level extension: a deterministic synthetic limit-order-book
+  event simulator with known regimes, replay, genuine event-level features,
+  future-horizon labels, small baselines and regime stress-test diagnostics. It
+  is synthetic and clearly labelled, not real-market evidence, and does not
+  change FI-2010 limitations.
 
 ## In Progress and Next
 

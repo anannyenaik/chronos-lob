@@ -1,0 +1,8 @@
+regime_id,regime_name,row_count,mean_event_intensity,mean_spread,mean_event_order_flow_imbalance,mean_cancellation_imbalance,mean_trade_imbalance,mean_realised_volatility_proxy
+0,stable_liquid,602,1.0,0.013422,0.009876,-0.135535,0.000443,0.003853
+1,high_volatility,600,1.0,0.013667,-0.04814,0.138112,0.111803,0.01794
+2,low_liquidity,600,1.0,0.016617,0.092231,-0.136479,-0.026068,0.008906
+3,wide_spread,600,1.0,0.020333,0.011273,-0.06439,-0.111138,0.0069
+4,buy_pressure,600,1.0,0.016933,-0.029325,0.626007,0.49271,0.007785
+5,sell_pressure,600,1.0,0.016667,-0.076532,-0.502013,-0.346893,0.007998
+6,cancellation_shock,600,1.0,0.0218,0.002396,0.006552,-0.069488,0.01007

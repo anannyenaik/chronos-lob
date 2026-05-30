@@ -1,0 +1,4 @@
+regime_id,regime_name,n_samples,accuracy,mean_confidence,active_fraction,filtered_accuracy,turnover_proxy,latency_accuracy,adverse_selection_proxy
+,all,837,0.48865,0.69769,0.879331,0.506793,0.161483,0.483871,
+3,wide_spread,257,0.435798,0.590334,0.712062,0.469945,0.144531,0.435798,0.000211
+6,cancellation_shock,580,0.512069,0.74526,0.953448,0.518987,0.169257,0.505172,

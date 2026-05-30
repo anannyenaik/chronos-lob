@@ -160,6 +160,7 @@ class EvidencePackConfig:
     feature_ablation_analysis_dir: Path = Path("reports/feature_ablation_analysis")
     ablation_figures_dir: Path = Path("reports/figures/fi2010_feature_ablations")
     final_report_path: Path = Path("reports/chronoslob_final_empirical_report.md")
+    synthetic_lob_dir: Path = Path("reports/synthetic_lob_extension")
     classical_dir: Path = Path("experiments/fi2010_multifold_classical")
     ssl_dir: Path = Path("experiments/fi2010_ssl")
     feature_audit_dir: Path | None = Path("reports/feature_audit")
@@ -490,6 +491,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             ),
         ]
     )
+    entries.extend(_audit_synthetic_claims(by_name))
     entries.extend(_forbidden_claim_entries())
     return entries
 
@@ -686,6 +688,32 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             metadata_files=(_summary_filename(config.final_report_path),),
             allow_file=True,
             limitations="The generated report is a stored-artefact summary, not a manual paper.",
+        ),
+        _ArtefactSpec(
+            name="synthetic_lob_extension_report",
+            artefact_type="synthetic_lob_extension",
+            path=config.synthetic_lob_dir,
+            required_files=(
+                "synthetic_lob_report.md",
+                "summary.json",
+                "synthetic_replay_quality.json",
+                "synthetic_benchmark_summary.csv",
+                "synthetic_regime_diagnostics.csv",
+                "synthetic_claim_assessment.json",
+            ),
+            metadata_files=(
+                "summary.json",
+                "synthetic_claim_assessment.json",
+                "synthetic_replay_quality.json",
+                "synthetic_feature_summary.csv",
+                "synthetic_benchmark_summary.csv",
+                "figure_manifest.json",
+            ),
+            limitations=(
+                "Synthetic event-level extension only; controlled stress-test data, "
+                "not real-market evidence. Does not change FI-2010 limitations and "
+                "does not imply tradability, returns or real-market generalisation."
+            ),
         ),
         _ArtefactSpec(
             name="project_audit_archive",
@@ -982,6 +1010,13 @@ def _completion_status(spec: _ArtefactSpec, loaded: _LoadedArtefact) -> Artefact
     if spec.artefact_type == "feature_ablations":
         summary = loaded.payloads.get("summary", {})
         return "complete_real" if _feature_ablation_scope_complete(summary) else "partial_real"
+    if spec.artefact_type == "synthetic_lob_extension":
+        summary = loaded.payloads.get("summary", {})
+        if bool(summary.get("smoke_test")):
+            return "smoke_test_only"
+        if not bool(summary.get("replay_ok", True)) or not bool(summary.get("leakage_ok", True)):
+            return "partial_real"
+        return "complete_real"
     return "complete_real"
 
 
@@ -1971,6 +2006,139 @@ def _audit_confidence_filtering_claim(
     )
 
 
+def _synthetic_support_status(record: ArtefactInventoryRow | None) -> ClaimStatus:
+    """Map a synthetic artefact status to an infrastructure-support claim status.
+
+    The synthetic extension is an infrastructure-and-data artefact: as long as it
+    is present and complete (even if a later commit bump marks it stale) it
+    supports the synthetic-pipeline claims. Smoke-only artefacts only support a
+    smoke claim; missing or invalid artefacts support nothing.
+    """
+    if record is None:
+        return "unsupported"
+    if record.status in _REAL_STATUSES | _PARTIAL_STATUSES:
+        return "supported"
+    if record.status == "smoke_test_only":
+        return "smoke_only"
+    return "unsupported"
+
+
+def _audit_synthetic_claims(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> list[ClaimAuditEntry]:
+    """Audit the synthetic event-level extension claims separately from FI-2010."""
+    record = by_name.get("synthetic_lob_extension_report")
+    support = _synthetic_support_status(record)
+    required = ["synthetic_lob_extension_report"]
+    supporting = (
+        ["synthetic_lob_extension_report"]
+        if support in {"supported", "smoke_only"}
+        else []
+    )
+    has_regime_diag = bool(
+        record is not None
+        and any(
+            "synthetic_regime_diagnostics" in name for name in record.supporting_files
+        )
+    )
+
+    def _supported_claim(
+        claim_id: str,
+        claim_text: str,
+        safe: str,
+        reason_supported: str,
+    ) -> ClaimAuditEntry:
+        if support == "supported":
+            reason = reason_supported
+        elif support == "smoke_only":
+            reason = "Only synthetic smoke artefacts are present; not a full synthetic run."
+        else:
+            reason = "Synthetic extension artefacts are missing or invalid."
+        return ClaimAuditEntry(
+            claim_id=claim_id,
+            claim_text=claim_text,
+            status=support,
+            supporting_artefacts=supporting,
+            required_artefacts=required,
+            reason=reason,
+            safe_rewording=safe,
+            category="synthetic extension",
+        )
+
+    diagnostics_status: ClaimStatus = support if has_regime_diag else "needs_real_evidence"
+    entries = [
+        _supported_claim(
+            "synthetic.event_level_pipeline",
+            "ChronosLOB supports a synthetic event-level LOB pipeline",
+            "ChronosLOB includes a synthetic event-level pipeline (generation, "
+            "replay, features, labels) on controlled synthetic regimes; not real-market data.",
+            "Synthetic pipeline artefacts with passing replay and no-lookahead checks are present.",
+        ),
+        _supported_claim(
+            "synthetic.event_level_features",
+            "ChronosLOB computes true event-level features on synthetic event streams",
+            "Event-level order-flow, cancellation and trade imbalance are computed on "
+            "synthetic event streams only; FI-2010 still exposes snapshot proxies only.",
+            "Synthetic event-level feature artefacts are present.",
+        ),
+        ClaimAuditEntry(
+            claim_id="synthetic.regime_diagnostics",
+            claim_text="ChronosLOB produces synthetic regime stress-test diagnostics",
+            status=diagnostics_status,
+            supporting_artefacts=supporting if has_regime_diag else [],
+            required_artefacts=required,
+            reason=(
+                "Per-regime synthetic execution-aware proxy diagnostics are present."
+                if has_regime_diag
+                else "Synthetic regime diagnostics artefacts were not found."
+            ),
+            safe_rewording=(
+                "Synthetic regime diagnostics are controlled stress tests on known "
+                "regimes, not real-market execution evidence."
+            ),
+            category="synthetic extension",
+        ),
+        ClaimAuditEntry(
+            claim_id="synthetic.real_market_event_level_generalisation",
+            claim_text="The synthetic extension generalises to real-market event-level data",
+            status="unsupported",
+            supporting_artefacts=[],
+            required_artefacts=required,
+            reason="All synthetic data is controlled and does not transfer to real markets.",
+            safe_rewording=(
+                "State that synthetic results do not establish real-market generalisation."
+            ),
+            category="synthetic extension",
+        ),
+        ClaimAuditEntry(
+            claim_id="synthetic.live_trading_or_profitability",
+            claim_text="The synthetic extension shows live trading or profitability",
+            status="forbidden",
+            supporting_artefacts=[],
+            required_artefacts=[],
+            reason="This claim is blocked by release policy for ChronosLOB artefacts.",
+            safe_rewording="Describe offline synthetic diagnostics only; do not imply returns.",
+            category="forbidden or high-risk",
+        ),
+        ClaimAuditEntry(
+            claim_id="synthetic.fi2010_true_event_level_ofi",
+            claim_text="The synthetic extension provides true event-level OFI on FI-2010",
+            status="forbidden",
+            supporting_artefacts=[],
+            required_artefacts=[],
+            reason=(
+                "FI-2010 snapshots expose only proxies; event-level order flow exists "
+                "for synthetic data only."
+            ),
+            safe_rewording=(
+                "Event-level order flow is available only on synthetic streams, not FI-2010."
+            ),
+            category="forbidden or high-risk",
+        ),
+    ]
+    return entries
+
+
 def _forbidden_claim_entries() -> list[ClaimAuditEntry]:
     entries: list[ClaimAuditEntry] = []
     for index, claim in enumerate(_FORBIDDEN_CLAIMS, start=1):
@@ -2900,6 +3068,7 @@ def _config_paths(config: EvidencePackConfig) -> dict[str, str | None]:
         "feature_ablation_analysis_dir": _display_path(config.feature_ablation_analysis_dir),
         "ablation_figures_dir": _display_path(config.ablation_figures_dir),
         "final_report_path": _display_path(config.final_report_path),
+        "synthetic_lob_dir": _display_path(config.synthetic_lob_dir),
         "project_audit_dir": (
             None if config.project_audit_dir is None else _display_path(config.project_audit_dir)
         ),

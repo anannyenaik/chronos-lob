@@ -1,0 +1,81 @@
+{
+  "benchmark_models": [
+    "majority",
+    "logistic",
+    "ridge",
+    "gradient_boosting"
+  ],
+  "builder_version": "synthetic-lob-extension/v1",
+  "completed_run_count": 12,
+  "event_count": 21010,
+  "event_type_counts": {
+    "ADD": 9983,
+    "CANCEL": 8189,
+    "TRADE": 2838
+  },
+  "evidence_level": "synthetic_controlled",
+  "failed_run_count": 0,
+  "feature_columns": [
+    "event_intensity",
+    "add_rate",
+    "cancel_rate",
+    "trade_rate",
+    "event_order_flow_imbalance",
+    "cancellation_imbalance",
+    "trade_imbalance",
+    "spread",
+    "relative_spread",
+    "microprice_offset",
+    "depth_imbalance_l1",
+    "depth_imbalance_l5",
+    "realised_volatility_proxy"
+  ],
+  "feature_row_count": 4202,
+  "generated_at": "2026-05-30T15:31:24.469213+00:00",
+  "git_commit": "4377803a3d0d713c926b97f04bab70d631f252be",
+  "holdout_regimes": [
+    "high_volatility",
+    "cancellation_shock"
+  ],
+  "horizon": 20,
+  "label_columns": [
+    "future_mid_direction",
+    "future_return_bucket",
+    "volatility_regime",
+    "spread_widening",
+    "adverse_selection_proxy",
+    "regime_label",
+    "next_regime_id"
+  ],
+  "label_row_count": 4182,
+  "leakage_ok": true,
+  "regime_event_counts": {
+    "buy_pressure": 3000,
+    "cancellation_shock": 3000,
+    "high_volatility": 3000,
+    "low_liquidity": 3000,
+    "sell_pressure": 3000,
+    "stable_liquid": 3010,
+    "wide_spread": 3000
+  },
+  "regimes": [
+    "stable_liquid",
+    "buy_pressure",
+    "high_volatility",
+    "sell_pressure",
+    "low_liquidity",
+    "wide_spread",
+    "cancellation_shock"
+  ],
+  "replay_ok": true,
+  "seed": 0,
+  "smoke_test": false,
+  "snapshot_count": 4202,
+  "snapshot_interval": 5,
+  "symbol": "SYNTH",
+  "synthetic": true,
+  "target": "future_mid_direction",
+  "tick_size": 0.01,
+  "warnings": [],
+  "window_events": 50
+}

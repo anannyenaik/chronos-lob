@@ -60,6 +60,7 @@ def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
         feature_ablation_analysis_dir=tmp_path / "feature_ablation_analysis",
         ablation_figures_dir=tmp_path / "ablation_figures",
         final_report_path=tmp_path / "final_report.md",
+        synthetic_lob_dir=tmp_path / "synthetic_lob",
         project_audit_dir=None,
         strict=False,
         allow_smoke_test=True,

@@ -90,6 +90,15 @@ Feature-ablation claim statuses also block causal feature-importance language.
 The current `snapshot_order_flow_proxy` evidence is a scoped feature-stability
 analysis over a labelled snapshot proxy, not an event-level or causal claim.
 
+The synthetic event-level extension (`synthetic_lob_extension_report`) is
+classified separately from FI-2010. Its claims are scoped to synthetic data:
+`synthetic.event_level_pipeline`, `synthetic.event_level_features` and
+`synthetic.regime_diagnostics` can be supported, while
+`synthetic.real_market_event_level_generalisation` is always unsupported and
+`synthetic.live_trading_or_profitability` and
+`synthetic.fi2010_true_event_level_ofi` are forbidden. Synthetic results are
+controlled stress-test evidence, never real-market evidence.
+
 ## Public Bullet Files
 
 Two public summary-bullet files are generated:

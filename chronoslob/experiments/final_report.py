@@ -48,6 +48,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Feature Ablation and Stability Analysis",
     "Execution-Aware Proxy Summary",
     "External Benchmark Context",
+    "Synthetic Event-Level Extension",
     "What This Supports",
     "What This Does Not Claim",
     "Limitations",
@@ -142,6 +143,13 @@ _OPTIONAL_EXECUTION_V3_FILES = (
 _OPTIONAL_EXTERNAL_FILES = (
     "benchmark_context.json",
     "protocol_comparison.csv",
+)
+_OPTIONAL_SYNTHETIC_FILES = (
+    "summary.json",
+    "synthetic_replay_quality.json",
+    "synthetic_benchmark_summary.csv",
+    "synthetic_regime_diagnostics.csv",
+    "synthetic_claim_assessment.json",
 )
 
 
@@ -278,6 +286,7 @@ class _FinalReportData:
     execution: _OptionalArtefacts
     execution_v3: _OptionalArtefacts
     external: _OptionalArtefacts
+    synthetic: _OptionalArtefacts
     ssl: _SSLArtefacts
     full_grid: _FullGridArtefacts
     proper_training: _ProperTrainingArtefacts
@@ -314,6 +323,7 @@ def build_final_empirical_report(
     execution_dir: Path | None = None,
     execution_v3_dir: Path | None = None,
     external_dir: Path | None = None,
+    synthetic_lob_dir: Path | None = None,
     ssl_dir: Path | None = None,
     neural_full_grid_dir: Path | None = None,
     proper_training_dir: Path | None = None,
@@ -357,6 +367,7 @@ def build_final_empirical_report(
         execution_dir=Path(execution_dir) if execution_dir is not None else None,
         execution_v3_dir=(Path(execution_v3_dir) if execution_v3_dir is not None else None),
         external_dir=Path(external_dir) if external_dir is not None else None,
+        synthetic_lob_dir=(Path(synthetic_lob_dir) if synthetic_lob_dir is not None else None),
         ssl_dir=Path(ssl_dir) if ssl_dir is not None else None,
         neural_full_grid_dir=(
             Path(neural_full_grid_dir) if neural_full_grid_dir is not None else None
@@ -403,6 +414,7 @@ def _load_final_report_data(
     execution_dir: Path | None,
     execution_v3_dir: Path | None,
     external_dir: Path | None,
+    synthetic_lob_dir: Path | None,
     ssl_dir: Path | None,
     neural_full_grid_dir: Path | None,
     proper_training_dir: Path | None,
@@ -541,6 +553,17 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    synthetic = _load_optional_artefacts(
+        directory=synthetic_lob_dir,
+        label="synthetic_lob",
+        section_title="Synthetic Event-Level Extension",
+        expected_files=_OPTIONAL_SYNTHETIC_FILES,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
     recorded_skips.extend(_extract_recorded_skips(ablation, "ablation"))
     recorded_skips.extend(_extract_recorded_skips(feature_ablation, "feature_ablation"))
     recorded_skips.extend(
@@ -598,6 +621,7 @@ def _load_final_report_data(
         execution=execution,
         execution_v3=execution_v3,
         external=external,
+        synthetic=synthetic,
         ssl=ssl,
         full_grid=full_grid,
         proper_training=proper_training,
@@ -1142,6 +1166,9 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     )
     lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
     lines.extend(_section("External Benchmark Context", _render_external(data)))
+    lines.extend(
+        _section("Synthetic Event-Level Extension", _render_synthetic_extension(data))
+    )
     lines.extend(_section("What This Supports", _render_what_this_proves(data)))
     lines.extend(_section("What This Does Not Claim", _render_what_this_does_not_prove(data)))
     lines.extend(_section("Limitations", _render_limitations(data)))
@@ -3047,6 +3074,42 @@ def _render_external(data: _FinalReportData) -> list[str]:
     ]
     lines.extend(_markdown_table(("source", "type", "numeric metrics included"), rows))
     return lines
+
+
+def _render_synthetic_extension(data: _FinalReportData) -> list[str]:
+    """Render the synthetic event-level extension section conservatively."""
+    boundary = [
+        "",
+        "This extension demonstrates event-level pipeline support under controlled "
+        "synthetic regimes. It does not provide real-market evidence. It does not "
+        "change FI-2010 limitations. It enables event-level feature validation that "
+        "FI-2010 cannot support.",
+    ]
+    if data.synthetic.directory is None or data.synthetic.summary is None:
+        return [
+            "Skipped: synthetic event-level extension artefacts were not supplied or "
+            "were unavailable.",
+            *boundary,
+        ]
+    summary = data.synthetic.summary
+    quality = data.synthetic.json_payloads.get("synthetic_replay_quality.json", {})
+    rows = [
+        ("evidence_level", _mapping_str(summary, "evidence_level", default="n/a")),
+        ("event_count", _mapping_str(summary, "event_count")),
+        ("snapshot_count", _mapping_str(summary, "snapshot_count")),
+        ("regimes", _join_values(_mapping_list(summary, "regimes"))),
+        ("replay_ok", _mapping_str(summary, "replay_ok")),
+        ("no_lookahead_ok", _mapping_str(summary, "leakage_ok")),
+        ("target", _mapping_str(summary, "target")),
+        (
+            "crossed_snapshots",
+            str(quality.get("crossed_snapshot_count", "n/a"))
+            if isinstance(quality, Mapping)
+            else "n/a",
+        ),
+    ]
+    lines = _markdown_table(("field", "value"), rows)
+    return [*lines, *boundary]
 
 
 def _render_what_this_proves(data: _FinalReportData) -> list[str]:

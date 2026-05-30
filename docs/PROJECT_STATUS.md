@@ -52,6 +52,15 @@ diagnostics there are explicitly skipped and no PnL or live-trading claim is mad
 The release evidence-pack workflow is documented in
 [EVIDENCE_PACK.md](EVIDENCE_PACK.md).
 
+A separate synthetic event-level extension lives under
+[`reports/synthetic_lob_extension/`](../reports/synthetic_lob_extension/), built
+by `run-synthetic-lob-benchmark`. It adds a deterministic synthetic
+limit-order-book event simulator, replay, genuine event-level features,
+future-horizon labels, small baselines and known-regime stress-test diagnostics.
+It is synthetic and clearly labelled: a controlled stress-test environment, not
+real-market evidence, and it does not change any FI-2010 limitation. See
+[SYNTHETIC_LOB_EXTENSION.md](SYNTHETIC_LOB_EXTENSION.md).
+
 The strongest stored classical row is `gradient_boosting`; the strongest stored
 reduced-scope supervised neural row is `matrix_transformer`. The completed
 neural full grid compares supervised, masked-reconstruction SSL and next-field
@@ -93,6 +102,9 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   is the current SSL comparison evidence.
 - Generalisation beyond FI-2010 requires additional documented experiment
   records.
+- The synthetic event-level extension is synthetic only. Its results do not
+  transfer to real markets and add no FI-2010 capability beyond what FI-2010
+  snapshots already support.
 - See [SAFETY_AND_LIMITATIONS.md](SAFETY_AND_LIMITATIONS.md) for the
   full scope statement.
 
