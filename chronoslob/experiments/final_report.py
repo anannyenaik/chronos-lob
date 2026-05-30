@@ -49,6 +49,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Execution-Aware Proxy Summary",
     "External Benchmark Context",
     "Synthetic Event-Level Extension",
+    "Real Event-Level L2 Replay Extension",
     "What This Supports",
     "What This Does Not Claim",
     "Limitations",
@@ -150,6 +151,13 @@ _OPTIONAL_SYNTHETIC_FILES = (
     "synthetic_benchmark_summary.csv",
     "synthetic_regime_diagnostics.csv",
     "synthetic_claim_assessment.json",
+)
+_OPTIONAL_BINANCE_L2_FILES = (
+    "summary.json",
+    "replay_quality.json",
+    "feature_summary.csv",
+    "update_continuity_summary.csv",
+    "binance_claim_assessment.json",
 )
 
 
@@ -287,6 +295,7 @@ class _FinalReportData:
     execution_v3: _OptionalArtefacts
     external: _OptionalArtefacts
     synthetic: _OptionalArtefacts
+    binance_l2: _OptionalArtefacts
     ssl: _SSLArtefacts
     full_grid: _FullGridArtefacts
     proper_training: _ProperTrainingArtefacts
@@ -324,6 +333,7 @@ def build_final_empirical_report(
     execution_v3_dir: Path | None = None,
     external_dir: Path | None = None,
     synthetic_lob_dir: Path | None = None,
+    binance_l2_dir: Path | None = None,
     ssl_dir: Path | None = None,
     neural_full_grid_dir: Path | None = None,
     proper_training_dir: Path | None = None,
@@ -368,6 +378,7 @@ def build_final_empirical_report(
         execution_v3_dir=(Path(execution_v3_dir) if execution_v3_dir is not None else None),
         external_dir=Path(external_dir) if external_dir is not None else None,
         synthetic_lob_dir=(Path(synthetic_lob_dir) if synthetic_lob_dir is not None else None),
+        binance_l2_dir=(Path(binance_l2_dir) if binance_l2_dir is not None else None),
         ssl_dir=Path(ssl_dir) if ssl_dir is not None else None,
         neural_full_grid_dir=(
             Path(neural_full_grid_dir) if neural_full_grid_dir is not None else None
@@ -415,6 +426,7 @@ def _load_final_report_data(
     execution_v3_dir: Path | None,
     external_dir: Path | None,
     synthetic_lob_dir: Path | None,
+    binance_l2_dir: Path | None,
     ssl_dir: Path | None,
     neural_full_grid_dir: Path | None,
     proper_training_dir: Path | None,
@@ -564,6 +576,17 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    binance_l2 = _load_optional_artefacts(
+        directory=binance_l2_dir,
+        label="binance_l2",
+        section_title="Real Event-Level L2 Replay Extension",
+        expected_files=_OPTIONAL_BINANCE_L2_FILES,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
     recorded_skips.extend(_extract_recorded_skips(ablation, "ablation"))
     recorded_skips.extend(_extract_recorded_skips(feature_ablation, "feature_ablation"))
     recorded_skips.extend(
@@ -622,6 +645,7 @@ def _load_final_report_data(
         execution_v3=execution_v3,
         external=external,
         synthetic=synthetic,
+        binance_l2=binance_l2,
         ssl=ssl,
         full_grid=full_grid,
         proper_training=proper_training,
@@ -1168,6 +1192,11 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section("External Benchmark Context", _render_external(data)))
     lines.extend(
         _section("Synthetic Event-Level Extension", _render_synthetic_extension(data))
+    )
+    lines.extend(
+        _section(
+            "Real Event-Level L2 Replay Extension", _render_binance_l2_extension(data)
+        )
     )
     lines.extend(_section("What This Supports", _render_what_this_proves(data)))
     lines.extend(_section("What This Does Not Claim", _render_what_this_does_not_prove(data)))
@@ -3107,6 +3136,44 @@ def _render_synthetic_extension(data: _FinalReportData) -> list[str]:
             if isinstance(quality, Mapping)
             else "n/a",
         ),
+    ]
+    lines = _markdown_table(("field", "value"), rows)
+    return [*lines, *boundary]
+
+
+def _render_binance_l2_extension(data: _FinalReportData) -> list[str]:
+    """Render the real event-level L2 replay extension section conservatively."""
+    boundary = [
+        "",
+        "Binance L2 replay is scoped to real event-level aggregated depth-stream "
+        "ingestion and replay when a local Binance capture is supplied. Fixture "
+        "runs are engineering checks. It is crypto-market engineering evidence, "
+        "not equity-market evidence. Binance diff-depth updates are aggregated "
+        "level updates, not individual order-event data. It does not provide "
+        "profitability, tradability or predictive-success evidence. It is not "
+        "live-trading evidence. It complements the FI-2010 and synthetic evidence.",
+    ]
+    if data.binance_l2.directory is None or data.binance_l2.summary is None:
+        return [
+            "Skipped: real event-level L2 replay extension artefacts were not supplied "
+            "or were unavailable.",
+            *boundary,
+        ]
+    summary = data.binance_l2.summary
+    quality = data.binance_l2.json_payloads.get("replay_quality.json", {})
+    crossed = (
+        str(quality.get("crossed_count", "n/a")) if isinstance(quality, Mapping) else "n/a"
+    )
+    rows = [
+        ("venue", _mapping_str(summary, "venue", default="binance")),
+        ("symbol", _mapping_str(summary, "symbol", default="n/a")),
+        ("evidence_level", _mapping_str(summary, "evidence_level", default="n/a")),
+        ("diff_event_count", _mapping_str(summary, "diff_event_count")),
+        ("applied_event_count", _mapping_str(summary, "applied_event_count")),
+        ("snapshot_count", _mapping_str(summary, "snapshot_count")),
+        ("feature_row_count", _mapping_str(summary, "feature_row_count")),
+        ("replay_ok", _mapping_str(summary, "replay_ok")),
+        ("crossed_count", crossed),
     ]
     lines = _markdown_table(("field", "value"), rows)
     return [*lines, *boundary]

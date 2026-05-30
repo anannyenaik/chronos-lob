@@ -61,6 +61,16 @@ It is synthetic and clearly labelled: a controlled stress-test environment, not
 real-market evidence, and it does not change any FI-2010 limitation. See
 [SYNTHETIC_LOB_EXTENSION.md](SYNTHETIC_LOB_EXTENSION.md).
 
+A separate Binance Spot L2 replay extension lives under
+[`reports/binance_l2_extension/`](../reports/binance_l2_extension/), built by
+`replay-binance-l2-sample`. It reconstructs a local book from a depth snapshot
+plus aggregated diff-depth updates, validates update-id continuity and writes
+storage-light summaries. The default committed sample uses Binance-shaped
+synthetic fixtures; users may supply local captured files. This is
+crypto-market depth-stream engineering evidence only: not equity-market
+evidence, not live trading, not profitability evidence and not predictive
+success evidence. See [BINANCE_L2_EXTENSION.md](BINANCE_L2_EXTENSION.md).
+
 The strongest stored classical row is `gradient_boosting`; the strongest stored
 reduced-scope supervised neural row is `matrix_transformer`. The completed
 neural full grid compares supervised, masked-reconstruction SSL and next-field
@@ -105,6 +115,10 @@ snapshot proxy, not true event-level OFI or causal feature importance.
 - The synthetic event-level extension is synthetic only. Its results do not
   transfer to real markets and add no FI-2010 capability beyond what FI-2010
   snapshots already support.
+- The Binance L2 extension uses aggregated depth updates. Diff-depth alone does
+  not expose individual orders, true trades, true cancellations, queue position
+  or market impact, and crypto venue replay does not establish equity-market
+  generalisation.
 - See [SAFETY_AND_LIMITATIONS.md](SAFETY_AND_LIMITATIONS.md) for the
   full scope statement.
 

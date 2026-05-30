@@ -64,6 +64,12 @@ calibration and execution-aware evaluation.
   future-horizon labels, small baselines and regime stress-test diagnostics. It
   is synthetic and clearly labelled, not real-market evidence, and does not
   change FI-2010 limitations.
+- A storage-light Binance Spot L2 replay extension: offline local
+  snapshot-plus-diff reconstruction, update-sequence validation,
+  replay-quality summaries, compact feature summaries and crypto-market data
+  caveats. It is aggregated L2 depth-stream engineering evidence only, not
+  equity evidence, live trading, profitability evidence or predictive-success
+  evidence.
 
 ## In Progress and Next
 
@@ -75,6 +81,8 @@ calibration and execution-aware evaluation.
   gradient-boosting slice before making broader model-family statements.
 - Extend evidence beyond FI-2010 to other limit order book datasets where data
   access and licensing allow.
+- Run and document user-supplied Binance Spot L2 captures when local data is
+  available; keep raw captures outside git and report only compact summaries.
 - Broaden genuine train-only SSL pretraining and supervised fine-tuning
   evidence before making any SSL improvement claim.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when

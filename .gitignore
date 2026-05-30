@@ -88,6 +88,13 @@ reports/synthetic_lob_extension/synthetic_snapshots_full.*
 reports/synthetic_lob_extension/*_full.parquet
 reports/synthetic_lob_extension_*/
 
+# Binance L2 extension: keep committed summaries/figures, ignore raw captures
+data/binance_l2_captures/
+reports/binance_l2_extension/*_full.*
+reports/binance_l2_extension/raw_*.json
+reports/binance_l2_extension/raw_*.jsonl
+reports/binance_l2_extension_*/
+
 # Model artefacts and large generated files
 *.ckpt
 *.pt

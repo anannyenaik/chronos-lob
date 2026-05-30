@@ -31,6 +31,7 @@ integration and not automated order-placement software.
 | Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
 | Synthetic event-level extension | synthetic | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
+| Binance Spot L2 replay path | `partial_real` | Offline snapshot-plus-diff replay path with fixture sample; supports user-supplied local Binance captures; not equity, not live trading, not profitability. |
 | Manual paper | not yet written | Public reports are artefact summaries, not a manual paper. |
 
 ## Main Findings
@@ -82,6 +83,14 @@ It is a controlled stress-test environment, not real-market evidence, and it doe
 not change any FI-2010 limitation. See
 [docs/SYNTHETIC_LOB_EXTENSION.md](docs/SYNTHETIC_LOB_EXTENSION.md).
 
+A Binance Spot L2 replay extension ingests a local depth snapshot plus
+diff-depth stream and reconstructs the book offline with snapshot-plus-diff
+update-id logic. The committed sample is a Binance-shaped synthetic fixture;
+users may supply local captures. Binance diff-depth updates are aggregated level
+updates, not individual order events. It is crypto-market engineering evidence
+only: not equity-market evidence, not live trading and not profitability
+evidence. See [docs/BINANCE_L2_EXTENSION.md](docs/BINANCE_L2_EXTENSION.md).
+
 ## Inspect The Evidence
 
 | Evidence | Path |
@@ -93,6 +102,8 @@ not change any FI-2010 limitation. See
 | Feature-ablation stability analysis | [reports/feature_ablation_analysis/feature_ablation_analysis.md](reports/feature_ablation_analysis/feature_ablation_analysis.md) |
 | Synthetic event-level extension | [docs/SYNTHETIC_LOB_EXTENSION.md](docs/SYNTHETIC_LOB_EXTENSION.md) |
 | Synthetic extension report | [reports/synthetic_lob_extension/synthetic_lob_report.md](reports/synthetic_lob_extension/synthetic_lob_report.md) |
+| Binance L2 replay extension | [docs/BINANCE_L2_EXTENSION.md](docs/BINANCE_L2_EXTENSION.md) |
+| Binance L2 replay report | [reports/binance_l2_extension/binance_l2_report.md](reports/binance_l2_extension/binance_l2_report.md) |
 | Reproduction commands | [reports/evidence_pack/reproduction_commands.md](reports/evidence_pack/reproduction_commands.md) |
 | Figure index | [docs/FIGURE_INDEX.md](docs/FIGURE_INDEX.md) |
 | Execution-v3 docs | [docs/EXECUTION_VALIDATION_V3.md](docs/EXECUTION_VALIDATION_V3.md) |
@@ -136,6 +147,7 @@ python -m chronoslob.cli build-evidence-pack \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
   --final-report reports/chronoslob_final_empirical_report.md \
+  --binance-l2 reports/binance_l2_extension \
   --strict \
   --overwrite
 ```

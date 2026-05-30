@@ -19,6 +19,8 @@ artefacts. It does not train models, download data or infer missing metrics.
 - optional `experiments/fi2010_neural_full_grid/`
 - optional `experiments/fi2010_feature_ablations/`
 - optional `reports/evidence_pack/`
+- optional `reports/synthetic_lob_extension/`
+- optional `reports/binance_l2_extension/`
 - optional FI-2010 figure manifest under
   `reports/figures/fi2010_neural_full_grid/` or the supplied full-grid directory
 
@@ -40,6 +42,8 @@ python -m chronoslob.cli build-final-empirical-report \
   --neural-full-grid experiments/fi2010_neural_full_grid \
   --feature-ablations experiments/fi2010_feature_ablations \
   --evidence-pack reports/evidence_pack \
+  --synthetic-lob reports/synthetic_lob_extension \
+  --binance-l2 reports/binance_l2_extension \
   --out reports/chronoslob_final_empirical_report.md \
   --overwrite
 ```
@@ -66,6 +70,11 @@ path checks rather than evidence.
 When `--evidence-pack` is supplied, the report includes evidence-pack status,
 claim audit counts, supported and unsupported claim summaries, and release
 caveats.
+
+When `--synthetic-lob` or `--binance-l2` is supplied, the report includes
+clearly bounded extension sections. Binance L2 replay is reported as aggregated
+depth-stream engineering evidence only, with explicit crypto-market,
+fixture-data and non-predictive caveats.
 
 ## Traceability
 

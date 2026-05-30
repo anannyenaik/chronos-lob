@@ -161,6 +161,7 @@ class EvidencePackConfig:
     ablation_figures_dir: Path = Path("reports/figures/fi2010_feature_ablations")
     final_report_path: Path = Path("reports/chronoslob_final_empirical_report.md")
     synthetic_lob_dir: Path = Path("reports/synthetic_lob_extension")
+    binance_l2_dir: Path = Path("reports/binance_l2_extension")
     classical_dir: Path = Path("experiments/fi2010_multifold_classical")
     ssl_dir: Path = Path("experiments/fi2010_ssl")
     feature_audit_dir: Path | None = Path("reports/feature_audit")
@@ -492,6 +493,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
         ]
     )
     entries.extend(_audit_synthetic_claims(by_name))
+    entries.extend(_audit_binance_l2_claims(by_name))
     entries.extend(_forbidden_claim_entries())
     return entries
 
@@ -713,6 +715,35 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
                 "Synthetic event-level extension only; controlled stress-test data, "
                 "not real-market evidence. Does not change FI-2010 limitations and "
                 "does not imply tradability, returns or real-market generalisation."
+            ),
+        ),
+        _ArtefactSpec(
+            name="binance_l2_extension_report",
+            artefact_type="binance_l2_extension",
+            path=config.binance_l2_dir,
+            required_files=(
+                "binance_l2_report.md",
+                "summary.json",
+                "replay_quality.json",
+                "feature_summary.csv",
+                "update_continuity_summary.csv",
+                "binance_claim_assessment.json",
+            ),
+            metadata_files=(
+                "summary.json",
+                "binance_claim_assessment.json",
+                "replay_quality.json",
+                "feature_summary.csv",
+                "book_snapshot_summary.csv",
+                "figure_manifest.json",
+            ),
+            limitations=(
+                "Binance Spot L2 snapshot-plus-diff replay path for local captures; "
+                "crypto-market data engineering evidence only when a non-fixture "
+                "capture is supplied. Diff-depth updates are aggregated level "
+                "updates, not individual orders. Not equity-market evidence, not "
+                "live trading and not profitability or predictive evidence. "
+                "Complements FI-2010 and synthetic evidence."
             ),
         ),
         _ArtefactSpec(
@@ -1015,6 +1046,15 @@ def _completion_status(spec: _ArtefactSpec, loaded: _LoadedArtefact) -> Artefact
         if bool(summary.get("smoke_test")):
             return "smoke_test_only"
         if not bool(summary.get("replay_ok", True)) or not bool(summary.get("leakage_ok", True)):
+            return "partial_real"
+        return "complete_real"
+    if spec.artefact_type == "binance_l2_extension":
+        summary = loaded.payloads.get("summary", {})
+        if not bool(summary.get("replay_ok", True)):
+            return "partial_real"
+        # Fixture-shaped replay exercises the path, but only a local capture
+        # can earn a complete_real classification.
+        if bool(summary.get("fixture_data", True)):
             return "partial_real"
         return "complete_real"
     return "complete_real"
@@ -2139,6 +2179,165 @@ def _audit_synthetic_claims(
     return entries
 
 
+def _audit_binance_l2_claims(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> list[ClaimAuditEntry]:
+    """Audit the Binance L2 replay-extension claims separately from FI-2010 and synthetic."""
+    record = by_name.get("binance_l2_extension_report")
+    support = _synthetic_support_status(record)
+    real_capture_support = _binance_l2_real_capture_support_status(record)
+    required = ["binance_l2_extension_report"]
+    supporting = ["binance_l2_extension_report"] if support == "supported" else []
+    real_capture_supporting = (
+        ["binance_l2_extension_report"] if real_capture_support == "supported" else []
+    )
+
+    def _reason(reason_supported: str) -> str:
+        if support == "supported":
+            return reason_supported
+        return "Binance L2 extension artefacts are missing or invalid."
+
+    def _real_capture_reason() -> str:
+        if real_capture_support == "supported":
+            return "Local Binance aggregated diff-depth ingest and replay artefacts are present."
+        if real_capture_support == "needs_real_evidence":
+            return (
+                "The bundled artefact uses Binance-shaped synthetic fixtures; "
+                "a local captured Binance Spot snapshot/diff stream was not supplied."
+            )
+        if real_capture_support == "smoke_only":
+            return "Only smoke or fixture diagnostics are present."
+        return "Binance L2 extension artefacts are missing or invalid."
+
+    def _supported_claim(
+        claim_id: str, claim_text: str, safe: str, reason_supported: str
+    ) -> ClaimAuditEntry:
+        return ClaimAuditEntry(
+            claim_id=claim_id,
+            claim_text=claim_text,
+            status=support,
+            supporting_artefacts=supporting,
+            required_artefacts=required,
+            reason=_reason(reason_supported),
+            safe_rewording=safe,
+            category="binance l2 extension",
+        )
+
+    def _blocked_claim(
+        claim_id: str,
+        claim_text: str,
+        status: ClaimStatus,
+        reason: str,
+        safe: str,
+        category: str,
+    ) -> ClaimAuditEntry:
+        return ClaimAuditEntry(
+            claim_id=claim_id,
+            claim_text=claim_text,
+            status=status,
+            supporting_artefacts=[],
+            required_artefacts=required if status != "forbidden" else [],
+            reason=reason,
+            safe_rewording=safe,
+            category=category,
+        )
+
+    return [
+        _supported_claim(
+            "binance_l2.replay_pipeline",
+            "ChronosLOB supports a Binance L2 snapshot-plus-diff replay pipeline",
+            "ChronosLOB reconstructs a Binance Spot book from a depth snapshot and "
+            "aggregated diff-depth stream offline; not real-market predictive evidence.",
+            "Binance L2 replay artefacts with passing continuity and invariant checks are present.",
+        ),
+        ClaimAuditEntry(
+            claim_id="binance_l2.real_event_level_stream_path",
+            claim_text=(
+                "ChronosLOB ingests and replays a real event-level aggregated "
+                "L2 depth stream"
+            ),
+            status=real_capture_support,
+            supporting_artefacts=real_capture_supporting,
+            required_artefacts=required,
+            reason=_real_capture_reason(),
+            safe_rewording=(
+                "ChronosLOB includes an offline Binance Spot aggregated "
+                "diff-depth replay path; fixture runs are engineering checks, "
+                "while user-supplied local captures are crypto-market data only."
+            ),
+            category="binance l2 extension",
+        ),
+        _supported_claim(
+            "binance_l2.update_continuity_validation",
+            "ChronosLOB validates Binance update-id continuity during replay",
+            "Update-id bracketing, stale-event skipping and gap detection are enforced.",
+            "Binance update-continuity audit artefacts are present.",
+        ),
+        _supported_claim(
+            "binance_l2.order_book_invariants",
+            "ChronosLOB validates Binance order-book invariants during replay",
+            "Non-negative depth and best bid below best ask are validated per snapshot.",
+            "Binance order-book invariant checks are present in the replay quality report.",
+        ),
+        _blocked_claim(
+            "binance_l2.real_market_predictive_success",
+            "The Binance L2 extension shows real-market predictive success",
+            "unsupported",
+            "Replay produces no predictive or returns evidence.",
+            "Describe the offline replay and features only; claim no predictive success.",
+            "binance l2 extension",
+        ),
+        _blocked_claim(
+            "binance_l2.equity_market_generalisation",
+            "The Binance L2 extension generalises to equity markets",
+            "unsupported",
+            "This is crypto-venue data and does not transfer to equity markets.",
+            "State that crypto L2 evidence does not establish equity-market generalisation.",
+            "binance l2 extension",
+        ),
+        _blocked_claim(
+            "binance_l2.true_trades_or_cancellations_from_diff_depth",
+            "The Binance L2 extension recovers true trades or cancellations from diff-depth",
+            "unsupported",
+            "Diff-depth carries aggregate level changes, not individual trades or cancellations.",
+            "Call removed levels aggregate deletions; do not claim individual attribution.",
+            "binance l2 extension",
+        ),
+        _blocked_claim(
+            "binance_l2.live_trading_or_profitability",
+            "The Binance L2 extension shows live trading or profitability",
+            "forbidden",
+            "This claim is blocked by release policy for ChronosLOB artefacts.",
+            "Describe offline replay only; do not imply returns, tradability or live trading.",
+            "forbidden or high-risk",
+        ),
+        _blocked_claim(
+            "binance_l2.individual_order_queue_position",
+            "The Binance L2 extension models individual-order queue position",
+            "forbidden",
+            "Aggregated level updates cannot expose individual-order queue position.",
+            "State that aggregated diff-depth cannot support queue-position modelling.",
+            "forbidden or high-risk",
+        ),
+    ]
+
+
+def _binance_l2_real_capture_support_status(
+    record: ArtefactInventoryRow | None,
+) -> ClaimStatus:
+    """Return support status for claims requiring a non-fixture Binance capture."""
+    if record is None:
+        return "unsupported"
+    if record.status == "smoke_test_only":
+        return "smoke_only"
+    if record.status not in _REAL_STATUSES | _PARTIAL_STATUSES:
+        return "unsupported"
+    summary = record.payloads.get("summary", {})
+    if bool(summary.get("fixture_data", True)):
+        return "needs_real_evidence"
+    return "supported"
+
+
 def _forbidden_claim_entries() -> list[ClaimAuditEntry]:
     entries: list[ClaimAuditEntry] = []
     for index, claim in enumerate(_FORBIDDEN_CLAIMS, start=1):
@@ -3069,6 +3268,7 @@ def _config_paths(config: EvidencePackConfig) -> dict[str, str | None]:
         "ablation_figures_dir": _display_path(config.ablation_figures_dir),
         "final_report_path": _display_path(config.final_report_path),
         "synthetic_lob_dir": _display_path(config.synthetic_lob_dir),
+        "binance_l2_dir": _display_path(config.binance_l2_dir),
         "project_audit_dir": (
             None if config.project_audit_dir is None else _display_path(config.project_audit_dir)
         ),

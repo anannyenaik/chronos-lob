@@ -99,6 +99,15 @@ classified separately from FI-2010. Its claims are scoped to synthetic data:
 `synthetic.fi2010_true_event_level_ofi` are forbidden. Synthetic results are
 controlled stress-test evidence, never real-market evidence.
 
+The Binance L2 replay extension (`binance_l2_extension_report`) is also
+classified separately from FI-2010. It can support the offline
+snapshot-plus-diff replay pipeline, update-continuity validation and local book
+invariant checks. A fixture-only sample does not support a real captured stream
+claim; a local captured Binance Spot snapshot/diff stream is required for that
+claim. Predictive success, equity-market generalisation, individual-order trade
+or cancellation recovery, live trading, profitability and queue-position claims
+remain unsupported or forbidden.
+
 ## Public Bullet Files
 
 Two public summary-bullet files are generated:
@@ -143,6 +152,13 @@ recorded in the inventory. It reads retained lightweight tables from the
 logistic/ridge expansion and the small gradient-boosting slice. Claim audit rows
 support the exact scoped `snapshot_order_flow_proxy` findings and keep causal
 feature-importance and true event-level order-flow claims forbidden.
+
+A dedicated Binance L2 replay artefact (`binance_l2_extension_report`, built by
+`replay-binance-l2-sample` into `reports/binance_l2_extension/`) is recorded in
+the inventory when present. The committed fixture sample is `partial_real`
+engineering evidence: it exercises the Binance-shaped replay path and claim
+boundaries, but a user-supplied local capture is needed before the real
+captured-stream claim is supported.
 
 ## Preparing A Release
 

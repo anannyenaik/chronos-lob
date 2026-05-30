@@ -39,6 +39,15 @@ imbalance, event intensity) are available only on synthetic event streams in the
 separate synthetic event-level extension, which is synthetic and not real-market
 evidence. See [SYNTHETIC_LOB_EXTENSION.md](SYNTHETIC_LOB_EXTENSION.md).
 
+The Binance L2 replay extension adds a separate aggregated depth-stream feature
+path from snapshot-plus-diff replay. It supports book-shape features
+(`spread`, `mid_price`, `microprice`, depth imbalance) and aggregate
+level-update flow summaries (`bid_update_imbalance`,
+`added_depth_imbalance`, `removed_depth_imbalance`,
+`order_flow_update_imbalance`). These are not FI-2010 features and they are not
+true individual-order OFI, trade imbalance, cancellation attribution or
+queue-position features. See [BINANCE_L2_EXTENSION.md](BINANCE_L2_EXTENSION.md).
+
 ## Leakage Controls
 
 - Label and future-horizon columns are excluded before feature construction.

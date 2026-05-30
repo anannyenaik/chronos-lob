@@ -1,0 +1,41 @@
+{
+  "builder_version": "binance-l2-extension/v1",
+  "claims": {
+    "binance_l2_replay_pipeline": {
+      "reason": "Snapshot-plus-diff replay reconstructs the book and passes the continuity and invariant checks.",
+      "status": "supported"
+    },
+    "binance_order_book_invariants": {
+      "reason": "Non-negative depth and best bid below best ask are validated.",
+      "status": "supported"
+    },
+    "binance_update_continuity_validation": {
+      "reason": "Update-id bracketing, stale-event and gap checks are enforced.",
+      "status": "supported"
+    },
+    "equity_market_generalisation": {
+      "reason": "This is crypto-venue data and does not transfer to equities.",
+      "status": "unsupported"
+    },
+    "individual_order_queue_position": {
+      "reason": "Aggregated level updates cannot expose individual queue position.",
+      "status": "forbidden"
+    },
+    "live_trading_or_profitability": {
+      "reason": "Replay is offline; no live trading or returns are implied.",
+      "status": "forbidden"
+    },
+    "real_event_level_stream_path": {
+      "reason": "The bundled sample uses Binance-shaped synthetic fixtures; the same offline parser/replay path accepts user-supplied local Binance captures.",
+      "status": "needs_real_evidence"
+    },
+    "real_market_predictive_success": {
+      "reason": "No predictive or returns evidence is produced by replay.",
+      "status": "unsupported"
+    },
+    "true_trades_or_cancellations_from_diff_depth": {
+      "reason": "Diff-depth carries aggregate level changes, not trades or cancels.",
+      "status": "unsupported"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+feature,mean,min,max,std
+spread,0.5,0.5,0.5,0.0
+relative_spread,0.004988,0.004988,0.004988,0.0
+mid_price,100.25,100.25,100.25,0.0
+microprice,100.203963,100.192308,100.227273,0.016483
+microprice_offset,-0.046037,-0.057692,-0.022727,0.016483
+depth_imbalance_l1,-0.184149,-0.230769,-0.090909,0.065931
+depth_imbalance_l5,-0.206941,-0.422222,-0.090909,0.152381
+event_intensity,1.5,1.0,2.0,0.408248
+update_count,1.666667,1.0,2.0,0.471405
+bid_update_imbalance,0.511111,0.2,1.0,0.349956
+added_depth_imbalance,0.347319,-0.230769,1.0,0.50522
+removed_depth_imbalance,0.666667,0.0,1.0,0.471405
+order_flow_update_imbalance,0.241123,-0.411765,1.0,0.581203

@@ -66,19 +66,45 @@ or reproducing the platform.
 - Release evidence pack:
   [EVIDENCE_PACK](EVIDENCE_PACK.md) and
   [`reports/evidence_pack/`](../reports/evidence_pack/)
+- Binance Spot L2 replay extension:
+  [BINANCE_L2_EXTENSION](BINANCE_L2_EXTENSION.md) and
+  [`reports/binance_l2_extension/`](../reports/binance_l2_extension/)
 - Model card:
   [`experiments/fi2010_midprice_h10/model_card.md`](../experiments/fi2010_midprice_h10/model_card.md)
 
 ## Data and Order Book
 
-- Modules: `chronoslob/data/`, `chronoslob/book/`
+- Modules: `chronoslob/data/`, `chronoslob/book/`,
+  `chronoslob/binance_l2/`
 - Configs: `configs/data/*.yaml`
 - Tests: `tests/test_fi2010_loader.py`, `tests/test_binance_schemas.py`,
   `tests/test_event_store.py`, `tests/test_event_replay.py`
-- CLI: `inspect-fi2010`, `inspect-binance-replay`, `inspect-event-log`
+- CLI: `inspect-fi2010`, `inspect-binance-replay`,
+  `replay-binance-l2-sample`, `inspect-event-log`
 - Reports: [data_quality](../reports/data_quality.md),
   [order_book_reconstruction](../reports/order_book_reconstruction.md),
   [event_log_storage](../reports/event_log_storage.md)
+
+## Binance Spot L2 Replay Extension
+
+- Module: `chronoslob/binance_l2/`
+- Tests: `tests/test_binance_l2_extension.py`,
+  `tests/test_reconstruction.py`, `tests/test_binance_schemas.py`
+- CLI: `replay-binance-l2-sample`
+- Docs: [BINANCE_L2_EXTENSION](BINANCE_L2_EXTENSION.md)
+- Artefact directory:
+  [`reports/binance_l2_extension/`](../reports/binance_l2_extension/)
+- Outputs: `summary.json`, `replay_quality.json`,
+  `update_continuity_summary.csv`, `book_snapshot_summary.csv`,
+  `feature_summary.csv`, `binance_claim_assessment.json`,
+  `binance_l2_schema.md`, `figure_manifest.json` and
+  `binance_l2_report.md`.
+- Scope: reconstructs a local Binance Spot book from a depth snapshot and
+  aggregated diff-depth stream, validates update-id continuity and records
+  storage-light summaries. Default inputs are synthetic fixtures; user-supplied
+  local captures are crypto-market depth-stream engineering evidence only. No
+  profitability, live-trading, equity-market, predictive-success, individual
+  order, queue-position or market-impact claim is made.
 
 ## Features and Labels
 

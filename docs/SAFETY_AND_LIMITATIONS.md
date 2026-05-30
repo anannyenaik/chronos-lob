@@ -27,6 +27,10 @@ signal quality are reported as separate evidence streams.
   exercise code paths and are not market evidence.
 - Crypto-style reconstruction examples should not be treated as
   evidence for equity-market behaviour.
+- Binance Spot L2 replay uses aggregated diff-depth updates. These updates do
+  not expose individual orders, true trades, true cancellations, queue position
+  or market impact; fixture runs are engineering checks rather than exchange
+  data evidence.
 
 ## Modelling Limitations
 

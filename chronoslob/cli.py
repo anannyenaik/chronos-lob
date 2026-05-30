@@ -2578,6 +2578,7 @@ def _build_final_empirical_report_impl(
     proper_training: Path | None = None,
     evidence_pack: Path | None = None,
     synthetic_lob: Path | None = None,
+    binance_l2: Path | None = None,
     overwrite: bool,
 ) -> int:
     """Build the final empirical report from stored FI-2010 artefacts."""
@@ -2601,6 +2602,7 @@ def _build_final_empirical_report_impl(
             execution_v3_dir=(Path(execution_v3) if execution_v3 is not None else None),
             external_dir=Path(external) if external is not None else None,
             synthetic_lob_dir=(Path(synthetic_lob) if synthetic_lob is not None else None),
+            binance_l2_dir=(Path(binance_l2) if binance_l2 is not None else None),
             ssl_dir=Path(ssl) if ssl is not None else None,
             neural_full_grid_dir=(Path(neural_full_grid) if neural_full_grid is not None else None),
             proper_training_dir=(Path(proper_training) if proper_training is not None else None),
@@ -2666,6 +2668,7 @@ def _build_evidence_pack_impl(
     ssl: Path = Path("experiments/fi2010_ssl"),
     proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
     feature_audit: Path | None = Path("reports/feature_audit"),
+    binance_l2: Path = Path("reports/binance_l2_extension"),
     project_audit: Path | None = Path("reports/report_archive"),
 ) -> int:
     """Build the release evidence pack and claim audit from stored artefacts."""
@@ -2690,6 +2693,7 @@ def _build_evidence_pack_impl(
                 feature_ablation_analysis_dir=Path(feature_ablation_analysis),
                 ablation_figures_dir=Path(ablation_figures),
                 final_report_path=Path(final_report),
+                binance_l2_dir=Path(binance_l2),
                 project_audit_dir=project_audit,
                 strict=strict,
                 allow_smoke_test=allow_smoke_test,
@@ -2784,6 +2788,87 @@ def _run_synthetic_lob_benchmark_impl(
             f"macro_f1={metric.macro_f1:.4f} accuracy={metric.accuracy:.4f}"
         )
     print("  note: synthetic controlled stress test; not real-market evidence.")
+    print("  network calls:      none performed")
+    return 0
+
+
+def _replay_binance_l2_sample_impl(
+    *,
+    out: Path,
+    snapshot: Path | None,
+    updates: Path | None,
+    symbol: str | None,
+    max_depth: int | None,
+    window_events: int,
+    stop_on_gap: bool,
+    allow_crossed: bool,
+    make_figures: bool,
+    overwrite: bool,
+) -> int:
+    """Replay a local Binance L2 snapshot-plus-diff sample and write artefacts.
+
+    The command is offline: it reads local files only and makes no network
+    calls. When no snapshot/diff paths are supplied it falls back to the small
+    bundled Binance-shaped synthetic fixtures.
+    """
+    from chronoslob.binance_l2.pipeline import (
+        BinanceL2Config,
+        default_fixture_paths,
+        run_binance_l2_pipeline,
+    )
+
+    default_snapshot, default_updates = default_fixture_paths()
+    snapshot_path = Path(snapshot) if snapshot is not None else default_snapshot
+    updates_path = Path(updates) if updates is not None else default_updates
+
+    fixture_marker = str(Path("tests") / "fixtures")
+    if any(fixture_marker in str(path) for path in (snapshot_path, updates_path)):
+        print(
+            "WARNING: replay is running against a Binance-shaped synthetic fixture; "
+            "outputs are not real market data."
+        )
+
+    try:
+        config = BinanceL2Config(
+            snapshot_path=snapshot_path,
+            updates_path=updates_path,
+            symbol=symbol,
+            max_depth=max_depth,
+            window_events=window_events,
+            stop_on_gap=stop_on_gap,
+            allow_crossed=allow_crossed,
+        )
+        result = run_binance_l2_pipeline(
+            Path(out),
+            config,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Binance L2 replay extension failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB real event-level L2 replay extension (Binance Spot, offline)")
+    print(f"  output directory:   {result.out_dir}")
+    print(f"  files written:      {len(result.files_written)}")
+    print(f"  snapshot path:      {snapshot_path}")
+    print(f"  updates path:       {updates_path}")
+    print(f"  diff events:        {result.diff_event_count}")
+    print(f"  applied events:     {result.applied_event_count}")
+    print(f"  snapshots:          {result.snapshot_count}")
+    print(f"  feature rows:       {result.feature_row_count}")
+    print(f"  replay invariants:  {'ok' if result.replay_ok else 'violations recorded'}")
+    print(f"  evidence_level:     {result.summary['evidence_level']}")
+    print(
+        "  note: aggregated L2 diff-depth replay; crypto-market engineering "
+        "evidence, not equity, not live trading, not profitability evidence."
+    )
     print("  network calls:      none performed")
     return 0
 
@@ -4338,6 +4423,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-final-empirical-report|"
             "build-evidence-pack|"
             "run-synthetic-lob-benchmark|"
+            "replay-binance-l2-sample|"
             "inspect-paper-report] [...]"
         )
         return 0
@@ -5767,6 +5853,12 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             default=None,
             help="Optional synthetic event-level extension artefact directory.",
         )
+        parser.add_argument(
+            "--binance-l2",
+            type=Path,
+            default=None,
+            help="Optional real event-level Binance L2 replay extension directory.",
+        )
         parser.add_argument("--out", type=Path, required=True)
         parser.add_argument(
             "--overwrite",
@@ -5789,6 +5881,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             proper_training=parsed.proper_training,
             evidence_pack=parsed.evidence_pack,
             synthetic_lob=parsed.synthetic_lob,
+            binance_l2=parsed.binance_l2,
             out=parsed.out,
             overwrite=bool(parsed.overwrite),
         )
@@ -5834,6 +5927,12 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             default=Path("reports/feature_audit"),
         )
         parser.add_argument(
+            "--binance-l2",
+            type=Path,
+            default=Path("reports/binance_l2_extension"),
+            help="Path to Binance L2 replay extension artefacts.",
+        )
+        parser.add_argument(
             "--project-audit",
             type=Path,
             default=Path("reports/report_archive"),
@@ -5857,6 +5956,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             ssl=parsed.ssl,
             proper_training=parsed.proper_training,
             feature_audit=parsed.feature_audit,
+            binance_l2=parsed.binance_l2,
             project_audit=parsed.project_audit,
             strict=bool(parsed.strict),
             allow_smoke_test=bool(parsed.allow_smoke_test),
@@ -5893,6 +5993,39 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             seed=parsed.seed,
             horizon=parsed.horizon,
             smoke=parsed.smoke,
+            make_figures=parsed.make_figures,
+            overwrite=parsed.overwrite,
+        )
+    if command == "replay-binance-l2-sample":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob replay-binance-l2-sample",
+            description=(
+                "Replay a local Binance Spot L2 depth snapshot plus diff-depth "
+                "stream into a reconstructed book, replay-quality report and "
+                "event-level feature summary. Offline only; aggregated L2 "
+                "diff-depth replay, not live trading or profitability evidence."
+            ),
+        )
+        parser.add_argument("--out", type=Path, default=Path("reports/binance_l2_extension"))
+        parser.add_argument("--snapshot", type=Path, default=None)
+        parser.add_argument("--updates", type=Path, default=None)
+        parser.add_argument("--symbol", default=None)
+        parser.add_argument("--max-depth", type=int, default=None)
+        parser.add_argument("--window-events", type=int, default=20)
+        parser.add_argument("--no-stop-on-gap", action="store_true")
+        parser.add_argument("--allow-crossed", action="store_true")
+        parser.add_argument("--make-figures", action="store_true")
+        parser.add_argument("--overwrite", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        return _replay_binance_l2_sample_impl(
+            out=parsed.out,
+            snapshot=parsed.snapshot,
+            updates=parsed.updates,
+            symbol=parsed.symbol,
+            max_depth=parsed.max_depth,
+            window_events=parsed.window_events,
+            stop_on_gap=not parsed.no_stop_on_gap,
+            allow_crossed=parsed.allow_crossed,
             make_figures=parsed.make_figures,
             overwrite=parsed.overwrite,
         )
@@ -7567,6 +7700,11 @@ if typer is not None:
         "--synthetic-lob",
         help="Optional synthetic event-level extension artefact directory.",
     )
+    _BUILD_FINAL_REPORT_BINANCE_L2_OPTION = typer.Option(
+        None,
+        "--binance-l2",
+        help="Optional real event-level Binance L2 replay extension directory.",
+    )
     _BUILD_FINAL_REPORT_OUT_OPTION = typer.Option(
         ...,
         "--out",
@@ -7636,6 +7774,11 @@ if typer is not None:
         Path("reports/feature_audit"),
         "--feature-audit",
         help="Optional stored feature-audit artefact directory.",
+    )
+    _BUILD_EVIDENCE_PACK_BINANCE_L2_OPTION = typer.Option(
+        Path("reports/binance_l2_extension"),
+        "--binance-l2",
+        help="Path to Binance L2 replay extension artefacts.",
     )
     _BUILD_EVIDENCE_PACK_PROJECT_AUDIT_OPTION = typer.Option(
         Path("reports/report_archive"),
@@ -8477,6 +8620,7 @@ if typer is not None:
         proper_training: Path | None = _BUILD_FINAL_REPORT_PROPER_TRAINING_OPTION,
         evidence_pack: Path | None = _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION,
         synthetic_lob: Path | None = _BUILD_FINAL_REPORT_SYNTHETIC_LOB_OPTION,
+        binance_l2: Path | None = _BUILD_FINAL_REPORT_BINANCE_L2_OPTION,
         out: Path = _BUILD_FINAL_REPORT_OUT_OPTION,
         overwrite: bool = _BUILD_FINAL_REPORT_OVERWRITE_OPTION,
     ) -> None:
@@ -8496,6 +8640,7 @@ if typer is not None:
             proper_training=proper_training,
             evidence_pack=evidence_pack,
             synthetic_lob=synthetic_lob,
+            binance_l2=binance_l2,
             out=out,
             overwrite=overwrite,
         )
@@ -8517,6 +8662,7 @@ if typer is not None:
         ssl: Path = _BUILD_EVIDENCE_PACK_SSL_OPTION,
         proper_training: Path = _BUILD_EVIDENCE_PACK_PROPER_TRAINING_OPTION,
         feature_audit: Path | None = _BUILD_EVIDENCE_PACK_FEATURE_AUDIT_OPTION,
+        binance_l2: Path = _BUILD_EVIDENCE_PACK_BINANCE_L2_OPTION,
         project_audit: Path | None = _BUILD_EVIDENCE_PACK_PROJECT_AUDIT_OPTION,
         strict: bool = _BUILD_EVIDENCE_PACK_STRICT_OPTION,
         allow_smoke_test: bool = _BUILD_EVIDENCE_PACK_ALLOW_SMOKE_OPTION,
@@ -8536,6 +8682,7 @@ if typer is not None:
             ssl=ssl,
             proper_training=proper_training,
             feature_audit=feature_audit,
+            binance_l2=binance_l2,
             project_audit=project_audit,
             strict=strict,
             allow_smoke_test=allow_smoke_test,
@@ -8604,6 +8751,85 @@ if typer is not None:
             seed=seed,
             horizon=horizon,
             smoke=smoke,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    _BINANCE_L2_OUT_OPTION = typer.Option(
+        Path("reports/binance_l2_extension"),
+        "--out",
+        help="Output directory for Binance L2 extension artefacts.",
+    )
+    _BINANCE_L2_SNAPSHOT_OPTION = typer.Option(
+        None,
+        "--snapshot",
+        help="Local depth snapshot JSON; defaults to the bundled fixture.",
+    )
+    _BINANCE_L2_UPDATES_OPTION = typer.Option(
+        None,
+        "--updates",
+        help="Local diff-depth JSONL; defaults to the bundled fixture.",
+    )
+    _BINANCE_L2_SYMBOL_OPTION = typer.Option(
+        None,
+        "--symbol",
+        help="Symbol override when the snapshot omits it.",
+    )
+    _BINANCE_L2_MAX_DEPTH_OPTION = typer.Option(
+        None,
+        "--max-depth",
+        help="Trim the book to this many levels per side.",
+    )
+    _BINANCE_L2_WINDOW_OPTION = typer.Option(
+        20,
+        "--window-events",
+        help="Trailing diff-event window for event-flow features.",
+    )
+    _BINANCE_L2_NO_STOP_ON_GAP_OPTION = typer.Option(
+        False,
+        "--no-stop-on-gap",
+        help="Continue reconstruction after an update-id gap is detected.",
+    )
+    _BINANCE_L2_ALLOW_CROSSED_OPTION = typer.Option(
+        False,
+        "--allow-crossed",
+        help="Permit crossed books instead of treating them as errors.",
+    )
+    _BINANCE_L2_FIGURES_OPTION = typer.Option(
+        False,
+        "--make-figures",
+        help="Render compact replay figures when matplotlib is available.",
+    )
+    _BINANCE_L2_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Overwrite an existing Binance L2 report directory.",
+    )
+
+    def replay_binance_l2_sample(
+        out: Path = _BINANCE_L2_OUT_OPTION,
+        snapshot: Path | None = _BINANCE_L2_SNAPSHOT_OPTION,
+        updates: Path | None = _BINANCE_L2_UPDATES_OPTION,
+        symbol: str | None = _BINANCE_L2_SYMBOL_OPTION,
+        max_depth: int | None = _BINANCE_L2_MAX_DEPTH_OPTION,
+        window_events: int = _BINANCE_L2_WINDOW_OPTION,
+        no_stop_on_gap: bool = _BINANCE_L2_NO_STOP_ON_GAP_OPTION,
+        allow_crossed: bool = _BINANCE_L2_ALLOW_CROSSED_OPTION,
+        make_figures: bool = _BINANCE_L2_FIGURES_OPTION,
+        overwrite: bool = _BINANCE_L2_OVERWRITE_OPTION,
+    ) -> None:
+        """Replay a local Binance L2 snapshot-plus-diff sample and write artefacts."""
+        exit_code = _replay_binance_l2_sample_impl(
+            out=out,
+            snapshot=snapshot,
+            updates=updates,
+            symbol=symbol,
+            max_depth=max_depth,
+            window_events=window_events,
+            stop_on_gap=not no_stop_on_gap,
+            allow_crossed=allow_crossed,
             make_figures=make_figures,
             overwrite=overwrite,
         )
@@ -9868,6 +10094,8 @@ else:
         neural_full_grid: Path | None = None,
         proper_training: Path | None = None,
         evidence_pack: Path | None = None,
+        synthetic_lob: Path | None = None,
+        binance_l2: Path | None = None,
         out: Path = Path("runs/chronoslob_final_empirical_report_smoke.md"),
         overwrite: bool = False,
     ) -> None:
@@ -9886,6 +10114,8 @@ else:
             neural_full_grid=neural_full_grid,
             proper_training=proper_training,
             evidence_pack=evidence_pack,
+            synthetic_lob=synthetic_lob,
+            binance_l2=binance_l2,
             out=out,
             overwrite=overwrite,
         )
@@ -9905,6 +10135,7 @@ else:
         ssl: Path = Path("experiments/fi2010_ssl"),
         proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
         feature_audit: Path | None = Path("reports/feature_audit"),
+        binance_l2: Path = Path("reports/binance_l2_extension"),
         project_audit: Path | None = Path("reports/report_archive"),
         strict: bool = True,
         allow_smoke_test: bool = False,
@@ -9924,6 +10155,7 @@ else:
             ssl=ssl,
             proper_training=proper_training,
             feature_audit=feature_audit,
+            binance_l2=binance_l2,
             project_audit=project_audit,
             strict=strict,
             allow_smoke_test=allow_smoke_test,
@@ -10007,6 +10239,7 @@ if typer is not None:
     app.command("build-final-empirical-report")(build_final_empirical_report)
     app.command("build-evidence-pack")(build_evidence_pack)
     app.command("run-synthetic-lob-benchmark")(run_synthetic_lob_benchmark)
+    app.command("replay-binance-l2-sample")(replay_binance_l2_sample)
     app.command("inspect-paper-report")(inspect_paper_report)
 else:
 

@@ -1,0 +1,20 @@
+{
+  "builder_version": "binance-l2-extension/v1",
+  "figures": [
+    {
+      "name": "spread_over_replay",
+      "path": "figures/spread_over_replay.png",
+      "status": "completed"
+    },
+    {
+      "name": "depth_imbalance_l1_over_replay",
+      "path": "figures/depth_imbalance_l1_over_replay.png",
+      "status": "completed"
+    },
+    {
+      "name": "mid_price_over_replay",
+      "path": "figures/mid_price_over_replay.png",
+      "status": "completed"
+    }
+  ]
+}
