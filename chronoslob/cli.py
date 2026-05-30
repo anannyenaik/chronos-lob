@@ -948,6 +948,102 @@ def _run_fi2010_neural_proper_training_subset_impl(
     return 0 if summary.failed_run_count == 0 else 1
 
 
+def _run_fi2010_ssl_v2_benchmark_impl(
+    *,
+    config_path: Path,
+    processed_root: Path,
+    out: Path,
+    baseline_source: Path | None,
+    folds: Sequence[str | int] | None,
+    horizons: Sequence[int] | None,
+    seeds: Sequence[int] | None,
+    lookbacks: Sequence[int] | None,
+    objectives: Sequence[str] | None,
+    pretrain_epochs: int,
+    max_epochs: int | None,
+    patience: int | None,
+    batch_size: int | None,
+    mask_probability: float,
+    future_bucket_count: int,
+    contrastive: bool,
+    device: str,
+    reuse_completed: bool,
+    import_existing_baselines: bool,
+    smoke_test: bool,
+) -> int:
+    """Run the FI-2010 SSL-v2 benchmark."""
+    from chronoslob.experiments.fi2010_ssl_v2_benchmark import (
+        SSL_V2_OBJECTIVE_CHOICES,
+        run_fi2010_ssl_v2_benchmark,
+    )
+
+    try:
+        summary = run_fi2010_ssl_v2_benchmark(
+            config_path=Path(config_path),
+            processed_root=Path(processed_root),
+            out_dir=Path(out),
+            baseline_source_dir=Path(baseline_source) if baseline_source is not None else None,
+            folds=folds,
+            horizons=horizons,
+            seeds=seeds,
+            lookbacks=lookbacks,
+            objectives=objectives,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            patience=patience,
+            batch_size=batch_size,
+            mask_probability=mask_probability,
+            future_bucket_count=future_bucket_count,
+            contrastive=contrastive,
+            device=device,
+            reuse_completed=reuse_completed,
+            import_existing_baselines=import_existing_baselines,
+            smoke_test=smoke_test,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError, RuntimeError, ImportError) as exc:
+        print(f"FI-2010 SSL-v2 benchmark failed: {exc}", file=sys.stderr)
+        print(
+            "  supported objectives: " + ", ".join(SSL_V2_OBJECTIVE_CHOICES),
+            file=sys.stderr,
+        )
+        return 1
+
+    print("ChronosLOB FI-2010 SSL-v2 benchmark runner")
+    print(f"  config:                {summary.config_path}")
+    print(f"  processed root:        {summary.processed_root}")
+    print(f"  output directory:      {summary.output_dir}")
+    print(f"  evidence level:        {summary.evidence_level}")
+    print(f"  scope label:           {summary.scope_label}")
+    print(f"  folds:                 {summary.folds}")
+    print(f"  horizons:              {summary.horizons}")
+    print(f"  seeds:                 {summary.seeds}")
+    print(f"  lookbacks:             {summary.lookbacks}")
+    print(f"  objectives:            {', '.join(summary.objectives)}")
+    print(f"  pretrain epochs:       {summary.pretrain_epochs}")
+    print(f"  max epochs:            {summary.max_epochs}")
+    print(f"  early stopping patience: {summary.early_stopping_patience}")
+    print(f"  batch size:            {summary.batch_size}")
+    print(f"  device:                {summary.device}")
+    print(f"  planned runs:          {summary.run_count}")
+    print(f"  completed runs:        {summary.completed_run_count}")
+    print(f"  imported baselines:    {summary.imported_baseline_count}")
+    print(f"  failed runs:           {summary.failed_run_count}")
+    print(f"  missing pairs:         {summary.missing_pair_count}")
+    print("  validation-only model selection; best checkpoint restored before test")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    print("  network calls:         none performed")
+    return 0 if summary.failed_run_count == 0 else 1
+
+
 def _build_fi2010_figures_impl(
     *,
     neural_full_grid: Path,
@@ -2576,6 +2672,7 @@ def _build_final_empirical_report_impl(
     ssl: Path | None = None,
     neural_full_grid: Path | None = None,
     proper_training: Path | None = None,
+    ssl_v2_analysis: Path | None = None,
     evidence_pack: Path | None = None,
     synthetic_lob: Path | None = None,
     binance_l2: Path | None = None,
@@ -2606,6 +2703,9 @@ def _build_final_empirical_report_impl(
             ssl_dir=Path(ssl) if ssl is not None else None,
             neural_full_grid_dir=(Path(neural_full_grid) if neural_full_grid is not None else None),
             proper_training_dir=(Path(proper_training) if proper_training is not None else None),
+            ssl_v2_analysis_dir=(
+                Path(ssl_v2_analysis) if ssl_v2_analysis is not None else None
+            ),
             evidence_pack_dir=(Path(evidence_pack) if evidence_pack is not None else None),
             out_path=Path(out),
             overwrite=overwrite,
@@ -4405,6 +4505,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "inspect-fi2010-neural-plan|"
             "run-fi2010-neural-benchmark|"
             "run-fi2010-ssl-neural-benchmark|"
+            "run-fi2010-ssl-v2-benchmark|"
             "build-fi2010-figures|"
             "audit-fi2010-features|"
             "run-fi2010-feature-ablations|"
@@ -5017,6 +5118,109 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             overwrite=bool(parsed.overwrite),
             fail_fast=bool(parsed.fail_fast),
             write_full_predictions=not bool(parsed.no_write_full_predictions),
+        )
+    if command == "run-fi2010-ssl-v2-benchmark":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob run-fi2010-ssl-v2-benchmark",
+            description=(
+                "Run the failure-analysis-motivated FI-2010 SSL-v2 benchmark "
+                "and compare it against supervised and SSL-v1 baselines."
+            ),
+        )
+        parser.add_argument(
+            "--config",
+            type=Path,
+            default=Path("configs/experiments/fi2010_neural_proper_training.yaml"),
+        )
+        parser.add_argument("--processed-root", type=Path, required=True)
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("experiments/fi2010_ssl_v2_benchmark"),
+        )
+        parser.add_argument(
+            "--baseline-source",
+            type=Path,
+            default=Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        )
+        parser.add_argument("--folds", type=str, default="1")
+        parser.add_argument("--horizons", type=str, default="10,50")
+        parser.add_argument("--seeds", type=str, default="0")
+        parser.add_argument("--lookbacks", type=str, default="50")
+        parser.add_argument(
+            "--objectives",
+            type=str,
+            default="supervised,masked_reconstruction,market_state_multitask",
+        )
+        parser.add_argument("--pretrain-epochs", type=int, default=5)
+        parser.add_argument("--max-epochs", type=int, default=None)
+        parser.add_argument("--patience", type=int, default=None)
+        parser.add_argument("--batch-size", type=int, default=None)
+        parser.add_argument("--mask-probability", type=float, default=0.30)
+        parser.add_argument("--future-bucket-count", type=int, default=3)
+        parser.add_argument("--contrastive", action="store_true")
+        parser.add_argument("--device", type=str, default="cpu")
+        parser.add_argument(
+            _REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_true",
+            default=True,
+        )
+        parser.add_argument(
+            _NO_REUSE_COMPLETED_FLAG,
+            dest="reuse_completed",
+            action="store_false",
+        )
+        parser.add_argument(
+            "--no-import-existing-baselines",
+            dest="import_existing_baselines",
+            action="store_false",
+            default=True,
+        )
+        parser.add_argument("--smoke-test", action="store_true")
+        parsed = parser.parse_args(args[1:])
+        try:
+            v2_folds = _parse_neural_fold_selection(parsed.folds)
+            v2_horizons = _parse_int_selection(
+                parsed.horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            v2_seeds = _parse_int_selection(
+                parsed.seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            v2_lookbacks = _parse_int_selection(
+                parsed.lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+            v2_objectives = _parse_model_selection(parsed.objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        return _run_fi2010_ssl_v2_benchmark_impl(
+            config_path=parsed.config,
+            processed_root=parsed.processed_root,
+            out=parsed.out,
+            baseline_source=parsed.baseline_source,
+            folds=v2_folds,
+            horizons=v2_horizons,
+            seeds=v2_seeds,
+            lookbacks=v2_lookbacks,
+            objectives=v2_objectives,
+            pretrain_epochs=parsed.pretrain_epochs,
+            max_epochs=parsed.max_epochs,
+            patience=parsed.patience,
+            batch_size=parsed.batch_size,
+            mask_probability=parsed.mask_probability,
+            future_bucket_count=parsed.future_bucket_count,
+            contrastive=bool(parsed.contrastive),
+            device=parsed.device,
+            reuse_completed=bool(parsed.reuse_completed),
+            import_existing_baselines=bool(parsed.import_existing_baselines),
+            smoke_test=bool(parsed.smoke_test),
         )
     if command == "run-fi2010-neural-full-grid":
         parser = argparse.ArgumentParser(
@@ -5842,6 +6046,12 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             ),
         )
         parser.add_argument(
+            "--ssl-v2-analysis",
+            type=Path,
+            default=None,
+            help="Optional SSL-v2 analysis artefact directory.",
+        )
+        parser.add_argument(
             "--evidence-pack",
             type=Path,
             default=None,
@@ -5879,6 +6089,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             ssl=parsed.ssl,
             neural_full_grid=parsed.neural_full_grid,
             proper_training=parsed.proper_training,
+            ssl_v2_analysis=parsed.ssl_v2_analysis,
             evidence_pack=parsed.evidence_pack,
             synthetic_lob=parsed.synthetic_lob,
             binance_l2=parsed.binance_l2,
@@ -6836,6 +7047,106 @@ if typer is not None:
         "--no-write-full-predictions",
         help="Skip writing per-run row-level predictions.",
     )
+    _RUN_SSL_V2_CONFIG_OPTION = typer.Option(
+        Path("configs/experiments/fi2010_neural_proper_training.yaml"),
+        "--config",
+        help="Path to the FI-2010 proper-training neural YAML config.",
+    )
+    _RUN_SSL_V2_PROCESSED_ROOT_OPTION = typer.Option(
+        ...,
+        "--processed-root",
+        help="Root containing prepared fold CSV files.",
+    )
+    _RUN_SSL_V2_OUT_OPTION = typer.Option(
+        Path("experiments/fi2010_ssl_v2_benchmark"),
+        "--out",
+        help="Output directory for SSL-v2 benchmark artefacts.",
+    )
+    _RUN_SSL_V2_BASELINE_SOURCE_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        "--baseline-source",
+        help="Existing proper-training artefact root to import matched baselines from.",
+    )
+    _RUN_SSL_V2_FOLDS_OPTION = typer.Option(
+        "1",
+        "--folds",
+        help="'all' or comma-separated fold ids.",
+    )
+    _RUN_SSL_V2_HORIZONS_OPTION = typer.Option(
+        "10,50",
+        "--horizons",
+        help="'all' or comma-separated target horizons.",
+    )
+    _RUN_SSL_V2_SEEDS_OPTION = typer.Option(
+        "0",
+        "--seeds",
+        help="Comma-separated non-negative seeds.",
+    )
+    _RUN_SSL_V2_LOOKBACKS_OPTION = typer.Option(
+        "50",
+        "--lookbacks",
+        help="Comma-separated positive lookbacks.",
+    )
+    _RUN_SSL_V2_OBJECTIVES_OPTION = typer.Option(
+        "supervised,masked_reconstruction,market_state_multitask",
+        "--objectives",
+        help="supervised, masked_reconstruction and/or market_state_multitask.",
+    )
+    _RUN_SSL_V2_PRETRAIN_EPOCHS_OPTION = typer.Option(
+        5,
+        "--pretrain-epochs",
+        help="SSL-v2 pretraining epochs.",
+    )
+    _RUN_SSL_V2_MAX_EPOCHS_OPTION = typer.Option(
+        None,
+        "--max-epochs",
+        help="Maximum fine-tuning epochs; defaults to config.",
+    )
+    _RUN_SSL_V2_PATIENCE_OPTION = typer.Option(
+        None,
+        "--patience",
+        help="Validation early-stopping patience; defaults to config.",
+    )
+    _RUN_SSL_V2_BATCH_SIZE_OPTION = typer.Option(
+        None,
+        "--batch-size",
+        help="Training batch size; defaults to config.",
+    )
+    _RUN_SSL_V2_MASK_PROBABILITY_OPTION = typer.Option(
+        0.30,
+        "--mask-probability",
+        help="Structured group-mask probability.",
+    )
+    _RUN_SSL_V2_BUCKET_COUNT_OPTION = typer.Option(
+        3,
+        "--future-bucket-count",
+        help="Train-only auxiliary future-state bucket count.",
+    )
+    _RUN_SSL_V2_CONTRASTIVE_OPTION = typer.Option(
+        False,
+        "--contrastive",
+        help="Enable the optional regime contrastive SSL-v2 term.",
+    )
+    _RUN_SSL_V2_DEVICE_OPTION = typer.Option(
+        "cpu",
+        "--device",
+        help="Device: cpu or cuda-prefixed device.",
+    )
+    _RUN_SSL_V2_REUSE_OPTION = typer.Option(
+        True,
+        f"{_REUSE_COMPLETED_FLAG}/{_NO_REUSE_COMPLETED_FLAG}",
+        help="Skip existing completed run directories when possible.",
+    )
+    _RUN_SSL_V2_IMPORT_BASELINES_OPTION = typer.Option(
+        True,
+        "--import-existing-baselines/--no-import-existing-baselines",
+        help="Import matching supervised/SSL-v1 baselines from baseline-source when available.",
+    )
+    _RUN_SSL_V2_SMOKE_OPTION = typer.Option(
+        False,
+        "--smoke-test",
+        help="Run a tiny CPU-safe subset and mark artefacts as smoke only.",
+    )
     _RUN_FULL_GRID_CONFIG_OPTION = typer.Option(
         Path("configs/experiments/fi2010_neural_serious.yaml"),
         "--config",
@@ -7690,6 +8001,11 @@ if typer is not None:
             "Smoke-test subsets are reported as smoke only."
         ),
     )
+    _BUILD_FINAL_REPORT_SSL_V2_ANALYSIS_OPTION = typer.Option(
+        None,
+        "--ssl-v2-analysis",
+        help="Optional SSL-v2 analysis artefact directory.",
+    )
     _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION = typer.Option(
         None,
         "--evidence-pack",
@@ -8086,6 +8402,75 @@ if typer is not None:
             overwrite=overwrite,
             fail_fast=fail_fast,
             write_full_predictions=not no_write_full_predictions,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def run_fi2010_ssl_v2_benchmark(
+        config: Path = _RUN_SSL_V2_CONFIG_OPTION,
+        processed_root: Path = _RUN_SSL_V2_PROCESSED_ROOT_OPTION,
+        out: Path = _RUN_SSL_V2_OUT_OPTION,
+        baseline_source: Path | None = _RUN_SSL_V2_BASELINE_SOURCE_OPTION,
+        folds: str = _RUN_SSL_V2_FOLDS_OPTION,
+        horizons: str = _RUN_SSL_V2_HORIZONS_OPTION,
+        seeds: str = _RUN_SSL_V2_SEEDS_OPTION,
+        lookbacks: str = _RUN_SSL_V2_LOOKBACKS_OPTION,
+        objectives: str = _RUN_SSL_V2_OBJECTIVES_OPTION,
+        pretrain_epochs: int = _RUN_SSL_V2_PRETRAIN_EPOCHS_OPTION,
+        max_epochs: int | None = _RUN_SSL_V2_MAX_EPOCHS_OPTION,
+        patience: int | None = _RUN_SSL_V2_PATIENCE_OPTION,
+        batch_size: int | None = _RUN_SSL_V2_BATCH_SIZE_OPTION,
+        mask_probability: float = _RUN_SSL_V2_MASK_PROBABILITY_OPTION,
+        future_bucket_count: int = _RUN_SSL_V2_BUCKET_COUNT_OPTION,
+        contrastive: bool = _RUN_SSL_V2_CONTRASTIVE_OPTION,
+        device: str = _RUN_SSL_V2_DEVICE_OPTION,
+        reuse_completed: bool = _RUN_SSL_V2_REUSE_OPTION,
+        import_existing_baselines: bool = _RUN_SSL_V2_IMPORT_BASELINES_OPTION,
+        smoke_test: bool = _RUN_SSL_V2_SMOKE_OPTION,
+    ) -> None:
+        """Run the FI-2010 second-generation SSL benchmark."""
+        try:
+            fold_tokens = _parse_neural_fold_selection(folds)
+            horizon_tokens = _parse_int_selection(
+                horizons,
+                option_name="--horizons",
+                positive=True,
+            )
+            seed_tokens = _parse_int_selection(
+                seeds,
+                option_name="--seeds",
+                positive=False,
+            )
+            lookback_tokens = _parse_int_selection(
+                lookbacks,
+                option_name="--lookbacks",
+                positive=True,
+            )
+            objective_tokens = _parse_model_selection(objectives)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            raise SystemExit(2) from exc
+        exit_code = _run_fi2010_ssl_v2_benchmark_impl(
+            config_path=config,
+            processed_root=processed_root,
+            out=out,
+            baseline_source=baseline_source,
+            folds=fold_tokens,
+            horizons=horizon_tokens,
+            seeds=seed_tokens,
+            lookbacks=lookback_tokens,
+            objectives=objective_tokens,
+            pretrain_epochs=pretrain_epochs,
+            max_epochs=max_epochs,
+            patience=patience,
+            batch_size=batch_size,
+            mask_probability=mask_probability,
+            future_bucket_count=future_bucket_count,
+            contrastive=contrastive,
+            device=device,
+            reuse_completed=reuse_completed,
+            import_existing_baselines=import_existing_baselines,
+            smoke_test=smoke_test,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -8618,6 +9003,7 @@ if typer is not None:
         ssl: Path | None = _BUILD_FINAL_REPORT_SSL_OPTION,
         neural_full_grid: Path | None = _BUILD_FINAL_REPORT_FULL_GRID_OPTION,
         proper_training: Path | None = _BUILD_FINAL_REPORT_PROPER_TRAINING_OPTION,
+        ssl_v2_analysis: Path | None = _BUILD_FINAL_REPORT_SSL_V2_ANALYSIS_OPTION,
         evidence_pack: Path | None = _BUILD_FINAL_REPORT_EVIDENCE_PACK_OPTION,
         synthetic_lob: Path | None = _BUILD_FINAL_REPORT_SYNTHETIC_LOB_OPTION,
         binance_l2: Path | None = _BUILD_FINAL_REPORT_BINANCE_L2_OPTION,
@@ -8638,6 +9024,7 @@ if typer is not None:
             ssl=ssl,
             neural_full_grid=neural_full_grid,
             proper_training=proper_training,
+            ssl_v2_analysis=ssl_v2_analysis,
             evidence_pack=evidence_pack,
             synthetic_lob=synthetic_lob,
             binance_l2=binance_l2,
@@ -10093,6 +10480,7 @@ else:
         ssl: Path | None = None,
         neural_full_grid: Path | None = None,
         proper_training: Path | None = None,
+        ssl_v2_analysis: Path | None = None,
         evidence_pack: Path | None = None,
         synthetic_lob: Path | None = None,
         binance_l2: Path | None = None,
@@ -10113,6 +10501,7 @@ else:
             ssl=ssl,
             neural_full_grid=neural_full_grid,
             proper_training=proper_training,
+            ssl_v2_analysis=ssl_v2_analysis,
             evidence_pack=evidence_pack,
             synthetic_lob=synthetic_lob,
             binance_l2=binance_l2,
@@ -10214,6 +10603,7 @@ if typer is not None:
     app.command("inspect-fi2010-neural-plan")(inspect_fi2010_neural_plan)
     app.command("run-fi2010-neural-benchmark")(run_fi2010_neural_benchmark)
     app.command("run-fi2010-ssl-neural-benchmark")(run_fi2010_ssl_neural_benchmark)
+    app.command("run-fi2010-ssl-v2-benchmark")(run_fi2010_ssl_v2_benchmark)
     app.command("run-fi2010-neural-full-grid")(run_fi2010_neural_full_grid)
     app.command("run-fi2010-neural-proper-training-subset")(
         run_fi2010_neural_proper_training_subset

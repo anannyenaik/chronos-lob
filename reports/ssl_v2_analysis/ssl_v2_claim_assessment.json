@@ -1,0 +1,57 @@
+{
+  "analysis_version": "fi2010-ssl-v2-analysis/v1",
+  "claims": [
+    {
+      "claim_id": "ssl_v2_objective_implemented",
+      "claim_text": "The second-generation market-state-aware SSL objective is implemented.",
+      "reason": "SSL-v2 benchmark artefacts or loss-component rows are present.",
+      "scope": "code and stored benchmark artefacts",
+      "status": "supported"
+    },
+    {
+      "claim_id": "ssl_v2_evaluated",
+      "claim_text": "SSL-v2 was evaluated in the stored FI-2010 scope.",
+      "reason": "2 matched supervised-vs-SSL-v2 row(s) are present.",
+      "scope": "evidence level partial_real",
+      "status": "supported"
+    },
+    {
+      "claim_id": "ssl_v2_predictive_improvement",
+      "claim_text": "SSL-v2 improves predictive metrics in the stored scope.",
+      "reason": "Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement.",
+      "scope": "exact stored scope; evidence level partial_real",
+      "status": "unsupported"
+    },
+    {
+      "claim_id": "ssl_v2_calibration_improvement",
+      "claim_text": "SSL-v2 improves calibration in the stored scope.",
+      "reason": "ECE and Brier deltas do not jointly support calibration improvement.",
+      "scope": "exact stored scope; evidence level partial_real",
+      "status": "unsupported"
+    },
+    {
+      "claim_id": "broad_ssl_improvement",
+      "claim_text": "SSL improves ChronosLOB overall.",
+      "reason": "A scoped SSL-v2 result is not broad enough to overturn the broad SSL boundary.",
+      "scope": "blocked by existing SSL-v1 failure analysis and scoped SSL-v2 evidence",
+      "status": "unsupported"
+    },
+    {
+      "claim_id": "foundation_model",
+      "claim_text": "ChronosLOB is a foundation model.",
+      "reason": "The SSL-v2 objective is a scoped pretraining objective, not a foundation-model claim.",
+      "scope": "not claimed",
+      "status": "forbidden"
+    },
+    {
+      "claim_id": "sota",
+      "claim_text": "ChronosLOB is state-of-the-art.",
+      "reason": "No SOTA claim is introduced or supported.",
+      "scope": "not claimed",
+      "status": "forbidden"
+    }
+  ],
+  "created_at": "2026-05-30T18:39:36.089069+00:00",
+  "evidence_level": "partial_real",
+  "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark"
+}

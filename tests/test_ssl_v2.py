@@ -1,0 +1,458 @@
+"""Tests for the FI-2010 SSL-v2 objective, data path and artefacts."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from chronoslob.analysis.ssl_v2_analysis import analyse_ssl_v2_results
+from chronoslob.experiments import fi2010_ssl_v2_benchmark as runner
+from chronoslob.experiments.manifests import stable_json_dumps
+from chronoslob.training.matrix_ssl_v2_datasets import (
+    MatrixSSLV2WindowDataset,
+    build_ssl_v2_auxiliary_label_matrix,
+    build_ssl_v2_windows,
+    fit_ssl_v2_auxiliary_label_spec,
+    infer_ssl_v2_feature_groups,
+)
+from tests.test_fi2010_neural_runner import _write_tiny_neural_config
+
+
+def _tiny_lob_frame(n_rows: int = 18) -> pd.DataFrame:
+    rows = np.arange(n_rows, dtype=float)
+    return pd.DataFrame(
+        {
+            "split": ["train"] * n_rows,
+            "bid_price_1": 100.0 + rows,
+            "bid_quantity_1": 10.0 + (rows % 3),
+            "ask_price_1": 101.0 + rows + (rows % 2) * 0.2,
+            "ask_quantity_1": 8.0 + (rows % 4),
+            "depth_feature": rows / 10.0,
+            "imbalance_feature": (rows % 5) / 5.0,
+            "spread_feature": 1.0 + (rows % 2) * 0.1,
+            "context_feature": np.sin(rows),
+            "label_10": [1, 2, 3] * (n_rows // 3),
+            "label_50": [1, 2, 3] * (n_rows // 3),
+        }
+    )
+
+
+def test_ssl_v2_windows_do_not_cross_future_partition_boundary() -> None:
+    windows = build_ssl_v2_windows(
+        n_rows=12,
+        window_length=3,
+        allowed_indices=list(range(8)),
+        future_offset=2,
+    )
+    assert windows
+    for sample in windows:
+        assert sample.future_index <= 7
+        assert sample.future_index > sample.window_end
+        assert set(range(sample.window_start, sample.window_end + 1)).issubset(set(range(8)))
+
+
+def test_ssl_v2_auxiliary_bins_fit_on_train_pairs_only() -> None:
+    frame = _tiny_lob_frame()
+    train = list(range(10))
+    spec_a = fit_ssl_v2_auxiliary_label_spec(
+        frame,
+        train_indices=train,
+        future_offset=2,
+        bucket_count=3,
+    )
+    corrupted = frame.copy()
+    corrupted.loc[10:, "ask_price_1"] = 10000.0
+    corrupted.loc[10:, "bid_price_1"] = -10000.0
+    spec_b = fit_ssl_v2_auxiliary_label_spec(
+        corrupted,
+        train_indices=train,
+        future_offset=2,
+        bucket_count=3,
+    )
+    assert spec_a.volatility_edges == spec_b.volatility_edges
+    assert spec_a.return_edges == spec_b.return_edges
+    assert spec_a.imbalance_edges == spec_b.imbalance_edges
+    assert max(spec_a.train_future_indices) <= 9
+
+
+def test_ssl_v2_future_labels_are_strictly_future() -> None:
+    frame = _tiny_lob_frame()
+    spec = fit_ssl_v2_auxiliary_label_spec(
+        frame,
+        train_indices=list(range(12)),
+        future_offset=2,
+        bucket_count=3,
+    )
+    labels = build_ssl_v2_auxiliary_label_matrix(frame, spec)
+    # Row 0 compares spread at row 2 against row 0, not against row 1 or itself.
+    expected = int(
+        (frame.loc[2, "ask_price_1"] - frame.loc[2, "bid_price_1"])
+        > (frame.loc[0, "ask_price_1"] - frame.loc[0, "bid_price_1"])
+    )
+    assert labels["future_spread_widening"][0] == expected
+    assert labels["future_spread_widening"][len(frame) - 1] == -100
+
+
+def test_ssl_v2_structured_masking_is_deterministic() -> None:
+    torch = pytest.importorskip("torch")
+    frame = _tiny_lob_frame()
+    feature_columns = [
+        "bid_price_1",
+        "bid_quantity_1",
+        "ask_price_1",
+        "ask_quantity_1",
+        "imbalance_feature",
+        "spread_feature",
+        "context_feature",
+    ]
+    matrix = frame[feature_columns].to_numpy(dtype=float)
+    train = list(range(12))
+    windows = build_ssl_v2_windows(
+        n_rows=len(frame),
+        window_length=4,
+        allowed_indices=train,
+        future_offset=2,
+    )
+    spec = fit_ssl_v2_auxiliary_label_spec(
+        frame,
+        train_indices=train,
+        future_offset=2,
+        bucket_count=3,
+    )
+    labels = build_ssl_v2_auxiliary_label_matrix(frame, spec)
+    dataset_a = MatrixSSLV2WindowDataset(
+        matrix,
+        windows,
+        feature_groups=infer_ssl_v2_feature_groups(feature_columns),
+        auxiliary_labels=labels,
+        mask_probability=0.3,
+        mask_value=0.0,
+        ignore_index=-100,
+        enable_contrastive=False,
+        base_seed=17,
+    )
+    dataset_b = MatrixSSLV2WindowDataset(
+        matrix,
+        windows,
+        feature_groups=infer_ssl_v2_feature_groups(feature_columns),
+        auxiliary_labels=labels,
+        mask_probability=0.3,
+        mask_value=0.0,
+        ignore_index=-100,
+        enable_contrastive=False,
+        base_seed=17,
+    )
+    first = dataset_a[0]
+    second = dataset_b[0]
+    assert torch.equal(first["mask"], second["mask"])
+    assert torch.equal(first["x"], second["x"])
+
+
+def test_ssl_v2_model_emits_loss_components_and_transfers_encoder() -> None:
+    torch = pytest.importorskip("torch")
+    from chronoslob.models.matrix_ssl import load_encoder_state_into_classifier
+    from chronoslob.models.matrix_ssl_v2 import MatrixSSLV2Config, create_matrix_ssl_v2_model
+    from chronoslob.models.matrix_transformer import (
+        MatrixTransformerConfig,
+        create_matrix_transformer,
+    )
+
+    model = create_matrix_ssl_v2_model(
+        MatrixSSLV2Config(
+            input_features=5,
+            model_dim=8,
+            num_heads=2,
+            num_layers=1,
+            feedforward_dim=16,
+            max_sequence_length=4,
+            enable_contrastive=True,
+        )
+    )
+    x = torch.randn(3, 4, 5)
+    mask = torch.zeros(3, 4, 5, dtype=torch.bool)
+    mask[:, :1, :2] = True
+    future_labels = {
+        "future_spread_widening": torch.tensor([0, 1, 0], dtype=torch.long),
+        "future_volatility": torch.tensor([0, 1, 2], dtype=torch.long),
+        "future_return": torch.tensor([2, 1, 0], dtype=torch.long),
+        "future_imbalance": torch.tensor([1, 1, 2], dtype=torch.long),
+    }
+    output = model(
+        x,
+        mask=mask,
+        masked_target=x,
+        future_labels=future_labels,
+        contrastive_labels=torch.tensor([0, 0, 1], dtype=torch.long),
+    )
+    assert output.loss is not None
+    for component in (
+        "reconstruction",
+        "future_spread_widening",
+        "future_volatility",
+        "future_return",
+        "future_imbalance",
+        "contrastive",
+        "total",
+    ):
+        assert component in output.loss_components
+
+    classifier = create_matrix_transformer(
+        MatrixTransformerConfig(
+            input_features=5,
+            n_classes=3,
+            model_dim=8,
+            num_heads=2,
+            num_layers=1,
+            feedforward_dim=16,
+            max_sequence_length=4,
+        )
+    )
+    loaded = load_encoder_state_into_classifier(classifier, model.encoder_state_dict())
+    assert loaded
+
+
+def _fake_result_row(spec: runner.FI2010SSLV2RunSpec) -> dict[str, Any]:
+    macro = {
+        "supervised": 0.40,
+        "masked_reconstruction": 0.42,
+        "market_state_multitask": 0.45,
+    }[spec.objective]
+    mcc = {
+        "supervised": 0.10,
+        "masked_reconstruction": 0.11,
+        "market_state_multitask": 0.14,
+    }[spec.objective]
+    ece = {
+        "supervised": 0.08,
+        "masked_reconstruction": 0.10,
+        "market_state_multitask": 0.07,
+    }[spec.objective]
+    return {
+        "fold": spec.fold,
+        "horizon": spec.horizon,
+        "seed": spec.seed,
+        "lookback": spec.lookback,
+        "model_family": spec.model_family,
+        "pretraining_objective": spec.pretraining_objective,
+        "accuracy": 0.55,
+        "macro_f1": macro,
+        "mcc": mcc,
+        "ece": ece,
+        "brier_score": 0.30 if spec.objective != "market_state_multitask" else 0.28,
+        "nll": 1.1,
+        "class_f1_down": 0.3,
+        "class_f1_stationary": 0.4,
+        "class_f1_up": 0.5,
+        "checkpoint_hash": "hash",
+        "prediction_file": "",
+        "status": "completed",
+        "run_id": spec.run_id,
+        "run_dir": "",
+        "architecture_hash": "arch",
+        "preprocessing_hash": "prep",
+    }
+
+
+def _fake_training_row(spec: runner.FI2010SSLV2RunSpec) -> dict[str, Any]:
+    return {
+        "run_id": spec.run_id,
+        "fold": spec.fold,
+        "horizon": spec.horizon,
+        "seed": spec.seed,
+        "lookback": spec.lookback,
+        "objective": spec.objective,
+        "pretraining_objective": spec.pretraining_objective,
+        "max_epochs": 2,
+        "epochs_ran": 2,
+        "best_epoch": 1,
+        "monitored_metric": "validation_macro_f1",
+        "best_validation_score": 0.4,
+        "early_stopping_patience": 1,
+        "early_stopped": True,
+        "training_seconds": 0.01,
+        "test_macro_f1": _fake_result_row(spec)["macro_f1"],
+        "test_accuracy": 0.55,
+        "test_mcc": _fake_result_row(spec)["mcc"],
+        "test_ece": _fake_result_row(spec)["ece"],
+        "status": "completed",
+    }
+
+
+def test_ssl_v2_runner_writes_required_artefacts(tmp_path: Path, monkeypatch: Any) -> None:
+    def fake_v1_or_supervised(
+        spec: runner.FI2010SSLV2RunSpec,
+        **_: Any,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        return _fake_result_row(spec), _fake_training_row(spec)
+
+    def fake_v2(
+        spec: runner.FI2010SSLV2RunSpec,
+        **_: Any,
+    ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
+        return (
+            _fake_result_row(spec),
+            _fake_training_row(spec),
+            [
+                {
+                    "epoch": 1,
+                    "train_loss": 1.0,
+                    "validation_loss": 0.9,
+                    "train_reconstruction": 0.2,
+                    "train_future_spread_widening": 0.3,
+                    "train_future_volatility": 0.4,
+                    "train_future_return": 0.5,
+                    "train_future_imbalance": 0.6,
+                    "train_contrastive": None,
+                    "train_total": 1.0,
+                    "validation_reconstruction": 0.2,
+                    "validation_future_spread_widening": 0.3,
+                    "validation_future_volatility": 0.4,
+                    "validation_future_return": 0.5,
+                    "validation_future_imbalance": 0.6,
+                    "validation_contrastive": None,
+                    "validation_total": 0.9,
+                }
+            ],
+        )
+
+    monkeypatch.setattr(runner, "_execute_v1_or_supervised_run_spec", fake_v1_or_supervised)
+    monkeypatch.setattr(runner, "_execute_ssl_v2_run_spec", fake_v2)
+    out = tmp_path / "ssl_v2"
+    summary = runner.run_fi2010_ssl_v2_benchmark(
+        config_path=_write_tiny_neural_config(tmp_path),
+        processed_root=tmp_path / "processed",
+        out_dir=out,
+        baseline_source_dir=None,
+        folds=[1],
+        horizons=[10],
+        seeds=[0],
+        lookbacks=[2],
+        objectives=["supervised", "masked_reconstruction", "market_state_multitask"],
+        pretrain_epochs=1,
+        max_epochs=2,
+        patience=1,
+        batch_size=4,
+        import_existing_baselines=False,
+    )
+    assert summary.completed_run_count == 3
+    expected = {
+        "README.md",
+        "summary.json",
+        "results_summary.csv",
+        "aggregate_summary.csv",
+        "aggregate_summary.json",
+        "ssl_v2_comparison.csv",
+        "failures.csv",
+        "missing_pairs.csv",
+        "training_curves_summary.csv",
+        "ssl_v2_loss_components.csv",
+        "config_snapshot.json",
+        "sha256_manifest.json",
+    }
+    assert expected.issubset({path.name for path in out.iterdir()})
+    comparison = pd.read_csv(out / "ssl_v2_comparison.csv")
+    assert set(comparison["ssl_objective"]) == {
+        "masked_reconstruction",
+        "market_state_multitask",
+    }
+    assert set(comparison["status"]) == {"matched"}
+
+
+def test_ssl_v2_analysis_computes_deltas_and_claims(tmp_path: Path) -> None:
+    source = tmp_path / "ssl_v2_source"
+    source.mkdir()
+    (source / "summary.json").write_text(
+        stable_json_dumps(
+            {
+                "evidence_level": "partial_real",
+                "scope_label": "tiny",
+                "folds": [1],
+                "horizons": [10],
+                "seeds": [0],
+                "lookbacks": [2],
+                "objectives": ["supervised", "market_state_multitask"],
+                "completed_run_count": 2,
+            }
+        ),
+        encoding="utf-8",
+    )
+    pd.DataFrame([_fake_result_row(runner.FI2010SSLV2RunSpec(1, 10, 0, 2, "supervised"))]).to_csv(
+        source / "results_summary.csv",
+        index=False,
+    )
+    pd.DataFrame(
+        [
+            {
+                "horizon": 10,
+                "lookback": 2,
+                "model_family": "matrix_transformer",
+                "pretraining_objective": "market_state_multitask",
+                "completed_run_count": 1,
+                "failed_run_count": 0,
+                "mean_accuracy": 0.55,
+                "std_accuracy": 0.0,
+                "mean_macro_f1": 0.45,
+                "std_macro_f1": 0.0,
+                "mean_mcc": 0.14,
+                "std_mcc": 0.0,
+                "mean_ece": 0.07,
+                "std_ece": 0.0,
+                "mean_brier_score": 0.28,
+                "mean_nll": 1.1,
+            }
+        ]
+    ).to_csv(source / "aggregate_summary.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "fold": 1,
+                "horizon": 10,
+                "seed": 0,
+                "lookback": 2,
+                "model_family": "matrix_transformer",
+                "ssl_objective": "market_state_multitask",
+                "comparison": "supervised_vs_market_state_multitask",
+                "supervised_run_id": "base",
+                "ssl_run_id": "v2",
+                "supervised_macro_f1": 0.40,
+                "ssl_macro_f1": 0.45,
+                "delta_macro_f1": 0.05,
+                "supervised_accuracy": 0.55,
+                "ssl_accuracy": 0.56,
+                "delta_accuracy": 0.01,
+                "supervised_mcc": 0.10,
+                "ssl_mcc": 0.14,
+                "delta_mcc": 0.04,
+                "supervised_ece": 0.08,
+                "ssl_ece": 0.07,
+                "delta_ece": -0.01,
+                "supervised_brier_score": 0.30,
+                "ssl_brier_score": 0.28,
+                "delta_brier_score": -0.02,
+                "supervised_nll": 1.2,
+                "ssl_nll": 1.1,
+                "delta_nll": -0.1,
+                "macro_f1_outcome": "win",
+                "ece_outcome": "win",
+                "mcc_outcome": "win",
+                "status": "matched",
+                "reason": "",
+            }
+        ]
+    ).to_csv(source / "ssl_v2_comparison.csv", index=False)
+    pd.DataFrame(columns=["status"]).to_csv(source / "failures.csv", index=False)
+    pd.DataFrame([{"epoch": 1, "train_total": 1.0}]).to_csv(
+        source / "ssl_v2_loss_components.csv",
+        index=False,
+    )
+    out = tmp_path / "analysis"
+    summary = analyse_ssl_v2_results(source, out_dir=out)
+    assert summary.ssl_v2_matched_rows == 1
+    assert summary.claim_statuses["ssl_v2_predictive_improvement"] == "supported"
+    assert summary.claim_statuses["ssl_v2_calibration_improvement"] == "supported"
+    assert (out / "ssl_v2_analysis.md").is_file()
+    assert (out / "ssl_v2_delta_by_horizon.csv").is_file()

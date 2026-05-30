@@ -139,6 +139,22 @@ models, to support trading decisions, or to claim that the architecture
 forecasts prices, returns, volatility, spread or fill outcomes. No
 Sharpe, trading performance or execution viability is implied.
 
+## Matrix SSL-v2
+
+The FI-2010 matrix path now also includes a second-generation objective,
+``market_state_multitask``, implemented in
+``chronoslob.models.matrix_ssl_v2``. It was added after the SSL failure
+analysis showed that random field reconstruction and next-field prediction did
+not broadly improve downstream metrics.
+
+SSL-v2 masks coherent feature groups over temporal spans and adds train-fitted
+future-state auxiliary heads for spread widening, volatility, return and
+imbalance. The optional contrastive term is configurable and disabled by
+default. The stored benchmark under
+``experiments/fi2010_ssl_v2_benchmark/`` is partial_real and mixed across
+horizons, so it supports implementation and scoped evaluation only, not a broad
+SSL improvement or calibration-improvement claim.
+
 ## Limitations and Next Steps
 
 * The contrastive objective is deferred; the public API leaves room for

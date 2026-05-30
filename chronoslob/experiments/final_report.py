@@ -42,6 +42,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Legacy Reduced-Scope Benchmark",
     "SSL Interpretation",
     "SSL Failure Analysis",
+    "Second-Generation SSL Objective",
     "Figure Index",
     "Uncertainty Summary",
     "Ablation Summary",
@@ -158,6 +159,16 @@ _OPTIONAL_BINANCE_L2_FILES = (
     "feature_summary.csv",
     "update_continuity_summary.csv",
     "binance_claim_assessment.json",
+)
+_OPTIONAL_SSL_V2_ANALYSIS_FILES = (
+    "summary.json",
+    "ssl_v2_analysis.md",
+    "ssl_v2_metric_summary.csv",
+    "ssl_v2_delta_by_horizon.csv",
+    "ssl_v2_delta_by_fold.csv",
+    "ssl_v2_loss_components.csv",
+    "ssl_v2_claim_assessment.json",
+    "figure_manifest.json",
 )
 
 
@@ -296,6 +307,7 @@ class _FinalReportData:
     external: _OptionalArtefacts
     synthetic: _OptionalArtefacts
     binance_l2: _OptionalArtefacts
+    ssl_v2_analysis: _OptionalArtefacts
     ssl: _SSLArtefacts
     full_grid: _FullGridArtefacts
     proper_training: _ProperTrainingArtefacts
@@ -337,6 +349,7 @@ def build_final_empirical_report(
     ssl_dir: Path | None = None,
     neural_full_grid_dir: Path | None = None,
     proper_training_dir: Path | None = None,
+    ssl_v2_analysis_dir: Path | None = None,
     evidence_pack_dir: Path | None = None,
     overwrite: bool = False,
 ) -> FinalEmpiricalReportSummary:
@@ -386,6 +399,9 @@ def build_final_empirical_report(
         proper_training_dir=(
             Path(proper_training_dir) if proper_training_dir is not None else None
         ),
+        ssl_v2_analysis_dir=(
+            Path(ssl_v2_analysis_dir) if ssl_v2_analysis_dir is not None else None
+        ),
         evidence_pack_dir=(Path(evidence_pack_dir) if evidence_pack_dir is not None else None),
         report_path=report_path,
         summary_path=summary_path,
@@ -430,6 +446,7 @@ def _load_final_report_data(
     ssl_dir: Path | None,
     neural_full_grid_dir: Path | None,
     proper_training_dir: Path | None,
+    ssl_v2_analysis_dir: Path | None,
     evidence_pack_dir: Path | None,
     report_path: Path,
     summary_path: Path,
@@ -587,6 +604,21 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    ssl_v2_analysis = (
+        _load_optional_artefacts(
+            directory=ssl_v2_analysis_dir,
+            label="ssl_v2_analysis",
+            section_title="Second-Generation SSL Objective",
+            expected_files=_OPTIONAL_SSL_V2_ANALYSIS_FILES,
+            input_paths=input_paths,
+            file_hashes=file_hashes,
+            warnings=warnings,
+            skipped_sections=skipped_sections,
+            missing_sections=missing_sections,
+        )
+        if ssl_v2_analysis_dir is not None
+        else _OptionalArtefacts()
+    )
     recorded_skips.extend(_extract_recorded_skips(ablation, "ablation"))
     recorded_skips.extend(_extract_recorded_skips(feature_ablation, "feature_ablation"))
     recorded_skips.extend(
@@ -646,6 +678,7 @@ def _load_final_report_data(
         external=external,
         synthetic=synthetic,
         binance_l2=binance_l2,
+        ssl_v2_analysis=ssl_v2_analysis,
         ssl=ssl,
         full_grid=full_grid,
         proper_training=proper_training,
@@ -1182,6 +1215,9 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section("Legacy Reduced-Scope Benchmark", _render_legacy_neural_benchmark(data)))
     lines.extend(_section("SSL Interpretation", _render_ssl_interpretation(data)))
     lines.extend(_section("SSL Failure Analysis", _render_ssl_failure_analysis(data)))
+    lines.extend(
+        _section("Second-Generation SSL Objective", _render_ssl_v2_analysis(data))
+    )
     lines.extend(_section("Figure Index", _render_figure_index(data)))
     lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
     lines.extend(_section("Ablation Summary", _render_ablations(data)))
@@ -2283,6 +2319,93 @@ def _render_ssl_failure_analysis(data: _FinalReportData) -> list[str]:
     return lines
 
 
+def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
+    artefacts = data.ssl_v2_analysis
+    if artefacts.directory is None or artefacts.summary is None:
+        return [
+            "Skipped: SSL-v2 analysis artefacts were not supplied.",
+            "No second-generation SSL result is implied without stored analysis outputs.",
+        ]
+    summary = artefacts.summary
+    claim_payload = artefacts.json_payloads.get("ssl_v2_claim_assessment.json", {})
+    claims = claim_payload.get("claims", [])
+    claim_status = {
+        str(item.get("claim_id")): str(item.get("status"))
+        for item in claims
+        if isinstance(item, Mapping)
+    }
+    horizon_rows = artefacts.csv_rows.get("ssl_v2_delta_by_horizon.csv", [])
+    lines = [
+        *_wrap_prose(
+            "A second-generation SSL objective was added after the SSL failure "
+            "analysis showed that first-generation random field reconstruction and "
+            "next-field prediction did not broadly improve predictive metrics or "
+            "calibration. The SSL-v2 objective is market-state-aware and remains a "
+            "scoped comparison, not a general representation or trading claim."
+        ),
+        "",
+        f"- evidence level: {_mapping_str(summary, 'evidence_level')}",
+        f"- scope label: {_mapping_str(summary, 'scope_label')}",
+        f"- matched supervised-vs-SSL-v2 rows: {_mapping_str(summary, 'ssl_v2_matched_rows')}",
+        f"- failures: {_mapping_str(summary, 'failure_count')}",
+        "",
+    ]
+    if horizon_rows:
+        rows = []
+        for row in horizon_rows:
+            if row.get("ssl_objective") != "market_state_multitask":
+                continue
+            rows.append(
+                (
+                    str(row.get("horizon", "")),
+                    _empty_to_na(row.get("matched_run_count")),
+                    _format_float(_row_float(row, "mean_delta_macro_f1")),
+                    _format_float(_row_float(row, "mean_delta_mcc")),
+                    _format_float(_row_float(row, "mean_delta_ece")),
+                    _format_float(_row_float(row, "mean_delta_brier_score")),
+                )
+            )
+        if rows:
+            lines.extend(
+                _markdown_table(
+                    (
+                        "horizon",
+                        "matched rows",
+                        "mean delta macro-F1",
+                        "mean delta MCC",
+                        "mean delta ECE",
+                        "mean delta Brier",
+                    ),
+                    rows,
+                )
+            )
+            lines.append("")
+    lines.extend(
+        _wrap_bullets(
+            [
+                "- SSL-v2 predictive improvement is reported only when matched macro-F1 "
+                "and MCC deltas support it in the stored scope.",
+                "- SSL-v2 calibration improvement is reported only when ECE and Brier "
+                "deltas both support it.",
+                "- Broad SSL improvement remains bounded by the combined SSL-v1 and "
+                "SSL-v2 evidence.",
+            ]
+        )
+    )
+    if claim_status:
+        lines.append("")
+        lines.extend(
+            _markdown_table(
+                ("claim", "status"),
+                [
+                    (claim_id, status)
+                    for claim_id, status in sorted(claim_status.items())
+                ],
+            )
+        )
+    return lines
+
+
 def _all_rows_improve(rows: Sequence[Mapping[str, str]], column: str) -> bool:
     values = [value for row in rows for value in [_row_float(row, column)] if value is not None]
     return bool(values) and all(value > 0.0 for value in values)
@@ -3109,10 +3232,12 @@ def _render_synthetic_extension(data: _FinalReportData) -> list[str]:
     """Render the synthetic event-level extension section conservatively."""
     boundary = [
         "",
-        "This extension demonstrates event-level pipeline support under controlled "
-        "synthetic regimes. It does not provide real-market evidence. It does not "
-        "change FI-2010 limitations. It enables event-level feature validation that "
-        "FI-2010 cannot support.",
+        *_wrap_prose(
+            "This extension demonstrates event-level pipeline support under controlled "
+            "synthetic regimes. It does not provide real-market evidence. It does not "
+            "change FI-2010 limitations. It enables event-level feature validation "
+            "that FI-2010 cannot support."
+        ),
     ]
     if data.synthetic.directory is None or data.synthetic.summary is None:
         return [
@@ -3146,12 +3271,14 @@ def _render_binance_l2_extension(data: _FinalReportData) -> list[str]:
     boundary = [
         "",
         "Binance L2 replay is scoped to real event-level aggregated depth-stream "
-        "ingestion and replay when a local Binance capture is supplied. Fixture "
-        "runs are engineering checks. It is crypto-market engineering evidence, "
-        "not equity-market evidence. Binance diff-depth updates are aggregated "
-        "level updates, not individual order-event data. It does not provide "
-        "profitability, tradability or predictive-success evidence. It is not "
-        "live-trading evidence. It complements the FI-2010 and synthetic evidence.",
+        "ingestion and replay when a local Binance capture is supplied.",
+        "Fixture runs are engineering checks. It is crypto-market engineering "
+        "evidence, not equity-market evidence.",
+        "Binance diff-depth updates are aggregated level updates, not individual "
+        "order-event data.",
+        "It does not provide profitability, tradability or predictive-success evidence.",
+        "It is not live-trading evidence. It complements the FI-2010 and synthetic "
+        "evidence.",
     ]
     if data.binance_l2.directory is None or data.binance_l2.summary is None:
         return [

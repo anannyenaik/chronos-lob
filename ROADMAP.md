@@ -40,6 +40,11 @@ calibration and execution-aware evaluation.
   longer-training subset and records that the completed grid supports no broad SSL
   improvement; the only positive predictive-metric signal is narrow to fold 1,
   horizon 50 in the partial subset, where calibration worsened.
+- A partial-real SSL-v2 benchmark and analysis. The second-generation objective
+  uses structured group masking plus future spread, volatility, return and
+  imbalance auxiliary heads. The stored fold-1 horizons-10/50 scope supports
+  implementation and evaluation only; predictive and calibration improvement
+  claims remain unsupported.
 - A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
   across folds 1-5, with a single-seed and lookback-20 caveat, reported
   separately from the matched grid.
@@ -83,8 +88,9 @@ calibration and execution-aware evaluation.
   access and licensing allow.
 - Run and document user-supplied Binance Spot L2 captures when local data is
   available; keep raw captures outside git and report only compact summaries.
-- Broaden genuine train-only SSL pretraining and supervised fine-tuning
-  evidence before making any SSL improvement claim.
+- Broaden genuine train-only SSL-v2 pretraining and supervised fine-tuning
+  evidence beyond the current fold-1 scope before making any SSL improvement
+  claim.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when
   data access and licensing allow.
 - Improve execution modelling with richer queue-position, partial-fill,

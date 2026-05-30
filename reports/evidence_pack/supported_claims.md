@@ -9,6 +9,12 @@
 - SSL was implemented and evaluated under matched FI-2010 settings.
   - support: fi2010_neural_full_grid, ssl_failure_analysis_report
   - safe wording: SSL objectives were implemented and evaluated under matched settings.
+- SSL-v2 was implemented as a market-state-aware objective.
+  - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+- SSL-v2 was evaluated in a scoped FI-2010 benchmark.
+  - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
 - snapshot_order_flow_proxy remains important at horizon 10 for logistic/ridge
   - support: feature_ablation_analysis_report, feature_ablation_outputs
   - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
@@ -18,3 +24,21 @@
 - Feature-ablation effects appear in a non-linear model slice
   - support: feature_ablation_analysis_report, feature_ablation_outputs
   - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
+- ChronosLOB supports a synthetic event-level LOB pipeline
+  - support: synthetic_lob_extension_report
+  - safe wording: ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on controlled synthetic regimes; not real-market data.
+- ChronosLOB computes true event-level features on synthetic event streams
+  - support: synthetic_lob_extension_report
+  - safe wording: Event-level order-flow, cancellation and trade imbalance are computed on synthetic event streams only; FI-2010 still exposes snapshot proxies only.
+- ChronosLOB produces synthetic regime stress-test diagnostics
+  - support: synthetic_lob_extension_report
+  - safe wording: Synthetic regime diagnostics are controlled stress tests on known regimes, not real-market execution evidence.
+- ChronosLOB supports a Binance L2 snapshot-plus-diff replay pipeline
+  - support: binance_l2_extension_report
+  - safe wording: ChronosLOB reconstructs a Binance Spot book from a depth snapshot and aggregated diff-depth stream offline; not real-market predictive evidence.
+- ChronosLOB validates Binance update-id continuity during replay
+  - support: binance_l2_extension_report
+  - safe wording: Update-id bracketing, stale-event skipping and gap detection are enforced.
+- ChronosLOB validates Binance order-book invariants during replay
+  - support: binance_l2_extension_report
+  - safe wording: Non-negative depth and best bid below best ask are validated per snapshot.

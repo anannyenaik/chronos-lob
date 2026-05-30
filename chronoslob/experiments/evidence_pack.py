@@ -153,6 +153,8 @@ class EvidencePackConfig:
     neural_full_grid_dir: Path = Path("experiments/fi2010_neural_full_grid")
     proper_training_dir: Path = Path("experiments/fi2010_neural_proper_training_subset_v2")
     ssl_analysis_dir: Path = Path("reports/ssl_failure_analysis")
+    ssl_v2_dir: Path = Path("experiments/fi2010_ssl_v2_benchmark")
+    ssl_v2_analysis_dir: Path = Path("reports/ssl_v2_analysis")
     figures_dir: Path = Path("reports/figures/fi2010_neural_full_grid")
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
     execution_v3_analysis_dir: Path = Path("reports/execution_v3_analysis")
@@ -438,6 +440,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             _audit_ssl_delta_claim(by_name, metric="macro_f1"),
             _audit_ssl_delta_claim(by_name, metric="calibration"),
             _audit_ssl_proper_training_claim(by_name),
+            *_audit_ssl_v2_claims(by_name),
             _audit_ssl_execution_claim(by_name),
             _audit_gradient_boosting_claim(by_name),
             _audit_feature_group_improvement_claim(by_name),
@@ -567,6 +570,44 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
                 "The SSL failure analysis reads retained lightweight comparison "
                 "tables only; it does not establish a broad SSL improvement or any "
                 "calibration improvement."
+            ),
+        ),
+        _ArtefactSpec(
+            name="fi2010_ssl_v2_benchmark",
+            artefact_type="fi2010_ssl_v2_benchmark",
+            path=config.ssl_v2_dir,
+            required_files=(
+                "summary.json",
+                "results_summary.csv",
+                "aggregate_summary.csv",
+                "aggregate_summary.json",
+                "ssl_v2_comparison.csv",
+                "failures.csv",
+                "sha256_manifest.json",
+            ),
+            metadata_files=("summary.json", "aggregate_summary.json"),
+            limitations=(
+                "SSL-v2 benchmark claims are limited to the exact stored scope; "
+                "imported baselines are disclosed in summary.json."
+            ),
+        ),
+        _ArtefactSpec(
+            name="ssl_v2_analysis_report",
+            artefact_type="ssl_v2_analysis",
+            path=config.ssl_v2_analysis_dir,
+            required_files=(
+                "ssl_v2_analysis.md",
+                "ssl_v2_claim_assessment.json",
+                "ssl_v2_metric_summary.csv",
+                "ssl_v2_delta_by_horizon.csv",
+                "ssl_v2_delta_by_fold.csv",
+                "ssl_v2_loss_components.csv",
+                "summary.json",
+            ),
+            metadata_files=("summary.json", "ssl_v2_claim_assessment.json"),
+            limitations=(
+                "The SSL-v2 analysis is scoped evidence only and does not alter "
+                "broad SSL boundaries unless its stored deltas support that."
             ),
         ),
         _ArtefactSpec(
@@ -1036,6 +1077,14 @@ def _completion_status(spec: _ArtefactSpec, loaded: _LoadedArtefact) -> Artefact
         summary = loaded.payloads.get("summary", {})
         evidence_level = str(summary.get("evidence_level", "")).lower()
         if evidence_level == "complete_real" or bool(summary.get("target_scope_complete")):
+            return "complete_real"
+        return "partial_real"
+    if spec.artefact_type in {"fi2010_ssl_v2_benchmark", "ssl_v2_analysis"}:
+        summary = loaded.payloads.get("summary", {})
+        evidence_level = str(summary.get("evidence_level", "")).lower()
+        if evidence_level == "smoke_test_only":
+            return "smoke_test_only"
+        if evidence_level == "complete_real":
             return "complete_real"
         return "partial_real"
     if spec.artefact_type == "feature_ablations":
@@ -1629,6 +1678,83 @@ def _audit_ssl_proper_training_claim(
         ),
         category="empirical result",
     )
+
+
+def _audit_ssl_v2_claims(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> list[ClaimAuditEntry]:
+    benchmark = by_name.get("fi2010_ssl_v2_benchmark")
+    analysis = by_name.get("ssl_v2_analysis_report")
+    required = ["fi2010_ssl_v2_benchmark", "ssl_v2_analysis_report"]
+    claim_payload = (
+        analysis.payloads.get("ssl_v2_claim_assessment", {}) if analysis is not None else {}
+    )
+    raw_claims = claim_payload.get("claims", [])
+    by_claim_id = {
+        str(item.get("claim_id")): item
+        for item in raw_claims
+        if isinstance(item, Mapping)
+    }
+
+    def _entry(
+        *,
+        claim_id: str,
+        claim_text: str,
+        source_claim_id: str,
+        category: str = "empirical result",
+    ) -> ClaimAuditEntry:
+        if benchmark is None or analysis is None:
+            return _needs_real_evidence(claim_id, claim_text, required)
+        if benchmark.status in _BAD_STATUSES or analysis.status in _BAD_STATUSES:
+            return _needs_real_evidence(claim_id, claim_text, required)
+        if benchmark.status == "smoke_test_only" or analysis.status == "smoke_test_only":
+            return _smoke_only_claim(claim_id, claim_text, required, required)
+        source = by_claim_id.get(source_claim_id, {})
+        source_status = str(source.get("status", "needs_real_evidence"))
+        if source_status == "supported":
+            status: ClaimStatus = "supported"
+        elif source_status == "forbidden":
+            status = "forbidden"
+        elif source_status == "unsupported":
+            status = "unsupported"
+        else:
+            status = "needs_real_evidence"
+        return ClaimAuditEntry(
+            claim_id=claim_id,
+            claim_text=claim_text,
+            status=status,
+            supporting_artefacts=required if status == "supported" else [],
+            required_artefacts=required,
+            reason=str(source.get("reason", "Read from SSL-v2 claim assessment.")),
+            safe_rewording=(
+                "Report SSL-v2 only as a scoped, failure-analysis-motivated "
+                "objective with metric-specific deltas."
+            ),
+            category=category,
+        )
+
+    return [
+        _entry(
+            claim_id="empirical.ssl_v2_implemented",
+            claim_text="SSL-v2 was implemented as a market-state-aware objective.",
+            source_claim_id="ssl_v2_objective_implemented",
+        ),
+        _entry(
+            claim_id="empirical.ssl_v2_evaluated",
+            claim_text="SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
+            source_claim_id="ssl_v2_evaluated",
+        ),
+        _entry(
+            claim_id="empirical.ssl_v2_predictive_improvement",
+            claim_text="SSL-v2 improved predictive metrics in the stored scope.",
+            source_claim_id="ssl_v2_predictive_improvement",
+        ),
+        _entry(
+            claim_id="empirical.ssl_v2_calibration_improvement",
+            claim_text="SSL-v2 improved calibration in the stored scope.",
+            source_claim_id="ssl_v2_calibration_improvement",
+        ),
+    ]
 
 
 def _audit_ssl_delta_claim(

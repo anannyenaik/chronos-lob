@@ -40,6 +40,14 @@
   - status: partially_supported
   - reason: Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.
   - safe wording: The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.
+- SSL-v2 improved predictive metrics in the stored scope.
+  - status: unsupported
+  - reason: Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+- SSL-v2 improved calibration in the stored scope.
+  - status: unsupported
+  - reason: ECE and Brier deltas do not jointly support calibration improvement.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
 - SSL improved execution-aware proxy metrics
   - status: needs_real_evidence
   - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.
@@ -64,6 +72,42 @@
   - status: forbidden
   - reason: snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices and is not true event-level order-flow imbalance.
   - safe wording: Use feature-ablation evidence language with exact scope and proxy caveats.
+- The synthetic extension generalises to real-market event-level data
+  - status: unsupported
+  - reason: All synthetic data is controlled and does not transfer to real markets.
+  - safe wording: State that synthetic results do not establish real-market generalisation.
+- The synthetic extension shows live trading or profitability
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline synthetic diagnostics only; do not imply returns.
+- The synthetic extension provides true event-level OFI on FI-2010
+  - status: forbidden
+  - reason: FI-2010 snapshots expose only proxies; event-level order flow exists for synthetic data only.
+  - safe wording: Event-level order flow is available only on synthetic streams, not FI-2010.
+- ChronosLOB ingests and replays a real event-level aggregated L2 depth stream
+  - status: needs_real_evidence
+  - reason: The bundled artefact uses Binance-shaped synthetic fixtures; a local captured Binance Spot snapshot/diff stream was not supplied.
+  - safe wording: ChronosLOB includes an offline Binance Spot aggregated diff-depth replay path; fixture runs are engineering checks, while user-supplied local captures are crypto-market data only.
+- The Binance L2 extension shows real-market predictive success
+  - status: unsupported
+  - reason: Replay produces no predictive or returns evidence.
+  - safe wording: Describe the offline replay and features only; claim no predictive success.
+- The Binance L2 extension generalises to equity markets
+  - status: unsupported
+  - reason: This is crypto-venue data and does not transfer to equity markets.
+  - safe wording: State that crypto L2 evidence does not establish equity-market generalisation.
+- The Binance L2 extension recovers true trades or cancellations from diff-depth
+  - status: unsupported
+  - reason: Diff-depth carries aggregate level changes, not individual trades or cancellations.
+  - safe wording: Call removed levels aggregate deletions; do not claim individual attribution.
+- The Binance L2 extension shows live trading or profitability
+  - status: forbidden
+  - reason: This claim is blocked by release policy for ChronosLOB artefacts.
+  - safe wording: Describe offline replay only; do not imply returns, tradability or live trading.
+- The Binance L2 extension models individual-order queue position
+  - status: forbidden
+  - reason: Aggregated level updates cannot expose individual-order queue position.
+  - safe wording: State that aggregated diff-depth cannot support queue-position modelling.
 - profitable trading strategy
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.

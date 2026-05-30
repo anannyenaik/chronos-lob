@@ -16,6 +16,8 @@ and offline execution-aware proxy diagnostics.
 - Classical, DeepLOB-style and transformer model code paths.
 - Self-supervised masked-field and next-field objectives plus
   multi-task fine-tuning infrastructure.
+- Second-generation matrix SSL objective with structured group masking and
+  train-fitted future-state auxiliary labels.
 - Calibration, uncertainty and confidence-filtering diagnostics.
 - Execution-aware proxy diagnostics with explicit assumptions for fees, spread
   costs, latency, turnover, passive fill proxies and risk constraints.
@@ -39,6 +41,7 @@ The current FI-2010 artefacts live under
 [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/),
 [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/),
 [`experiments/fi2010_neural_full_grid/`](../experiments/fi2010_neural_full_grid/),
+[`experiments/fi2010_ssl_v2_benchmark/`](../experiments/fi2010_ssl_v2_benchmark/),
 [`experiments/fi2010_execution_v3/`](../experiments/fi2010_execution_v3/),
 [`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/),
 [`experiments/fi2010_feature_ablations_nonlinear_slice/`](../experiments/fi2010_feature_ablations_nonlinear_slice/) and
@@ -83,6 +86,14 @@ and records why SSL is not a broad success: the completed grid does not improve
 overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 50 in the partial proper-training subset, and calibration worsened there.
 
+The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a partial-real
+failure-analysis-motivated follow-up. It tests a market-state-aware multitask
+objective on fold 1, horizons 10/50, seed 0 and lookback 50. SSL-v2 improves
+macro-F1 and MCC at horizon 10 but worsens ECE/Brier there; at horizon 50 it
+degrades macro-F1, MCC, ECE and Brier. The stored analysis in
+`reports/ssl_v2_analysis/` supports implementation and scoped evaluation only,
+not predictive improvement, calibration improvement or broad SSL improvement.
+
 Execution-v3 is `complete_real` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
 current feature-ablation evidence covers logistic/ridge folds 1-5, horizons
@@ -110,6 +121,8 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   not a performance-maximising neural benchmark.
 - The standalone SSL runner output remains missing; the completed matched grid
   is the current SSL comparison evidence.
+- SSL-v2 evidence is partial_real and mixed across horizons; it does not change
+  the broad SSL claim boundary.
 - Generalisation beyond FI-2010 requires additional documented experiment
   records.
 - The synthetic event-level extension is synthetic only. Its results do not

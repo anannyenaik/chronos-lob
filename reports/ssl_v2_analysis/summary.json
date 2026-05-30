@@ -1,0 +1,30 @@
+{
+  "analysis_version": "fi2010-ssl-v2-analysis/v1",
+  "artefacts": {
+    "claim_assessment": "ssl_v2_claim_assessment.json",
+    "delta_by_fold": "ssl_v2_delta_by_fold.csv",
+    "delta_by_horizon": "ssl_v2_delta_by_horizon.csv",
+    "figure_manifest": "figure_manifest.json",
+    "loss_components": "ssl_v2_loss_components.csv",
+    "metric_summary": "ssl_v2_metric_summary.csv",
+    "report": "ssl_v2_analysis.md",
+    "summary": "summary.json"
+  },
+  "claim_statuses": {
+    "broad_ssl_improvement": "unsupported",
+    "foundation_model": "forbidden",
+    "sota": "forbidden",
+    "ssl_v2_calibration_improvement": "unsupported",
+    "ssl_v2_evaluated": "supported",
+    "ssl_v2_objective_implemented": "supported",
+    "ssl_v2_predictive_improvement": "unsupported"
+  },
+  "created_at": "2026-05-30T18:39:36.094948+00:00",
+  "evidence_level": "partial_real",
+  "failure_count": 0,
+  "matched_rows": 4,
+  "out_dir": "reports\\ssl_v2_analysis",
+  "scope_label": "limited_ssl_v2_partial_real_slice",
+  "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark",
+  "ssl_v2_matched_rows": 2
+}

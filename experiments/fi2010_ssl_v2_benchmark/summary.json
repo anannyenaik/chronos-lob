@@ -1,0 +1,68 @@
+{
+  "aggregate_rows": 6,
+  "artefacts": {
+    "aggregate_summary": "aggregate_summary.csv",
+    "aggregate_summary_json": "aggregate_summary.json",
+    "config_snapshot": "config_snapshot.json",
+    "failures": "failures.csv",
+    "missing_pairs": "missing_pairs.csv",
+    "readme": "README.md",
+    "results_summary": "results_summary.csv",
+    "run_plan": "run_plan.csv",
+    "runs": "runs/",
+    "sha256_manifest": "sha256_manifest.json",
+    "ssl_comparison": "ssl_comparison.csv",
+    "ssl_v2_comparison": "ssl_v2_comparison.csv",
+    "ssl_v2_loss_components": "ssl_v2_loss_components.csv",
+    "summary": "summary.json",
+    "training_curves_summary": "training_curves_summary.csv"
+  },
+  "baseline_source_dir": "experiments\\fi2010_neural_proper_training_subset_v2",
+  "batch_size": 1024,
+  "claim_boundary": "SSL-v2 evidence is limited to the exact stored folds, horizons, seeds, lookbacks and objectives; no broad SSL, calibration or trading claim follows.",
+  "comparison_rows": 4,
+  "completed_run_count": 6,
+  "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
+  "created_at": "2026-05-30T18:39:08.057106Z",
+  "device": "cpu",
+  "early_stopping_patience": 5,
+  "environment": {
+    "package_version": "0.1.0",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11.9"
+  },
+  "evidence_level": "partial_real",
+  "failed_run_count": 0,
+  "folds": [
+    1
+  ],
+  "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
+  "horizons": [
+    10,
+    50
+  ],
+  "imported_baseline_count": 4,
+  "lookbacks": [
+    50
+  ],
+  "max_epochs": 25,
+  "missing_pair_count": 0,
+  "objectives": [
+    "supervised",
+    "masked_reconstruction",
+    "market_state_multitask"
+  ],
+  "output_dir": "experiments\\fi2010_ssl_v2_benchmark",
+  "pretrain_epochs": 5,
+  "processed_root": "data\\processed\\fi2010",
+  "run_count": 6,
+  "runner_version": "fi2010-ssl-v2-benchmark/v1",
+  "scope_label": "limited_ssl_v2_partial_real_slice",
+  "seeds": [
+    0
+  ],
+  "smoke_test": false,
+  "warnings": [
+    "4 supervised/SSL-v1 baseline run(s) were imported from existing proper-training artefacts rather than retrained."
+  ]
+}

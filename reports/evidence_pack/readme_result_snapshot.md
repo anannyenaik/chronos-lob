@@ -9,14 +9,18 @@
 | fi2010_neural_full_grid | stale | no |
 | fi2010_neural_proper_training_subset | stale | no |
 | ssl_failure_analysis_report | complete_real | no |
+| fi2010_ssl_v2_benchmark | partial_real | no |
+| ssl_v2_analysis_report | partial_real | no |
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | stale | no |
 | execution_v3_analysis_report | complete_real | no |
 | feature_registry_audit_outputs | missing | no |
-| feature_ablation_outputs | partial_real | no |
+| feature_ablation_outputs | stale | no |
 | feature_ablation_analysis_report | complete_real | no |
 | ablation_figures | complete_real | no |
 | final_empirical_report | complete_real | no |
+| synthetic_lob_extension_report | stale | no |
+| binance_l2_extension_report | stale | no |
 | project_audit_archive | unknown_staleness | no |
 
 ## Results
@@ -25,7 +29,7 @@
 - Best neural full-grid result: not cleanly supported (stale).
 - SSL comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
 - Execution-v3: stale.
-- Feature ablations: partial_real.
+- Feature ablations: stale.
 - Figures: partial_real.
 
 ## Limitations

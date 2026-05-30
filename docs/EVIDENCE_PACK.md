@@ -136,6 +136,13 @@ an implementation-and-evaluation claim and a narrow fold-1/horizon-50
 predictive-metric observation in the partial proper-training subset, while broad
 SSL improvement and SSL calibration improvement remain unsupported.
 
+The SSL-v2 benchmark (`fi2010_ssl_v2_benchmark`) and analysis
+(`ssl_v2_analysis_report`) are inventoried separately from SSL-v1. The current
+stored scope is partial_real: fold 1, horizons 10/50, seed 0, lookback 50.
+Claim rows support SSL-v2 implementation and scoped evaluation, while SSL-v2
+predictive improvement, SSL-v2 calibration improvement and broad SSL improvement
+remain unsupported.
+
 A dedicated execution-v3 analysis artefact (`execution_v3_analysis_report`, built
 by `analyse-fi2010-execution-v3` into `reports/execution_v3_analysis/`) is also
 recorded in the inventory and reads only the retained execution-v3 output tables.

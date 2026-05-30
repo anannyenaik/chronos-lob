@@ -3,8 +3,8 @@
   "artefact_status_counts": {
     "complete_real": 5,
     "missing": 2,
-    "partial_real": 2,
-    "stale": 4,
+    "partial_real": 3,
+    "stale": 7,
     "unknown_staleness": 1
   },
   "artefacts": [
@@ -150,6 +150,68 @@
       ]
     },
     {
+      "artefact_name": "fi2010_ssl_v2_benchmark",
+      "artefact_type": "fi2010_ssl_v2_benchmark",
+      "completed_runs": 6,
+      "exists": true,
+      "failed_runs": 0,
+      "generated_at": "2026-05-30T18:39:08.057106Z",
+      "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
+      "input_hashes_present": false,
+      "limitations": "SSL-v2 benchmark claims are limited to the exact stored scope; imported baselines are disclosed in summary.json.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "experiments/fi2010_ssl_v2_benchmark",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "partial_real",
+      "supporting_files": [
+        "experiments/fi2010_ssl_v2_benchmark/summary.json",
+        "experiments/fi2010_ssl_v2_benchmark/results_summary.csv",
+        "experiments/fi2010_ssl_v2_benchmark/aggregate_summary.csv",
+        "experiments/fi2010_ssl_v2_benchmark/aggregate_summary.json",
+        "experiments/fi2010_ssl_v2_benchmark/ssl_v2_comparison.csv",
+        "experiments/fi2010_ssl_v2_benchmark/failures.csv",
+        "experiments/fi2010_ssl_v2_benchmark/sha256_manifest.json"
+      ],
+      "supports_claims": [
+        "empirical.ssl_v2_evaluated",
+        "empirical.ssl_v2_implemented"
+      ]
+    },
+    {
+      "artefact_name": "ssl_v2_analysis_report",
+      "artefact_type": "ssl_v2_analysis",
+      "completed_runs": null,
+      "exists": true,
+      "failed_runs": 0,
+      "generated_at": "2026-05-30T18:39:36.089069+00:00",
+      "git_commit": "",
+      "input_hashes_present": false,
+      "limitations": "The SSL-v2 analysis is scoped evidence only and does not alter broad SSL boundaries unless its stored deltas support that.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "reports/ssl_v2_analysis",
+      "required_files_missing": [],
+      "skipped_runs": null,
+      "smoke_test": false,
+      "status": "partial_real",
+      "supporting_files": [
+        "reports/ssl_v2_analysis/ssl_v2_analysis.md",
+        "reports/ssl_v2_analysis/ssl_v2_claim_assessment.json",
+        "reports/ssl_v2_analysis/ssl_v2_metric_summary.csv",
+        "reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv",
+        "reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv",
+        "reports/ssl_v2_analysis/ssl_v2_loss_components.csv",
+        "reports/ssl_v2_analysis/summary.json"
+      ],
+      "supports_claims": [
+        "empirical.ssl_v2_evaluated",
+        "empirical.ssl_v2_implemented"
+      ]
+    },
+    {
       "artefact_name": "fi2010_figures",
       "artefact_type": "fi2010_figures",
       "completed_runs": 17,
@@ -269,13 +331,13 @@
       "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
       "input_hashes_present": false,
       "limitations": "FI-2010 snapshot features cannot prove true event-level OFI, trade imbalance, cancellation imbalance or queue position.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_feature_ablations",
       "required_files_missing": [],
       "skipped_runs": 2520,
       "smoke_test": false,
-      "status": "partial_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_feature_ablations/summary.json",
         "experiments/fi2010_feature_ablations/results_summary.csv",
@@ -356,8 +418,8 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-30T07:25:22.720548Z",
-      "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
+      "generated_at": "2026-05-30T19:02:43.697478Z",
+      "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Generated timestamp is present.",
@@ -372,6 +434,72 @@
         "reports/chronoslob_final_empirical_report_summary.json"
       ],
       "supports_claims": []
+    },
+    {
+      "artefact_name": "synthetic_lob_extension_report",
+      "artefact_type": "synthetic_lob_extension",
+      "completed_runs": 12,
+      "exists": true,
+      "failed_runs": 0,
+      "generated_at": "2026-05-30T15:31:24.469213+00:00",
+      "git_commit": "4377803a3d0d713c926b97f04bab70d631f252be",
+      "input_hashes_present": false,
+      "limitations": "Synthetic event-level extension only; controlled stress-test data, not real-market evidence. Does not change FI-2010 limitations and does not imply tradability, returns or real-market generalisation.",
+      "notes": "Recorded git commit differs from the current repository commit.",
+      "output_hashes_present": false,
+      "path": "reports/synthetic_lob_extension",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "stale",
+      "supporting_files": [
+        "reports/synthetic_lob_extension/synthetic_lob_report.md",
+        "reports/synthetic_lob_extension/summary.json",
+        "reports/synthetic_lob_extension/synthetic_replay_quality.json",
+        "reports/synthetic_lob_extension/synthetic_benchmark_summary.csv",
+        "reports/synthetic_lob_extension/synthetic_regime_diagnostics.csv",
+        "reports/synthetic_lob_extension/synthetic_claim_assessment.json",
+        "reports/synthetic_lob_extension/synthetic_feature_summary.csv",
+        "reports/synthetic_lob_extension/figure_manifest.json"
+      ],
+      "supports_claims": [
+        "synthetic.event_level_features",
+        "synthetic.event_level_pipeline",
+        "synthetic.regime_diagnostics"
+      ]
+    },
+    {
+      "artefact_name": "binance_l2_extension_report",
+      "artefact_type": "binance_l2_extension",
+      "completed_runs": 3,
+      "exists": true,
+      "failed_runs": null,
+      "generated_at": "2026-05-30T17:21:24.901650+00:00",
+      "git_commit": "8d69fbb00a10130a4781babe6de39ea81128613d",
+      "input_hashes_present": true,
+      "limitations": "Binance Spot L2 snapshot-plus-diff replay path for local captures; crypto-market data engineering evidence only when a non-fixture capture is supplied. Diff-depth updates are aggregated level updates, not individual orders. Not equity-market evidence, not live trading and not profitability or predictive evidence. Complements FI-2010 and synthetic evidence.",
+      "notes": "Recorded git commit differs from the current repository commit.",
+      "output_hashes_present": false,
+      "path": "reports/binance_l2_extension",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "stale",
+      "supporting_files": [
+        "reports/binance_l2_extension/binance_l2_report.md",
+        "reports/binance_l2_extension/summary.json",
+        "reports/binance_l2_extension/replay_quality.json",
+        "reports/binance_l2_extension/feature_summary.csv",
+        "reports/binance_l2_extension/update_continuity_summary.csv",
+        "reports/binance_l2_extension/binance_claim_assessment.json",
+        "reports/binance_l2_extension/book_snapshot_summary.csv",
+        "reports/binance_l2_extension/figure_manifest.json"
+      ],
+      "supports_claims": [
+        "binance_l2.order_book_invariants",
+        "binance_l2.replay_pipeline",
+        "binance_l2.update_continuity_validation"
+      ]
     },
     {
       "artefact_name": "project_audit_archive",
@@ -405,16 +533,17 @@
   "builder_version": "release/evidence-pack/v1",
   "claim_boundary": "Smoke diagnostics are not empirical evidence. Execution metrics are offline proxies. FI-2010 snapshot features do not expose event-level order flow, cancellations, trades or queue position.",
   "claim_status_counts": {
-    "forbidden": 11,
-    "needs_real_evidence": 1,
+    "forbidden": 15,
+    "needs_real_evidence": 2,
     "partially_supported": 11,
-    "supported": 6,
-    "unsupported": 2
+    "supported": 14,
+    "unsupported": 8
   },
-  "generated_at": "2026-05-30T07:25:34.996383+00:00",
-  "git_commit": "21807a9b92170110cfda4c7c3605bcb5bb544af3",
+  "generated_at": "2026-05-30T19:02:55.988618+00:00",
+  "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
+    "binance_l2_dir": "reports/binance_l2_extension",
     "classical_dir": "experiments/fi2010_multifold_classical",
     "execution_v3_dir": "experiments/fi2010_execution_v3",
     "feature_ablation_analysis_dir": "reports/feature_ablation_analysis",
@@ -426,7 +555,8 @@
     "out_dir": "reports/evidence_pack",
     "project_audit_dir": "reports/report_archive",
     "proper_training_dir": "experiments/fi2010_neural_proper_training_subset_v2",
-    "ssl_dir": "experiments/fi2010_ssl"
+    "ssl_dir": "experiments/fi2010_ssl",
+    "synthetic_lob_dir": "reports/synthetic_lob_extension"
   },
   "outputs": {
     "artefact_inventory.csv": "artefact_inventory.csv",
@@ -452,6 +582,9 @@
     "fi2010_neural_proper_training_subset: stale",
     "execution_v3_outputs: stale",
     "feature_registry_audit_outputs: missing",
+    "feature_ablation_outputs: stale",
+    "synthetic_lob_extension_report: stale",
+    "binance_l2_extension_report: stale",
     "project_audit_archive: unknown_staleness"
   ]
 }

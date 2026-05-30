@@ -1,11 +1,11 @@
 {
   "builder_version": "release/evidence-pack/v1",
   "claim_status_counts": {
-    "forbidden": 11,
-    "needs_real_evidence": 1,
+    "forbidden": 15,
+    "needs_real_evidence": 2,
     "partially_supported": 11,
-    "supported": 6,
-    "unsupported": 2
+    "supported": 14,
+    "unsupported": 8
   },
   "claims": [
     {
@@ -201,6 +201,64 @@
     },
     {
       "category": "empirical result",
+      "claim_id": "empirical.ssl_v2_implemented",
+      "claim_text": "SSL-v2 was implemented as a market-state-aware objective.",
+      "reason": "SSL-v2 benchmark artefacts or loss-component rows are present.",
+      "required_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ],
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_v2_evaluated",
+      "claim_text": "SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
+      "reason": "2 matched supervised-vs-SSL-v2 row(s) are present.",
+      "required_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ],
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_v2_predictive_improvement",
+      "claim_text": "SSL-v2 improved predictive metrics in the stored scope.",
+      "reason": "Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement.",
+      "required_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ],
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_v2_calibration_improvement",
+      "claim_text": "SSL-v2 improved calibration in the stored scope.",
+      "reason": "ECE and Brier deltas do not jointly support calibration improvement.",
+      "required_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ],
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "empirical result",
       "claim_id": "empirical.ssl_execution_proxy",
       "claim_text": "SSL improved execution-aware proxy metrics",
       "reason": "Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.",
@@ -328,6 +386,190 @@
       "supporting_artefacts": []
     },
     {
+      "category": "synthetic extension",
+      "claim_id": "synthetic.event_level_pipeline",
+      "claim_text": "ChronosLOB supports a synthetic event-level LOB pipeline",
+      "reason": "Synthetic pipeline artefacts with passing replay and no-lookahead checks are present.",
+      "required_artefacts": [
+        "synthetic_lob_extension_report"
+      ],
+      "safe_rewording": "ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on controlled synthetic regimes; not real-market data.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "synthetic_lob_extension_report"
+      ]
+    },
+    {
+      "category": "synthetic extension",
+      "claim_id": "synthetic.event_level_features",
+      "claim_text": "ChronosLOB computes true event-level features on synthetic event streams",
+      "reason": "Synthetic event-level feature artefacts are present.",
+      "required_artefacts": [
+        "synthetic_lob_extension_report"
+      ],
+      "safe_rewording": "Event-level order-flow, cancellation and trade imbalance are computed on synthetic event streams only; FI-2010 still exposes snapshot proxies only.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "synthetic_lob_extension_report"
+      ]
+    },
+    {
+      "category": "synthetic extension",
+      "claim_id": "synthetic.regime_diagnostics",
+      "claim_text": "ChronosLOB produces synthetic regime stress-test diagnostics",
+      "reason": "Per-regime synthetic execution-aware proxy diagnostics are present.",
+      "required_artefacts": [
+        "synthetic_lob_extension_report"
+      ],
+      "safe_rewording": "Synthetic regime diagnostics are controlled stress tests on known regimes, not real-market execution evidence.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "synthetic_lob_extension_report"
+      ]
+    },
+    {
+      "category": "synthetic extension",
+      "claim_id": "synthetic.real_market_event_level_generalisation",
+      "claim_text": "The synthetic extension generalises to real-market event-level data",
+      "reason": "All synthetic data is controlled and does not transfer to real markets.",
+      "required_artefacts": [
+        "synthetic_lob_extension_report"
+      ],
+      "safe_rewording": "State that synthetic results do not establish real-market generalisation.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "synthetic.live_trading_or_profitability",
+      "claim_text": "The synthetic extension shows live trading or profitability",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline synthetic diagnostics only; do not imply returns.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "synthetic.fi2010_true_event_level_ofi",
+      "claim_text": "The synthetic extension provides true event-level OFI on FI-2010",
+      "reason": "FI-2010 snapshots expose only proxies; event-level order flow exists for synthetic data only.",
+      "required_artefacts": [],
+      "safe_rewording": "Event-level order flow is available only on synthetic streams, not FI-2010.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.replay_pipeline",
+      "claim_text": "ChronosLOB supports a Binance L2 snapshot-plus-diff replay pipeline",
+      "reason": "Binance L2 replay artefacts with passing continuity and invariant checks are present.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "ChronosLOB reconstructs a Binance Spot book from a depth snapshot and aggregated diff-depth stream offline; not real-market predictive evidence.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "binance_l2_extension_report"
+      ]
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.real_event_level_stream_path",
+      "claim_text": "ChronosLOB ingests and replays a real event-level aggregated L2 depth stream",
+      "reason": "The bundled artefact uses Binance-shaped synthetic fixtures; a local captured Binance Spot snapshot/diff stream was not supplied.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "ChronosLOB includes an offline Binance Spot aggregated diff-depth replay path; fixture runs are engineering checks, while user-supplied local captures are crypto-market data only.",
+      "status": "needs_real_evidence",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.update_continuity_validation",
+      "claim_text": "ChronosLOB validates Binance update-id continuity during replay",
+      "reason": "Binance update-continuity audit artefacts are present.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "Update-id bracketing, stale-event skipping and gap detection are enforced.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "binance_l2_extension_report"
+      ]
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.order_book_invariants",
+      "claim_text": "ChronosLOB validates Binance order-book invariants during replay",
+      "reason": "Binance order-book invariant checks are present in the replay quality report.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "Non-negative depth and best bid below best ask are validated per snapshot.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "binance_l2_extension_report"
+      ]
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.real_market_predictive_success",
+      "claim_text": "The Binance L2 extension shows real-market predictive success",
+      "reason": "Replay produces no predictive or returns evidence.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "Describe the offline replay and features only; claim no predictive success.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.equity_market_generalisation",
+      "claim_text": "The Binance L2 extension generalises to equity markets",
+      "reason": "This is crypto-venue data and does not transfer to equity markets.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "State that crypto L2 evidence does not establish equity-market generalisation.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "binance l2 extension",
+      "claim_id": "binance_l2.true_trades_or_cancellations_from_diff_depth",
+      "claim_text": "The Binance L2 extension recovers true trades or cancellations from diff-depth",
+      "reason": "Diff-depth carries aggregate level changes, not individual trades or cancellations.",
+      "required_artefacts": [
+        "binance_l2_extension_report"
+      ],
+      "safe_rewording": "Call removed levels aggregate deletions; do not claim individual attribution.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "binance_l2.live_trading_or_profitability",
+      "claim_text": "The Binance L2 extension shows live trading or profitability",
+      "reason": "This claim is blocked by release policy for ChronosLOB artefacts.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe offline replay only; do not imply returns, tradability or live trading.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "binance_l2.individual_order_queue_position",
+      "claim_text": "The Binance L2 extension models individual-order queue position",
+      "reason": "Aggregated level updates cannot expose individual-order queue position.",
+      "required_artefacts": [],
+      "safe_rewording": "State that aggregated diff-depth cannot support queue-position modelling.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
       "category": "forbidden or high-risk",
       "claim_id": "forbidden.1",
       "claim_text": "profitable trading strategy",
@@ -418,5 +660,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T07:25:35.062150+00:00"
+  "generated_at": "2026-05-30T19:02:56.057411+00:00"
 }

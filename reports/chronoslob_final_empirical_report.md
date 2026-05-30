@@ -6,15 +6,15 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-30T07:25:22.720548+00:00 |
-| git_commit | 21807a9b92170110cfda4c7c3605bcb5bb544af3 |
+| generated_at | 2026-05-30T19:02:43.697478+00:00 |
+| git_commit | 84aa70ebef89532e6b2696cccbc689c8ab99f56e |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
 | proper_training_neural_scope | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50, objectives supervised, masked_reconstruction, next_field; max_epochs 25, patience 5; validation-only early stopping with best checkpoint restored before test |
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
-| legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
-| best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
+| legacy_reduced_scope_neural_scope | separate earlier 1-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
+| best_legacy_reduced_scope_neural_test_macro_f1 | not available: n/a (separate 1-epoch reduced-scope benchmark) |
 | execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
 | execution_v3_scope | offline execution-aware proxy diagnostic loaded; payoff_mode=unit_payoff, cost_mode=unit_proxy |
 | external_scope | protocol context loaded; protocol context only, not ranking claims |
@@ -40,7 +40,7 @@ What is partial (`partial_real`):
 
 What is separate legacy / reduced-scope evidence:
 
-- The earlier 25-epoch reduced-scope supervised matrix-transformer benchmark (single seed, lookback 20) is reported separately and is not used as matched SSL evidence.
+- The earlier 1-epoch reduced-scope supervised matrix-transformer benchmark (single seed, lookback 20) is reported separately and is not used as matched SSL evidence.
 
 What is not claimed:
 
@@ -51,7 +51,7 @@ What is not claimed:
 The completed matched full grid is a one-epoch comparison grid. It is useful for controlled supervised-vs-SSL comparison and pipeline validation, but it is not a performance-maximising neural training
 result.
 
-The earlier 25-epoch reduced-scope supervised matrix-transformer result is reported separately and is not used as matched SSL evidence.
+The earlier 1-epoch reduced-scope supervised matrix-transformer result is reported separately and is not used as matched SSL evidence.
 
 ## Evidence Pack Audit
 
@@ -59,8 +59,8 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | complete_real=5, missing=2, partial_real=2, stale=4, unknown_staleness=1 |
-| claim_status_counts | forbidden=11, needs_real_evidence=1, partially_supported=11, supported=6, unsupported=2 |
+| artefact_status_counts | complete_real=5, missing=2, partial_real=3, stale=7, unknown_staleness=1 |
+| claim_status_counts | forbidden=15, needs_real_evidence=2, partially_supported=11, supported=14, unsupported=8 |
 | supported_claims | ChronosLOB includes a richer execution-aware proxy analysis report; Feature-ablation infrastructure is available; SSL was implemented and evaluated under matched FI-2010 settings. |
 | unsupported_or_limited_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 
@@ -86,7 +86,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | split_protocol | official split column; validation carved from train only |
 | folds | 1, 2, 3, 4, 5 |
 | classical_protocol | multi-fold; one stored classical seed across completed folds |
-| neural_protocol | matched one-epoch full grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field; separate earlier 25-epoch reduced-scope supervised benchmark (single seed, lookback 20) reported separately |
+| neural_protocol | matched one-epoch full grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field; separate earlier 1-epoch reduced-scope supervised benchmark (single seed, lookback 20) reported separately |
 
 ## Model Families
 
@@ -95,7 +95,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | classical | majority, logistic, ridge, elastic_net, random_forest, gradient_boosting | multi-fold stored fold summaries |
 | neural matched grid | matrix_transformer | one-epoch matched supervised/SSL grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2; comparison evidence |
 | neural proper-training subset | matrix_transformer | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50; validation-only early stopping |
-| neural legacy supervised | deeplob_style, matrix_transformer | separate earlier reduced-scope, single-seed, lookback 20 |
+| neural legacy supervised | not available | separate earlier reduced-scope, single-seed, lookback 20 |
 
 ## Main Result Table
 
@@ -109,8 +109,6 @@ Classical rows are multi-fold. Neural rows are reduced-scope, single-seed superv
 | elastic_net | classical | multi-fold | 0.3260 +/- 0.0106 | 0.6125 | 0.1227 | 5 | 5 | n/a |
 | ridge | classical | multi-fold | 0.3087 +/- 0.0082 | 0.6126 | 0.1116 | 5 | 5 | n/a |
 | majority | classical | multi-fold | 0.2514 +/- 0.0054 | 0.6058 | 0.0000 | 5 | 5 | n/a |
-| matrix_transformer | supervised neural | reduced-scope, single-seed | 0.7337 +/- 0.0280 | 0.8008 | 0.6288 | 5 | 1 | 20 |
-| deeplob_style | supervised neural | reduced-scope, single-seed | 0.4753 +/- 0.0274 | 0.4815 | 0.2932 | 5 | 1 | 20 |
 
 ## Self-Supervised Pretraining
 
@@ -339,15 +337,13 @@ Interpretation:
 
 ## Legacy Reduced-Scope Benchmark
 
-This is the earlier 25-epoch reduced-scope supervised neural benchmark. It is reported separately from the one-epoch matched full grid and from the proper-training supervised-vs-SSL subset, and it is
+This is the earlier 1-epoch reduced-scope supervised neural benchmark. It is reported separately from the one-epoch matched full grid and from the proper-training supervised-vs-SSL subset, and it is
 not used as matched SSL evidence.
 
-Stored scope: seeds 0, lookbacks 20.
+Stored scope: seeds 0, 1, 2, lookbacks 20.
 
 | model | test macro-F1 | accuracy | MCC | folds | seeds | lookback |
 | --- | --- | --- | --- | --- | --- | --- |
-| matrix_transformer | 0.7337 +/- 0.0280 | 0.8008 | 0.6288 | 5 | 1 | 20 |
-| deeplob_style | 0.4753 +/- 0.0274 | 0.4815 | 0.2932 | 5 | 1 | 20 |
 
 ## SSL Interpretation
 
@@ -378,6 +374,35 @@ used only for context.
 - Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.
 - No broad SSL improvement and no calibration improvement is claimed.
 - More evidence would require broader proper-training runs and/or better SSL objective design rather than any success claim.
+
+## Second-Generation SSL Objective
+
+A second-generation SSL objective was added after the SSL failure analysis showed that first-generation random field reconstruction and next-field prediction did not broadly improve predictive metrics
+or calibration. The SSL-v2 objective is market-state-aware and remains a scoped comparison, not a general representation or trading claim.
+
+- evidence level: partial_real
+- scope label: limited_ssl_v2_partial_real_slice
+- matched supervised-vs-SSL-v2 rows: 2
+- failures: 0
+
+| horizon | matched rows | mean delta macro-F1 | mean delta MCC | mean delta ECE | mean delta Brier |
+| --- | --- | --- | --- | --- | --- |
+| 10 | 1 | 0.0794 | 0.0817 | 0.0096 | 0.0279 |
+| 50 | 1 | -0.0816 | -0.0758 | 0.0928 | 0.0557 |
+
+- SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the stored scope.
+- SSL-v2 calibration improvement is reported only when ECE and Brier deltas both support it.
+- Broad SSL improvement remains bounded by the combined SSL-v1 and SSL-v2 evidence.
+
+| claim | status |
+| --- | --- |
+| broad_ssl_improvement | unsupported |
+| foundation_model | forbidden |
+| sota | forbidden |
+| ssl_v2_calibration_improvement | unsupported |
+| ssl_v2_evaluated | supported |
+| ssl_v2_objective_implemented | supported |
+| ssl_v2_predictive_improvement | unsupported |
 
 ## Figure Index
 
@@ -415,7 +440,6 @@ Seed variance is not available in the stored evidence; intervals are fold-level 
 | source | model | lookback | folds | seeds | mean | CI lower | CI upper | bootstrap lower | bootstrap upper |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | classical | gradient_boosting | n/a | 5 | 1 | 0.4654 | 0.4600 | 0.4708 | 0.4623 | 0.4692 |
-| neural | matrix_transformer | 20 | 5 | 1 | 0.7337 | 0.6948 | 0.7726 | 0.7074 | 0.7535 |
 
 ## Ablation Summary
 
@@ -679,10 +703,46 @@ External comparisons are protocol context, not ranking claims. No external numer
 | Wallbridge TransLOB | paper | False |
 | Sangadiev et al. DeepFolio | paper | False |
 
+## Synthetic Event-Level Extension
+
+| field | value |
+| --- | --- |
+| evidence_level | synthetic_controlled |
+| event_count | 21010 |
+| snapshot_count | 4202 |
+| regimes | stable_liquid, buy_pressure, high_volatility, sell_pressure, low_liquidity, wide_spread, cancellation_shock |
+| replay_ok | True |
+| no_lookahead_ok | True |
+| target | future_mid_direction |
+| crossed_snapshots | 0 |
+
+This extension demonstrates event-level pipeline support under controlled synthetic regimes. It does not provide real-market evidence. It does not change FI-2010 limitations. It enables event-level
+feature validation that FI-2010 cannot support.
+
+## Real Event-Level L2 Replay Extension
+
+| field | value |
+| --- | --- |
+| venue | binance |
+| symbol | TESTUSDT |
+| evidence_level | binance_l2_fixture_replay |
+| diff_event_count | 3 |
+| applied_event_count | 3 |
+| snapshot_count | 3 |
+| feature_row_count | 3 |
+| replay_ok | True |
+| crossed_count | 0 |
+
+Binance L2 replay is scoped to real event-level aggregated depth-stream ingestion and replay when a local Binance capture is supplied.
+Fixture runs are engineering checks. It is crypto-market engineering evidence, not equity-market evidence.
+Binance diff-depth updates are aggregated level updates, not individual order-event data.
+It does not provide profitability, tradability or predictive-success evidence.
+It is not live-trading evidence. It complements the FI-2010 and synthetic evidence.
+
 ## What This Supports
 
 - The committed artefacts support a traceable multi-fold classical FI-2010 result.
-- A separate, earlier 25-epoch reduced-scope, single-seed supervised neural benchmark is reported on its own terms and is not used as matched-grid or SSL evidence.
+- A separate, earlier 1-epoch reduced-scope, single-seed supervised neural benchmark is reported on its own terms and is not used as matched-grid or SSL evidence.
 - The uncertainty, ablation and proxy-diagnostic layers are generated from stored tables.
 - External references are used only to document protocol context.
 - The one-epoch full neural grid artefacts compare supervised and SSL matrix-transformer variants under matched fold, horizon, seed, lookback, architecture and preprocessing keys; this is matched
@@ -706,7 +766,7 @@ External comparisons are protocol context, not ranking claims. No external numer
 | limitation | detail |
 | --- | --- |
 | classical_seed_count | 1 |
-| neural_seed_count | 1 |
+| neural_seed_count | 3 |
 | neural_scope | single seed and single lookback in stored reduced-scope artefacts |
 | execution_scope | offline execution-aware proxy diagnostics only; queue, impact and venue mechanics are not modelled |
 | external_scope | protocol context only; no external numeric metrics are copied |
@@ -726,14 +786,20 @@ External comparisons are protocol context, not ranking claims. No external numer
 | ablations_model_class_ablation | experiments/fi2010_brutal_ablations/model_class_ablation.csv | d73a3dfdb2d2ae68a4a7348e8757973d88b666da72cf38417833185eabcc8328 |
 | ablations_skipped_ablations | experiments/fi2010_brutal_ablations/skipped_ablations.json | d3d4927131c2733e10c2efbcd77ea7e067439d4e26b9f389488daeb5cd9c0fd9 |
 | ablations_summary | experiments/fi2010_brutal_ablations/summary.json | b2ada55d9802da545dc67435bf30a93357203c23bb92c55ae4e847d45cc0716d |
+| binance_l2_binance_claim_assessment | reports/binance_l2_extension/binance_claim_assessment.json | 783da22e21d0271520a8fb6ee98ec48f2c28af68527eda9748e329e5a1b16376 |
+| binance_l2_dir | reports/binance_l2_extension | directory |
+| binance_l2_feature_summary | reports/binance_l2_extension/feature_summary.csv | c61a0b01d44155e86be547c34fe932839225a88e1b3b6cdee4ad3b3e79f00a0d |
+| binance_l2_replay_quality | reports/binance_l2_extension/replay_quality.json | 69fff0aaece5acc5348b52b1664c3e112fa37af4086092ebc0ad2c7422ba655d |
+| binance_l2_summary | reports/binance_l2_extension/summary.json | 6862e2290211d3c6a242ee356b07dcfe4931323c3e0fbcde2c4e4ededb4da7dd |
+| binance_l2_update_continuity_summary | reports/binance_l2_extension/update_continuity_summary.csv | 4a95823cd920d5ffdff7b79d80a40424688d0cfa0516d91acdec9808bd8d33f5 |
 | classical_dir | experiments/fi2010_multifold_classical | directory |
 | classical_results_summary | experiments/fi2010_multifold_classical/results_summary.csv | 7a4d3c042805ecb4d8735fe9ad95f1ccc9bf50a0d4a83acd646f4d6417a9e03e |
 | classical_summary | experiments/fi2010_multifold_classical/summary.json | 6e82bc2ff4b6656b28619338b7486b850d9eca1baf4e4f53fc3ea397794b155a |
-| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | 976905ea3c1887def10368eba65f43215cc13fe0553040b7f2dcbcc917c4aa57 |
+| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | 3ff66846554f8b283f876f9ce1913c654d43ad0f006a043b6ce0358576d64908 |
 | evidence_pack_dir | reports/evidence_pack | directory |
-| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | 5a8bece6146d7c599b8a3a119eea33cd4035a707f85d12b3ef25b5a1ea8a1ea2 |
-| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | adfcb00e589907a6194b2d9d0d5b0e37084aee9c7e2614656f48ca88aeadfa21 |
-| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | 08c03353d7d7c942b44a869e6977e024b15b58a6897ea0d3a63523a7c5ded6b0 |
+| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | d1d7680ab350e5d7a6b0a4a767fb1cecf6f4600c893889ad350e5d408aa90f1c |
+| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | 1906833230925fa12905bbdef552250f34a5aeeaf4963430cb6dcf711c597583 |
+| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | 59b7d1a7f6e12b9ae493d8b8570f11c9241221b792d40f94eee5b46b9b0a79af |
 | execution_adverse_selection_summary | experiments/fi2010_execution_v2/adverse_selection_summary.csv | 57bd2c42e591e64bdc1e4be6aa3a2d8902f031178521d699f5e5dde9965d1be8 |
 | execution_confidence_threshold_summary | experiments/fi2010_execution_v2/confidence_threshold_summary.csv | 7aca37c1b7030e6120f631e3d49ea96611b534bf81b9a2a212854cb8b4a9b669 |
 | execution_degradation_summary | experiments/fi2010_execution_v2/degradation_summary.csv | 02c313f2bb64beb09f490e9f81f57f29978d4d0046de28d27818384c36c06df1 |
@@ -776,7 +842,7 @@ External comparisons are protocol context, not ranking claims. No external numer
 | feature_ablations_summary | experiments/fi2010_feature_ablations/summary.json | bce138a84d09947bee8e1229f702bc3bd3431dbcb521e54c8f6e4ef80bd22291 |
 | fi2010_figure_dir | reports/figures/fi2010_neural_full_grid | directory |
 | fi2010_figure_manifest | reports/figures/fi2010_neural_full_grid/figure_manifest.json | d1289ae54c0d04efb46f1a2758cd334078f22c4244f07bc7c37b7e3d3dc00306 |
-| neural_dir | experiments/fi2010_multifold_neural | directory |
+| neural_dir | experiments/fi2010_neural_full_grid | directory |
 | neural_full_grid_aggregate_summary | experiments/fi2010_neural_full_grid/aggregate_summary.csv | 40dbe7f03d3aa2cd700341ba9a4ebef17011bdacfaa500e933c7c1ac45e8f452 |
 | neural_full_grid_aggregate_summary_json | experiments/fi2010_neural_full_grid/aggregate_summary.json | 97fa54bf4573a3edec3294ea3fe68a124067ae3b5d8ce97af0a59ff0cd8bb736 |
 | neural_full_grid_dir | experiments/fi2010_neural_full_grid | directory |
@@ -784,8 +850,8 @@ External comparisons are protocol context, not ranking claims. No external numer
 | neural_full_grid_results_summary | experiments/fi2010_neural_full_grid/results_summary.csv | 8db25bddd79d869130e07bcf3395f1389ba2a0140a1f8367ed46363d9856c1ff |
 | neural_full_grid_ssl_comparison | experiments/fi2010_neural_full_grid/ssl_comparison.csv | ba10887aa6cf0b780fba5af9e5d7094764dee0afec894b3738dadf02399d21a9 |
 | neural_full_grid_summary | experiments/fi2010_neural_full_grid/summary.json | 3f7f0abbb79974c3d84e0348858433bc49d26ea5f86fb1f6a556cf76e0758276 |
-| neural_results_summary | experiments/fi2010_multifold_neural/results_summary.csv | bd6c0a52a6ea5eb5e01a66b91671cd84ee79b316ed202a9eadd198604a7f1e0c |
-| neural_summary | experiments/fi2010_multifold_neural/summary.json | 9647aad87ff4bc8255d3971626850ff0c5b0eb76586a0e239141a64a9602b59e |
+| neural_results_summary | experiments/fi2010_neural_full_grid/results_summary.csv | 8db25bddd79d869130e07bcf3395f1389ba2a0140a1f8367ed46363d9856c1ff |
+| neural_summary | experiments/fi2010_neural_full_grid/summary.json | 3f7f0abbb79974c3d84e0348858433bc49d26ea5f86fb1f6a556cf76e0758276 |
 | proper_training_aggregate_summary | experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.csv | 73967613c4807fb8e7f6b91da5df5342a711489bf48ff1d259d796a5ab7f0b47 |
 | proper_training_config_snapshot | experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json | d3a724cb6f57bd114a7a0b4ee28e78d305cd6fe2d4c04da7da28b52887539c91 |
 | proper_training_curves_summary | experiments/fi2010_neural_proper_training_subset_v2/training_curves_summary.csv | 55317ba970df6c72ad172a9f7e338827c583e1fd60f6667953926d86e4b11b30 |
@@ -794,6 +860,21 @@ External comparisons are protocol context, not ranking claims. No external numer
 | proper_training_sha256_manifest | experiments/fi2010_neural_proper_training_subset_v2/sha256_manifest.json | 91ab967c9c45071a25bd6f2a68c90eb09370f96bcab78b1527ca2c757a9aa263 |
 | proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
 | proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
+| ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
+| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | fe253db1518107d313aa30d4379bfd5ac6f171ce2fda2df7be180d3077284715 |
+| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 4a50f56e5f5fb3f8ebf7429e5dcb60b7c66b0b464b823b586d3aac80dca50783 |
+| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | 9522fac463f4586d5a240f3b900ba882f1d6ff4bd84684bcb91812932953ef52 |
+| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | d565b80283c529a713810276483ef5c4922c1fdb3d1dd2330764fcd00146617f |
+| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | 4ca94fbe955a81d0305348cdc4bd1cd226822e79713d524a3b3ef98db2e022bd |
+| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | c1b1b4d1b6ea2db9cf9c444bbb0bc6b8ddc44d881d440beb96c5e292bf5963ed |
+| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 4075f59f1dbd8cc12710648a64f0b09f8523524139476c147c23906046853a88 |
+| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | d2fdf047ceb580026eb5804a58bfa5c73d39abe57f7c9d4fb4f3f5c49b6fb62d |
+| synthetic_lob_dir | reports/synthetic_lob_extension | directory |
+| synthetic_lob_summary | reports/synthetic_lob_extension/summary.json | 21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea |
+| synthetic_lob_synthetic_benchmark_summary | reports/synthetic_lob_extension/synthetic_benchmark_summary.csv | 6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea |
+| synthetic_lob_synthetic_claim_assessment | reports/synthetic_lob_extension/synthetic_claim_assessment.json | 209431eea1ad92cddb5a71b98c3a824fdbc90e6f87f970b2ff984b282b3d3b0c |
+| synthetic_lob_synthetic_regime_diagnostics | reports/synthetic_lob_extension/synthetic_regime_diagnostics.csv | 24cc720c4cc6729179fd85eb0f753235b5eb547d40f23427e169c301dbf49f9b |
+| synthetic_lob_synthetic_replay_quality | reports/synthetic_lob_extension/synthetic_replay_quality.json | 3b444bdf399e3e949807fc883a75fa68f8b781397fa126aaa9c850e265292146 |
 | uncertainty_dir | experiments/fi2010_uncertainty | directory |
 | uncertainty_metric_confidence_intervals | experiments/fi2010_uncertainty/metric_confidence_intervals.csv | db1468eb1f171702e1cad0d21ff9cc30ce5d082a9bfc7adc59882e720492e2cf |
 | uncertainty_model_ranking | experiments/fi2010_uncertainty/model_ranking.csv | c1cb29fa431db19ade6167323902cacf8a2da4e385d369b9a92850338feee2ca |
