@@ -56,6 +56,9 @@ calibration and execution-aware evaluation.
   retained execution-v3 tables, covering confidence filtering, active fraction,
   turnover, cost, latency, fill and adverse-selection proxies, with regime
   diagnostics explicitly skipped and no PnL or live-trading claim.
+- An execution centrepiece (`build-execution-centrepiece`) that joins retained
+  predictive, calibration and execution-aware proxy summaries into a central
+  forecasting-versus-signal-quality gap report and figure.
 - A storage-light FI-2010 scoped feature-stability analysis: logistic/ridge
   folds 1-5, horizons 10/20/50 and seeds 0-2, plus a small gradient-boosting
   slice over key groups. `snapshot_order_flow_proxy` remains a labelled snapshot

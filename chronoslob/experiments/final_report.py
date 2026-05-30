@@ -48,6 +48,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Ablation Summary",
     "Feature Ablation and Stability Analysis",
     "Execution-Aware Proxy Summary",
+    "Forecasting versus Signal-Quality Gap",
     "External Benchmark Context",
     "Synthetic Event-Level Extension",
     "Real Event-Level L2 Replay Extension",
@@ -141,6 +142,17 @@ _OPTIONAL_EXECUTION_V3_FILES = (
     "adverse_selection_summary.csv",
     "regime_execution_summary.csv",
     "skipped_diagnostics.json",
+)
+_OPTIONAL_EXECUTION_CENTREPIECE_FILES = (
+    "execution_centrepiece.md",
+    "centrepiece_summary.json",
+    "forecasting_vs_signal_quality.csv",
+    "confidence_threshold_tradeoff.csv",
+    "metric_to_proxy_gap.csv",
+    "latency_cost_gap.csv",
+    "adverse_selection_by_confidence.csv",
+    "execution_centrepiece_claim_assessment.json",
+    "figure_manifest.json",
 )
 _OPTIONAL_EXTERNAL_FILES = (
     "benchmark_context.json",
@@ -304,6 +316,7 @@ class _FinalReportData:
     feature_ablation_analysis: _OptionalArtefacts
     execution: _OptionalArtefacts
     execution_v3: _OptionalArtefacts
+    execution_centrepiece: _OptionalArtefacts
     external: _OptionalArtefacts
     synthetic: _OptionalArtefacts
     binance_l2: _OptionalArtefacts
@@ -343,6 +356,7 @@ def build_final_empirical_report(
     feature_ablation_analysis_dir: Path | None = None,
     execution_dir: Path | None = None,
     execution_v3_dir: Path | None = None,
+    execution_centrepiece_dir: Path | None = None,
     external_dir: Path | None = None,
     synthetic_lob_dir: Path | None = None,
     binance_l2_dir: Path | None = None,
@@ -389,6 +403,11 @@ def build_final_empirical_report(
         ),
         execution_dir=Path(execution_dir) if execution_dir is not None else None,
         execution_v3_dir=(Path(execution_v3_dir) if execution_v3_dir is not None else None),
+        execution_centrepiece_dir=(
+            Path(execution_centrepiece_dir)
+            if execution_centrepiece_dir is not None
+            else None
+        ),
         external_dir=Path(external_dir) if external_dir is not None else None,
         synthetic_lob_dir=(Path(synthetic_lob_dir) if synthetic_lob_dir is not None else None),
         binance_l2_dir=(Path(binance_l2_dir) if binance_l2_dir is not None else None),
@@ -440,6 +459,7 @@ def _load_final_report_data(
     feature_ablation_analysis_dir: Path | None,
     execution_dir: Path | None,
     execution_v3_dir: Path | None,
+    execution_centrepiece_dir: Path | None,
     external_dir: Path | None,
     synthetic_lob_dir: Path | None,
     binance_l2_dir: Path | None,
@@ -571,6 +591,17 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    execution_centrepiece = _load_optional_artefacts(
+        directory=execution_centrepiece_dir,
+        label="execution_centrepiece",
+        section_title="Forecasting versus Signal-Quality Gap",
+        expected_files=_OPTIONAL_EXECUTION_CENTREPIECE_FILES,
+        input_paths=input_paths,
+        file_hashes=file_hashes,
+        warnings=warnings,
+        skipped_sections=skipped_sections,
+        missing_sections=missing_sections,
+    )
     external = _load_optional_artefacts(
         directory=external_dir,
         label="external",
@@ -675,6 +706,7 @@ def _load_final_report_data(
         feature_ablation_analysis=feature_ablation_analysis,
         execution=execution,
         execution_v3=execution_v3,
+        execution_centrepiece=execution_centrepiece,
         external=external,
         synthetic=synthetic,
         binance_l2=binance_l2,
@@ -748,7 +780,9 @@ def _load_optional_artefacts(
         if path.suffix.lower() == ".json":
             payload = _read_json(path, key, input_paths, file_hashes)
             artefacts.json_payloads[filename] = payload
-            if filename in {"summary.json", "benchmark_context.json"}:
+            if filename in {"summary.json", "benchmark_context.json"} or Path(
+                filename
+            ).stem.endswith("summary"):
                 artefacts.summary = payload
         elif path.suffix.lower() == ".csv":
             artefacts.csv_rows[filename] = _read_csv(path, key, input_paths, file_hashes)
@@ -1230,6 +1264,12 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
         _section("Feature Ablation and Stability Analysis", _render_feature_ablations(data))
     )
     lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
+    lines.extend(
+        _section(
+            "Forecasting versus Signal-Quality Gap",
+            _render_forecasting_signal_gap(data),
+        )
+    )
     lines.extend(_section("External Benchmark Context", _render_external(data)))
     lines.extend(
         _section("Synthetic Event-Level Extension", _render_synthetic_extension(data))
@@ -1296,6 +1336,7 @@ def _render_evidence_snapshot(
         ),
         ("execution_scope", f"{execution_status}; metrics are proxy diagnostics"),
         ("execution_v3_scope", execution_v3_status),
+        ("execution_centrepiece_scope", _execution_centrepiece_status(data)),
         (
             "external_scope",
             f"{external_status}; protocol context only, not ranking claims",
@@ -3064,6 +3105,19 @@ def _execution_v3_status(data: _FinalReportData) -> str:
     )
 
 
+def _execution_centrepiece_status(data: _FinalReportData) -> str:
+    artefacts = data.execution_centrepiece
+    if artefacts.directory is None or artefacts.summary is None:
+        return "not supplied; no forecasting-versus-signal-quality centrepiece claim is made"
+    summary = artefacts.summary
+    if bool(summary.get("smoke_test")):
+        return "smoke-test-only; not empirical evidence"
+    return (
+        "forecasting-versus-signal-quality gap centrepiece loaded; "
+        "offline diagnostic only"
+    )
+
+
 def _execution_v3_status_rows(data: _FinalReportData) -> list[tuple[str, str]]:
     artefacts = data.execution_v3
     if artefacts.directory is None or artefacts.summary is None:
@@ -3206,6 +3260,108 @@ def _execution_v3_skipped_rows(artefacts: _OptionalArtefacts) -> list[tuple[str,
     return rows
 
 
+def _render_forecasting_signal_gap(data: _FinalReportData) -> list[str]:
+    artefacts = data.execution_centrepiece
+    if artefacts.directory is None or artefacts.summary is None:
+        return [
+            "Skipped: execution centrepiece artefacts were not supplied or were unavailable.",
+            "The final report therefore relies on the execution-aware proxy summary above.",
+        ]
+    summary = artefacts.summary
+    figure_manifest = artefacts.json_payloads.get("figure_manifest.json", {})
+    claim_statuses = summary.get("claim_statuses")
+    unavailable = summary.get("unavailable_fields")
+    rows = [
+        ("centrepiece_report", _display_path(artefacts.directory / "execution_centrepiece.md")),
+        (
+            "central_figure",
+            _centrepiece_figure_path(figure_manifest)
+            or _display_path(artefacts.directory / "forecasting_vs_signal_quality.png"),
+        ),
+        ("raw_predictions_required", _mapping_str(summary, "raw_predictions_required")),
+        ("payoff_mode", _mapping_str(summary, "payoff_mode")),
+        ("cost_mode", _mapping_str(summary, "cost_mode")),
+        (
+            "claim_statuses",
+            _status_mapping_text(claim_statuses) if isinstance(claim_statuses, Mapping) else "",
+        ),
+    ]
+    lines = [
+        "The execution centrepiece is the compact reviewer-facing bridge between "
+        "forecast metrics and execution-aware signal-quality proxy diagnostics.",
+        (
+            "It uses retained execution-v3 analysis tables, retained full-grid "
+            "predictive/calibration summaries and no deleted raw predictions."
+        ),
+        "",
+        *_markdown_table(("field", "value"), rows),
+        "",
+        "Representative metric-to-proxy rows:",
+        "",
+    ]
+    lines.extend(_table_from_rows(artefacts.csv_rows.get("metric_to_proxy_gap.csv", []), limit=6))
+    if isinstance(unavailable, Mapping) and unavailable:
+        lines.extend(["", "Explicitly unavailable fields:", ""])
+        lines.extend(
+            _markdown_table(
+                ("field", "reason"),
+                [(str(key), str(value)) for key, value in sorted(unavailable.items())],
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "Conservative interpretation: the forecasting-versus-signal-quality gap "
+            "does not establish profitability or tradability.",
+            (
+                "It shows why macro-F1 and calibration must be read alongside "
+                "confidence filtering, active fraction, turnover proxy, "
+                "cost-adjusted proxy, latency sensitivity and adverse-selection "
+                "proxy diagnostics."
+            ),
+        ]
+    )
+    return lines
+
+
+def _centrepiece_figure_path(manifest: Mapping[str, Any]) -> str:
+    figures = manifest.get("figures")
+    if not isinstance(figures, list):
+        return ""
+    for entry in figures:
+        if not isinstance(entry, Mapping):
+            continue
+        if entry.get("figure_id") == "forecasting_vs_signal_quality":
+            return str(entry.get("file_path", ""))
+    return ""
+
+
+def _status_mapping_text(value: Mapping[Any, Any]) -> str:
+    return ", ".join(f"{key}={status}" for key, status in sorted(value.items()))
+
+
+def _table_from_rows(rows: Sequence[Mapping[str, str]], *, limit: int) -> list[str]:
+    if not rows:
+        return ["No retained metric-to-proxy rows were available."]
+    selected = list(rows[:limit])
+    preferred = [
+        "pretraining_objective",
+        "horizon",
+        "predictive_macro_f1",
+        "predictive_ece",
+        "active_fraction_at_0_70",
+        "turnover_proxy_at_0_70",
+        "cost_adjusted_proxy_at_0_70",
+        "latency_degradation_vs_lag0",
+        "high_confidence_adverse_selection_proxy",
+    ]
+    headers = [header for header in preferred if any(header in row for row in selected)]
+    rendered_rows = [
+        tuple(row.get(header, "unavailable") for header in headers) for row in selected
+    ]
+    return _markdown_table(headers, rendered_rows)
+
+
 def _render_external(data: _FinalReportData) -> list[str]:
     if data.external.directory is None or data.external.summary is None:
         return ["Skipped: external context artefacts were not supplied or were unavailable."]
@@ -3346,6 +3502,16 @@ def _render_what_this_proves(data: _FinalReportData) -> list[str]:
             "diagnostic over stored FI-2010 full-grid predictions.",
         )
     if (
+        data.execution_centrepiece.directory is not None
+        and data.execution_centrepiece.summary is not None
+        and not bool(data.execution_centrepiece.summary.get("smoke_test"))
+    ):
+        lines.append(
+            "- The execution centrepiece supports a forecasting-versus-signal-quality "
+            "gap analysis using retained predictive, calibration and proxy "
+            "diagnostic tables.",
+        )
+    if (
         data.feature_ablation.directory is not None
         and data.feature_ablation.summary is not None
         and not bool(data.feature_ablation.summary.get("smoke_test"))
@@ -3392,6 +3558,11 @@ def _render_limitations(data: _FinalReportData) -> list[str]:
             "execution_scope",
             "offline execution-aware proxy diagnostics only; queue, impact and "
             "venue mechanics are not modelled",
+        ),
+        (
+            "execution_centrepiece_scope",
+            "forecasting-versus-signal-quality gap analysis over retained proxy "
+            "tables; no raw predictions or realised execution outcomes are read",
         ),
         (
             "external_scope",
@@ -3441,7 +3612,15 @@ def _render_reproduction_commands() -> list[str]:
         "  --neural-full-grid experiments/fi2010_neural_full_grid \\",
         "  --feature-ablations experiments/fi2010_feature_ablations \\",
         "  --feature-ablation-analysis reports/feature_ablation_analysis \\",
+        "  --execution-centrepiece reports/execution_centrepiece \\",
         "  --out reports/chronoslob_final_empirical_report.md \\",
+        "  --overwrite",
+        "",
+        "python -m chronoslob.cli build-execution-centrepiece \\",
+        "  --execution-analysis reports/execution_v3_analysis \\",
+        "  --execution-v3 experiments/fi2010_execution_v3 \\",
+        "  --neural-full-grid experiments/fi2010_neural_full_grid \\",
+        "  --out reports/execution_centrepiece \\",
         "  --overwrite",
         "",
         "python -m chronoslob.cli doctor",

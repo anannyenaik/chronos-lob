@@ -213,3 +213,26 @@ adverse-selection proxy by confidence bucket and fill-assumption sensitivity.
 
 All outputs remain offline execution-aware proxy diagnostics. They are not PnL,
 not live-trading evidence and not a production execution simulator.
+
+## Execution Centrepiece (`build-execution-centrepiece`)
+
+`build-execution-centrepiece` is the compact reviewer-facing layer over the
+retained execution-v3 analysis tables. It joins retained full-grid predictive
+and calibration summaries with confidence filtering, active fraction, turnover
+proxy, cost-adjusted proxy, latency sensitivity and adverse-selection proxy
+diagnostics. Deleted raw prediction arrays are not required.
+
+```bash
+python -m chronoslob.cli build-execution-centrepiece \
+  --execution-analysis reports/execution_v3_analysis \
+  --execution-v3 experiments/fi2010_execution_v3 \
+  --neural-full-grid experiments/fi2010_neural_full_grid \
+  --out reports/execution_centrepiece \
+  --overwrite
+```
+
+The centrepiece writes `execution_centrepiece.md`, compact CSVs, a claim
+assessment, `centrepiece_summary.json`, `figure_manifest.json` and the central
+`forecasting_vs_signal_quality.png` figure. It makes the
+forecasting-versus-signal-quality gap visible while keeping the same offline
+diagnostic boundary: no PnL, no live trading and no tradability claim.

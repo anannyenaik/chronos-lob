@@ -28,6 +28,7 @@ The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`
 | fi2010_figures | partial_real | fresh | no | 17 |  | Hash/commit staleness checks passed. |
 | execution_v3_outputs | archived_valid | archived | no | 4800519 | 0 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
 | execution_v3_analysis_report | complete_real | fresh | no | 6 |  | Hash/commit staleness checks passed. |
+| execution_centrepiece_report | complete_real | fresh | no | 1 |  | Hash/commit staleness checks passed. |
 | feature_registry_audit_outputs | optional_missing | absent | no |  |  | Optional artefact. The CLI feature audit is read-only unless a caller stores its output; no public claim depends on a stored copy. Optional artefact path is absent; no core public claim depends on it. |
 | feature_ablation_outputs | partial_real | archived | no | 2520 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | feature_ablation_analysis_report | complete_real | fresh | no | 2580 | 0 | Hash/commit staleness checks passed. |

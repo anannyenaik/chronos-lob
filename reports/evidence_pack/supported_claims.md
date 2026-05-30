@@ -18,6 +18,9 @@
 - ChronosLOB includes a richer execution-aware proxy analysis report
   - support: execution_v3_analysis_report
   - safe wording: ChronosLOB includes a richer offline execution-aware proxy analysis covering confidence, turnover, cost, latency, fill and adverse-selection proxies; regime diagnostics are explicitly skipped.
+- ChronosLOB includes a forecasting-versus-signal-quality centrepiece
+  - support: execution_centrepiece_report
+  - safe wording: ChronosLOB includes an execution centrepiece that summarises the forecasting-versus-signal-quality gap under confidence, cost, latency, turnover and adverse-selection proxy diagnostics.
 - ChronosLOB includes microstructure feature ablations
   - support: feature_ablation_outputs
   - safe wording: ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.
@@ -48,6 +51,24 @@
 - Confidence filtering improved cost-adjusted proxy
   - support: execution_v3_outputs
   - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.
+- forecasting vs signal quality gap analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+- confidence filtering tradeoff analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+- active fraction analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+- turnover proxy analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+- latency cost gap analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+- adverse selection confidence analysis
+  - support: execution_centrepiece_report
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
 - ChronosLOB supports a synthetic event-level LOB pipeline
   - support: synthetic_lob_extension_report
   - safe wording: ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on controlled synthetic regimes; not real-market data.

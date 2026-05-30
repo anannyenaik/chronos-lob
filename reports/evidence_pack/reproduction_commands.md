@@ -110,6 +110,24 @@ Expected output: `experiments/fi2010_execution_v3`
 
 Compute and dependency caveat: Consumes stored predictions; outputs are offline proxy diagnostics.
 
+## Execution Centrepiece
+
+Smoke-test version:
+
+```bash
+python -m chronoslob.cli build-execution-centrepiece --execution-analysis reports/execution_v3_analysis --execution-v3 experiments/fi2010_execution_v3 --neural-full-grid experiments/fi2010_neural_full_grid --out reports/execution_centrepiece --no-figures --overwrite
+```
+
+Real-run version:
+
+```bash
+python -m chronoslob.cli build-execution-centrepiece --execution-analysis reports/execution_v3_analysis --execution-v3 experiments/fi2010_execution_v3 --neural-full-grid experiments/fi2010_neural_full_grid --out reports/execution_centrepiece --overwrite
+```
+
+Expected output: `reports/execution_centrepiece`
+
+Compute and dependency caveat: Consumes retained execution-v3 analysis tables; raw predictions are not required.
+
 ## Figures
 
 Smoke-test version:
@@ -169,13 +187,13 @@ Compute and dependency caveat: Consumes retained lightweight feature-ablation ta
 Smoke-test version:
 
 ```bash
-python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --execution-v3 experiments/fi2010_execution_v3 --out reports/chronoslob_final_empirical_report.md --overwrite
+python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --execution-v3 experiments/fi2010_execution_v3 --execution-centrepiece reports/execution_centrepiece --out reports/chronoslob_final_empirical_report.md --overwrite
 ```
 
 Real-run version:
 
 ```bash
-python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --ablations experiments/fi2010_brutal_ablations --external experiments/fi2010_external_context --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --execution-v3 experiments/fi2010_execution_v3 --evidence-pack reports/evidence_pack --out reports/chronoslob_final_empirical_report.md --overwrite
+python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --ablations experiments/fi2010_brutal_ablations --external experiments/fi2010_external_context --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --execution-v3 experiments/fi2010_execution_v3 --execution-centrepiece reports/execution_centrepiece --evidence-pack reports/evidence_pack --out reports/chronoslob_final_empirical_report.md --overwrite
 ```
 
 Expected output: `reports/chronoslob_final_empirical_report.md`
@@ -187,13 +205,13 @@ Compute and dependency caveat: Consumes stored artefacts only.
 Smoke-test version:
 
 ```bash
-python -m chronoslob.cli build-evidence-pack --out reports/evidence_pack --neural-full-grid experiments/fi2010_neural_full_grid --figures reports/figures/fi2010_neural_full_grid --execution-v3 experiments/fi2010_execution_v3 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --ablation-figures reports/figures/fi2010_feature_ablations --final-report reports/chronoslob_final_empirical_report.md --allow-smoke-test --no-strict --overwrite
+python -m chronoslob.cli build-evidence-pack --out reports/evidence_pack --neural-full-grid experiments/fi2010_neural_full_grid --figures reports/figures/fi2010_neural_full_grid --execution-v3 experiments/fi2010_execution_v3 --execution-centrepiece reports/execution_centrepiece --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --ablation-figures reports/figures/fi2010_feature_ablations --final-report reports/chronoslob_final_empirical_report.md --allow-smoke-test --no-strict --overwrite
 ```
 
 Real-run version:
 
 ```bash
-python -m chronoslob.cli build-evidence-pack --out reports/evidence_pack --neural-full-grid experiments/fi2010_neural_full_grid --figures reports/figures/fi2010_neural_full_grid --execution-v3 experiments/fi2010_execution_v3 --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --ablation-figures reports/figures/fi2010_feature_ablations --final-report reports/chronoslob_final_empirical_report.md --strict --overwrite
+python -m chronoslob.cli build-evidence-pack --out reports/evidence_pack --neural-full-grid experiments/fi2010_neural_full_grid --figures reports/figures/fi2010_neural_full_grid --execution-v3 experiments/fi2010_execution_v3 --execution-centrepiece reports/execution_centrepiece --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --ablation-figures reports/figures/fi2010_feature_ablations --final-report reports/chronoslob_final_empirical_report.md --strict --overwrite
 ```
 
 Expected output: `reports/evidence_pack`

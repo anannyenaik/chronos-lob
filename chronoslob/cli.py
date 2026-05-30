@@ -1589,6 +1589,55 @@ def _analyse_fi2010_execution_v3_impl(
     return 0
 
 
+def _build_execution_centrepiece_impl(
+    *,
+    execution_analysis: Path,
+    out: Path,
+    execution_v3: Path | None,
+    neural_full_grid: Path | None,
+    make_figures: bool,
+    overwrite: bool,
+) -> int:
+    """Build the forecasting-versus-signal-quality execution centrepiece."""
+    from chronoslob.analysis.execution_centrepiece import build_execution_centrepiece
+
+    try:
+        summary = build_execution_centrepiece(
+            execution_analysis_dir=execution_analysis,
+            out_dir=out,
+            execution_v3_dir=execution_v3,
+            neural_full_grid_dir=neural_full_grid,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError, RuntimeError) as exc:
+        print(f"Execution centrepiece build failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB execution centrepiece builder")
+    print(f"  execution analysis: {summary.execution_analysis_dir}")
+    print(f"  output directory:   {summary.output_dir}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    print("  claim statuses:")
+    for claim_id, status in summary.claim_statuses.items():
+        print(f"    {claim_id}: {status}")
+    if summary.figures_generated:
+        print("  figures:            " + ", ".join(summary.figures_generated))
+    else:
+        print("  figures:            none")
+    print("  raw predictions:    not required")
+    print("  network calls:      none performed")
+    return 0
+
+
 def _inspect_fi2010_multifold_impl(
     *,
     config_path: Path,
@@ -2668,6 +2717,7 @@ def _build_final_empirical_report_impl(
     feature_ablation_analysis: Path | None,
     execution: Path | None,
     execution_v3: Path | None,
+    execution_centrepiece: Path | None,
     external: Path | None,
     ssl: Path | None = None,
     neural_full_grid: Path | None = None,
@@ -2697,6 +2747,9 @@ def _build_final_empirical_report_impl(
             ),
             execution_dir=Path(execution) if execution is not None else None,
             execution_v3_dir=(Path(execution_v3) if execution_v3 is not None else None),
+            execution_centrepiece_dir=(
+                Path(execution_centrepiece) if execution_centrepiece is not None else None
+            ),
             external_dir=Path(external) if external is not None else None,
             synthetic_lob_dir=(Path(synthetic_lob) if synthetic_lob is not None else None),
             binance_l2_dir=(Path(binance_l2) if binance_l2 is not None else None),
@@ -2757,6 +2810,7 @@ def _build_evidence_pack_impl(
     neural_full_grid: Path,
     figures: Path,
     execution_v3: Path,
+    execution_centrepiece: Path,
     feature_ablations: Path,
     feature_ablation_analysis: Path,
     ablation_figures: Path,
@@ -2788,6 +2842,7 @@ def _build_evidence_pack_impl(
                 neural_full_grid_dir=Path(neural_full_grid),
                 figures_dir=Path(figures),
                 execution_v3_dir=Path(execution_v3),
+                execution_centrepiece_dir=Path(execution_centrepiece),
                 feature_audit_dir=feature_audit,
                 feature_ablations_dir=Path(feature_ablations),
                 feature_ablation_analysis_dir=Path(feature_ablation_analysis),
@@ -4514,6 +4569,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "analyse-fi2010-uncertainty|"
             "analyse-fi2010-ssl-results|"
             "analyse-fi2010-execution-v3|"
+            "build-execution-centrepiece|"
             "run-paper-experiment|"
             "run-paper-ablations|"
             "run-system-benchmarks|"
@@ -5814,6 +5870,59 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             make_figures=bool(parsed.make_figures),
             overwrite=bool(parsed.overwrite),
         )
+    if command == "build-execution-centrepiece":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob build-execution-centrepiece",
+            description=(
+                "Build the reviewer-facing forecasting-versus-signal-quality "
+                "execution centrepiece from retained execution-v3 analysis tables."
+            ),
+        )
+        parser.add_argument(
+            "--execution-analysis",
+            type=Path,
+            default=Path("reports/execution_v3_analysis"),
+            help="Execution-v3 analysis directory produced by analyse-fi2010-execution-v3.",
+        )
+        parser.add_argument(
+            "--execution-v3",
+            type=Path,
+            default=Path("experiments/fi2010_execution_v3"),
+            help="Optional execution-v3 artefact directory for manifest context.",
+        )
+        parser.add_argument(
+            "--neural-full-grid",
+            type=Path,
+            default=Path("experiments/fi2010_neural_full_grid"),
+            help="Optional retained neural full-grid aggregate directory.",
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/execution_centrepiece"),
+            help="Output directory for centrepiece artefacts.",
+        )
+        parser.add_argument(
+            "--no-figures",
+            dest="make_figures",
+            action="store_false",
+            help="Skip figure generation and record the figure as skipped.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.set_defaults(make_figures=True)
+        parsed = parser.parse_args(args[1:])
+        return _build_execution_centrepiece_impl(
+            execution_analysis=parsed.execution_analysis,
+            out=parsed.out,
+            execution_v3=parsed.execution_v3,
+            neural_full_grid=parsed.neural_full_grid,
+            make_figures=bool(parsed.make_figures),
+            overwrite=bool(parsed.overwrite),
+        )
     if command == "run-paper-experiment":
         parser = argparse.ArgumentParser(
             prog="chronoslob run-paper-experiment",
@@ -6017,6 +6126,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--feature-ablation-analysis", type=Path, default=None)
         parser.add_argument("--execution", type=Path, default=None)
         parser.add_argument("--execution-v3", type=Path, default=None)
+        parser.add_argument("--execution-centrepiece", type=Path, default=None)
         parser.add_argument("--external", type=Path, default=None)
         parser.add_argument(
             "--ssl",
@@ -6085,6 +6195,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             feature_ablation_analysis=parsed.feature_ablation_analysis,
             execution=parsed.execution,
             execution_v3=parsed.execution_v3,
+            execution_centrepiece=parsed.execution_centrepiece,
             external=parsed.external,
             ssl=parsed.ssl,
             neural_full_grid=parsed.neural_full_grid,
@@ -6112,6 +6223,11 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         )
         parser.add_argument("--figures", type=Path, required=True)
         parser.add_argument("--execution-v3", type=Path, required=True)
+        parser.add_argument(
+            "--execution-centrepiece",
+            type=Path,
+            default=Path("reports/execution_centrepiece"),
+        )
         parser.add_argument("--feature-ablations", type=Path, required=True)
         parser.add_argument(
             "--feature-ablation-analysis",
@@ -6159,6 +6275,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             neural_full_grid=parsed.neural_full_grid,
             figures=parsed.figures,
             execution_v3=parsed.execution_v3,
+            execution_centrepiece=parsed.execution_centrepiece,
             feature_ablations=parsed.feature_ablations,
             feature_ablation_analysis=parsed.feature_ablation_analysis,
             ablation_figures=parsed.ablation_figures,
@@ -7595,6 +7712,36 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _EXECUTION_CENTREPIECE_ANALYSIS_OPTION = typer.Option(
+        Path("reports/execution_v3_analysis"),
+        "--execution-analysis",
+        help="Execution-v3 analysis directory produced by analyse-fi2010-execution-v3.",
+    )
+    _EXECUTION_CENTREPIECE_OUT_OPTION = typer.Option(
+        Path("reports/execution_centrepiece"),
+        "--out",
+        help="Output directory for the execution centrepiece artefacts.",
+    )
+    _EXECUTION_CENTREPIECE_EXECUTION_V3_OPTION = typer.Option(
+        Path("experiments/fi2010_execution_v3"),
+        "--execution-v3",
+        help="Optional execution-v3 artefact directory for manifest context.",
+    )
+    _EXECUTION_CENTREPIECE_FULL_GRID_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_full_grid"),
+        "--neural-full-grid",
+        help="Optional retained neural full-grid aggregate directory.",
+    )
+    _EXECUTION_CENTREPIECE_FIGURES_OPTION = typer.Option(
+        True,
+        "--figures/--no-figures",
+        help="Generate the central centrepiece figure. Use --no-figures to skip it.",
+    )
+    _EXECUTION_CENTREPIECE_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
     _BRUTAL_ABLATIONS_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -7972,6 +8119,11 @@ if typer is not None:
         "--execution-v3",
         help="Optional path to FI-2010 execution-aware proxy diagnostic v3 artefacts.",
     )
+    _BUILD_FINAL_REPORT_EXECUTION_CENTREPIECE_OPTION = typer.Option(
+        None,
+        "--execution-centrepiece",
+        help="Optional path to execution centrepiece artefacts.",
+    )
     _BUILD_FINAL_REPORT_EXTERNAL_OPTION = typer.Option(
         None,
         "--external",
@@ -8050,6 +8202,11 @@ if typer is not None:
         ...,
         "--execution-v3",
         help="Path to execution-v3 artefacts.",
+    )
+    _BUILD_EVIDENCE_PACK_EXECUTION_CENTREPIECE_OPTION = typer.Option(
+        Path("reports/execution_centrepiece"),
+        "--execution-centrepiece",
+        help="Path to execution centrepiece artefacts.",
     )
     _BUILD_EVIDENCE_PACK_FEATURE_ABLATIONS_OPTION = typer.Option(
         ...,
@@ -8779,6 +8936,26 @@ if typer is not None:
         if exit_code != 0:
             raise SystemExit(exit_code)
 
+    def build_execution_centrepiece(
+        execution_analysis: Path = _EXECUTION_CENTREPIECE_ANALYSIS_OPTION,
+        out: Path = _EXECUTION_CENTREPIECE_OUT_OPTION,
+        execution_v3: Path | None = _EXECUTION_CENTREPIECE_EXECUTION_V3_OPTION,
+        neural_full_grid: Path | None = _EXECUTION_CENTREPIECE_FULL_GRID_OPTION,
+        figures: bool = _EXECUTION_CENTREPIECE_FIGURES_OPTION,
+        overwrite: bool = _EXECUTION_CENTREPIECE_OVERWRITE_OPTION,
+    ) -> None:
+        """Build the forecasting-versus-signal-quality execution centrepiece."""
+        exit_code = _build_execution_centrepiece_impl(
+            execution_analysis=execution_analysis,
+            out=out,
+            execution_v3=execution_v3,
+            neural_full_grid=neural_full_grid,
+            make_figures=figures,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
     def run_fi2010_brutal_ablations(
         config: Path = _BRUTAL_ABLATIONS_CONFIG_OPTION,
         neural_config: Path | None = _BRUTAL_ABLATIONS_NEURAL_CONFIG_OPTION,
@@ -8999,6 +9176,9 @@ if typer is not None:
         ),
         execution: Path | None = _BUILD_FINAL_REPORT_EXECUTION_OPTION,
         execution_v3: Path | None = _BUILD_FINAL_REPORT_EXECUTION_V3_OPTION,
+        execution_centrepiece: Path | None = (
+            _BUILD_FINAL_REPORT_EXECUTION_CENTREPIECE_OPTION
+        ),
         external: Path | None = _BUILD_FINAL_REPORT_EXTERNAL_OPTION,
         ssl: Path | None = _BUILD_FINAL_REPORT_SSL_OPTION,
         neural_full_grid: Path | None = _BUILD_FINAL_REPORT_FULL_GRID_OPTION,
@@ -9020,6 +9200,7 @@ if typer is not None:
             feature_ablation_analysis=feature_ablation_analysis,
             execution=execution,
             execution_v3=execution_v3,
+            execution_centrepiece=execution_centrepiece,
             external=external,
             ssl=ssl,
             neural_full_grid=neural_full_grid,
@@ -9039,6 +9220,7 @@ if typer is not None:
         neural_full_grid: Path = _BUILD_EVIDENCE_PACK_FULL_GRID_OPTION,
         figures: Path = _BUILD_EVIDENCE_PACK_FIGURES_OPTION,
         execution_v3: Path = _BUILD_EVIDENCE_PACK_EXECUTION_V3_OPTION,
+        execution_centrepiece: Path = _BUILD_EVIDENCE_PACK_EXECUTION_CENTREPIECE_OPTION,
         feature_ablations: Path = _BUILD_EVIDENCE_PACK_FEATURE_ABLATIONS_OPTION,
         feature_ablation_analysis: Path = (
             _BUILD_EVIDENCE_PACK_FEATURE_ABLATION_ANALYSIS_OPTION
@@ -9061,6 +9243,7 @@ if typer is not None:
             neural_full_grid=neural_full_grid,
             figures=figures,
             execution_v3=execution_v3,
+            execution_centrepiece=execution_centrepiece,
             feature_ablations=feature_ablations,
             feature_ablation_analysis=feature_ablation_analysis,
             ablation_figures=ablation_figures,
@@ -10476,6 +10659,7 @@ else:
         feature_ablation_analysis: Path | None = None,
         execution: Path | None = None,
         execution_v3: Path | None = None,
+        execution_centrepiece: Path | None = None,
         external: Path | None = None,
         ssl: Path | None = None,
         neural_full_grid: Path | None = None,
@@ -10497,6 +10681,7 @@ else:
             feature_ablation_analysis=feature_ablation_analysis,
             execution=execution,
             execution_v3=execution_v3,
+            execution_centrepiece=execution_centrepiece,
             external=external,
             ssl=ssl,
             neural_full_grid=neural_full_grid,
@@ -10516,6 +10701,7 @@ else:
         neural_full_grid: Path = Path("experiments/fi2010_neural_full_grid"),
         figures: Path = Path("reports/figures/fi2010_neural_full_grid"),
         execution_v3: Path = Path("experiments/fi2010_execution_v3"),
+        execution_centrepiece: Path = Path("reports/execution_centrepiece"),
         feature_ablations: Path = Path("experiments/fi2010_feature_ablations"),
         feature_ablation_analysis: Path = Path("reports/feature_ablation_analysis"),
         ablation_figures: Path = Path("reports/figures/fi2010_feature_ablations"),
@@ -10536,6 +10722,7 @@ else:
             neural_full_grid=neural_full_grid,
             figures=figures,
             execution_v3=execution_v3,
+            execution_centrepiece=execution_centrepiece,
             feature_ablations=feature_ablations,
             feature_ablation_analysis=feature_ablation_analysis,
             ablation_figures=ablation_figures,
@@ -10616,6 +10803,7 @@ if typer is not None:
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
     app.command("analyse-fi2010-ssl-results")(analyse_fi2010_ssl_results)
     app.command("analyse-fi2010-execution-v3")(analyse_fi2010_execution_v3)
+    app.command("build-execution-centrepiece")(build_execution_centrepiece)
     app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)
     app.command("run-fi2010-execution-v2")(run_fi2010_execution_v2)
     app.command("build-fi2010-execution-v3")(build_fi2010_execution_v3)

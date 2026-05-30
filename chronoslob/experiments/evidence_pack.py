@@ -178,6 +178,7 @@ class EvidencePackConfig:
     figures_dir: Path = Path("reports/figures/fi2010_neural_full_grid")
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
     execution_v3_analysis_dir: Path = Path("reports/execution_v3_analysis")
+    execution_centrepiece_dir: Path = Path("reports/execution_centrepiece")
     feature_ablations_dir: Path = Path("experiments/fi2010_feature_ablations")
     feature_ablation_analysis_dir: Path = Path("reports/feature_ablation_analysis")
     ablation_figures_dir: Path = Path("reports/figures/fi2010_feature_ablations")
@@ -446,6 +447,18 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             reason_supported="Execution-v3 analysis report artefacts are present.",
         ),
         _audit_infrastructure_claim(
+            "general.execution_centrepiece_report",
+            "ChronosLOB includes a forecasting-versus-signal-quality centrepiece",
+            ["execution_centrepiece_report"],
+            by_name,
+            safe=(
+                "ChronosLOB includes an execution centrepiece that summarises the "
+                "forecasting-versus-signal-quality gap under confidence, cost, "
+                "latency, turnover and adverse-selection proxy diagnostics."
+            ),
+            reason_supported="Execution centrepiece artefacts are present.",
+        ),
+        _audit_infrastructure_claim(
             "general.feature_ablations",
             "ChronosLOB includes microstructure feature ablations",
             ["feature_ablation_outputs"],
@@ -504,6 +517,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
                 fallback_horizon10=False,
             ),
             _audit_confidence_filtering_claim(by_name),
+            *_audit_execution_centrepiece_claims(by_name),
             _forbidden_named_claim(
                 "causal_feature_importance",
                 "Feature ablations prove causal feature importance",
@@ -692,6 +706,32 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             limitations=(
                 "Richer offline execution-aware proxy analysis over retained tables; "
                 "not execution simulation, not live trading and not realised PnL."
+            ),
+        ),
+        _ArtefactSpec(
+            name="execution_centrepiece_report",
+            artefact_type="execution_centrepiece",
+            path=config.execution_centrepiece_dir,
+            required_files=(
+                "execution_centrepiece.md",
+                "centrepiece_summary.json",
+                "forecasting_vs_signal_quality.csv",
+                "confidence_threshold_tradeoff.csv",
+                "metric_to_proxy_gap.csv",
+                "latency_cost_gap.csv",
+                "adverse_selection_by_confidence.csv",
+                "execution_centrepiece_claim_assessment.json",
+                "figure_manifest.json",
+            ),
+            metadata_files=(
+                "centrepiece_summary.json",
+                "execution_centrepiece_claim_assessment.json",
+                "figure_manifest.json",
+            ),
+            limitations=(
+                "Forecasting-versus-signal-quality gap analysis over retained "
+                "offline proxy diagnostics; not PnL, not live trading and not "
+                "tradability evidence."
             ),
         ),
         _ArtefactSpec(
@@ -2285,6 +2325,134 @@ def _audit_confidence_filtering_claim(
     )
 
 
+def _audit_execution_centrepiece_claims(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> list[ClaimAuditEntry]:
+    record = by_name.get("execution_centrepiece_report")
+    required = ["execution_centrepiece_report", "execution_centrepiece_claim_assessment.json"]
+    claim_ids = (
+        "forecasting_vs_signal_quality_gap_analysis",
+        "confidence_filtering_tradeoff_analysis",
+        "active_fraction_analysis",
+        "turnover_proxy_analysis",
+        "latency_cost_gap_analysis",
+        "adverse_selection_confidence_analysis",
+    )
+    if record is None or record.status in _BAD_STATUSES:
+        return [
+            _needs_real_evidence(
+                f"execution_centrepiece.{claim_id}",
+                claim_id.replace("_", " "),
+                required,
+            )
+            for claim_id in claim_ids
+        ] + _execution_centrepiece_forbidden_claims()
+    if record.status == "smoke_test_only":
+        return [
+            _smoke_only_claim(
+                f"execution_centrepiece.{claim_id}",
+                claim_id.replace("_", " "),
+                required,
+                ["execution_centrepiece_report"],
+            )
+            for claim_id in claim_ids
+        ] + _execution_centrepiece_forbidden_claims()
+
+    stored_statuses = _centrepiece_stored_claim_statuses(record)
+    entries: list[ClaimAuditEntry] = []
+    for claim_id in claim_ids:
+        stored = stored_statuses.get(claim_id)
+        if stored == "supported" and record.status in _CLEAN_COMPLETE_STATUSES:
+            status: ClaimStatus = "supported"
+            reason = "Stored centrepiece claim assessment marks this proxy diagnostic supported."
+        elif stored == "supported":
+            status = "partially_supported"
+            reason = (
+                "Stored centrepiece assessment supports the diagnostic, but the "
+                "artefact is not clean complete."
+            )
+        else:
+            status = "needs_real_evidence"
+            reason = "Stored centrepiece claim assessment does not support this diagnostic."
+        entries.append(
+            ClaimAuditEntry(
+                claim_id=f"execution_centrepiece.{claim_id}",
+                claim_text=claim_id.replace("_", " "),
+                status=status,
+                supporting_artefacts=["execution_centrepiece_report"]
+                if stored == "supported"
+                else [],
+                required_artefacts=required,
+                reason=reason,
+                safe_rewording=(
+                    "Report this as a retained-table offline execution-aware proxy "
+                    "diagnostic with explicit limitations."
+                ),
+                category="empirical result",
+            )
+        )
+    entries.extend(_execution_centrepiece_forbidden_claims())
+    return entries
+
+
+def _centrepiece_stored_claim_statuses(
+    record: ArtefactInventoryRow,
+) -> dict[str, str]:
+    payload = record.payloads.get("execution_centrepiece_claim_assessment", {})
+    claims = payload.get("claims")
+    statuses: dict[str, str] = {}
+    if isinstance(claims, list):
+        for item in claims:
+            if isinstance(item, Mapping):
+                claim_id = str(item.get("claim_id", ""))
+                status = str(item.get("status", ""))
+                if claim_id and status:
+                    statuses[claim_id] = status
+    summary = record.payloads.get("centrepiece_summary", {})
+    raw = summary.get("claim_statuses")
+    if isinstance(raw, Mapping):
+        for claim_id, status in raw.items():
+            statuses.setdefault(str(claim_id), str(status))
+    return statuses
+
+
+def _execution_centrepiece_forbidden_claims() -> list[ClaimAuditEntry]:
+    return [
+        ClaimAuditEntry(
+            claim_id="execution_centrepiece.profitability_or_tradability",
+            claim_text="The execution centrepiece establishes profitability or tradability",
+            status="forbidden",
+            supporting_artefacts=[],
+            required_artefacts=[],
+            reason="The centrepiece is an offline diagnostic and explicitly blocks this claim.",
+            safe_rewording=(
+                "State that the centrepiece does not establish profitability or tradability."
+            ),
+            category="forbidden or high-risk",
+        ),
+        ClaimAuditEntry(
+            claim_id="execution_centrepiece.PnL",
+            claim_text="The execution centrepiece reports PnL",
+            status="forbidden",
+            supporting_artefacts=[],
+            required_artefacts=[],
+            reason="The centrepiece reports cost-adjusted proxy diagnostics, not PnL.",
+            safe_rewording="Use cost-adjusted proxy wording only.",
+            category="forbidden or high-risk",
+        ),
+        ClaimAuditEntry(
+            claim_id="execution_centrepiece.live_trading",
+            claim_text="The execution centrepiece supports live trading claims",
+            status="forbidden",
+            supporting_artefacts=[],
+            required_artefacts=[],
+            reason="The centrepiece is an offline diagnostic with no live execution.",
+            safe_rewording="Describe it as an offline diagnostic only.",
+            category="forbidden or high-risk",
+        ),
+    ]
+
+
 def _synthetic_support_status(record: ArtefactInventoryRow | None) -> ClaimStatus:
     """Map a synthetic artefact status to an infrastructure-support claim status.
 
@@ -3307,6 +3475,22 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "Consumes stored predictions; outputs are offline proxy diagnostics.",
         ),
         (
+            "Execution Centrepiece",
+            "python -m chronoslob.cli build-execution-centrepiece "
+            f"--execution-analysis {config.execution_v3_analysis_dir.as_posix()} "
+            f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
+            f"--out {config.execution_centrepiece_dir.as_posix()} "
+            "--no-figures --overwrite",
+            "python -m chronoslob.cli build-execution-centrepiece "
+            f"--execution-analysis {config.execution_v3_analysis_dir.as_posix()} "
+            f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
+            f"--out {config.execution_centrepiece_dir.as_posix()} --overwrite",
+            config.execution_centrepiece_dir.as_posix(),
+            "Consumes retained execution-v3 analysis tables; raw predictions are not required.",
+        ),
+        (
             "Figures",
             "python -m chronoslob.cli build-fi2010-figures "
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
@@ -3353,6 +3537,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--execution-centrepiece {config.execution_centrepiece_dir.as_posix()} "
             f"--out {config.final_report_path.as_posix()} --overwrite",
             "python -m chronoslob.cli build-final-empirical-report "
             "--classical experiments/fi2010_multifold_classical "
@@ -3365,6 +3550,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--execution-centrepiece {config.execution_centrepiece_dir.as_posix()} "
             f"--evidence-pack {config.out_dir.as_posix()} "
             f"--out {config.final_report_path.as_posix()} --overwrite",
             config.final_report_path.as_posix(),
@@ -3377,6 +3563,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
             f"--figures {config.figures_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--execution-centrepiece {config.execution_centrepiece_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--ablation-figures {config.ablation_figures_dir.as_posix()} "
@@ -3387,6 +3574,7 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             f"--neural-full-grid {config.neural_full_grid_dir.as_posix()} "
             f"--figures {config.figures_dir.as_posix()} "
             f"--execution-v3 {config.execution_v3_dir.as_posix()} "
+            f"--execution-centrepiece {config.execution_centrepiece_dir.as_posix()} "
             f"--feature-ablations {config.feature_ablations_dir.as_posix()} "
             f"--feature-ablation-analysis {config.feature_ablation_analysis_dir.as_posix()} "
             f"--ablation-figures {config.ablation_figures_dir.as_posix()} "
@@ -3523,6 +3711,7 @@ def _strict_violations(
                 "fi2010_neural_proper_training_subset",
                 "fi2010_figures",
                 "execution_v3_outputs",
+                "execution_centrepiece_report",
                 "feature_ablation_outputs",
                 "feature_ablation_analysis_report",
                 "ablation_figures",
@@ -3590,6 +3779,7 @@ def _config_paths(config: EvidencePackConfig) -> dict[str, str | None]:
         "proper_training_dir": _display_path(config.proper_training_dir),
         "figures_dir": _display_path(config.figures_dir),
         "execution_v3_dir": _display_path(config.execution_v3_dir),
+        "execution_centrepiece_dir": _display_path(config.execution_centrepiece_dir),
         "feature_audit_dir": (
             None if config.feature_audit_dir is None else _display_path(config.feature_audit_dir)
         ),

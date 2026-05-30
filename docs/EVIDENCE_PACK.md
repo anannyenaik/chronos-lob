@@ -15,6 +15,7 @@ python -m chronoslob.cli build-evidence-pack \
   --neural-full-grid experiments/fi2010_neural_full_grid \
   --figures reports/figures/fi2010_neural_full_grid \
   --execution-v3 experiments/fi2010_execution_v3 \
+  --execution-centrepiece reports/execution_centrepiece \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
@@ -167,6 +168,13 @@ carries per-diagnostic claim statuses (cost, latency, fill and adverse-selection
 sensitivity supported from real tables; regime diagnostics explicitly skipped).
 All of its statements stay within offline execution-aware proxy diagnostics and
 make no PnL, profitability or live-trading claim.
+
+The execution centrepiece artefact (`execution_centrepiece_report`, built by
+`build-execution-centrepiece` into `reports/execution_centrepiece/`) is recorded
+separately. It supports retained-table forecasting-versus-signal-quality gap,
+confidence-filtering tradeoff, active-fraction, turnover-proxy, latency-cost gap
+and adverse-selection-confidence diagnostics. Its claim audit keeps
+profitability, PnL, live-trading and tradability claims forbidden.
 
 A dedicated feature-ablation stability artefact
 (`feature_ablation_analysis_report`, built by

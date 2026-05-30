@@ -14,6 +14,7 @@
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | archived_valid | no |
 | execution_v3_analysis_report | complete_real | no |
+| execution_centrepiece_report | complete_real | no |
 | feature_registry_audit_outputs | optional_missing | no |
 | feature_ablation_outputs | partial_real | no |
 | feature_ablation_analysis_report | complete_real | no |

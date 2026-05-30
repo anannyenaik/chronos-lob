@@ -1,10 +1,10 @@
 {
   "builder_version": "release/evidence-pack/v1",
   "claim_status_counts": {
-    "forbidden": 15,
+    "forbidden": 18,
     "needs_real_evidence": 2,
     "partially_supported": 3,
-    "supported": 22,
+    "supported": 29,
     "unsupported": 8
   },
   "claims": [
@@ -91,6 +91,20 @@
       "status": "supported",
       "supporting_artefacts": [
         "execution_v3_analysis_report"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.execution_centrepiece_report",
+      "claim_text": "ChronosLOB includes a forecasting-versus-signal-quality centrepiece",
+      "reason": "Execution centrepiece artefacts are present.",
+      "required_artefacts": [
+        "execution_centrepiece_report"
+      ],
+      "safe_rewording": "ChronosLOB includes an execution centrepiece that summarises the forecasting-versus-signal-quality gap under confidence, cost, latency, turnover and adverse-selection proxy diagnostics.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
       ]
     },
     {
@@ -364,6 +378,126 @@
       "supporting_artefacts": [
         "execution_v3_outputs"
       ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.forecasting_vs_signal_quality_gap_analysis",
+      "claim_text": "forecasting vs signal quality gap analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.confidence_filtering_tradeoff_analysis",
+      "claim_text": "confidence filtering tradeoff analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.active_fraction_analysis",
+      "claim_text": "active fraction analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.turnover_proxy_analysis",
+      "claim_text": "turnover proxy analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.latency_cost_gap_analysis",
+      "claim_text": "latency cost gap analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "execution_centrepiece.adverse_selection_confidence_analysis",
+      "claim_text": "adverse selection confidence analysis",
+      "reason": "Stored centrepiece claim assessment marks this proxy diagnostic supported.",
+      "required_artefacts": [
+        "execution_centrepiece_report",
+        "execution_centrepiece_claim_assessment.json"
+      ],
+      "safe_rewording": "Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_centrepiece_report"
+      ]
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "execution_centrepiece.profitability_or_tradability",
+      "claim_text": "The execution centrepiece establishes profitability or tradability",
+      "reason": "The centrepiece is an offline diagnostic and explicitly blocks this claim.",
+      "required_artefacts": [],
+      "safe_rewording": "State that the centrepiece does not establish profitability or tradability.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "execution_centrepiece.PnL",
+      "claim_text": "The execution centrepiece reports PnL",
+      "reason": "The centrepiece reports cost-adjusted proxy diagnostics, not PnL.",
+      "required_artefacts": [],
+      "safe_rewording": "Use cost-adjusted proxy wording only.",
+      "status": "forbidden",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "forbidden or high-risk",
+      "claim_id": "execution_centrepiece.live_trading",
+      "claim_text": "The execution centrepiece supports live trading claims",
+      "reason": "The centrepiece is an offline diagnostic with no live execution.",
+      "required_artefacts": [],
+      "safe_rewording": "Describe it as an offline diagnostic only.",
+      "status": "forbidden",
+      "supporting_artefacts": []
     },
     {
       "category": "forbidden or high-risk",
@@ -660,5 +794,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T21:24:43.946312+00:00"
+  "generated_at": "2026-05-30T23:00:45.456473+00:00"
 }

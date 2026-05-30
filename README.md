@@ -33,6 +33,7 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
 | SSL-v2 benchmark | `partial_real` | Failure-analysis-motivated market-state SSL objective, fold 1 horizons 10/50 seed 0; evaluated but no predictive or calibration improvement claim is supported. |
 | Execution-v3 | `archived_valid` | Offline execution-aware proxy diagnostic only. |
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
+| Execution centrepiece | `complete_real` | Forecasting-versus-signal-quality gap under retained proxy diagnostics. |
 | Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
 | Synthetic event-level extension | `archived_valid` | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
@@ -69,6 +70,9 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or
   live-trading evidence.
+- An execution centrepiece report summarises the forecasting-versus-signal-quality
+  gap under confidence, cost, latency, turnover and adverse-selection proxy
+  diagnostics.
 - Feature-ablation evidence now supports a scoped feature-stability analysis:
   removing `snapshot_order_flow_proxy` degraded macro-F1 across the tested
   logistic/ridge horizons 10/20/50 and in a small gradient-boosting slice. It is
@@ -107,6 +111,7 @@ evidence. See [docs/BINANCE_L2_EXTENSION.md](docs/BINANCE_L2_EXTENSION.md).
 | --- | --- |
 | Final empirical report | [reports/chronoslob_final_empirical_report.md](reports/chronoslob_final_empirical_report.md) |
 | Evidence pack summary | [reports/evidence_pack/evidence_pack_summary.md](reports/evidence_pack/evidence_pack_summary.md) |
+| Execution centrepiece | [reports/execution_centrepiece/execution_centrepiece.md](reports/execution_centrepiece/execution_centrepiece.md) |
 | Proper-training neural subset | [experiments/fi2010_neural_proper_training_subset_v2/README.md](experiments/fi2010_neural_proper_training_subset_v2/README.md) |
 | Claim audit | [reports/evidence_pack/claim_audit.md](reports/evidence_pack/claim_audit.md) |
 | Feature-ablation stability analysis | [reports/feature_ablation_analysis/feature_ablation_analysis.md](reports/feature_ablation_analysis/feature_ablation_analysis.md) |
@@ -153,6 +158,7 @@ python -m chronoslob.cli build-evidence-pack \
   --neural-full-grid experiments/fi2010_neural_full_grid \
   --figures reports/figures/fi2010_neural_full_grid \
   --execution-v3 experiments/fi2010_execution_v3 \
+  --execution-centrepiece reports/execution_centrepiece \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \

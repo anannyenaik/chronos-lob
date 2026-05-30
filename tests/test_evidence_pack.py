@@ -55,6 +55,7 @@ def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
         neural_full_grid_dir=tmp_path / "grid",
         figures_dir=tmp_path / "figures",
         execution_v3_dir=tmp_path / "execution_v3",
+        execution_centrepiece_dir=tmp_path / "execution_centrepiece",
         feature_audit_dir=None,
         feature_ablations_dir=tmp_path / "feature_ablations",
         feature_ablation_analysis_dir=tmp_path / "feature_ablation_analysis",
@@ -241,6 +242,46 @@ def _write_complete_execution(path: Path) -> None:
     )
 
 
+def _write_complete_execution_centrepiece(path: Path) -> None:
+    _write_json(
+        path / "centrepiece_summary.json",
+        {
+            "created_at": "2026-05-30T00:00:00Z",
+            "smoke_test": False,
+            "raw_predictions_required": False,
+            "claim_statuses": {
+                "forecasting_vs_signal_quality_gap_analysis": "supported",
+                "confidence_filtering_tradeoff_analysis": "supported",
+                "active_fraction_analysis": "supported",
+                "turnover_proxy_analysis": "supported",
+                "latency_cost_gap_analysis": "supported",
+                "adverse_selection_confidence_analysis": "supported",
+                "profitability_or_tradability": "forbidden",
+                "PnL": "forbidden",
+                "live_trading": "forbidden",
+            },
+        },
+    )
+    (path / "execution_centrepiece.md").parent.mkdir(parents=True, exist_ok=True)
+    (path / "execution_centrepiece.md").write_text(
+        "# Execution Centrepiece\n\nOffline diagnostic only.\n",
+        encoding="utf-8",
+    )
+    for filename in (
+        "forecasting_vs_signal_quality.csv",
+        "confidence_threshold_tradeoff.csv",
+        "metric_to_proxy_gap.csv",
+        "latency_cost_gap.csv",
+        "adverse_selection_by_confidence.csv",
+    ):
+        _write_csv(path / filename, ["status"], [{"status": "ok"}])
+    _write_json(path / "execution_centrepiece_claim_assessment.json", {"claims": []})
+    _write_json(
+        path / "figure_manifest.json",
+        {"figures": [{"figure_id": "forecasting_vs_signal_quality", "status": "completed"}]},
+    )
+
+
 def _write_complete_feature_ablations(path: Path) -> None:
     _write_json(
         path / "summary.json",
@@ -347,6 +388,7 @@ def _write_all_complete(config: EvidencePackConfig) -> None:
     _write_complete_grid(config.neural_full_grid_dir)
     _write_complete_figures(config.figures_dir)
     _write_complete_execution(config.execution_v3_dir)
+    _write_complete_execution_centrepiece(config.execution_centrepiece_dir)
     _write_complete_feature_ablations(config.feature_ablations_dir)
     _write_complete_feature_ablation_analysis(config.feature_ablation_analysis_dir)
     _write_complete_figures(config.ablation_figures_dir)
@@ -475,6 +517,15 @@ def test_claim_audit_supported_smoke_unsupported_and_forbidden(tmp_path: Path) -
     assert by_id["empirical.gradient_boosting_best"].status == "supported"
     assert by_id["empirical.ssl_improved_macro_f1"].status == "supported"
     assert by_id["feature_ablation_infrastructure"].status == "supported"
+    assert by_id["general.execution_centrepiece_report"].status == "supported"
+    assert (
+        by_id["execution_centrepiece.forecasting_vs_signal_quality_gap_analysis"].status
+        == "supported"
+    )
+    assert by_id["execution_centrepiece.confidence_filtering_tradeoff_analysis"].status == (
+        "supported"
+    )
+    assert by_id["execution_centrepiece.profitability_or_tradability"].status == "forbidden"
     assert by_id["horizon10_logistic_ridge_snapshot_proxy_importance"].status == "supported"
     assert by_id["broader_horizon_snapshot_proxy_importance"].status == "supported"
     assert by_id["nonlinear_model_feature_stability"].status == "needs_real_evidence"
@@ -818,8 +869,10 @@ def test_real_repo_pack_has_no_spurious_stale_or_missing(tmp_path: Path) -> None
         "general.supervised_vs_ssl_transformers",
         "general.train_only_ssl",
         "general.execution_proxy_diagnostics",
+        "general.execution_centrepiece_report",
         "general.feature_ablations",
     ):
         assert claims[cid].status == "supported", (cid, claims[cid].status)
     assert claims["empirical.ssl_improved_macro_f1"].status == "unsupported"
     assert claims["empirical.ssl_improved_calibration"].status == "unsupported"
+    assert claims["execution_centrepiece.profitability_or_tradability"].status == "forbidden"

@@ -33,6 +33,87 @@ def _phrase(*parts: str) -> str:
     return " ".join(parts)
 
 
+def _write_execution_centrepiece(path: Path) -> None:
+    _write_json(
+        path / "centrepiece_summary.json",
+        {
+            "raw_predictions_required": False,
+            "payoff_mode": "unit_payoff",
+            "cost_mode": "unit_proxy",
+            "smoke_test": False,
+            "claim_statuses": {
+                "forecasting_vs_signal_quality_gap_analysis": "supported",
+                "confidence_filtering_tradeoff_analysis": "supported",
+                "active_fraction_analysis": "supported",
+                "turnover_proxy_analysis": "supported",
+                "latency_cost_gap_analysis": "supported",
+                "adverse_selection_confidence_analysis": "supported",
+                "profitability_or_tradability": "forbidden",
+                "PnL": "forbidden",
+                "live_trading": "forbidden",
+            },
+            "unavailable_fields": {
+                "confidence_filtered_ece": "unavailable: retained tables do not include ECE"
+            },
+        },
+    )
+    (path / "execution_centrepiece.md").parent.mkdir(parents=True, exist_ok=True)
+    (path / "execution_centrepiece.md").write_text(
+        "# Execution Centrepiece\n\nOffline diagnostic only.\n",
+        encoding="utf-8",
+    )
+    _write_csv(
+        path / "metric_to_proxy_gap.csv",
+        [
+            "pretraining_objective",
+            "horizon",
+            "predictive_macro_f1",
+            "predictive_ece",
+            "active_fraction_at_0_70",
+            "turnover_proxy_at_0_70",
+            "cost_adjusted_proxy_at_0_70",
+            "latency_degradation_vs_lag0",
+            "high_confidence_adverse_selection_proxy",
+        ],
+        [
+            {
+                "pretraining_objective": "supervised",
+                "horizon": 10,
+                "predictive_macro_f1": 0.33,
+                "predictive_ece": 0.12,
+                "active_fraction_at_0_70": 0.2,
+                "turnover_proxy_at_0_70": 0.2,
+                "cost_adjusted_proxy_at_0_70": -3.0,
+                "latency_degradation_vs_lag0": -2.0,
+                "high_confidence_adverse_selection_proxy": 0.2,
+            }
+        ],
+    )
+    for filename in (
+        "forecasting_vs_signal_quality.csv",
+        "confidence_threshold_tradeoff.csv",
+        "latency_cost_gap.csv",
+        "adverse_selection_by_confidence.csv",
+    ):
+        _write_csv(path / filename, ["status"], [{"status": "ok"}])
+    _write_json(
+        path / "execution_centrepiece_claim_assessment.json",
+        {"claims": []},
+    )
+    _write_json(
+        path / "figure_manifest.json",
+        {
+            "figures": [
+                {
+                    "figure_id": "forecasting_vs_signal_quality",
+                    "status": "completed",
+                    "file_path": str(path / "forecasting_vs_signal_quality.png"),
+                }
+            ]
+        },
+    )
+
+
 @pytest.fixture()
 def tiny_final_artefacts(tmp_path: Path) -> dict[str, Path]:
     base = tmp_path / "artefacts"
@@ -826,3 +907,27 @@ def test_final_report_consumes_evidence_pack_summary(
     assert "## Evidence Pack Audit" in text
     assert "supported=1" in text
     assert "Release caveats from the evidence pack" in text
+
+
+def test_final_report_references_execution_centrepiece(
+    tiny_final_artefacts: dict[str, Path],
+    tmp_path: Path,
+) -> None:
+    centrepiece = tmp_path / "execution_centrepiece"
+    _write_execution_centrepiece(centrepiece)
+    report_path = tmp_path / "with_execution_centrepiece.md"
+
+    build_final_empirical_report(
+        classical_dir=tiny_final_artefacts["classical"],
+        neural_dir=tiny_final_artefacts["neural"],
+        uncertainty_dir=tiny_final_artefacts["uncertainty"],
+        execution_centrepiece_dir=centrepiece,
+        out_path=report_path,
+        overwrite=True,
+    )
+
+    text = report_path.read_text(encoding="utf-8")
+    assert "## Forecasting versus Signal-Quality Gap" in text
+    assert "execution_centrepiece.md" in text
+    assert "forecasting-versus-signal-quality gap" in text
+    assert "raw predictions" in text

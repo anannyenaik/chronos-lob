@@ -32,6 +32,18 @@
   - status: partially_supported
   - reason: Some feature-delta rows are positive, but the placeholder claim must name the exact group, model, horizon, split and ablation mode.
   - safe wording: Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored FI-2010 snapshot diagnostics.
+- The execution centrepiece establishes profitability or tradability
+  - status: forbidden
+  - reason: The centrepiece is an offline diagnostic and explicitly blocks this claim.
+  - safe wording: State that the centrepiece does not establish profitability or tradability.
+- The execution centrepiece reports PnL
+  - status: forbidden
+  - reason: The centrepiece reports cost-adjusted proxy diagnostics, not PnL.
+  - safe wording: Use cost-adjusted proxy wording only.
+- The execution centrepiece supports live trading claims
+  - status: forbidden
+  - reason: The centrepiece is an offline diagnostic with no live execution.
+  - safe wording: Describe it as an offline diagnostic only.
 - Feature ablations prove causal feature importance
   - status: forbidden
   - reason: Feature ablations are scoped diagnostics and do not identify causal effects.

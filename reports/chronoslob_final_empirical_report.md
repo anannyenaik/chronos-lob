@@ -6,8 +6,8 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-30T21:16:32.930946+00:00 |
-| git_commit | d49a86ea258ba8e03b3dd8c16f364a1ae8e987f1 |
+| generated_at | 2026-05-30T23:00:20.348878+00:00 |
+| git_commit | 597b3599a3a437ec06224f2ae1f8e5a91d81041f |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
@@ -17,6 +17,7 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 | best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
 | execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
 | execution_v3_scope | offline execution-aware proxy diagnostic loaded; payoff_mode=unit_payoff, cost_mode=unit_proxy |
+| execution_centrepiece_scope | forecasting-versus-signal-quality gap centrepiece loaded; offline diagnostic only |
 | external_scope | protocol context loaded; protocol context only, not ranking claims |
 | report_path | reports/chronoslob_final_empirical_report.md |
 | summary_path | reports/chronoslob_final_empirical_report_summary.json |
@@ -59,8 +60,8 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | archived_valid=4, complete_real=5, obsolete_superseded=1, optional_missing=1, partial_real=6, unknown_staleness=1 |
-| claim_status_counts | forbidden=15, needs_real_evidence=2, partially_supported=3, supported=22, unsupported=8 |
+| artefact_status_counts | archived_valid=4, complete_real=6, obsolete_superseded=1, optional_missing=1, partial_real=6, unknown_staleness=1 |
+| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=29, unsupported=8 |
 | supported_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 | unsupported_or_limited_claims | Model X achieved macro-F1 Y; SSL improved macro-F1; SSL improved calibration |
 
@@ -696,6 +697,43 @@ Skipped diagnostics:
 
 Conservative interpretation: execution-v3 can show how stored FI-2010 signals respond to confidence filters, costs, latency and fill proxy assumptions. It does not establish deployable execution quality.
 
+## Forecasting versus Signal-Quality Gap
+
+The execution centrepiece is the compact reviewer-facing bridge between forecast metrics and execution-aware signal-quality proxy diagnostics.
+It uses retained execution-v3 analysis tables, retained full-grid predictive/calibration summaries and no deleted raw predictions.
+
+| field | value |
+| --- | --- |
+| centrepiece_report | reports/execution_centrepiece/execution_centrepiece.md |
+| central_figure | reports/execution_centrepiece/forecasting_vs_signal_quality.png |
+| raw_predictions_required | False |
+| payoff_mode | unit_payoff |
+| cost_mode | unit_proxy |
+| claim_statuses | PnL=forbidden, active_fraction_analysis=supported, adverse_selection_confidence_analysis=supported, confidence_filtering_tradeoff_analysis=supported, forecasting_vs_signal_quality_gap_analysis=supported, latency_cost_gap_analysis=supported, live_trading=forbidden, profitability_or_tradability=forbidden, turnover_proxy_analysis=supported |
+
+Representative metric-to-proxy rows:
+
+| pretraining_objective | horizon | predictive_macro_f1 | predictive_ece | active_fraction_at_0_70 | turnover_proxy_at_0_70 | cost_adjusted_proxy_at_0_70 | latency_degradation_vs_lag0 | high_confidence_adverse_selection_proxy |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| masked_reconstruction | 10 | 0.323277585413822 | 0.1424651832931761 | 0.0023678115390002 | 0.0023678742642733 | -62.69230769230769 | -485.3333333333333 | unavailable |
+| masked_reconstruction | 20 | 0.354660208701847 | 0.1281113254174867 | 0.0086694443779239 | 0.0086696758466101 | -165.53846153846155 | -1055.4666666666667 | unavailable |
+| masked_reconstruction | 50 | 0.4147550866093952 | 0.0854119535713275 | 0.0329805925999047 | 0.0329814951974662 | -101.28571428571428 | -2236.4666666666667 | 0.2019464720194647 |
+| next_field | 10 | 0.273269787401566 | 0.0846766037360791 | 0.0090780502236704 | 0.009078315688073 | -187.46666666666667 | -37.2 | 0.1236559139784946 |
+| next_field | 20 | 0.2805151636127316 | 0.0955842958047957 | 0.0231301855881019 | 0.0231307789279695 | -405.61538461538464 | -337.46666666666664 | 0.1372194062273714 |
+| next_field | 50 | 0.3822988716148037 | 0.0845739935464671 | 0.0542928484519512 | 0.0542945103471378 | -219.83333333333331 | -1974.1333333333332 | 0.2769878883622959 |
+
+Explicitly unavailable fields:
+
+| field | reason |
+| --- | --- |
+| confidence_filtered_ece | unavailable: retained confidence-threshold tables do not include ECE |
+| raw_predictions | not required and not read; deleted raw predictions are unavailable |
+| realised_execution | unavailable: offline diagnostic has no broker or venue fills |
+| supported_regime_diagnostics | unavailable: retained tables lack regime labels or snapshot context |
+
+Conservative interpretation: the forecasting-versus-signal-quality gap does not establish profitability or tradability.
+It shows why macro-F1 and calibration must be read alongside confidence filtering, active fraction, turnover proxy, cost-adjusted proxy, latency sensitivity and adverse-selection proxy diagnostics.
+
 ## External Benchmark Context
 
 External comparisons are protocol context, not ranking claims. No external numeric metrics are imported into this report.
@@ -753,6 +791,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 - The one-epoch full neural grid artefacts compare supervised and SSL matrix-transformer variants under matched fold, horizon, seed, lookback, architecture and preprocessing keys; this is matched
   comparison evidence and supports no SSL improvement claim.
 - Execution-v3 artefacts support an offline execution-aware proxy diagnostic over stored FI-2010 full-grid predictions.
+- The execution centrepiece supports a forecasting-versus-signal-quality gap analysis using retained predictive, calibration and proxy diagnostic tables.
 - Feature-ablation artefacts support leakage-safe FI-2010 snapshot feature-family diagnostics with proxy features labelled as proxies.
 
 ## What This Does Not Claim
@@ -774,6 +813,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | neural_seed_count | 1 |
 | neural_scope | single seed and single lookback in stored reduced-scope artefacts |
 | execution_scope | offline execution-aware proxy diagnostics only; queue, impact and venue mechanics are not modelled |
+| execution_centrepiece_scope | forecasting-versus-signal-quality gap analysis over retained proxy tables; no raw predictions or realised execution outcomes are read |
 | external_scope | protocol context only; no external numeric metrics are copied |
 | prediction_checkpoint_policy | full predictions and checkpoints are not required by this report builder |
 | full_neural_grid_scope | reported only when aggregate artefacts are supplied; smoke artefacts are not empirical evidence |
@@ -806,6 +846,16 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | not_hashed |
 | evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | not_hashed |
 | execution_adverse_selection_summary | experiments/fi2010_execution_v2/adverse_selection_summary.csv | 57bd2c42e591e64bdc1e4be6aa3a2d8902f031178521d699f5e5dde9965d1be8 |
+| execution_centrepiece_adverse_selection_by_confidence | reports/execution_centrepiece/adverse_selection_by_confidence.csv | fbb342e097dcd772ad385308a4639c342e290e84c613b50e2cd6d04699f91732 |
+| execution_centrepiece_centrepiece_summary | reports/execution_centrepiece/centrepiece_summary.json | a7ea5038bd8c665108e7476039dc5996697d57ae131abbb590cfa4a64242b700 |
+| execution_centrepiece_confidence_threshold_tradeoff | reports/execution_centrepiece/confidence_threshold_tradeoff.csv | e6a5b149987c6c8ff9f885aa078ed3842488281475c5e6346b0aa6525a160fcd |
+| execution_centrepiece_dir | reports/execution_centrepiece | directory |
+| execution_centrepiece_execution_centrepiece | reports/execution_centrepiece/execution_centrepiece.md | ddbafc89d186bf32c9de345aa40de43d67a9f94205a09fc1de22cd154c99b8f8 |
+| execution_centrepiece_execution_centrepiece_claim_assessment | reports/execution_centrepiece/execution_centrepiece_claim_assessment.json | 20bef013ef9a80dd548ed9221b4edb3d1160edfbe21ba45eb382a55a88695487 |
+| execution_centrepiece_figure_manifest | reports/execution_centrepiece/figure_manifest.json | 85a1adf2b2bb1bacf1a8dce29653b0f30584515c315b0bb3be47feb82fa1c064 |
+| execution_centrepiece_forecasting_vs_signal_quality | reports/execution_centrepiece/forecasting_vs_signal_quality.csv | 6fe3aa0728066b4e323694ce4f290d6348da61f69767c1301b497f65e5d24d8f |
+| execution_centrepiece_latency_cost_gap | reports/execution_centrepiece/latency_cost_gap.csv | 4c6c35aa76b3ed823cc511d38932ad55ad0cb8692eab5decbe81e6d1e84e6b43 |
+| execution_centrepiece_metric_to_proxy_gap | reports/execution_centrepiece/metric_to_proxy_gap.csv | 127c2ae682c17817c193df8f54e824cd167929b1da5071b3a80531e883e036d5 |
 | execution_confidence_threshold_summary | experiments/fi2010_execution_v2/confidence_threshold_summary.csv | 7aca37c1b7030e6120f631e3d49ea96611b534bf81b9a2a212854cb8b4a9b669 |
 | execution_degradation_summary | experiments/fi2010_execution_v2/degradation_summary.csv | 02c313f2bb64beb09f490e9f81f57f29978d4d0046de28d27818384c36c06df1 |
 | execution_dir | experiments/fi2010_execution_v2 | directory |
@@ -899,7 +949,15 @@ python -m chronoslob.cli build-final-empirical-report \
   --neural-full-grid experiments/fi2010_neural_full_grid \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
+  --execution-centrepiece reports/execution_centrepiece \
   --out reports/chronoslob_final_empirical_report.md \
+  --overwrite
+
+python -m chronoslob.cli build-execution-centrepiece \
+  --execution-analysis reports/execution_v3_analysis \
+  --execution-v3 experiments/fi2010_execution_v3 \
+  --neural-full-grid experiments/fi2010_neural_full_grid \
+  --out reports/execution_centrepiece \
   --overwrite
 
 python -m chronoslob.cli doctor

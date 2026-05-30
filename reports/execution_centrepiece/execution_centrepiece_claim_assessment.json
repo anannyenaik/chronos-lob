@@ -1,0 +1,65 @@
+{
+  "builder_version": "execution-centrepiece/v1",
+  "claim_boundary": "The execution centrepiece is an offline diagnostic. It is not PnL, not live-trading evidence and not a production execution simulator.",
+  "claims": [
+    {
+      "claim_id": "forecasting_vs_signal_quality_gap_analysis",
+      "safe_rewording": "The centrepiece shows a forecasting-versus-signal-quality gap using retained offline diagnostic tables.",
+      "scope": "retained predictive/calibration summaries joined to proxy diagnostics",
+      "status": "supported"
+    },
+    {
+      "claim_id": "confidence_filtering_tradeoff_analysis",
+      "safe_rewording": "Report confidence filtering as an offline signal-quality proxy diagnostic.",
+      "scope": "confidence filtering, retained fraction and active fraction by threshold",
+      "status": "supported"
+    },
+    {
+      "claim_id": "active_fraction_analysis",
+      "safe_rewording": "Report active fraction shrinkage under confidence filtering.",
+      "scope": "active fraction by objective, horizon and confidence threshold",
+      "status": "supported"
+    },
+    {
+      "claim_id": "turnover_proxy_analysis",
+      "safe_rewording": "Report turnover proxy as signal churn, not real order turnover.",
+      "scope": "turnover proxy by objective, horizon and confidence threshold",
+      "status": "supported"
+    },
+    {
+      "claim_id": "latency_cost_gap_analysis",
+      "safe_rewording": "Report cost-adjusted proxy and latency sensitivity as offline diagnostics.",
+      "scope": "cost sensitivity and row-step latency sensitivity retained tables",
+      "status": "supported"
+    },
+    {
+      "claim_id": "adverse_selection_confidence_analysis",
+      "safe_rewording": "Report adverse-selection proxy by confidence bucket; it is a proxy, not measured adverse selection.",
+      "scope": "adverse-selection proxy by confidence bucket and fill assumption",
+      "status": "supported"
+    },
+    {
+      "claim_id": "profitability_or_tradability",
+      "safe_rewording": "State that the centrepiece does not establish profitability or tradability.",
+      "scope": "blocked by claim boundary",
+      "status": "forbidden"
+    },
+    {
+      "claim_id": "PnL",
+      "safe_rewording": "Use cost-adjusted proxy wording, not PnL wording.",
+      "scope": "blocked by claim boundary",
+      "status": "forbidden"
+    },
+    {
+      "claim_id": "live_trading",
+      "safe_rewording": "Describe the output as an offline diagnostic only.",
+      "scope": "blocked by claim boundary",
+      "status": "forbidden"
+    }
+  ],
+  "created_at": "2026-05-30T22:59:59.896665+00:00",
+  "execution_aware_proxy_diagnostic": true,
+  "offline_diagnostic": true,
+  "package_version": "0.1.0",
+  "raw_predictions_required": false
+}
