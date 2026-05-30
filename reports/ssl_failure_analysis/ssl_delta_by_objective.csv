@@ -1,0 +1,5 @@
+source,ssl_objective,n_pairs,mean_delta_macro_f1,macro_f1_wins,macro_f1_ties,macro_f1_losses,mean_delta_mcc,mcc_wins,mcc_ties,mcc_losses,mean_delta_ece,ece_wins,ece_ties,ece_losses
+one_epoch_full_grid,masked_reconstruction,45,-0.010005174842335448,19,0,26,-0.01993588503661325,15,0,30,0.022106948818775358,18,0,27
+one_epoch_full_grid,next_field,45,-0.062208194207656387,3,0,42,-0.06505023630181143,3,8,34,-0.008277574246107373,24,0,21
+proper_training_subset,masked_reconstruction,2,0.0445416805497409,1,1,0,0.06190174874598655,1,1,0,0.02098315620965515,0,0,2
+proper_training_subset,next_field,2,0.00323255456830045,1,1,0,0.0203816690284509,1,1,0,0.05312799097761395,0,0,2

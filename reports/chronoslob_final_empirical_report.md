@@ -6,8 +6,8 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-29T23:12:59.915115+00:00 |
-| git_commit | ef0724fb55e595fffb7af6e616ebb1789cfaaac6 |
+| generated_at | 2026-05-30T00:25:30.826395+00:00 |
+| git_commit | c127f4e922d2ab47fe20c876dadebb75a2c9b30a |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
@@ -15,7 +15,7 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
 | legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
 | best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
-| execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
+| execution_scope | skipped; metrics are proxy diagnostics |
 | execution_v3_scope | offline execution-aware proxy diagnostic loaded; payoff_mode=unit_payoff, cost_mode=unit_proxy |
 | external_scope | protocol context loaded; protocol context only, not ranking claims |
 | report_path | reports/chronoslob_final_empirical_report.md |
@@ -59,9 +59,9 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | complete_real=2, missing=2, partial_real=2, stale=4, unknown_staleness=1 |
-| claim_status_counts | forbidden=9, needs_real_evidence=1, partially_supported=10, unsupported=2 |
-| supported_claims | none fully supported |
+| artefact_status_counts | complete_real=3, missing=2, partial_real=1, stale=5, unknown_staleness=1 |
+| claim_status_counts | forbidden=9, needs_real_evidence=1, partially_supported=11, supported=1, unsupported=2 |
+| supported_claims | SSL was implemented and evaluated under matched FI-2010 settings. |
 | unsupported_or_limited_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 
 Release caveats from the evidence pack:
@@ -363,6 +363,22 @@ evidence at its exact stored scope.
 
 The longer-training subset does not support an SSL improvement claim.
 
+## SSL Failure Analysis
+
+A dedicated SSL failure-analysis report at reports/ssl_failure_analysis/ssl_failure_analysis.md separates three distinct bodies of evidence and never merges them: the completed one-epoch matched full
+grid (folds 1-5, horizons 10/20/50, seeds 0-2), the longer-training proper-training subset v2 (fold 1, horizons 10 and 50, seed 0, partial_real) and a separate older reduced-scope supervised benchmark
+used only for context.
+
+- Full grid masked_reconstruction: mean macro-F1 delta -0.0100, mean ECE delta 0.0221 (lower ECE is better).
+- Full grid next_field: mean macro-F1 delta -0.0622, mean ECE delta -0.0083 (lower ECE is better).
+
+- Proper-training masked SSL at fold 1 / horizon 50: macro-F1 delta 0.0891, MCC delta 0.1238, ECE delta 0.0245 (calibration worsened).
+
+- Full-grid SSL does not improve overall: matched macro-F1 deltas are neutral-to-negative and calibration does not improve uniformly.
+- Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.
+- No broad SSL improvement and no calibration improvement is claimed.
+- More evidence would require broader proper-training runs and/or better SSL objective design rather than any success claim.
+
 ## Figure Index
 
 | figure | title | path | description |
@@ -422,12 +438,6 @@ Stored ablations are diagnostic stress checks; skipped ablations remain explicit
 | recorded skip |
 | --- |
 | ablation lookback_sweep: neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it |
-| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
-| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
-| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
-| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
-| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
-| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
 | execution_v3 regime_execution: volatility_regime labels unavailable in prediction artefacts |
 | execution_v3 regime_execution: spread_regime labels unavailable in prediction artefacts |
 | execution_v3 regime_execution: imbalance_regime labels unavailable in prediction artefacts |
@@ -571,18 +581,6 @@ Adverse-selection proxy:
 | matrix_transformer | masked_reconstruction | 50.0 | 0.70-0.85 | aggressive_crossing | 0.2536 | label_proxy |
 | matrix_transformer | masked_reconstruction | 50.0 | 0.85-1.00 | aggressive_crossing | 0.2019 | label_proxy |
 
-Legacy execution-v2 proxy snapshot:
-
-| model | source | status | test macro-F1 | base proxy | stress proxy | relative degradation |
-| --- | --- | --- | --- | --- | --- | --- |
-| elastic_net | classical | ok | 0.3260 | 19.6975 | 14.5384 | 0.2619 |
-| gradient_boosting | classical | ok | 0.4654 | 13.0288 | 5.5975 | 0.5704 |
-| logistic | classical | ok | 0.3261 | 19.6985 | 14.5426 | 0.2617 |
-| majority | classical | ok | 0.2514 | 21.2862 | 16.2858 | 0.2349 |
-| random_forest | classical | ok | 0.4547 | 9.8244 | 4.9636 | 0.4948 |
-| deeplob_style | neural | skipped | 0.4753 | n/a | n/a | n/a |
-| matrix_transformer | neural | skipped | 0.7337 | n/a | n/a | n/a |
-
 Skipped diagnostics:
 
 | diagnostic | scope | reason |
@@ -657,19 +655,11 @@ External comparisons are protocol context, not ranking claims. No external numer
 | classical_dir | experiments/fi2010_multifold_classical | directory |
 | classical_results_summary | experiments/fi2010_multifold_classical/results_summary.csv | 7a4d3c042805ecb4d8735fe9ad95f1ccc9bf50a0d4a83acd646f4d6417a9e03e |
 | classical_summary | experiments/fi2010_multifold_classical/summary.json | 6e82bc2ff4b6656b28619338b7486b850d9eca1baf4e4f53fc3ea397794b155a |
-| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | 06cc16604e96f630c0e142908da3b732f64b4fd92b14306a4792bf9f8241859d |
+| evidence_pack_claim_audit | reports/evidence_pack/claim_audit.json | d7579ec75136bdcd36308328e6ed90ea3ab94f31c07442e6ebfb5f411c7855ae |
 | evidence_pack_dir | reports/evidence_pack | directory |
-| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | 8fe7c9edd61a08d30f4dfbe24c6590ebe72085423a9fe3465d4870b85d143f64 |
-| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | e3a4001fd1c53454c5bc6e77bdc90e31c397c38164dd3ec70173c0242728bea6 |
-| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | 4a38d6452711c4a3a0d2cb792ff1c6aed9f625b1064d0c0da73486ee21dcb5c6 |
-| execution_adverse_selection_summary | experiments/fi2010_execution_v2/adverse_selection_summary.csv | 57bd2c42e591e64bdc1e4be6aa3a2d8902f031178521d699f5e5dde9965d1be8 |
-| execution_confidence_threshold_summary | experiments/fi2010_execution_v2/confidence_threshold_summary.csv | 7aca37c1b7030e6120f631e3d49ea96611b534bf81b9a2a212854cb8b4a9b669 |
-| execution_degradation_summary | experiments/fi2010_execution_v2/degradation_summary.csv | 02c313f2bb64beb09f490e9f81f57f29978d4d0046de28d27818384c36c06df1 |
-| execution_dir | experiments/fi2010_execution_v2 | directory |
-| execution_fill_assumption_summary | experiments/fi2010_execution_v2/fill_assumption_summary.csv | cd5fe1dc63de3dc522defee688605069c4a5b3afc3627c52c56a2192fd9a5d6c |
-| execution_skipped_diagnostics | experiments/fi2010_execution_v2/skipped_diagnostics.json | 4830309d22260be7dd982f704f8569cd5479e51937ae414e55ec02962cc36d40 |
-| execution_summary | experiments/fi2010_execution_v2/summary.json | 39c9b74944fba54daf1a4d49b55af403514deb6a180ef1af7ccd88cedd66ae86 |
-| execution_turnover_summary | experiments/fi2010_execution_v2/turnover_summary.csv | d961acc368b842bf22d48fefc1ecf45fde1b39962a5d5511efe37df39700393f |
+| evidence_pack_manifest | reports/evidence_pack/evidence_pack_manifest.json | e840a87bfdff7c764b3e6d94e85a6eee6078ba6e5e240b5f51f2342ff9e64d10 |
+| evidence_pack_supported_claims | reports/evidence_pack/supported_claims.md | aa2e4decd93669cc21a6e2d58567de96e1fbc98e90c572f02544c81df797c612 |
+| evidence_pack_unsupported_claims | reports/evidence_pack/unsupported_claims.md | dcafc8b62c909eb641968cf58b0052e38ff22940627349098ba83302ccf2e72c |
 | execution_v3_adverse_selection_summary | experiments/fi2010_execution_v3/adverse_selection_summary.csv | 94e339bc4749faa27c8e4a8ace6b7aac076754166edfc0a8d57a058374c9e014 |
 | execution_v3_confidence_threshold_aggregate | experiments/fi2010_execution_v3/confidence_threshold_aggregate.csv | bbd14f3a458531f3722f435fcda296b7ddf882a37783470cf1854810ce18549f |
 | execution_v3_confidence_threshold_summary | experiments/fi2010_execution_v3/confidence_threshold_summary.csv | 6603b546e9aec28bdb14df0fd12189467cc9b42a20f17c3b9e8e37f6a3127fff |

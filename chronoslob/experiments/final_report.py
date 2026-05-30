@@ -41,6 +41,7 @@ _SECTION_TITLES: tuple[str, ...] = (
     "Proper-Training Neural Subset",
     "Legacy Reduced-Scope Benchmark",
     "SSL Interpretation",
+    "SSL Failure Analysis",
     "Figure Index",
     "Uncertainty Summary",
     "Ablation Summary",
@@ -1093,6 +1094,7 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
     lines.extend(_section(_PROPER_TRAINING_SECTION_TITLE, _render_proper_training(data)))
     lines.extend(_section("Legacy Reduced-Scope Benchmark", _render_legacy_neural_benchmark(data)))
     lines.extend(_section("SSL Interpretation", _render_ssl_interpretation(data)))
+    lines.extend(_section("SSL Failure Analysis", _render_ssl_failure_analysis(data)))
     lines.extend(_section("Figure Index", _render_figure_index(data)))
     lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
     lines.extend(_section("Ablation Summary", _render_ablations(data)))
@@ -2105,6 +2107,76 @@ def _render_ssl_interpretation(data: _FinalReportData) -> list[str]:
             "No broad SSL improvement claim is made unless all matched aggregate "
             "deltas support it without metric-specific degradation."
         )
+    return lines
+
+
+def _render_ssl_failure_analysis(data: _FinalReportData) -> list[str]:
+    """Reference the dedicated SSL failure-analysis report and its conclusions.
+
+    The three bodies of SSL evidence are kept distinct: the completed one-epoch
+    matched full grid, the longer-training proper-training subset v2 and the
+    older reduced-scope supervised benchmark used only for context.
+    """
+    full_grid_rows = [
+        row for row in data.full_grid.comparison_rows if row.get("status") == "matched"
+    ]
+    proper_rows = [
+        row for row in data.proper_training.comparison_rows if row.get("status") == "matched"
+    ]
+    lines = [
+        *_wrap_prose(
+            "A dedicated SSL failure-analysis report at "
+            "reports/ssl_failure_analysis/ssl_failure_analysis.md separates three "
+            "distinct bodies of evidence and never merges them: the completed "
+            "one-epoch matched full grid (folds 1-5, horizons 10/20/50, seeds 0-2), "
+            "the longer-training proper-training subset v2 (fold 1, horizons 10 and "
+            "50, seed 0, partial_real) and a separate older reduced-scope "
+            "supervised benchmark used only for context."
+        ),
+        "",
+    ]
+    if full_grid_rows:
+        for objective in ("masked_reconstruction", "next_field"):
+            objective_rows = [
+                row for row in full_grid_rows if row.get("ssl_objective") == objective
+            ]
+            if not objective_rows:
+                continue
+            macro = _mean_delta(objective_rows, "delta_macro_f1")
+            ece = _mean_delta(objective_rows, "delta_ece")
+            lines.append(
+                f"- Full grid {objective}: mean macro-F1 delta {_format_float(macro)}, "
+                f"mean ECE delta {_format_float(ece)} (lower ECE is better)."
+            )
+        lines.append("")
+    if proper_rows:
+        h50_rows = [row for row in proper_rows if _row_float(row, "horizon") == 50.0]
+        masked_h50 = [
+            row for row in h50_rows if row.get("ssl_objective") == "masked_reconstruction"
+        ]
+        if masked_h50:
+            macro = _mean_delta(masked_h50, "delta_macro_f1")
+            mcc = _mean_delta(masked_h50, "delta_mcc")
+            ece = _mean_delta(masked_h50, "delta_ece")
+            lines.append(
+                "- Proper-training masked SSL at fold 1 / horizon 50: macro-F1 delta "
+                f"{_format_float(macro)}, MCC delta {_format_float(mcc)}, ECE delta "
+                f"{_format_float(ece)} (calibration worsened)."
+            )
+            lines.append("")
+    lines.extend(
+        _wrap_bullets(
+            [
+                "- Full-grid SSL does not improve overall: matched macro-F1 deltas are "
+                "neutral-to-negative and calibration does not improve uniformly.",
+                "- Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive "
+                "gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.",
+                "- No broad SSL improvement and no calibration improvement is claimed.",
+                "- More evidence would require broader proper-training runs and/or "
+                "better SSL objective design rather than any success claim.",
+            ]
+        )
+    )
     return lines
 
 

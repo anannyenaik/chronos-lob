@@ -1,0 +1,11 @@
+source,ssl_objective,horizon,n_pairs,mean_delta_macro_f1,macro_f1_wins,macro_f1_ties,macro_f1_losses,mean_delta_mcc,mcc_wins,mcc_ties,mcc_losses,mean_delta_ece,ece_wins,ece_ties,ece_losses
+one_epoch_full_grid,masked_reconstruction,10,15,-0.010329732732074172,6,0,9,-0.02892124579684153,4,0,11,0.025967335520512214,4,0,11
+one_epoch_full_grid,masked_reconstruction,20,15,-0.016472079867774082,6,0,9,-0.020679909323835847,5,0,10,0.028202474127795616,7,0,8
+one_epoch_full_grid,masked_reconstruction,50,15,-0.003213711927158086,7,0,8,-0.01020649998916239,6,0,9,0.01215103680801826,7,0,8
+one_epoch_full_grid,next_field,10,15,-0.06033753074433012,0,0,15,-0.06325725237734674,2,4,9,-0.031821244036584685,10,0,5
+one_epoch_full_grid,next_field,20,15,-0.09061712495688953,0,0,15,-0.09064820309790475,0,4,11,-0.004324555484895367,6,0,9
+one_epoch_full_grid,next_field,50,15,-0.035669926921749556,3,0,12,-0.04759324886261718,1,0,14,0.01131307678315794,8,0,7
+proper_training_subset,masked_reconstruction,10,1,0.0,0,1,0,0.0,0,1,0,0.0175069390702271,0,0,1
+proper_training_subset,masked_reconstruction,50,1,0.0890833610994818,1,0,0,0.1238034974919731,1,0,0,0.0244593733490832,0,0,1
+proper_training_subset,next_field,10,1,0.0,0,1,0,0.0,0,1,0,0.0745697687575943,0,0,1
+proper_training_subset,next_field,50,1,0.0064651091366009,1,0,0,0.0407633380569018,1,0,0,0.0316862131976336,0,0,1

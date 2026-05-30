@@ -11,7 +11,8 @@ Smoke rows remain code-path checks only.
 | fi2010_classical_benchmarks | stale | no | 60 | 0 | Recorded git commit differs from the current repository commit. |
 | fi2010_ssl_runner_outputs | missing | no |  |  | Artefact path is missing. |
 | fi2010_neural_full_grid | stale | no | 135 | 0 | Recorded git commit differs from the current repository commit. |
-| fi2010_neural_proper_training_subset | partial_real | no | 6 | 0 | Generated timestamp is present. |
+| fi2010_neural_proper_training_subset | stale | no | 6 | 0 | Recorded git commit differs from the current repository commit. |
+| ssl_failure_analysis_report | complete_real | no | 4 |  | Generated timestamp is present. |
 | fi2010_figures | partial_real | no | 17 |  | Generated timestamp is present. |
 | execution_v3_outputs | stale | no | 4800519 | 0 | Recorded git commit differs from the current repository commit. |
 | feature_registry_audit_outputs | missing | no |  |  | The CLI feature audit is read-only unless a caller stores its output. Artefact path is missing. |

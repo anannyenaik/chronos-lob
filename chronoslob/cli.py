@@ -1305,6 +1305,67 @@ def _analyse_fi2010_uncertainty_impl(
     return 0
 
 
+def _analyse_fi2010_ssl_results_impl(
+    *,
+    full_grid_dir: Path | None,
+    proper_training_dir: Path | None,
+    out: Path,
+    make_figures: bool,
+    overwrite: bool,
+) -> int:
+    """Analyse stored FI-2010 SSL comparison artefacts and write a report.
+
+    Only retained lightweight summary tables are read; deleted raw prediction
+    files and encoder checkpoints are never required.
+    """
+    from chronoslob.analysis.ssl_failure_analysis import analyse_fi2010_ssl_results
+
+    try:
+        summary = analyse_fi2010_ssl_results(
+            full_grid_dir=full_grid_dir,
+            proper_training_dir=proper_training_dir,
+            out_dir=out,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 SSL analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 SSL failure analysis")
+    print(f"  full grid input:     {summary.full_grid_dir}")
+    print(f"  proper-training:     {summary.proper_training_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  full-grid matched rows:       {summary.full_grid_matched_rows}")
+    print(f"  proper-training matched rows: {summary.proper_training_matched_rows}")
+    print("  claim statuses:")
+    for claim_id, status in summary.claim_statuses.items():
+        print(f"    {claim_id}: {status}")
+    print("  artefacts written:")
+    for key, relative_path in summary.artefacts.items():
+        print(f"    {key}: {relative_path}")
+    if summary.figures_generated:
+        print("  figures:             " + ", ".join(summary.figures_generated))
+    else:
+        print("  figures:             none")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  raw predictions:     not required")
+    print("  checkpoints:         not required")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _inspect_fi2010_multifold_impl(
     *,
     config_path: Path,
@@ -4062,6 +4123,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "run-fi2010-feature-ablations|"
             "build-fi2010-ablation-figures|"
             "analyse-fi2010-uncertainty|"
+            "analyse-fi2010-ssl-results|"
             "run-paper-experiment|"
             "run-paper-ablations|"
             "run-system-benchmarks|"
@@ -5101,6 +5163,55 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             ci_level=float(parsed.ci_level),
             bootstrap_iterations=int(parsed.bootstrap_iterations),
             bootstrap_seed=int(parsed.bootstrap_seed),
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "analyse-fi2010-ssl-results":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob analyse-fi2010-ssl-results",
+            description=(
+                "Build the SSL failure-analysis report from retained lightweight "
+                "FI-2010 comparison tables. The completed one-epoch full grid and "
+                "the longer-training proper-training subset are analysed separately. "
+                "Deleted raw prediction files and encoder checkpoints are not "
+                "required."
+            ),
+        )
+        parser.add_argument(
+            "--full-grid",
+            type=Path,
+            default=Path("experiments/fi2010_neural_full_grid"),
+            help="FI-2010 neural full-grid artefact directory.",
+        )
+        parser.add_argument(
+            "--proper-training",
+            type=Path,
+            default=Path("experiments/fi2010_neural_proper_training_subset_v2"),
+            help="FI-2010 proper-training neural subset artefact directory.",
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/ssl_failure_analysis"),
+            help="Output directory for the SSL failure-analysis artefacts.",
+        )
+        parser.add_argument(
+            "--no-figures",
+            dest="make_figures",
+            action="store_false",
+            help="Skip figure generation and record figures as future work.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.set_defaults(make_figures=True)
+        parsed = parser.parse_args(args[1:])
+        return _analyse_fi2010_ssl_results_impl(
+            full_grid_dir=parsed.full_grid,
+            proper_training_dir=parsed.proper_training,
+            out=parsed.out,
+            make_figures=bool(parsed.make_figures),
             overwrite=bool(parsed.overwrite),
         )
     if command == "run-paper-experiment":
@@ -6598,6 +6709,31 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _ANALYSE_SSL_FULL_GRID_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_full_grid"),
+        "--full-grid",
+        help="FI-2010 neural full-grid artefact directory.",
+    )
+    _ANALYSE_SSL_PROPER_TRAINING_OPTION = typer.Option(
+        Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        "--proper-training",
+        help="FI-2010 proper-training neural subset artefact directory.",
+    )
+    _ANALYSE_SSL_OUT_OPTION = typer.Option(
+        Path("reports/ssl_failure_analysis"),
+        "--out",
+        help="Output directory for the SSL failure-analysis artefacts.",
+    )
+    _ANALYSE_SSL_FIGURES_OPTION = typer.Option(
+        True,
+        "--figures/--no-figures",
+        help="Generate lightweight delta figures. Use --no-figures to skip them.",
+    )
+    _ANALYSE_SSL_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
     _BRUTAL_ABLATIONS_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -7618,6 +7754,24 @@ if typer is not None:
             ci_level=ci_level,
             bootstrap_iterations=bootstrap_iterations,
             bootstrap_seed=bootstrap_seed,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def analyse_fi2010_ssl_results(
+        full_grid: Path = _ANALYSE_SSL_FULL_GRID_OPTION,
+        proper_training: Path = _ANALYSE_SSL_PROPER_TRAINING_OPTION,
+        out: Path = _ANALYSE_SSL_OUT_OPTION,
+        figures: bool = _ANALYSE_SSL_FIGURES_OPTION,
+        overwrite: bool = _ANALYSE_SSL_OVERWRITE_OPTION,
+    ) -> None:
+        """Build the SSL failure-analysis report from retained comparison tables."""
+        exit_code = _analyse_fi2010_ssl_results_impl(
+            full_grid_dir=full_grid,
+            proper_training_dir=proper_training,
+            out=out,
+            make_figures=figures,
             overwrite=overwrite,
         )
         if exit_code != 0:
@@ -9291,6 +9445,7 @@ if typer is not None:
     app.command("run-fi2010-feature-ablations")(run_fi2010_feature_ablations)
     app.command("build-fi2010-ablation-figures")(build_fi2010_ablation_figures)
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
+    app.command("analyse-fi2010-ssl-results")(analyse_fi2010_ssl_results)
     app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)
     app.command("run-fi2010-execution-v2")(run_fi2010_execution_v2)
     app.command("build-fi2010-execution-v3")(build_fi2010_execution_v3)

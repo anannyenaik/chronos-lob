@@ -51,6 +51,7 @@ def _minimal_config(tmp_path: Path) -> EvidencePackConfig:
         classical_dir=tmp_path / "classical",
         ssl_dir=tmp_path / "ssl",
         proper_training_dir=tmp_path / "proper_training",
+        ssl_analysis_dir=tmp_path / "ssl_analysis",
         neural_full_grid_dir=tmp_path / "grid",
         figures_dir=tmp_path / "figures",
         execution_v3_dir=tmp_path / "execution_v3",

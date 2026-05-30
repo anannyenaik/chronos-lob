@@ -105,6 +105,13 @@ with unsupported regime plots skipped, and the manual paper has not yet been
 written. The matched full grid supports the existence of a supervised-vs-SSL
 comparison, but it does not support SSL improvement language.
 
+A dedicated SSL analysis artefact (`ssl_failure_analysis_report`, built by
+`analyse-fi2010-ssl-results` into `reports/ssl_failure_analysis/`) is recorded in
+the inventory and reads retained lightweight comparison tables only. It supports
+an implementation-and-evaluation claim and a narrow fold-1/horizon-50
+predictive-metric observation in the partial proper-training subset, while broad
+SSL improvement and SSL calibration improvement remain unsupported.
+
 ## Preparing A Release
 
 Before release:

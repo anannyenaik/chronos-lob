@@ -45,6 +45,13 @@ integration and not automated order-placement software.
   horizons, next-field improved those metrics only at horizon 50, and ECE
   worsened in every matched SSL row. This is a narrow exact-scope result, not a
   broad SSL improvement claim.
+- A dedicated SSL analysis report
+  (`reports/ssl_failure_analysis/ssl_failure_analysis.md`, built by
+  `analyse-fi2010-ssl-results`) separates the completed one-epoch matched grid
+  from the partial longer-training subset. The analysis does not support a broad
+  SSL improvement claim; the only positive predictive-metric signal is narrow to
+  fold 1, horizon 50 in the partial proper-training subset, while calibration
+  worsened.
 - The one-epoch matched full grid is separate from the earlier 25-epoch
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or

@@ -1,10 +1,10 @@
 {
   "allow_smoke_test": false,
   "artefact_status_counts": {
-    "complete_real": 2,
+    "complete_real": 3,
     "missing": 2,
-    "partial_real": 2,
-    "stale": 4,
+    "partial_real": 1,
+    "stale": 5,
     "unknown_staleness": 1
   },
   "artefacts": [
@@ -83,6 +83,7 @@
       ],
       "supports_claims": [
         "empirical.model_macro_f1",
+        "empirical.ssl_implemented_evaluated",
         "general.supervised_vs_ssl_transformers",
         "general.train_only_ssl"
       ]
@@ -97,13 +98,13 @@
       "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
       "input_hashes_present": false,
       "limitations": "Proper-training subset claims are limited to the exact folds, horizons, seeds, lookbacks and objectives stored in the artefacts.",
-      "notes": "Generated timestamp is present.",
+      "notes": "Recorded git commit differs from the current repository commit.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_neural_proper_training_subset_v2",
       "required_files_missing": [],
       "skipped_runs": 6,
       "smoke_test": false,
-      "status": "partial_real",
+      "status": "stale",
       "supporting_files": [
         "experiments/fi2010_neural_proper_training_subset_v2/summary.json",
         "experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json",
@@ -115,7 +116,38 @@
         "experiments/fi2010_neural_proper_training_subset_v2/failures.csv",
         "experiments/fi2010_neural_proper_training_subset_v2/sha256_manifest.json"
       ],
-      "supports_claims": []
+      "supports_claims": [
+        "empirical.ssl_proper_training_h50"
+      ]
+    },
+    {
+      "artefact_name": "ssl_failure_analysis_report",
+      "artefact_type": "ssl_failure_analysis",
+      "completed_runs": 4,
+      "exists": true,
+      "failed_runs": null,
+      "generated_at": "2026-05-30T00:08:23.200353+00:00",
+      "git_commit": "",
+      "input_hashes_present": false,
+      "limitations": "The SSL failure analysis reads retained lightweight comparison tables only; it does not establish a broad SSL improvement or any calibration improvement.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "reports/ssl_failure_analysis",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "complete_real",
+      "supporting_files": [
+        "reports/ssl_failure_analysis/ssl_failure_analysis.md",
+        "reports/ssl_failure_analysis/ssl_claim_assessment.json",
+        "reports/ssl_failure_analysis/ssl_metric_summary.csv",
+        "reports/ssl_failure_analysis/ssl_delta_by_objective.csv",
+        "reports/ssl_failure_analysis/summary.json"
+      ],
+      "supports_claims": [
+        "empirical.ssl_implemented_evaluated",
+        "empirical.ssl_proper_training_h50"
+      ]
     },
     {
       "artefact_name": "fi2010_figures",
@@ -252,8 +284,8 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-29T23:12:59.915115Z",
-      "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
+      "generated_at": "2026-05-30T00:25:30.826395Z",
+      "git_commit": "c127f4e922d2ab47fe20c876dadebb75a2c9b30a",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Generated timestamp is present.",
@@ -303,11 +335,12 @@
   "claim_status_counts": {
     "forbidden": 9,
     "needs_real_evidence": 1,
-    "partially_supported": 10,
+    "partially_supported": 11,
+    "supported": 1,
     "unsupported": 2
   },
-  "generated_at": "2026-05-29T23:13:11.074450+00:00",
-  "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
+  "generated_at": "2026-05-30T00:25:37.056589+00:00",
+  "git_commit": "c127f4e922d2ab47fe20c876dadebb75a2c9b30a",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "classical_dir": "experiments/fi2010_multifold_classical",
@@ -343,6 +376,7 @@
     "fi2010_classical_benchmarks: stale",
     "fi2010_ssl_runner_outputs: missing",
     "fi2010_neural_full_grid: stale",
+    "fi2010_neural_proper_training_subset: stale",
     "execution_v3_outputs: stale",
     "feature_registry_audit_outputs: missing",
     "feature_ablation_outputs: stale",

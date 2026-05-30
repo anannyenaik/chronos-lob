@@ -3,7 +3,8 @@
   "claim_status_counts": {
     "forbidden": 9,
     "needs_real_evidence": 1,
-    "partially_supported": 10,
+    "partially_supported": 11,
+    "supported": 1,
     "unsupported": 2
   },
   "claims": [
@@ -110,6 +111,22 @@
     },
     {
       "category": "empirical result",
+      "claim_id": "empirical.ssl_implemented_evaluated",
+      "claim_text": "SSL was implemented and evaluated under matched FI-2010 settings.",
+      "reason": "Matched supervised-vs-SSL comparison rows and the SSL failure-analysis report are present; this is an implementation-and-evaluation claim, not a result claim.",
+      "required_artefacts": [
+        "fi2010_neural_full_grid",
+        "ssl_failure_analysis_report"
+      ],
+      "safe_rewording": "SSL objectives were implemented and evaluated under matched settings.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_neural_full_grid",
+        "ssl_failure_analysis_report"
+      ]
+    },
+    {
+      "category": "empirical result",
       "claim_id": "empirical.ssl_improved_macro_f1",
       "claim_text": "SSL improved macro-F1",
       "reason": "Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.",
@@ -136,6 +153,22 @@
       "status": "unsupported",
       "supporting_artefacts": [
         "fi2010_neural_full_grid"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.ssl_proper_training_h50",
+      "claim_text": "Masked SSL improved fold-1/horizon-50 predictive metrics in the proper-training subset.",
+      "reason": "Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset",
+        "ssl_failure_analysis_report"
+      ],
+      "safe_rewording": "The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.",
+      "status": "partially_supported",
+      "supporting_artefacts": [
+        "fi2010_neural_proper_training_subset",
+        "ssl_failure_analysis_report"
       ]
     },
     {
@@ -287,5 +320,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-29T23:13:11.152242+00:00"
+  "generated_at": "2026-05-30T00:25:37.106456+00:00"
 }

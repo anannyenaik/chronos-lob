@@ -52,7 +52,12 @@ reduced-scope supervised neural row is `matrix_transformer`. The completed
 neural full grid compares supervised, masked-reconstruction SSL and next-field
 SSL transformer variants across folds 1-5, horizons 10/20/50 and seeds 0-2.
 That matched one-epoch grid does not support an SSL improvement claim and must
-not be conflated with the separate 25-epoch reduced-scope neural benchmark.
+not be conflated with the separate 25-epoch reduced-scope neural benchmark. A
+dedicated SSL analysis report (`reports/ssl_failure_analysis/`, built by
+`analyse-fi2010-ssl-results`) reads retained lightweight comparison tables only
+and records why SSL is not a broad success: the completed grid does not improve
+overall, the only positive predictive-metric signal is narrow to fold 1, horizon
+50 in the partial proper-training subset, and calibration worsened there.
 
 Execution-v3 is `complete_real` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the

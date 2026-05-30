@@ -1,0 +1,39 @@
+{
+  "analyser_version": "phase-l/ssl-failure-analysis/v1",
+  "artefacts": {
+    "claim_assessment": "ssl_claim_assessment.json",
+    "delta_by_fold": "ssl_delta_by_fold.csv",
+    "delta_by_horizon": "ssl_delta_by_horizon.csv",
+    "delta_by_objective": "ssl_delta_by_objective.csv",
+    "delta_by_seed": "ssl_delta_by_seed.csv",
+    "figure_manifest": "figure_manifest.json",
+    "metric_summary": "ssl_metric_summary.csv",
+    "report": "ssl_failure_analysis.md",
+    "summary": "summary.json"
+  },
+  "checkpoints_required": false,
+  "claim_statuses": {
+    "broad_ssl_improvement": "unsupported",
+    "proper_training_h50_predictive_improvement": "partially_supported",
+    "ssl_calibration_improvement": "unsupported",
+    "ssl_implemented_and_evaluated": "supported"
+  },
+  "created_at": "2026-05-30T00:26:50.138281+00:00",
+  "figures_generated": [
+    "ssl_macro_f1_delta_by_horizon",
+    "ssl_mcc_delta_by_horizon",
+    "ssl_ece_delta_by_horizon",
+    "best_epoch_by_objective"
+  ],
+  "full_grid_evidence_level": "full_grid_complete",
+  "full_grid_matched_rows": 90,
+  "inputs": {
+    "full_grid_dir": "experiments\\fi2010_neural_full_grid",
+    "proper_training_dir": "experiments\\fi2010_neural_proper_training_subset_v2"
+  },
+  "package_version": "0.1.0",
+  "proper_training_evidence_level": "partial_real",
+  "proper_training_matched_rows": 4,
+  "raw_predictions_required": false,
+  "warnings": []
+}

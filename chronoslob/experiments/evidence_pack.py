@@ -152,6 +152,7 @@ class EvidencePackConfig:
     out_dir: Path = Path("reports/evidence_pack")
     neural_full_grid_dir: Path = Path("experiments/fi2010_neural_full_grid")
     proper_training_dir: Path = Path("experiments/fi2010_neural_proper_training_subset_v2")
+    ssl_analysis_dir: Path = Path("reports/ssl_failure_analysis")
     figures_dir: Path = Path("reports/figures/fi2010_neural_full_grid")
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
     feature_ablations_dir: Path = Path("experiments/fi2010_feature_ablations")
@@ -418,8 +419,10 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
     entries.extend(
         [
             _audit_model_metric_claim(by_name),
+            _audit_ssl_implementation_claim(by_name),
             _audit_ssl_delta_claim(by_name, metric="macro_f1"),
             _audit_ssl_delta_claim(by_name, metric="calibration"),
+            _audit_ssl_proper_training_claim(by_name),
             _audit_ssl_execution_claim(by_name),
             _audit_gradient_boosting_claim(by_name),
             _audit_feature_group_improvement_claim(by_name),
@@ -482,6 +485,23 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
             limitations=(
                 "Proper-training subset claims are limited to the exact folds, "
                 "horizons, seeds, lookbacks and objectives stored in the artefacts."
+            ),
+        ),
+        _ArtefactSpec(
+            name="ssl_failure_analysis_report",
+            artefact_type="ssl_failure_analysis",
+            path=config.ssl_analysis_dir,
+            required_files=(
+                "ssl_failure_analysis.md",
+                "ssl_claim_assessment.json",
+                "ssl_metric_summary.csv",
+                "ssl_delta_by_objective.csv",
+            ),
+            metadata_files=("summary.json", "ssl_claim_assessment.json"),
+            limitations=(
+                "The SSL failure analysis reads retained lightweight comparison "
+                "tables only; it does not establish a broad SSL improvement or any "
+                "calibration improvement."
             ),
         ),
         _ArtefactSpec(
@@ -1308,6 +1328,117 @@ def _audit_model_metric_claim(
         safe_rewording=(
             "Quote model, split, fold/seed scope and macro-F1 directly from "
             "artefact_inventory.csv and the referenced result table."
+        ),
+        category="empirical result",
+    )
+
+
+def _audit_ssl_implementation_claim(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> ClaimAuditEntry:
+    """SSL was implemented and evaluated under matched settings (implementation claim)."""
+    claim_id = "empirical.ssl_implemented_evaluated"
+    claim_text = "SSL was implemented and evaluated under matched FI-2010 settings."
+    required = ["fi2010_neural_full_grid", "ssl_failure_analysis_report"]
+    grid = by_name.get("fi2010_neural_full_grid")
+    report = by_name.get("ssl_failure_analysis_report")
+    if grid is None or report is None:
+        return _needs_real_evidence(claim_id, claim_text, required)
+    if grid.status in _BAD_STATUSES or report.status in _BAD_STATUSES:
+        return _needs_real_evidence(claim_id, claim_text, required)
+    if grid.status == "smoke_test_only":
+        return _smoke_only_claim(claim_id, claim_text, required, ["fi2010_neural_full_grid"])
+    rows = _comparison_rows(grid)
+    if not rows:
+        return _needs_real_evidence(
+            claim_id,
+            claim_text,
+            required,
+            reason="No matched SSL comparison rows were found.",
+        )
+    return ClaimAuditEntry(
+        claim_id=claim_id,
+        claim_text=claim_text,
+        status="supported",
+        supporting_artefacts=["fi2010_neural_full_grid", "ssl_failure_analysis_report"],
+        required_artefacts=required,
+        reason=(
+            "Matched supervised-vs-SSL comparison rows and the SSL failure-analysis "
+            "report are present; this is an implementation-and-evaluation claim, not "
+            "a result claim."
+        ),
+        safe_rewording=(
+            "SSL objectives were implemented and evaluated under matched settings."
+        ),
+        category="empirical result",
+    )
+
+
+def _audit_ssl_proper_training_claim(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> ClaimAuditEntry:
+    """Narrow fold-1/horizon-50 proper-training predictive-metric improvement."""
+    claim_id = "empirical.ssl_proper_training_h50"
+    claim_text = (
+        "Masked SSL improved fold-1/horizon-50 predictive metrics in the "
+        "proper-training subset."
+    )
+    required = ["fi2010_neural_proper_training_subset", "ssl_failure_analysis_report"]
+    subset = by_name.get("fi2010_neural_proper_training_subset")
+    report = by_name.get("ssl_failure_analysis_report")
+    if subset is None or report is None:
+        return _needs_real_evidence(claim_id, claim_text, required)
+    if subset.status in _BAD_STATUSES or report.status in _BAD_STATUSES:
+        return _needs_real_evidence(claim_id, claim_text, required)
+    if subset.status == "smoke_test_only":
+        return _smoke_only_claim(
+            claim_id, claim_text, required, ["fi2010_neural_proper_training_subset"]
+        )
+    rows = _comparison_rows(subset)
+    h50_masked = [
+        row
+        for row in rows
+        if _row_float(row, "horizon") == 50.0
+        and str(row.get("ssl_objective", "")) == "masked_reconstruction"
+    ]
+    macro = [_row_float(row, "delta_macro_f1") for row in h50_masked]
+    mcc = [_row_float(row, "delta_mcc") for row in h50_masked]
+    predictive = (
+        bool(h50_masked)
+        and all(value is not None and value > 0.0 for value in macro)
+        and all(value is not None and value > 0.0 for value in mcc)
+    )
+    if not predictive:
+        return _needs_real_evidence(
+            claim_id,
+            claim_text,
+            required,
+            reason="Stored rows do not show a fold-1/horizon-50 predictive gain.",
+        )
+    ece_worsened = any((_row_float(row, "delta_ece") or 0.0) > 0.0 for row in h50_masked)
+    reason = (
+        "Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the "
+        "partial_real proper-training subset"
+    )
+    reason += (
+        ", but calibration worsened, so the scope is too small for a broad claim."
+        if ece_worsened
+        else ", but the scope is a single partial_real slice."
+    )
+    return ClaimAuditEntry(
+        claim_id=claim_id,
+        claim_text=claim_text,
+        status="partially_supported",
+        supporting_artefacts=[
+            "fi2010_neural_proper_training_subset",
+            "ssl_failure_analysis_report",
+        ],
+        required_artefacts=required,
+        reason=reason,
+        safe_rewording=(
+            "The proper-training subset shows a narrow fold-1/horizon-50 "
+            "predictive-metric improvement, but calibration worsened and the scope "
+            "is partial_real."
         ),
         category="empirical result",
     )

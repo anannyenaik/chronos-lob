@@ -35,6 +35,12 @@ calibration and execution-aware evaluation.
   three objectives with validation-only early stopping, best-checkpoint
   restoration and per-epoch curves. In this exact slice SSL did not improve
   macro-F1 or MCC; masked reconstruction improved ECE only in that row.
+- A dedicated SSL failure-analysis report (`reports/ssl_failure_analysis/`, built
+  by `analyse-fi2010-ssl-results`) generated from retained lightweight comparison
+  tables only. It separates the completed one-epoch matched grid from the partial
+  longer-training subset and records that the completed grid supports no broad SSL
+  improvement; the only positive predictive-metric signal is narrow to fold 1,
+  horizon 50 in the partial subset, where calibration worsened.
 - A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
   across folds 1-5, with a single-seed and lookback-20 caveat, reported
   separately from the matched grid.

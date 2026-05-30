@@ -36,6 +36,10 @@
   - status: unsupported
   - reason: Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.
   - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.
+- Masked SSL improved fold-1/horizon-50 predictive metrics in the proper-training subset.
+  - status: partially_supported
+  - reason: Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.
+  - safe wording: The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.
 - SSL improved execution-aware proxy metrics
   - status: needs_real_evidence
   - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.

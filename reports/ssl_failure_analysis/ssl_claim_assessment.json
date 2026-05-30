@@ -1,0 +1,51 @@
+{
+  "analyser_version": "phase-l/ssl-failure-analysis/v1",
+  "checkpoints_required": false,
+  "claims": [
+    {
+      "claim_id": "ssl_implemented_and_evaluated",
+      "claim_text": "SSL was implemented and evaluated under matched FI-2010 settings.",
+      "reason": "Matched supervised-vs-SSL comparison rows are present, so the implementation-and-evaluation claim is supported.",
+      "safe_rewording": "SSL objectives were implemented and evaluated under matched settings; this is an implementation claim, not a result claim.",
+      "scope": "matched supervised-vs-SSL comparison rows in the stored artefacts",
+      "status": "supported"
+    },
+    {
+      "claim_id": "broad_ssl_improvement",
+      "claim_text": "SSL improves ChronosLOB overall.",
+      "mean_delta_ece": 0.0069146872863339965,
+      "mean_delta_macro_f1": -0.036106684524995915,
+      "mean_delta_mcc": -0.040292360607495366,
+      "reason": "The completed one-epoch full grid does not support a broad SSL improvement claim: matched macro-F1 deltas are neutral-to-negative and calibration is not uniformly improved.",
+      "safe_rewording": "The completed full grid does not support a broad SSL improvement claim; report deltas metric-by-metric.",
+      "scope": "one-epoch full grid matched rows (folds 1-5, horizons 10/20/50, seeds 0-2)",
+      "status": "unsupported"
+    },
+    {
+      "claim_id": "ssl_calibration_improvement",
+      "claim_text": "SSL improves calibration.",
+      "mean_delta_ece": 0.008197278193027638,
+      "reason": "Calibration (ECE) did not improve uniformly; every matched proper-training SSL row worsened ECE, so no calibration improvement is claimed.",
+      "safe_rewording": "Calibration did not improve under SSL; ECE worsened in the matched proper-training rows.",
+      "scope": "all matched SSL rows across the full grid and proper-training subset",
+      "status": "unsupported"
+    },
+    {
+      "calibration_worsened": true,
+      "claim_id": "proper_training_h50_predictive_improvement",
+      "claim_text": "Masked SSL improved fold-1/horizon-50 predictive metrics in the proper-training subset.",
+      "mean_delta_ece": 0.0244593733490832,
+      "mean_delta_macro_f1": 0.0890833610994818,
+      "mean_delta_mcc": 0.1238034974919731,
+      "reason": "Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50, but calibration worsened and the scope is a single partial_real slice.",
+      "safe_rewording": "The proper-training subset provides narrow partial evidence that masked SSL can improve fold-1/horizon-50 predictive metrics under this configuration, but calibration worsened and the scope is too small for a broad SSL improvement claim.",
+      "scope": "proper-training subset, fold 1, horizon 50, seed 0, lookback 50, evidence level partial_real",
+      "status": "partially_supported"
+    }
+  ],
+  "created_at": "2026-05-30T00:26:50.126273+00:00",
+  "full_grid_evidence_level": "full_grid_complete",
+  "package_version": "0.1.0",
+  "proper_training_evidence_level": "partial_real",
+  "raw_predictions_required": false
+}

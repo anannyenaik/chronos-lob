@@ -7,7 +7,8 @@
 | fi2010_classical_benchmarks | stale | no |
 | fi2010_ssl_runner_outputs | missing | no |
 | fi2010_neural_full_grid | stale | no |
-| fi2010_neural_proper_training_subset | partial_real | no |
+| fi2010_neural_proper_training_subset | stale | no |
+| ssl_failure_analysis_report | complete_real | no |
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | stale | no |
 | feature_registry_audit_outputs | missing | no |
