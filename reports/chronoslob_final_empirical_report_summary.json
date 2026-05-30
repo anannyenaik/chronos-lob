@@ -1,7 +1,7 @@
 {
   "builder_version": "phase-k/final-empirical-report/v1",
-  "generated_at": "2026-05-30T00:25:30.826395Z",
-  "git_commit": "c127f4e922d2ab47fe20c876dadebb75a2c9b30a",
+  "generated_at": "2026-05-30T01:18:04.243326Z",
+  "git_commit": "31f5f688a83e3fabbc4275d921674b145d8be601",
   "headline_metrics": {
     "best_classical": {
       "accuracy_mean": 0.640951393883556,
@@ -33,14 +33,6 @@
     }
   },
   "input_artefact_paths": {
-    "ablations_calibration_threshold_ablation": "experiments/fi2010_brutal_ablations/calibration_threshold_ablation.csv",
-    "ablations_dir": "experiments/fi2010_brutal_ablations",
-    "ablations_execution_cost_latency_ablation": "experiments/fi2010_brutal_ablations/execution_cost_latency_ablation.csv",
-    "ablations_feature_group_ablation": "experiments/fi2010_brutal_ablations/feature_group_ablation.csv",
-    "ablations_horizon_ablation": "experiments/fi2010_brutal_ablations/horizon_ablation.csv",
-    "ablations_model_class_ablation": "experiments/fi2010_brutal_ablations/model_class_ablation.csv",
-    "ablations_skipped_ablations": "experiments/fi2010_brutal_ablations/skipped_ablations.json",
-    "ablations_summary": "experiments/fi2010_brutal_ablations/summary.json",
     "classical_dir": "experiments/fi2010_multifold_classical",
     "classical_results_summary": "experiments/fi2010_multifold_classical/results_summary.csv",
     "classical_summary": "experiments/fi2010_multifold_classical/summary.json",
@@ -60,9 +52,6 @@
     "execution_v3_regime_execution_summary": "experiments/fi2010_execution_v3/regime_execution_summary.csv",
     "execution_v3_skipped_diagnostics": "experiments/fi2010_execution_v3/skipped_diagnostics.json",
     "execution_v3_summary": "experiments/fi2010_execution_v3/summary.json",
-    "external_benchmark_context": "experiments/fi2010_external_context/benchmark_context.json",
-    "external_dir": "experiments/fi2010_external_context",
-    "external_protocol_comparison": "experiments/fi2010_external_context/protocol_comparison.csv",
     "feature_ablations_ablation_manifest": "experiments/fi2010_feature_ablations/ablation_manifest.json",
     "feature_ablations_aggregate_summary": "experiments/fi2010_feature_ablations/aggregate_summary.csv",
     "feature_ablations_dir": "experiments/fi2010_feature_ablations",
@@ -96,13 +85,6 @@
     "uncertainty_summary": "experiments/fi2010_uncertainty/summary.json"
   },
   "input_file_hashes": {
-    "experiments/fi2010_brutal_ablations/calibration_threshold_ablation.csv": "0f7163d1c72deb1c336d6d029ea6476573bb3f5d1ae18b33ddf85c7cb73ce9d1",
-    "experiments/fi2010_brutal_ablations/execution_cost_latency_ablation.csv": "beed6a1e458328d06d0c0cbc7c9368150e9730ed5d60da0ea697ade2f03470b4",
-    "experiments/fi2010_brutal_ablations/feature_group_ablation.csv": "f41a7bf4a6e280be21904bd9e6e91b99f6a367b95d2a6a53d65fd34a54a837d0",
-    "experiments/fi2010_brutal_ablations/horizon_ablation.csv": "53b8642ac849de2ecb9da150108fca8fcb372d37822101f333f3c3ca39fdf6c2",
-    "experiments/fi2010_brutal_ablations/model_class_ablation.csv": "d73a3dfdb2d2ae68a4a7348e8757973d88b666da72cf38417833185eabcc8328",
-    "experiments/fi2010_brutal_ablations/skipped_ablations.json": "d3d4927131c2733e10c2efbcd77ea7e067439d4e26b9f389488daeb5cd9c0fd9",
-    "experiments/fi2010_brutal_ablations/summary.json": "b2ada55d9802da545dc67435bf30a93357203c23bb92c55ae4e847d45cc0716d",
     "experiments/fi2010_execution_v3/adverse_selection_summary.csv": "94e339bc4749faa27c8e4a8ace6b7aac076754166edfc0a8d57a058374c9e014",
     "experiments/fi2010_execution_v3/confidence_threshold_aggregate.csv": "bbd14f3a458531f3722f435fcda296b7ddf882a37783470cf1854810ce18549f",
     "experiments/fi2010_execution_v3/confidence_threshold_summary.csv": "6603b546e9aec28bdb14df0fd12189467cc9b42a20f17c3b9e8e37f6a3127fff",
@@ -113,8 +95,6 @@
     "experiments/fi2010_execution_v3/regime_execution_summary.csv": "d8b59fd77d21b802059096f84105943115cc7326abcdf69bb0c3195ae1771c4e",
     "experiments/fi2010_execution_v3/skipped_diagnostics.json": "5b9cdc8684ad217047e0761c9033ea9257a4db00f3def62f7c6d7a5abd4307b5",
     "experiments/fi2010_execution_v3/summary.json": "89d6b8d2ae5e1d96f9f15be4f0ba3852b98d51fa9b2542595aeaa1f07567f6be",
-    "experiments/fi2010_external_context/benchmark_context.json": "2e1f4e0c4914378f31dbf50b3bc03df33b9d4254ebeda0944e5a06225fe30c8e",
-    "experiments/fi2010_external_context/protocol_comparison.csv": "756c3ce98cbd4e15e1afaa5a0a2d4007ea775d58b89dc5409c513e2a8cdd460c",
     "experiments/fi2010_feature_ablations/ablation_manifest.json": "a307502c4c87cfa770c8c22fe3fcba8efe6624d578303a03fd7f9feb319dfdb5",
     "experiments/fi2010_feature_ablations/aggregate_summary.csv": "a89c5b6510dc25c72d21909783b6043319696e8dc55e082ef1684063ab5a4d92",
     "experiments/fi2010_feature_ablations/failures.json": "36c25df88555a025cc8b83e815b6cddd81195b2aa2004be3d20a1eedb968dbde",
@@ -141,14 +121,16 @@
     "experiments/fi2010_uncertainty/metric_confidence_intervals.csv": "db1468eb1f171702e1cad0d21ff9cc30ce5d082a9bfc7adc59882e720492e2cf",
     "experiments/fi2010_uncertainty/model_ranking.csv": "c1cb29fa431db19ade6167323902cacf8a2da4e385d369b9a92850338feee2ca",
     "experiments/fi2010_uncertainty/summary.json": "942e016bd40af0ab73412036279f2067731fcfb76156ee8c935beebf7b2d5c34",
-    "reports/evidence_pack/claim_audit.json": "d7579ec75136bdcd36308328e6ed90ea3ab94f31c07442e6ebfb5f411c7855ae",
-    "reports/evidence_pack/evidence_pack_manifest.json": "e840a87bfdff7c764b3e6d94e85a6eee6078ba6e5e240b5f51f2342ff9e64d10",
-    "reports/evidence_pack/supported_claims.md": "aa2e4decd93669cc21a6e2d58567de96e1fbc98e90c572f02544c81df797c612",
+    "reports/evidence_pack/claim_audit.json": "b05df88625f5d1e4b6c255a2bdbd2ea84e48f4a92f26bbd0d8c62b66bf824ac5",
+    "reports/evidence_pack/evidence_pack_manifest.json": "971bd62b14f0f2c82e0f4a477844be0acdc1be07bfc433ee3b4c8d3ef19f26af",
+    "reports/evidence_pack/supported_claims.md": "2f9de4ea0e9d80e1c1ea0f2949f832d7346ee3b62ae0b2eac331ca836d773c34",
     "reports/evidence_pack/unsupported_claims.md": "dcafc8b62c909eb641968cf58b0052e38ff22940627349098ba83302ccf2e72c",
     "reports/figures/fi2010_neural_full_grid/figure_manifest.json": "d1289ae54c0d04efb46f1a2758cd334078f22c4244f07bc7c37b7e3d3dc00306"
   },
   "missing_sections": [
+    "ablations input not supplied",
     "execution input not supplied",
+    "external input not supplied",
     "SSL input not supplied"
   ],
   "report_path": "reports/chronoslob_final_empirical_report.md",
@@ -179,9 +161,10 @@
     "Reproduction Commands"
   ],
   "skipped_sections": [
+    "Ablation Summary",
     "Execution-Aware Proxy Summary",
+    "External Benchmark Context",
     "Self-Supervised Pretraining",
-    "ablation lookback_sweep: neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it",
     "execution_v3 regime_execution: volatility_regime labels unavailable in prediction artefacts",
     "execution_v3 regime_execution: spread_regime labels unavailable in prediction artefacts",
     "execution_v3 regime_execution: imbalance_regime labels unavailable in prediction artefacts",
@@ -190,7 +173,9 @@
   ],
   "summary_path": "reports/chronoslob_final_empirical_report_summary.json",
   "warnings": [
+    "ablations input not supplied; Ablation Summary will be marked skipped.",
     "execution input not supplied; Execution-Aware Proxy Summary will be marked skipped.",
+    "external input not supplied; External Benchmark Context will be marked skipped.",
     "SSL input not supplied; Self-Supervised Pretraining will be marked skipped."
   ]
 }

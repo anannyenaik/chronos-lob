@@ -11,6 +11,7 @@
 | ssl_failure_analysis_report | complete_real | no |
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | stale | no |
+| execution_v3_analysis_report | complete_real | no |
 | feature_registry_audit_outputs | missing | no |
 | feature_ablation_outputs | stale | no |
 | ablation_figures | complete_real | no |

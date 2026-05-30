@@ -155,6 +155,7 @@ class EvidencePackConfig:
     ssl_analysis_dir: Path = Path("reports/ssl_failure_analysis")
     figures_dir: Path = Path("reports/figures/fi2010_neural_full_grid")
     execution_v3_dir: Path = Path("experiments/fi2010_execution_v3")
+    execution_v3_analysis_dir: Path = Path("reports/execution_v3_analysis")
     feature_ablations_dir: Path = Path("experiments/fi2010_feature_ablations")
     ablation_figures_dir: Path = Path("reports/figures/fi2010_feature_ablations")
     final_report_path: Path = Path("reports/chronoslob_final_empirical_report.md")
@@ -406,6 +407,16 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             reason_supported="Execution-v3 artefacts are present.",
         ),
         _audit_infrastructure_claim(
+            "general.execution_proxy_analysis",
+            "ChronosLOB includes a richer execution-aware proxy analysis report",
+            ["execution_v3_analysis_report"],
+            by_name,
+            safe="ChronosLOB includes a richer offline execution-aware proxy analysis "
+            "covering confidence, turnover, cost, latency, fill and adverse-selection "
+            "proxies; regime diagnostics are explicitly skipped.",
+            reason_supported="Execution-v3 analysis report artefacts are present.",
+        ),
+        _audit_infrastructure_claim(
             "general.feature_ablations",
             "ChronosLOB includes microstructure feature ablations",
             ["feature_ablation_outputs"],
@@ -530,6 +541,32 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
                 "skipped_diagnostics.json",
             ),
             limitations="Offline proxy diagnostics only; not execution simulation or trading PnL.",
+        ),
+        _ArtefactSpec(
+            name="execution_v3_analysis_report",
+            artefact_type="execution_v3_analysis",
+            path=config.execution_v3_analysis_dir,
+            required_files=(
+                "execution_v3_analysis.md",
+                "execution_claim_assessment.json",
+                "confidence_filtering_summary.csv",
+                "cost_sensitivity_summary.csv",
+            ),
+            metadata_files=(
+                "summary.json",
+                "execution_claim_assessment.json",
+                "confidence_filtering_summary.csv",
+                "turnover_proxy_summary.csv",
+                "latency_sensitivity_summary.csv",
+                "cost_sensitivity_summary.csv",
+                "fill_assumption_summary.csv",
+                "adverse_selection_proxy_summary.csv",
+                "skipped_regime_diagnostics.json",
+            ),
+            limitations=(
+                "Richer offline execution-aware proxy analysis over retained tables; "
+                "not execution simulation, not live trading and not realised PnL."
+            ),
         ),
         _ArtefactSpec(
             name="feature_registry_audit_outputs",

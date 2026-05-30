@@ -27,6 +27,7 @@ integration and not automated order-placement software.
 | Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50, max 25 epochs, patience 5; matched SSL comparisons are exact-scope only. |
 | SSL comparison | `complete_real` | Tested in the matched grid; no SSL improvement is supported. |
 | Execution-v3 | `complete_real` | Offline execution-aware proxy diagnostic only. |
+| Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
 | Feature ablations | `partial_real` | Broad horizon-10 logistic/ridge evidence; wider model/horizon scope unfinished. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
 | Manual paper | not yet written | Public reports are artefact summaries, not a manual paper. |

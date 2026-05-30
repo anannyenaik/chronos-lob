@@ -1,0 +1,60 @@
+{
+  "analyser_version": "fi2010-execution-aware-proxy-analysis/v1",
+  "claim_boundary": "This is an offline execution-aware proxy diagnostic. It is not PnL, not live-trading evidence and not a production execution simulator.",
+  "claims": [
+    {
+      "claim_id": "execution_proxy_diagnostics_implemented",
+      "claim_text": "ChronosLOB provides offline execution-aware proxy diagnostics over stored FI-2010 forecasts.",
+      "safe_rewording": "Offline execution-aware proxy diagnostics are implemented and run from retained tables; this is an implementation claim, not a profitability or live-trading claim.",
+      "scope": "retained execution-v3 confidence-filtering and cost tables",
+      "status": "supported"
+    },
+    {
+      "claim_id": "execution_proxy_cost_sensitivity",
+      "claim_text": "Cost-adjusted proxy degradation is characterised across a cost grid.",
+      "safe_rewording": "Report cost-adjusted proxy degradation by fee and spread multiplier; these are proxies, not realised PnL.",
+      "scope": "cost_sensitivity_summary across fee and spread-multiplier settings",
+      "status": "supported"
+    },
+    {
+      "claim_id": "execution_proxy_latency_sensitivity",
+      "claim_text": "Row-step latency sensitivity is characterised by horizon and objective.",
+      "safe_rewording": "Report row-step latency degradation of the proxy by horizon; this is a latency sensitivity proxy, not a live latency measurement.",
+      "scope": "latency_sensitivity_summary across row-step latency lags",
+      "status": "supported"
+    },
+    {
+      "claim_id": "execution_proxy_fill_sensitivity",
+      "claim_text": "Fill-assumption sensitivity is characterised across proxy fill modes.",
+      "safe_rewording": "Report fill-assumption sensitivity across proxy fill modes; fills are assumptions, not exchange-confirmed executions.",
+      "scope": "fill_assumption_summary across aggressive/passive/abstain proxy modes",
+      "status": "supported"
+    },
+    {
+      "claim_id": "execution_proxy_adverse_selection",
+      "claim_text": "An adverse-selection proxy is characterised by confidence bucket.",
+      "safe_rewording": "Report the adverse-selection proxy rate by confidence bucket; it is a label/move proxy, not measured adverse selection.",
+      "scope": "adverse_selection_proxy_summary by confidence bucket and fill assumption",
+      "status": "supported"
+    },
+    {
+      "claim_id": "execution_proxy_regime_diagnostics",
+      "claim_text": "Execution-aware diagnostics are broken down by market regime.",
+      "safe_rewording": "Regime diagnostics are skipped because regime labels and snapshot context columns are not present in the retained artefacts.",
+      "scope": "regime diagnostics require regime labels or snapshot context columns",
+      "status": "skipped"
+    },
+    {
+      "claim_id": "execution_proxy_profitability_or_live_trading",
+      "claim_text": "Execution-v3 demonstrates profitability, realised PnL, live trading or production execution quality.",
+      "safe_rewording": "State that execution-v3 is an offline execution-aware proxy diagnostic and is not PnL, not live-trading evidence and not a production execution simulator.",
+      "scope": "blocked by release policy; these diagnostics are offline proxies only",
+      "status": "forbidden"
+    }
+  ],
+  "created_at": "2026-05-30T01:17:59.022186+00:00",
+  "offline_execution_aware_proxy_diagnostic": true,
+  "package_version": "0.1.0",
+  "raw_predictions_required": false,
+  "smoke_test": false
+}

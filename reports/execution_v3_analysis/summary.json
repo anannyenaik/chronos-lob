@@ -1,0 +1,46 @@
+{
+  "analyser_version": "fi2010-execution-aware-proxy-analysis/v1",
+  "artefacts": {
+    "adverse_selection_proxy_summary": "adverse_selection_proxy_summary.csv",
+    "confidence_filtering_summary": "confidence_filtering_summary.csv",
+    "cost_sensitivity_summary": "cost_sensitivity_summary.csv",
+    "execution_claim_assessment": "execution_claim_assessment.json",
+    "figure_manifest": "figure_manifest.json",
+    "fill_assumption_summary": "fill_assumption_summary.csv",
+    "latency_sensitivity_summary": "latency_sensitivity_summary.csv",
+    "report": "execution_v3_analysis.md",
+    "skipped_regime_diagnostics": "skipped_regime_diagnostics.json",
+    "summary": "summary.json",
+    "turnover_proxy_summary": "turnover_proxy_summary.csv"
+  },
+  "claim_statuses": {
+    "execution_proxy_adverse_selection": "supported",
+    "execution_proxy_cost_sensitivity": "supported",
+    "execution_proxy_diagnostics_implemented": "supported",
+    "execution_proxy_fill_sensitivity": "supported",
+    "execution_proxy_latency_sensitivity": "supported",
+    "execution_proxy_profitability_or_live_trading": "forbidden",
+    "execution_proxy_regime_diagnostics": "skipped"
+  },
+  "cost_mode": "unit_proxy",
+  "created_at": "2026-05-30T01:17:59.096985+00:00",
+  "figures_generated": [
+    "active_fraction_vs_confidence",
+    "cost_adjusted_proxy_vs_confidence",
+    "turnover_proxy_vs_confidence",
+    "latency_degradation_by_horizon",
+    "adverse_selection_by_confidence_bucket",
+    "fill_assumption_sensitivity"
+  ],
+  "inputs": {
+    "execution_v3_dir": "experiments\\fi2010_execution_v3"
+  },
+  "offline_execution_aware_proxy_diagnostic": true,
+  "package_version": "0.1.0",
+  "payoff_mode": "unit_payoff",
+  "raw_predictions_required": false,
+  "regime_status": "skipped",
+  "run_group_count": 135,
+  "smoke_test": false,
+  "warnings": []
+}

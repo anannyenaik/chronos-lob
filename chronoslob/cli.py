@@ -1366,6 +1366,61 @@ def _analyse_fi2010_ssl_results_impl(
     return 0
 
 
+def _analyse_fi2010_execution_v3_impl(
+    *,
+    execution_v3_dir: Path,
+    out: Path,
+    make_figures: bool,
+    overwrite: bool,
+) -> int:
+    """Build the richer execution-v3 proxy analysis from retained tables.
+
+    Only retained lightweight execution-v3 output tables are read; deleted raw
+    prediction arrays are never required.
+    """
+    from chronoslob.analysis.execution_v3_analysis import analyse_fi2010_execution_v3
+
+    try:
+        summary = analyse_fi2010_execution_v3(
+            execution_v3_dir=execution_v3_dir,
+            out_dir=out,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except FileExistsError as exc:
+        print(f"Refusing to overwrite: {exc}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 execution-v3 analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 execution-v3 proxy analysis")
+    print(f"  execution-v3 input:  {summary.execution_v3_dir}")
+    print(f"  output directory:    {summary.output_dir}")
+    print(f"  payoff/cost mode:    {summary.payoff_mode}/{summary.cost_mode}")
+    print(f"  run groups:          {summary.run_group_count}")
+    print(f"  regime diagnostics:  {summary.regime_status}")
+    print("  claim statuses:")
+    for claim_id, status in summary.claim_statuses.items():
+        print(f"    {claim_id}: {status}")
+    if summary.figures_generated:
+        print("  figures:             " + ", ".join(summary.figures_generated))
+    else:
+        print("  figures:             none")
+    if summary.warnings:
+        print("  warnings:")
+        for warning in summary.warnings:
+            print(f"    - {warning}")
+    else:
+        print("  warnings:            none")
+    print("  raw predictions:     not required")
+    print("  network calls:       none performed")
+    return 0
+
+
 def _inspect_fi2010_multifold_impl(
     *,
     config_path: Path,
@@ -4124,6 +4179,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "build-fi2010-ablation-figures|"
             "analyse-fi2010-uncertainty|"
             "analyse-fi2010-ssl-results|"
+            "analyse-fi2010-execution-v3|"
             "run-paper-experiment|"
             "run-paper-ablations|"
             "run-system-benchmarks|"
@@ -5210,6 +5266,48 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         return _analyse_fi2010_ssl_results_impl(
             full_grid_dir=parsed.full_grid,
             proper_training_dir=parsed.proper_training,
+            out=parsed.out,
+            make_figures=bool(parsed.make_figures),
+            overwrite=bool(parsed.overwrite),
+        )
+    if command == "analyse-fi2010-execution-v3":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob analyse-fi2010-execution-v3",
+            description=(
+                "Build the richer execution-v3 proxy analysis from retained "
+                "execution-v3 output tables. Confidence filtering, turnover, cost, "
+                "latency, fill-assumption and adverse-selection proxy diagnostics are "
+                "summarised. Deleted raw prediction arrays are not required. All "
+                "outputs are offline execution-aware proxy diagnostics only."
+            ),
+        )
+        parser.add_argument(
+            "--execution-v3",
+            type=Path,
+            default=Path("experiments/fi2010_execution_v3"),
+            help="Execution-v3 artefact directory produced by build-fi2010-execution-v3.",
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/execution_v3_analysis"),
+            help="Output directory for the execution-v3 analysis artefacts.",
+        )
+        parser.add_argument(
+            "--no-figures",
+            dest="make_figures",
+            action="store_false",
+            help="Skip figure generation and record figures as skipped.",
+        )
+        parser.add_argument(
+            "--overwrite",
+            action="store_true",
+            help="Replace the output directory if it already exists.",
+        )
+        parser.set_defaults(make_figures=True)
+        parsed = parser.parse_args(args[1:])
+        return _analyse_fi2010_execution_v3_impl(
+            execution_v3_dir=parsed.execution_v3,
             out=parsed.out,
             make_figures=bool(parsed.make_figures),
             overwrite=bool(parsed.overwrite),
@@ -6734,6 +6832,26 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _ANALYSE_EXEC_V3_INPUT_OPTION = typer.Option(
+        Path("experiments/fi2010_execution_v3"),
+        "--execution-v3",
+        help="Execution-v3 artefact directory produced by build-fi2010-execution-v3.",
+    )
+    _ANALYSE_EXEC_V3_OUT_OPTION = typer.Option(
+        Path("reports/execution_v3_analysis"),
+        "--out",
+        help="Output directory for the execution-v3 analysis artefacts.",
+    )
+    _ANALYSE_EXEC_V3_FIGURES_OPTION = typer.Option(
+        True,
+        "--figures/--no-figures",
+        help="Generate lightweight proxy figures. Use --no-figures to skip them.",
+    )
+    _ANALYSE_EXEC_V3_OVERWRITE_OPTION = typer.Option(
+        False,
+        "--overwrite",
+        help="Replace the output directory if it already exists.",
+    )
     _BRUTAL_ABLATIONS_CONFIG_OPTION = typer.Option(
         ...,
         "--config",
@@ -7770,6 +7888,22 @@ if typer is not None:
         exit_code = _analyse_fi2010_ssl_results_impl(
             full_grid_dir=full_grid,
             proper_training_dir=proper_training,
+            out=out,
+            make_figures=figures,
+            overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def analyse_fi2010_execution_v3(
+        execution_v3: Path = _ANALYSE_EXEC_V3_INPUT_OPTION,
+        out: Path = _ANALYSE_EXEC_V3_OUT_OPTION,
+        figures: bool = _ANALYSE_EXEC_V3_FIGURES_OPTION,
+        overwrite: bool = _ANALYSE_EXEC_V3_OVERWRITE_OPTION,
+    ) -> None:
+        """Build the richer execution-v3 proxy analysis from retained tables."""
+        exit_code = _analyse_fi2010_execution_v3_impl(
+            execution_v3_dir=execution_v3,
             out=out,
             make_figures=figures,
             overwrite=overwrite,
@@ -9446,6 +9580,7 @@ if typer is not None:
     app.command("build-fi2010-ablation-figures")(build_fi2010_ablation_figures)
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
     app.command("analyse-fi2010-ssl-results")(analyse_fi2010_ssl_results)
+    app.command("analyse-fi2010-execution-v3")(analyse_fi2010_execution_v3)
     app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)
     app.command("run-fi2010-execution-v2")(run_fi2010_execution_v2)
     app.command("build-fi2010-execution-v3")(build_fi2010_execution_v3)

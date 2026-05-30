@@ -48,6 +48,10 @@ calibration and execution-aware evaluation.
   path, without weakening raw order-book schema validation.
 - FI-2010 calibration artefacts, statistical uncertainty, brutal ablations,
   execution-aware proxy diagnostics and external benchmark protocol context.
+- A richer execution-aware proxy analysis (`analyse-fi2010-execution-v3`) over the
+  retained execution-v3 tables, covering confidence filtering, active fraction,
+  turnover, cost, latency, fill and adverse-selection proxies, with regime
+  diagnostics explicitly skipped and no PnL or live-trading claim.
 - A final empirical report generated from stored multi-fold FI-2010 classical,
   the matched one-epoch neural full grid, the separate reduced-scope neural
   benchmark, uncertainty, ablation, execution-proxy and external-context

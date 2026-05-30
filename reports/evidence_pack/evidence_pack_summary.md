@@ -15,6 +15,7 @@ Smoke rows remain code-path checks only.
 | ssl_failure_analysis_report | complete_real | no | 4 |  | Generated timestamp is present. |
 | fi2010_figures | partial_real | no | 17 |  | Generated timestamp is present. |
 | execution_v3_outputs | stale | no | 4800519 | 0 | Recorded git commit differs from the current repository commit. |
+| execution_v3_analysis_report | complete_real | no | 6 |  | Generated timestamp is present. |
 | feature_registry_audit_outputs | missing | no |  |  | The CLI feature audit is read-only unless a caller stores its output. Artefact path is missing. |
 | feature_ablation_outputs | stale | no | 840 | 0 | Recorded git commit differs from the current repository commit. |
 | ablation_figures | complete_real | no | 6 |  | Generated timestamp is present. |

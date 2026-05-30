@@ -1,7 +1,7 @@
 {
   "allow_smoke_test": false,
   "artefact_status_counts": {
-    "complete_real": 3,
+    "complete_real": 4,
     "missing": 2,
     "partial_real": 1,
     "stale": 5,
@@ -126,7 +126,7 @@
       "completed_runs": 4,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-30T00:08:23.200353+00:00",
+      "generated_at": "2026-05-30T00:26:50.126273+00:00",
       "git_commit": "",
       "input_hashes_present": false,
       "limitations": "The SSL failure analysis reads retained lightweight comparison tables only; it does not establish a broad SSL improvement or any calibration improvement.",
@@ -207,6 +207,39 @@
       ]
     },
     {
+      "artefact_name": "execution_v3_analysis_report",
+      "artefact_type": "execution_v3_analysis",
+      "completed_runs": 6,
+      "exists": true,
+      "failed_runs": null,
+      "generated_at": "2026-05-30T01:17:59.022186+00:00",
+      "git_commit": "",
+      "input_hashes_present": false,
+      "limitations": "Richer offline execution-aware proxy analysis over retained tables; not execution simulation, not live trading and not realised PnL.",
+      "notes": "Generated timestamp is present.",
+      "output_hashes_present": false,
+      "path": "reports/execution_v3_analysis",
+      "required_files_missing": [],
+      "skipped_runs": 0,
+      "smoke_test": false,
+      "status": "complete_real",
+      "supporting_files": [
+        "reports/execution_v3_analysis/execution_v3_analysis.md",
+        "reports/execution_v3_analysis/execution_claim_assessment.json",
+        "reports/execution_v3_analysis/confidence_filtering_summary.csv",
+        "reports/execution_v3_analysis/cost_sensitivity_summary.csv",
+        "reports/execution_v3_analysis/summary.json",
+        "reports/execution_v3_analysis/turnover_proxy_summary.csv",
+        "reports/execution_v3_analysis/latency_sensitivity_summary.csv",
+        "reports/execution_v3_analysis/fill_assumption_summary.csv",
+        "reports/execution_v3_analysis/adverse_selection_proxy_summary.csv",
+        "reports/execution_v3_analysis/skipped_regime_diagnostics.json"
+      ],
+      "supports_claims": [
+        "general.execution_proxy_analysis"
+      ]
+    },
+    {
       "artefact_name": "feature_registry_audit_outputs",
       "artefact_type": "feature_registry_audit",
       "completed_runs": null,
@@ -284,8 +317,8 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": null,
-      "generated_at": "2026-05-30T00:25:30.826395Z",
-      "git_commit": "c127f4e922d2ab47fe20c876dadebb75a2c9b30a",
+      "generated_at": "2026-05-30T01:18:04.243326Z",
+      "git_commit": "31f5f688a83e3fabbc4275d921674b145d8be601",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Generated timestamp is present.",
@@ -336,11 +369,11 @@
     "forbidden": 9,
     "needs_real_evidence": 1,
     "partially_supported": 11,
-    "supported": 1,
+    "supported": 2,
     "unsupported": 2
   },
-  "generated_at": "2026-05-30T00:25:37.056589+00:00",
-  "git_commit": "c127f4e922d2ab47fe20c876dadebb75a2c9b30a",
+  "generated_at": "2026-05-30T01:18:12.163008+00:00",
+  "git_commit": "31f5f688a83e3fabbc4275d921674b145d8be601",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "classical_dir": "experiments/fi2010_multifold_classical",

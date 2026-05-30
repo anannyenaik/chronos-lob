@@ -4,7 +4,7 @@
     "forbidden": 9,
     "needs_real_evidence": 1,
     "partially_supported": 11,
-    "supported": 1,
+    "supported": 2,
     "unsupported": 2
   },
   "claims": [
@@ -77,6 +77,20 @@
       "status": "partially_supported",
       "supporting_artefacts": [
         "execution_v3_outputs"
+      ]
+    },
+    {
+      "category": "general infrastructure",
+      "claim_id": "general.execution_proxy_analysis",
+      "claim_text": "ChronosLOB includes a richer execution-aware proxy analysis report",
+      "reason": "Execution-v3 analysis report artefacts are present.",
+      "required_artefacts": [
+        "execution_v3_analysis_report"
+      ],
+      "safe_rewording": "ChronosLOB includes a richer offline execution-aware proxy analysis covering confidence, turnover, cost, latency, fill and adverse-selection proxies; regime diagnostics are explicitly skipped.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "execution_v3_analysis_report"
       ]
     },
     {
@@ -320,5 +334,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T00:25:37.106456+00:00"
+  "generated_at": "2026-05-30T01:18:12.255761+00:00"
 }

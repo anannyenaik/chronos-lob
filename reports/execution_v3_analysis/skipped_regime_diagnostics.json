@@ -1,0 +1,19 @@
+{
+  "future_work": "Regenerate the neural-grid prediction rows with snapshot spread, imbalance, depth and a future-move column, then derive low/medium/high proxy regimes labelled explicitly as snapshot-derived proxy regimes.",
+  "raw_predictions_required_to_fix": true,
+  "reason": "Regime execution diagnostics are skipped. The retained execution-v3 tables and the underlying FI-2010 prediction artefacts do not carry regime labels or snapshot market-context columns, so supported snapshot-derived proxy regimes cannot be built without regenerating the neural grid with additional context columns.",
+  "regime_scopes_unavailable": [
+    "imbalance_regime",
+    "liquidity_regime",
+    "regime",
+    "spread_regime",
+    "volatility_regime"
+  ],
+  "required_fields_for_future_work": [
+    "spread or relative_spread (snapshot-derived spread proxy)",
+    "imbalance or order_imbalance (snapshot-derived imbalance proxy)",
+    "top-of-book depth columns (snapshot-derived liquidity proxy)",
+    "a future signed-return or move column for a volatility proxy"
+  ],
+  "status": "skipped"
+}

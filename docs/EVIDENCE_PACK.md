@@ -112,6 +112,15 @@ an implementation-and-evaluation claim and a narrow fold-1/horizon-50
 predictive-metric observation in the partial proper-training subset, while broad
 SSL improvement and SSL calibration improvement remain unsupported.
 
+A dedicated execution-v3 analysis artefact (`execution_v3_analysis_report`, built
+by `analyse-fi2010-execution-v3` into `reports/execution_v3_analysis/`) is also
+recorded in the inventory and reads only the retained execution-v3 output tables.
+It supports the `general.execution_proxy_analysis` infrastructure claim and
+carries per-diagnostic claim statuses (cost, latency, fill and adverse-selection
+sensitivity supported from real tables; regime diagnostics explicitly skipped).
+All of its statements stay within offline execution-aware proxy diagnostics and
+make no PnL, profitability or live-trading claim.
+
 ## Preparing A Release
 
 Before release:

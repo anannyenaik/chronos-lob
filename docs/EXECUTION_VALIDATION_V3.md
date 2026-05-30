@@ -165,3 +165,51 @@ separate smoke diagnostics from real proxy artefacts, verify recorded hashes
 where possible and keep release wording limited to offline execution-aware proxy
 diagnostics. Stale or unknown-staleness execution-v3 rows are not treated as
 clean empirical support.
+
+## Richer Analysis (`analyse-fi2010-execution-v3`)
+
+`analyse-fi2010-execution-v3` is a second-stage, reviewer-facing summariser. It
+consumes only the retained lightweight execution-v3 output tables above and
+writes a richer analysis to `reports/execution_v3_analysis/`. It never opens the
+deleted raw per-run prediction arrays; `raw_predictions_required` is always
+`false`, and if the upstream tables are missing it fails with a clear
+missing-input message rather than silently requiring deleted data.
+
+```bash
+python -m chronoslob.cli analyse-fi2010-execution-v3 \
+  --execution-v3 experiments/fi2010_execution_v3 \
+  --out reports/execution_v3_analysis \
+  --overwrite
+```
+
+It answers one practical question: do apparently better forecasts still look
+useful after confidence filtering, simple cost assumptions, latency shifts,
+turnover pressure and adverse-selection proxies? Outputs:
+
+- `execution_v3_analysis.md`: the narrative report.
+- `confidence_filtering_summary.csv`: mean retained fraction, active fraction,
+  abstention fraction, accuracy, macro-F1, directional hit rate and cost-adjusted
+  proxy by objective, horizon and confidence threshold.
+- `turnover_proxy_summary.csv`: mean signal-change-rate turnover proxy, active
+  fraction and a turnover-adjusted cost proxy by threshold.
+- `latency_sensitivity_summary.csv`: mean cost-adjusted proxy degradation versus
+  latency 0 and directional hit rate by horizon, objective and row-step lag.
+- `cost_sensitivity_summary.csv`: mean gross proxy, cost-adjusted proxy and
+  degradation percentage across the fee and spread-multiplier grid.
+- `fill_assumption_summary.csv`: mean fill fraction, hit rate and cost-adjusted
+  proxy by proxy fill mode.
+- `adverse_selection_proxy_summary.csv`: filled-weighted adverse-selection proxy
+  rate by objective, horizon, confidence bucket and fill assumption.
+- `skipped_regime_diagnostics.json`: explicit, non-silent skip. Regime
+  diagnostics are skipped because the retained tables and the underlying FI-2010
+  prediction artefacts carry no regime labels or snapshot market-context columns;
+  the exact fields needed to build supported snapshot-derived proxy regimes are
+  recorded as future work. Regimes are not invented.
+- `execution_claim_assessment.json`, `summary.json` and `figure_manifest.json`.
+
+Optional figures cover active fraction, cost-adjusted proxy and turnover proxy
+versus confidence threshold, latency degradation by horizon, the
+adverse-selection proxy by confidence bucket and fill-assumption sensitivity.
+
+All outputs remain offline execution-aware proxy diagnostics. They are not PnL,
+not live-trading evidence and not a production execution simulator.
