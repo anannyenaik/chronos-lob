@@ -23,7 +23,7 @@ The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`
 | fi2010_neural_full_grid | archived_valid | archived | no | 135 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_proper_training_subset | partial_real | archived | no | 6 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_failure_analysis_report | complete_real | fresh | no | 4 |  | Hash/commit staleness checks passed. |
-| fi2010_ssl_v2_benchmark | complete_real | fresh | no | 16 | 0 | Hash/commit staleness checks passed. |
+| fi2010_ssl_v2_benchmark | complete_real | fresh | no | 20 | 0 | Hash/commit staleness checks passed. |
 | ssl_v2_analysis_report | complete_real | fresh | no |  | 0 | Hash/commit staleness checks passed. |
 | fi2010_figures | partial_real | fresh | no | 17 |  | Hash/commit staleness checks passed. |
 | execution_v3_outputs | archived_valid | archived | no | 4800519 | 0 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |

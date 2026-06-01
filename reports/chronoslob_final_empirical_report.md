@@ -6,8 +6,8 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-06-01T01:05:17.752690+00:00 |
-| git_commit | 2330a15cae6a8ba1ba1ad2df86d0983708c833bc |
+| generated_at | 2026-06-01T13:09:16.812309+00:00 |
+| git_commit | 07f47078ea0971aa394945cc555fef69f05b346e |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
@@ -60,8 +60,8 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | archived_valid=4, complete_real=6, obsolete_superseded=1, optional_missing=1, partial_real=6, unknown_staleness=1 |
-| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=29, unsupported=8 |
+| artefact_status_counts | archived_valid=5, complete_real=7, obsolete_superseded=1, optional_missing=1, partial_real=4, unknown_staleness=1 |
+| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=30, unsupported=7 |
 | supported_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 | unsupported_or_limited_claims | Model X achieved macro-F1 Y; SSL improved macro-F1; SSL improved calibration |
 
@@ -386,14 +386,14 @@ A second-generation SSL objective was added after the SSL failure analysis showe
 or calibration. The SSL-v2 objective is market-state-aware and remains a scoped comparison, not a general representation or trading claim.
 
 - evidence level: complete_real
-- scope label: folds_1_2_3_4_h10_h50_complete_real
-- matched supervised-vs-SSL-v2 rows: 8
+- scope label: folds_1_2_3_4_5_h10_h50_complete_real
+- matched supervised-vs-SSL-v2 rows: 10
 - failures: 0
 
 | horizon | matched rows | mean delta macro-F1 | mean delta MCC | mean delta ECE | mean delta Brier |
 | --- | --- | --- | --- | --- | --- |
-| 10 | 4 | 0.0055 | 0.0279 | 0.0115 | -0.0033 |
-| 50 | 4 | -0.0434 | -0.0472 | 0.0331 | 0.0367 |
+| 10 | 5 | 0.0859 | 0.1459 | -0.0140 | -0.0835 |
+| 50 | 5 | -0.0305 | -0.0327 | 0.0246 | 0.0233 |
 
 - SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the stored scope.
 - SSL-v2 calibration improvement is reported only when ECE and Brier deltas both support it.
@@ -407,7 +407,7 @@ or calibration. The SSL-v2 objective is market-state-aware and remains a scoped 
 | ssl_v2_calibration_improvement | unsupported |
 | ssl_v2_evaluated | supported |
 | ssl_v2_objective_implemented | supported |
-| ssl_v2_predictive_improvement | unsupported |
+| ssl_v2_predictive_improvement | supported |
 
 ## Figure Index
 
@@ -916,14 +916,14 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
 | proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
 | ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
-| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | 6fa2102241b4533a7a3d61802eadbaecc21a41472a6457430c7011b9d4ba3315 |
-| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | b85c65a67e194506e18ea352fc6be6a8ce2dd66f4736f14949f123b0706debd1 |
-| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | f89fb1c17d1aec58ca7f32cba280d42be14e62f4984bc5dbb6e7be66f4303cdc |
-| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 55f370557037fc6062dcb183e09c2da771ac25c694d9a54161d949e8f92feaac |
-| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | c380728bcf4b29a3a4f88e0db1f33954841efc26b1543fb14531f1e2dec85619 |
-| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 4d0d7cc62525070975c78f9b2cfb24f5944e6aadd6ddaa03f47a34827a0aacad |
-| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 523dea9840c12576429add467b9ed1aa59694e16eec02909397d2f9faa6b6592 |
-| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | c381775196d1decf6bb658c7add02b08d34a1c2fda8e41343b7bf69c9e320e6e |
+| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | c64dd5a9649cf327771e3549633ddae32961120ff8e013d23968580db1b9e5b2 |
+| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 88e420e19c0dbdba243ba81bd5a591b1aa2bb93ceee83c0d6e1bea7b52132e58 |
+| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | cb69ce15fd278836c784b7eb649b9fc7c4c633c47251cf50c8af1232cae01ee1 |
+| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 48999fe3361c89ba7954727905a23c4e27b0ad8e620903231db71fd196974110 |
+| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | ecee3938b5eef85eed57d3707bcb75662dce5df691172a06ef5c3dba543a9b1a |
+| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 220aaf29b0744be35cd32c5fc95e3073abd5c085d5c8afadc3c8015cc2e8e882 |
+| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 8c33002c24bebe0adca89834c90271be4f749feede3ef1b07ba6375eba49be00 |
+| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | e06abee7260b349c5010a3cd6560d14b3772abed72db8141fd780c8d94dca9d3 |
 | synthetic_lob_dir | reports/synthetic_lob_extension | directory |
 | synthetic_lob_summary | reports/synthetic_lob_extension/summary.json | 21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea |
 | synthetic_lob_synthetic_benchmark_summary | reports/synthetic_lob_extension/synthetic_benchmark_summary.csv | 6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea |

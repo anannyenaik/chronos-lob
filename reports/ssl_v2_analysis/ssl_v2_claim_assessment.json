@@ -11,16 +11,16 @@
     {
       "claim_id": "ssl_v2_evaluated",
       "claim_text": "SSL-v2 was evaluated in the stored FI-2010 scope.",
-      "reason": "8 matched supervised-vs-SSL-v2 row(s) are present.",
+      "reason": "10 matched supervised-vs-SSL-v2 row(s) are present.",
       "scope": "evidence level complete_real",
       "status": "supported"
     },
     {
       "claim_id": "ssl_v2_predictive_improvement",
       "claim_text": "SSL-v2 improves predictive metrics in the stored scope.",
-      "reason": "Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement.",
+      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows.",
       "scope": "exact stored scope; evidence level complete_real",
-      "status": "unsupported"
+      "status": "supported"
     },
     {
       "claim_id": "ssl_v2_calibration_improvement",
@@ -51,7 +51,7 @@
       "status": "forbidden"
     }
   ],
-  "created_at": "2026-06-01T00:44:15.670136+00:00",
+  "created_at": "2026-06-01T13:07:33.533860+00:00",
   "evidence_level": "complete_real",
   "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark"
 }

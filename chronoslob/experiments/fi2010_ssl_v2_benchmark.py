@@ -1554,7 +1554,8 @@ def _scope_labels(
         and completed == planned
     )
     if complete_target:
-        return "complete_real", "folds_1_3_h10_h50_complete_real"
+        fold_token = "_".join(str(fold) for fold in sorted(set(folds)))
+        return "complete_real", f"folds_{fold_token}_h10_h50_complete_real"
     return "partial_real", "limited_ssl_v2_partial_real_slice"
 
 

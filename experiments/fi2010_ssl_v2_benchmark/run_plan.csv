@@ -15,3 +15,7 @@ fold_4__h10__seed_0__lb50__supervised,4,fold_4,10,0,50,supervised,none,runs/fold
 fold_4__h10__seed_0__lb50__market_state_multitask,4,fold_4,10,0,50,market_state_multitask,market_state_multitask,runs/fold_4/horizon_10/seed_0/lookback_50/market_state_multitask
 fold_4__h50__seed_0__lb50__supervised,4,fold_4,50,0,50,supervised,none,runs/fold_4/horizon_50/seed_0/lookback_50/supervised
 fold_4__h50__seed_0__lb50__market_state_multitask,4,fold_4,50,0,50,market_state_multitask,market_state_multitask,runs/fold_4/horizon_50/seed_0/lookback_50/market_state_multitask
+fold_5__h10__seed_0__lb50__supervised,5,fold_5,10,0,50,supervised,none,runs/fold_5/horizon_10/seed_0/lookback_50/supervised
+fold_5__h10__seed_0__lb50__market_state_multitask,5,fold_5,10,0,50,market_state_multitask,market_state_multitask,runs/fold_5/horizon_10/seed_0/lookback_50/market_state_multitask
+fold_5__h50__seed_0__lb50__supervised,5,fold_5,50,0,50,supervised,none,runs/fold_5/horizon_50/seed_0/lookback_50/supervised
+fold_5__h50__seed_0__lb50__market_state_multitask,5,fold_5,50,0,50,market_state_multitask,market_state_multitask,runs/fold_5/horizon_50/seed_0/lookback_50/market_state_multitask

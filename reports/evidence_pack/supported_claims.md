@@ -36,6 +36,9 @@
 - SSL-v2 was evaluated in a scoped FI-2010 benchmark.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
   - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+- SSL-v2 improved predictive metrics in the stored scope.
+  - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
 - Gradient boosting remained the strongest classical baseline
   - support: fi2010_classical_benchmarks
   - safe wording: Name the best classical model from the stored result table and include the metric, split and scope.

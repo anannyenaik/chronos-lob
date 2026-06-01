@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -456,3 +457,180 @@ def test_ssl_v2_analysis_computes_deltas_and_claims(tmp_path: Path) -> None:
     assert summary.claim_statuses["ssl_v2_calibration_improvement"] == "supported"
     assert (out / "ssl_v2_analysis.md").is_file()
     assert (out / "ssl_v2_delta_by_horizon.csv").is_file()
+
+
+def _write_ssl_v2_analysis_source(
+    source: Path,
+    *,
+    evidence_level: str = "complete_real",
+    folds: Sequence[int] = (1, 2, 3, 4, 5),
+    delta_macro_f1: float = 0.05,
+    delta_mcc: float = 0.04,
+    delta_ece: float = -0.01,
+    delta_brier: float = -0.02,
+) -> None:
+    """Write a minimal but complete SSL-v2 benchmark source directory."""
+    source.mkdir(parents=True, exist_ok=True)
+    (source / "summary.json").write_text(
+        stable_json_dumps(
+            {
+                "evidence_level": evidence_level,
+                "scope_label": "test",
+                "folds": list(folds),
+                "horizons": [10, 50],
+                "seeds": [0],
+                "lookbacks": [50],
+                "objectives": ["supervised", "market_state_multitask"],
+                "completed_run_count": 2 * len(folds) * 2,
+            }
+        ),
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        [_fake_result_row(runner.FI2010SSLV2RunSpec(1, 10, 0, 50, "supervised"))]
+    ).to_csv(source / "results_summary.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "horizon": 10,
+                "lookback": 50,
+                "model_family": "matrix_transformer",
+                "pretraining_objective": "market_state_multitask",
+                "completed_run_count": len(folds),
+                "failed_run_count": 0,
+                "mean_macro_f1": 0.45,
+                "mean_mcc": 0.14,
+                "mean_ece": 0.07,
+                "mean_brier_score": 0.28,
+                "mean_nll": 1.1,
+            }
+        ]
+    ).to_csv(source / "aggregate_summary.csv", index=False)
+    rows = []
+    for fold in folds:
+        for horizon in (10, 50):
+            rows.append(
+                {
+                    "fold": fold,
+                    "horizon": horizon,
+                    "seed": 0,
+                    "lookback": 50,
+                    "model_family": "matrix_transformer",
+                    "ssl_objective": "market_state_multitask",
+                    "comparison": "supervised_vs_market_state_multitask",
+                    "supervised_run_id": "base",
+                    "ssl_run_id": "v2",
+                    "supervised_macro_f1": 0.40,
+                    "ssl_macro_f1": 0.40 + delta_macro_f1,
+                    "delta_macro_f1": delta_macro_f1,
+                    "supervised_accuracy": 0.55,
+                    "ssl_accuracy": 0.55,
+                    "delta_accuracy": 0.0,
+                    "supervised_mcc": 0.10,
+                    "ssl_mcc": 0.10 + delta_mcc,
+                    "delta_mcc": delta_mcc,
+                    "supervised_ece": 0.08,
+                    "ssl_ece": 0.08 + delta_ece,
+                    "delta_ece": delta_ece,
+                    "supervised_brier_score": 0.30,
+                    "ssl_brier_score": 0.30 + delta_brier,
+                    "delta_brier_score": delta_brier,
+                    "supervised_nll": 1.2,
+                    "ssl_nll": 1.1,
+                    "delta_nll": -0.1,
+                    "macro_f1_outcome": "win" if delta_macro_f1 > 0 else "loss",
+                    "ece_outcome": "win" if delta_ece < 0 else "loss",
+                    "mcc_outcome": "win" if delta_mcc > 0 else "loss",
+                    "status": "matched",
+                    "reason": "",
+                }
+            )
+    pd.DataFrame(rows).to_csv(source / "ssl_v2_comparison.csv", index=False)
+    pd.DataFrame(columns=["status"]).to_csv(source / "failures.csv", index=False)
+
+
+def test_ssl_v2_calibration_claim_requires_both_ece_and_brier(tmp_path: Path) -> None:
+    # ECE improves but Brier worsens: calibration improvement must NOT be claimed.
+    source = tmp_path / "src"
+    _write_ssl_v2_analysis_source(source, delta_ece=-0.01, delta_brier=0.03)
+    summary = analyse_ssl_v2_results(source, out_dir=tmp_path / "out")
+    assert summary.claim_statuses["ssl_v2_calibration_improvement"] == "unsupported"
+
+
+def test_ssl_v2_broad_improvement_never_supported(tmp_path: Path) -> None:
+    # Even with strong positive predictive and calibration deltas across folds,
+    # the broad-SSL-improvement claim stays unsupported.
+    source = tmp_path / "src"
+    _write_ssl_v2_analysis_source(
+        source,
+        delta_macro_f1=0.20,
+        delta_mcc=0.20,
+        delta_ece=-0.05,
+        delta_brier=-0.05,
+    )
+    summary = analyse_ssl_v2_results(source, out_dir=tmp_path / "out")
+    assert summary.claim_statuses["ssl_v2_predictive_improvement"] == "supported"
+    assert summary.claim_statuses["ssl_v2_calibration_improvement"] == "supported"
+    assert summary.claim_statuses["broad_ssl_improvement"] == "unsupported"
+
+
+def test_ssl_v2_predictive_claim_not_supported_for_smoke(tmp_path: Path) -> None:
+    source = tmp_path / "src"
+    _write_ssl_v2_analysis_source(
+        source,
+        evidence_level="smoke_test_only",
+        delta_macro_f1=0.20,
+        delta_mcc=0.20,
+    )
+    summary = analyse_ssl_v2_results(source, out_dir=tmp_path / "out")
+    assert summary.claim_statuses["ssl_v2_predictive_improvement"] == "unsupported"
+    assert summary.claim_statuses["ssl_v2_evaluated"] == "needs_real_evidence"
+
+
+def test_ssl_v2_complete_real_scope_label_reflects_actual_folds() -> None:
+    evidence_level, scope_label = runner._scope_labels(
+        folds=(1, 2, 3, 4, 5),
+        horizons=(10, 50),
+        seeds=(0,),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=20,
+        planned=20,
+    )
+    assert evidence_level == "complete_real"
+    assert scope_label == "folds_1_2_3_4_5_h10_h50_complete_real"
+
+
+def test_ssl_v2_partial_real_when_not_all_runs_complete() -> None:
+    # A reduced or incomplete scope must never be silently promoted to complete.
+    evidence_level, scope_label = runner._scope_labels(
+        folds=(1, 2, 3, 4, 5),
+        horizons=(10, 50),
+        seeds=(0,),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=18,
+        planned=20,
+    )
+    assert evidence_level == "partial_real"
+    assert scope_label == "limited_ssl_v2_partial_real_slice"
+
+    fallback_level, _ = runner._scope_labels(
+        folds=(1, 2, 3),
+        horizons=(10, 50),
+        seeds=(0,),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=12,
+        planned=12,
+    )
+    assert fallback_level == "complete_real"

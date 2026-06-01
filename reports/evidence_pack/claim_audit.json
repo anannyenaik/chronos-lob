@@ -4,8 +4,8 @@
     "forbidden": 18,
     "needs_real_evidence": 2,
     "partially_supported": 3,
-    "supported": 29,
-    "unsupported": 8
+    "supported": 30,
+    "unsupported": 7
   },
   "claims": [
     {
@@ -233,7 +233,7 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_evaluated",
       "claim_text": "SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
-      "reason": "8 matched supervised-vs-SSL-v2 row(s) are present.",
+      "reason": "10 matched supervised-vs-SSL-v2 row(s) are present.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
@@ -249,14 +249,17 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_predictive_improvement",
       "claim_text": "SSL-v2 improved predictive metrics in the stored scope.",
-      "reason": "Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement.",
+      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
       "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
-      "status": "unsupported",
-      "supporting_artefacts": []
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ]
     },
     {
       "category": "empirical result",
@@ -794,5 +797,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-06-01T01:06:23.972337+00:00"
+  "generated_at": "2026-06-01T13:10:50.037972+00:00"
 }

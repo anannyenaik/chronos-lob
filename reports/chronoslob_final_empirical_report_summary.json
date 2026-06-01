@@ -1,7 +1,7 @@
 {
   "builder_version": "phase-k/final-empirical-report/v1",
-  "generated_at": "2026-05-30T23:00:20.348878Z",
-  "git_commit": "597b3599a3a437ec06224f2ae1f8e5a91d81041f",
+  "generated_at": "2026-06-01T13:09:16.812309Z",
+  "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
   "headline_metrics": {
     "best_classical": {
       "accuracy_mean": 0.640951393883556,
@@ -232,14 +232,14 @@
     "reports/feature_ablation_analysis/snapshot_order_flow_proxy_scope.csv": "93202239e952cc46b8ad9d73f8afa8a4eb2eb25ff6b547b722339f3acbe360ef",
     "reports/feature_ablation_analysis/summary.json": "fb31c3d26bf9a0bac223df65e1d0f73d1668dd739c77fa8695df31a6e946762d",
     "reports/figures/fi2010_neural_full_grid/figure_manifest.json": "d1289ae54c0d04efb46f1a2758cd334078f22c4244f07bc7c37b7e3d3dc00306",
-    "reports/ssl_v2_analysis/figure_manifest.json": "fe253db1518107d313aa30d4379bfd5ac6f171ce2fda2df7be180d3077284715",
-    "reports/ssl_v2_analysis/ssl_v2_analysis.md": "4a50f56e5f5fb3f8ebf7429e5dcb60b7c66b0b464b823b586d3aac80dca50783",
-    "reports/ssl_v2_analysis/ssl_v2_claim_assessment.json": "9522fac463f4586d5a240f3b900ba882f1d6ff4bd84684bcb91812932953ef52",
-    "reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv": "d565b80283c529a713810276483ef5c4922c1fdb3d1dd2330764fcd00146617f",
-    "reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv": "4ca94fbe955a81d0305348cdc4bd1cd226822e79713d524a3b3ef98db2e022bd",
-    "reports/ssl_v2_analysis/ssl_v2_loss_components.csv": "c1b1b4d1b6ea2db9cf9c444bbb0bc6b8ddc44d881d440beb96c5e292bf5963ed",
-    "reports/ssl_v2_analysis/ssl_v2_metric_summary.csv": "4075f59f1dbd8cc12710648a64f0b09f8523524139476c147c23906046853a88",
-    "reports/ssl_v2_analysis/summary.json": "d2fdf047ceb580026eb5804a58bfa5c73d39abe57f7c9d4fb4f3f5c49b6fb62d",
+    "reports/ssl_v2_analysis/figure_manifest.json": "c64dd5a9649cf327771e3549633ddae32961120ff8e013d23968580db1b9e5b2",
+    "reports/ssl_v2_analysis/ssl_v2_analysis.md": "88e420e19c0dbdba243ba81bd5a591b1aa2bb93ceee83c0d6e1bea7b52132e58",
+    "reports/ssl_v2_analysis/ssl_v2_claim_assessment.json": "cb69ce15fd278836c784b7eb649b9fc7c4c633c47251cf50c8af1232cae01ee1",
+    "reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv": "48999fe3361c89ba7954727905a23c4e27b0ad8e620903231db71fd196974110",
+    "reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv": "ecee3938b5eef85eed57d3707bcb75662dce5df691172a06ef5c3dba543a9b1a",
+    "reports/ssl_v2_analysis/ssl_v2_loss_components.csv": "220aaf29b0744be35cd32c5fc95e3073abd5c085d5c8afadc3c8015cc2e8e882",
+    "reports/ssl_v2_analysis/ssl_v2_metric_summary.csv": "8c33002c24bebe0adca89834c90271be4f749feede3ef1b07ba6375eba49be00",
+    "reports/ssl_v2_analysis/summary.json": "e06abee7260b349c5010a3cd6560d14b3772abed72db8141fd780c8d94dca9d3",
     "reports/synthetic_lob_extension/summary.json": "21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea",
     "reports/synthetic_lob_extension/synthetic_benchmark_summary.csv": "6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea",
     "reports/synthetic_lob_extension/synthetic_claim_assessment.json": "209431eea1ad92cddb5a71b98c3a824fdbc90e6f87f970b2ff984b282b3d3b0c",
@@ -247,7 +247,7 @@
     "reports/synthetic_lob_extension/synthetic_replay_quality.json": "3b444bdf399e3e949807fc883a75fa68f8b781397fa126aaa9c850e265292146"
   },
   "missing_sections": [
-    "SSL input not supplied"
+    "SSL artefacts incomplete: missing reports/ssl_failure_analysis/results_summary.csv"
   ],
   "report_path": "reports/chronoslob_final_empirical_report.md",
   "sections_written": [
@@ -297,6 +297,6 @@
   ],
   "summary_path": "reports/chronoslob_final_empirical_report_summary.json",
   "warnings": [
-    "SSL input not supplied; Self-Supervised Pretraining will be marked skipped."
+    "SSL artefacts incomplete: missing reports/ssl_failure_analysis/results_summary.csv; Self-Supervised Pretraining will be marked skipped."
   ]
 }

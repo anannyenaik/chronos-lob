@@ -30,7 +30,7 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
 | Neural full grid | `archived_valid` | Folds 1-5, horizons 10/20/50, seeds 0-2, one-epoch matched grid. |
 | Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50, max 25 epochs, patience 5; matched SSL comparisons are exact-scope only. |
 | SSL comparison | `archived_valid` | Tested in the matched grid; no SSL improvement is supported. |
-| SSL-v2 benchmark | `complete_real` | Market-state SSL objective vs matched supervised baseline, folds 1-4 horizons 10/50 seed 0 lookback 50; no predictive or calibration improvement supported (mean deltas neutral-to-negative, calibration worse on average); no broad SSL improvement. |
+| SSL-v2 benchmark | `complete_real` | Market-state SSL objective vs matched supervised baseline, folds 1-5 horizons 10/50 seed 0 lookback 50; scoped predictive deltas are positive after fold 5, but calibration improvement is not supported and no broad SSL improvement is claimed. |
 | Execution-v3 | `archived_valid` | Offline execution-aware proxy diagnostic only. |
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
 | Execution centrepiece | `complete_real` | Forecasting-versus-signal-quality gap under retained proxy diagnostics. |
@@ -62,11 +62,11 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
   fold 1, horizon 50 in the partial proper-training subset, while calibration
   worsened.
 - SSL-v2 adds a second-generation, market-state-aware objective motivated by
-  that failure analysis. In the complete-real folds 1-4, horizons 10/50, seed 0,
-  lookback 50 scope, mean macro-F1 and MCC deltas are neutral-to-negative and
-  mean ECE and Brier worsen versus the matched supervised baseline; gains are
-  confined to a few cells, so no SSL-v2 predictive or calibration improvement and
-  no broad SSL improvement claim is supported.
+  that failure analysis. In the complete-real folds 1-5, horizons 10/50, seed 0,
+  lookback 50 scope, mean macro-F1 (+0.028) and MCC (+0.057) deltas now support
+  a scoped predictive improvement. ECE still worsens on average (+0.005), while
+  Brier improves (-0.030), so calibration improvement and broad SSL improvement
+  claims remain unsupported.
 - The one-epoch matched full grid is separate from the earlier 25-epoch
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or

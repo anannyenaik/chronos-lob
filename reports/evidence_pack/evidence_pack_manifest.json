@@ -158,12 +158,12 @@
     {
       "artefact_name": "fi2010_ssl_v2_benchmark",
       "artefact_type": "fi2010_ssl_v2_benchmark",
-      "completed_runs": 16,
+      "completed_runs": 20,
       "exists": true,
       "failed_runs": 0,
       "freshness": "fresh",
-      "generated_at": "2026-06-01T00:43:55.269417Z",
-      "git_commit": "2330a15cae6a8ba1ba1ad2df86d0983708c833bc",
+      "generated_at": "2026-06-01T12:38:07.058283Z",
+      "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
       "input_hashes_present": false,
       "limitations": "SSL-v2 benchmark claims are limited to the exact stored scope; imported baselines are disclosed in summary.json.",
       "notes": "Hash/commit staleness checks passed.",
@@ -184,7 +184,8 @@
       ],
       "supports_claims": [
         "empirical.ssl_v2_evaluated",
-        "empirical.ssl_v2_implemented"
+        "empirical.ssl_v2_implemented",
+        "empirical.ssl_v2_predictive_improvement"
       ]
     },
     {
@@ -194,7 +195,7 @@
       "exists": true,
       "failed_runs": 0,
       "freshness": "fresh",
-      "generated_at": "2026-06-01T00:44:15.670136+00:00",
+      "generated_at": "2026-06-01T13:07:33.533860+00:00",
       "git_commit": "",
       "input_hashes_present": false,
       "limitations": "The SSL-v2 analysis is scoped evidence only and does not alter broad SSL boundaries unless its stored deltas support that.",
@@ -216,7 +217,8 @@
       ],
       "supports_claims": [
         "empirical.ssl_v2_evaluated",
-        "empirical.ssl_v2_implemented"
+        "empirical.ssl_v2_implemented",
+        "empirical.ssl_v2_predictive_improvement"
       ]
     },
     {
@@ -473,8 +475,8 @@
       "exists": true,
       "failed_runs": null,
       "freshness": "fresh",
-      "generated_at": "2026-06-01T01:05:17.752690Z",
-      "git_commit": "2330a15cae6a8ba1ba1ad2df86d0983708c833bc",
+      "generated_at": "2026-06-01T13:09:16.812309Z",
+      "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Hash/commit staleness checks passed.",
@@ -594,11 +596,11 @@
     "forbidden": 18,
     "needs_real_evidence": 2,
     "partially_supported": 3,
-    "supported": 29,
-    "unsupported": 8
+    "supported": 30,
+    "unsupported": 7
   },
-  "generated_at": "2026-06-01T01:06:23.908549+00:00",
-  "git_commit": "2330a15cae6a8ba1ba1ad2df86d0983708c833bc",
+  "generated_at": "2026-06-01T13:10:49.958184+00:00",
+  "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "binance_l2_dir": "reports/binance_l2_extension",

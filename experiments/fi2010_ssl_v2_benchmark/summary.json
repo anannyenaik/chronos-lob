@@ -20,10 +20,10 @@
   "baseline_source_dir": "experiments\\fi2010_neural_proper_training_subset_v2",
   "batch_size": 1024,
   "claim_boundary": "SSL-v2 evidence is limited to the exact stored folds, horizons, seeds, lookbacks and objectives; no broad SSL, calibration or trading claim follows.",
-  "comparison_rows": 8,
-  "completed_run_count": 16,
+  "comparison_rows": 10,
+  "completed_run_count": 20,
   "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
-  "created_at": "2026-06-01T00:43:55.269417Z",
+  "created_at": "2026-06-01T12:38:07.058283Z",
   "device": "cpu",
   "early_stopping_patience": 5,
   "environment": {
@@ -37,9 +37,10 @@
     1,
     2,
     3,
-    4
+    4,
+    5
   ],
-  "git_commit": "2330a15cae6a8ba1ba1ad2df86d0983708c833bc",
+  "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
   "horizons": [
     10,
     50
@@ -57,9 +58,9 @@
   "output_dir": "experiments\\fi2010_ssl_v2_benchmark",
   "pretrain_epochs": 5,
   "processed_root": "data\\processed\\fi2010",
-  "run_count": 16,
+  "run_count": 20,
   "runner_version": "fi2010-ssl-v2-benchmark/v1",
-  "scope_label": "folds_1_2_3_4_h10_h50_complete_real",
+  "scope_label": "folds_1_2_3_4_5_h10_h50_complete_real",
   "seeds": [
     0
   ],

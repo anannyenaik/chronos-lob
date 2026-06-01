@@ -5,7 +5,7 @@ It evaluates a failure-analysis-motivated second-generation SSL objective agains
 
 ## Scope
 
-- folds: 1, 2, 3, 4
+- folds: 1, 2, 3, 4, 5
 - horizons: 10, 50
 - seeds: 0
 - lookbacks: 50
@@ -14,7 +14,7 @@ It evaluates a failure-analysis-motivated second-generation SSL objective agains
 - fine-tune max epochs: 25
 - early-stopping patience: 5
 - evidence level: complete_real
-- scope label: folds_1_2_3_4_h10_h50_complete_real
+- scope label: folds_1_2_3_4_5_h10_h50_complete_real
 - imported baseline runs: 0
 
 ## Claim Boundaries
