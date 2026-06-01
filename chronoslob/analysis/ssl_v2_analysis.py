@@ -22,6 +22,9 @@ __all__ = [
 
 SSL_V2_ANALYSIS_VERSION = "fi2010-ssl-v2-analysis/v1"
 
+# Confidence thresholds for selective-prediction (confidence-filtered) diagnostics.
+SSL_V2_CONFIDENCE_THRESHOLDS: tuple[float, ...] = (0.33, 0.50, 0.70, 0.85, 0.95)
+
 
 @dataclass(frozen=True)
 class SSLV2AnalysisSummary:
@@ -35,6 +38,8 @@ class SSLV2AnalysisSummary:
     failure_count: int
     claim_statuses: Mapping[str, str] = field(default_factory=dict)
     artefacts: Mapping[str, str] = field(default_factory=dict)
+    confidence_filtered_rows: int = 0
+    execution_proxy_available: bool = False
 
 
 def analyse_ssl_v2_results(
@@ -68,12 +73,28 @@ def analyse_ssl_v2_results(
     metric_summary.to_csv(output / "ssl_v2_metric_summary.csv", index=False)
     delta_by_horizon = _delta_table(comparison, group_columns=("ssl_objective", "horizon"))
     delta_by_fold = _delta_table(comparison, group_columns=("ssl_objective", "fold"))
+    delta_by_seed = _delta_table(comparison, group_columns=("ssl_objective", "seed"))
+    delta_by_fold_horizon = _delta_table(
+        comparison, group_columns=("ssl_objective", "fold", "horizon")
+    )
+    delta_overall = _delta_table(comparison, group_columns=("ssl_objective",))
     delta_by_horizon.to_csv(output / "ssl_v2_delta_by_horizon.csv", index=False)
     delta_by_fold.to_csv(output / "ssl_v2_delta_by_fold.csv", index=False)
+    delta_by_seed.to_csv(output / "ssl_v2_delta_by_seed.csv", index=False)
+    delta_by_fold_horizon.to_csv(output / "ssl_v2_delta_by_fold_horizon.csv", index=False)
+    delta_overall.to_csv(output / "ssl_v2_delta_overall.csv", index=False)
     if loss_components is not None:
         loss_components.to_csv(output / "ssl_v2_loss_components.csv", index=False)
     else:
         pd.DataFrame().to_csv(output / "ssl_v2_loss_components.csv", index=False)
+
+    confidence_filtered, confidence_status = _confidence_filtered_diagnostics(source, comparison)
+    confidence_filtered.to_csv(output / "ssl_v2_confidence_filtered.csv", index=False)
+    execution_proxy = _execution_proxy_note(confidence_status=confidence_status)
+    (output / "ssl_v2_execution_proxy.json").write_text(
+        stable_json_dumps(execution_proxy),
+        encoding="utf-8",
+    )
 
     claims = _assess_claims(
         summary=summary,
@@ -108,6 +129,10 @@ def analyse_ssl_v2_results(
             comparison=comparison,
             delta_by_horizon=delta_by_horizon,
             delta_by_fold=delta_by_fold,
+            delta_overall=delta_overall,
+            confidence_filtered=confidence_filtered,
+            confidence_status=confidence_status,
+            execution_proxy=execution_proxy,
             claims=claims,
         )
     )
@@ -133,6 +158,11 @@ def analyse_ssl_v2_results(
         "metric_summary": "ssl_v2_metric_summary.csv",
         "delta_by_horizon": "ssl_v2_delta_by_horizon.csv",
         "delta_by_fold": "ssl_v2_delta_by_fold.csv",
+        "delta_by_seed": "ssl_v2_delta_by_seed.csv",
+        "delta_by_fold_horizon": "ssl_v2_delta_by_fold_horizon.csv",
+        "delta_overall": "ssl_v2_delta_overall.csv",
+        "confidence_filtered": "ssl_v2_confidence_filtered.csv",
+        "execution_proxy_note": "ssl_v2_execution_proxy.json",
         "loss_components": "ssl_v2_loss_components.csv",
         "claim_assessment": "ssl_v2_claim_assessment.json",
         "figure_manifest": "figure_manifest.json",
@@ -149,6 +179,10 @@ def analyse_ssl_v2_results(
         "ssl_v2_matched_rows": ssl_v2_matched_rows,
         "failure_count": failure_count,
         "claim_statuses": claim_statuses,
+        "confidence_filtered_rows": len(confidence_filtered),
+        "confidence_filtered_status": confidence_status,
+        "execution_proxy_available": bool(execution_proxy["active_fraction_reported"]),
+        "execution_proxy_note": execution_proxy,
         "artefacts": artefacts,
     }
     (output / "summary.json").write_text(stable_json_dumps(analysis_summary), encoding="utf-8")
@@ -161,6 +195,8 @@ def analyse_ssl_v2_results(
         failure_count=failure_count,
         claim_statuses=claim_statuses,
         artefacts=artefacts,
+        confidence_filtered_rows=len(confidence_filtered),
+        execution_proxy_available=bool(execution_proxy["active_fraction_reported"]),
     )
 
 
@@ -337,12 +373,278 @@ def _assess_claims(
     ]
 
 
+_CONFIDENCE_FILTERED_COLUMNS: tuple[str, ...] = (
+    "grouping",
+    "ssl_objective",
+    "horizon",
+    "threshold",
+    "matched_run_count",
+    "mean_ssl_active_fraction",
+    "mean_ssl_abstention_fraction",
+    "mean_ssl_active_examples",
+    "mean_supervised_active_fraction",
+    "mean_supervised_macro_f1",
+    "mean_ssl_macro_f1",
+    "mean_delta_macro_f1",
+    "mean_supervised_mcc",
+    "mean_ssl_mcc",
+    "mean_delta_mcc",
+)
+_CONFIDENCE_AGGREGATE_COLUMNS: tuple[str, ...] = (
+    "ssl_active_fraction",
+    "ssl_abstention_fraction",
+    "ssl_active_examples",
+    "supervised_active_fraction",
+    "supervised_macro_f1",
+    "ssl_macro_f1",
+    "delta_macro_f1",
+    "supervised_mcc",
+    "ssl_mcc",
+    "delta_mcc",
+)
+
+
+def _run_predictions_path(
+    source: Path,
+    *,
+    fold: Any,
+    horizon: Any,
+    seed: Any,
+    lookback: Any,
+    objective: str,
+) -> Path:
+    """Reconstruct a benchmark run's predictions path from comparison keys."""
+    return (
+        source
+        / "runs"
+        / f"fold_{int(float(fold))}"
+        / f"horizon_{int(float(horizon))}"
+        / f"seed_{int(float(seed))}"
+        / f"lookback_{int(float(lookback))}"
+        / str(objective)
+        / "predictions.csv"
+    )
+
+
+def _load_test_predictions(path: Path) -> pd.DataFrame | None:
+    """Load the y_true/y_pred/confidence test columns; None when unusable."""
+    if not path.is_file():
+        return None
+    try:
+        frame = pd.read_csv(
+            path,
+            usecols=lambda column: column in {"split", "y_true", "y_pred", "confidence"},
+        )
+    except (OSError, ValueError, pd.errors.EmptyDataError):
+        return None
+    if not {"y_true", "y_pred", "confidence"}.issubset(frame.columns):
+        return None
+    if "split" in frame.columns:
+        frame = frame[frame["split"].astype(str) == "test"]
+    frame = frame.copy()
+    frame["confidence"] = pd.to_numeric(frame["confidence"], errors="coerce")
+    frame = frame.dropna(subset=["y_true", "y_pred", "confidence"])
+    return frame if not frame.empty else None
+
+
+def _subset_classification_metrics(frame: pd.DataFrame) -> tuple[float | None, float | None]:
+    """Return macro-F1 and MCC over a prediction subset, or None when empty."""
+    if frame.empty:
+        return None, None
+    from chronoslob.training.metrics import compute_classification_metrics
+
+    metrics = compute_classification_metrics(
+        frame["y_true"].tolist(),
+        frame["y_pred"].tolist(),
+    )
+    return float(metrics.macro_f1), float(metrics.matthews_corrcoef)
+
+
+def _threshold_run_stats(predictions: pd.DataFrame, threshold: float) -> dict[str, Any]:
+    """Selective-prediction stats for one run at one confidence threshold."""
+    total = len(predictions)
+    active = predictions[predictions["confidence"] >= float(threshold)]
+    n_active = len(active)
+    active_fraction = (n_active / total) if total else 0.0
+    macro_f1, mcc = (None, None)
+    if n_active >= 1:
+        macro_f1, mcc = _subset_classification_metrics(active)
+    return {
+        "n_active": n_active,
+        "active_fraction": active_fraction,
+        "abstention_fraction": 1.0 - active_fraction,
+        "macro_f1": macro_f1,
+        "mcc": mcc,
+    }
+
+
+def _confidence_filtered_diagnostics(
+    source: Path,
+    comparison: pd.DataFrame,
+    *,
+    thresholds: Sequence[float] = SSL_V2_CONFIDENCE_THRESHOLDS,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Compute summary-light confidence-filtered deltas from on-disk predictions.
+
+    The per-run ``predictions.csv`` files are git-ignored heavy artefacts. When
+    they are present (a fresh benchmark in the same workspace) this emits a
+    summary-light per-threshold table. When they are absent the table is empty
+    and the status records that prediction-level artefacts are required.
+    """
+    empty = pd.DataFrame(columns=list(_CONFIDENCE_FILTERED_COLUMNS))
+    status: dict[str, Any] = {
+        "thresholds": [float(value) for value in thresholds],
+        "predictions_available": False,
+        "runs_with_predictions": 0,
+        "runs_missing_predictions": 0,
+        "reason": "",
+    }
+    if comparison.empty or "status" not in comparison.columns:
+        status["reason"] = "no comparison rows available"
+        return empty, status
+    matched = comparison[
+        (comparison["status"] == "matched")
+        & (comparison.get("ssl_objective") == "market_state_multitask")
+    ]
+    if matched.empty:
+        status["reason"] = "no matched supervised-vs-SSL-v2 rows"
+        return empty, status
+
+    records: list[dict[str, Any]] = []
+    runs_with = 0
+    runs_missing = 0
+    for _, row in matched.iterrows():
+        objective = str(row.get("ssl_objective"))
+        keys = {
+            "fold": row.get("fold"),
+            "horizon": row.get("horizon"),
+            "seed": row.get("seed"),
+            "lookback": row.get("lookback"),
+        }
+        supervised = _load_test_predictions(
+            _run_predictions_path(source, **keys, objective="supervised")
+        )
+        ssl = _load_test_predictions(
+            _run_predictions_path(source, **keys, objective=objective)
+        )
+        if supervised is None or ssl is None:
+            runs_missing += 1
+            continue
+        runs_with += 1
+        for threshold in thresholds:
+            sup_stats = _threshold_run_stats(supervised, threshold)
+            ssl_stats = _threshold_run_stats(ssl, threshold)
+            records.append(
+                {
+                    "ssl_objective": objective,
+                    "fold": int(float(keys["fold"])),
+                    "horizon": int(float(keys["horizon"])),
+                    "seed": int(float(keys["seed"])),
+                    "threshold": float(threshold),
+                    "ssl_active_fraction": ssl_stats["active_fraction"],
+                    "ssl_abstention_fraction": ssl_stats["abstention_fraction"],
+                    "ssl_active_examples": ssl_stats["n_active"],
+                    "supervised_active_fraction": sup_stats["active_fraction"],
+                    "supervised_macro_f1": sup_stats["macro_f1"],
+                    "ssl_macro_f1": ssl_stats["macro_f1"],
+                    "supervised_mcc": sup_stats["mcc"],
+                    "ssl_mcc": ssl_stats["mcc"],
+                }
+            )
+
+    status["runs_with_predictions"] = runs_with
+    status["runs_missing_predictions"] = runs_missing
+    if not records:
+        status["reason"] = (
+            "per-run prediction files are required; benchmark predictions are "
+            "stored as git-ignored heavy artefacts, so run the benchmark and this "
+            "analysis in the same workspace"
+        )
+        return empty, status
+
+    runs_df = pd.DataFrame(records)
+    runs_df["delta_macro_f1"] = runs_df["ssl_macro_f1"] - runs_df["supervised_macro_f1"]
+    runs_df["delta_mcc"] = runs_df["ssl_mcc"] - runs_df["supervised_mcc"]
+    status["predictions_available"] = True
+
+    frames: list[pd.DataFrame] = []
+    groupings = (
+        ("by_horizon", ["ssl_objective", "horizon", "threshold"], True),
+        ("overall", ["ssl_objective", "threshold"], False),
+    )
+    aggregate_columns = list(_CONFIDENCE_AGGREGATE_COLUMNS)
+    for grouping_label, group_columns, include_horizon in groupings:
+        grouped = runs_df.groupby(group_columns, dropna=False, sort=True)
+        means = grouped[aggregate_columns].mean(numeric_only=True)
+        counts = grouped.size().rename("matched_run_count")
+        merged = means.join(counts).reset_index()
+        merged.insert(0, "grouping", grouping_label)
+        if not include_horizon:
+            merged["horizon"] = ""
+        frames.append(merged)
+    result = pd.concat(frames, ignore_index=True)
+    result = result.rename(
+        columns={column: f"mean_{column}" for column in aggregate_columns}
+    )
+    ordered = [column for column in _CONFIDENCE_FILTERED_COLUMNS if column in result.columns]
+    return result[ordered], status
+
+
+def _execution_proxy_note(*, confidence_status: Mapping[str, Any]) -> dict[str, Any]:
+    """Honest execution-aware proxy status plus a storage-light design note."""
+    active_fraction_reported = bool(confidence_status.get("predictions_available"))
+    return {
+        "analysis_version": SSL_V2_ANALYSIS_VERSION,
+        "active_fraction_reported": active_fraction_reported,
+        "active_fraction_source": "ssl_v2_confidence_filtered.csv",
+        "deferred_proxies": [
+            "turnover_proxy",
+            "cost_adjusted_proxy",
+            "latency_sensitivity",
+            "adverse_selection_proxy",
+        ],
+        "computable_from_retained_artefacts": False,
+        "prediction_level_artefacts_required": True,
+        "reason": (
+            "The retained SSL-v2 benchmark artefacts are summary-light. The "
+            "turnover, cost-adjusted, latency-sensitivity and adverse-selection "
+            "proxies need per-run test predictions, which are stored as "
+            "git-ignored heavy artefacts and are not part of the retained set."
+        ),
+        "execution_hook": "execution_centrepiece",
+        "execution_hook_command": "build-execution-centrepiece",
+        "execution_hook_inputs": (
+            "retained reports/execution_v3_analysis summary-light tables built "
+            "from the neural full grid; the centrepiece never reopens raw "
+            "predictions"
+        ),
+        "storage_light_design_note": (
+            "Future SSL-v2 runs can emit per-(run, threshold) execution summary "
+            "rows at evaluation time - active fraction, signal-change turnover "
+            "proxy, cost-adjusted proxy, a latency-step degradation sweep and an "
+            "adverse-selection proxy - and persist only the aggregated per-threshold "
+            "table, mirroring the execution-v3 *_summary.csv tables, without ever "
+            "storing raw per-row predictions. analyse-fi2010-ssl-v2-results would "
+            "then aggregate those tables and the execution centrepiece could ingest "
+            "them through its existing summary-light interface."
+        ),
+        "claim_boundary": (
+            "Execution proxies are offline signal-quality diagnostics; no PnL, "
+            "live-trading, tradability or production execution claim is implied."
+        ),
+    }
+
+
 def _render_report(
     *,
     summary: Mapping[str, Any],
     comparison: pd.DataFrame,
     delta_by_horizon: pd.DataFrame,
     delta_by_fold: pd.DataFrame,
+    delta_overall: pd.DataFrame,
+    confidence_filtered: pd.DataFrame,
+    confidence_status: Mapping[str, Any],
+    execution_proxy: Mapping[str, Any],
     claims: Sequence[Mapping[str, Any]],
 ) -> list[str]:
     evidence_level = str(summary.get("evidence_level", "missing"))
@@ -399,10 +701,35 @@ def _render_report(
         )
     lines += [
         "",
-        "## Horizon and Fold Deltas",
+        "## Aggregate, Seed, Horizon and Fold Deltas",
         "",
-        "The CSV artefacts `ssl_v2_delta_by_horizon.csv` and "
-        "`ssl_v2_delta_by_fold.csv` are the canonical grouped summaries.",
+        "Canonical grouped summaries: `ssl_v2_delta_overall.csv`, "
+        "`ssl_v2_delta_by_seed.csv`, `ssl_v2_delta_by_horizon.csv`, "
+        "`ssl_v2_delta_by_fold.csv` and `ssl_v2_delta_by_fold_horizon.csv`.",
+        "",
+    ]
+    lines += _aggregate_delta_block(delta_overall)
+    lines += [
+        "",
+        "## Confidence-Filtered Diagnostics",
+        "",
+    ]
+    lines += _wrap(
+        "Selective-prediction deltas versus the matched supervised baseline at "
+        "confidence thresholds "
+        + ", ".join(f"{value:.2f}" for value in SSL_V2_CONFIDENCE_THRESHOLDS)
+        + ". Active fraction, abstention and active-example counts are recorded "
+        "in ssl_v2_confidence_filtered.csv."
+    )
+    lines.append("")
+    lines += _confidence_filtered_block(confidence_filtered, confidence_status)
+    lines += [
+        "",
+        "## Execution-Aware Proxy Diagnostics",
+        "",
+    ]
+    lines += _execution_proxy_block(execution_proxy)
+    lines += [
         "",
         "## Claim Assessment",
         "",
@@ -447,6 +774,114 @@ def _fmt(value: Any) -> str:
     if not math.isfinite(numeric):
         return ""
     return f"{numeric:.6f}"
+
+
+def _wrap(text: str, *, width: int = 110) -> list[str]:
+    import textwrap
+
+    return textwrap.wrap(text, width=width) or [""]
+
+
+def _aggregate_delta_block(delta_overall: pd.DataFrame) -> list[str]:
+    if delta_overall.empty:
+        return ["No matched supervised-vs-SSL-v2 rows were available for aggregate deltas."]
+    rows: list[tuple[str, ...]] = []
+    for _, row in delta_overall.iterrows():
+        if str(row.get("ssl_objective")) != "market_state_multitask":
+            continue
+        rows.append(
+            (
+                str(int(row.get("matched_run_count", 0) or 0)),
+                _fmt(row.get("mean_delta_macro_f1")),
+                _fmt(row.get("mean_delta_mcc")),
+                _fmt(row.get("mean_delta_ece")),
+                _fmt(row.get("mean_delta_brier_score")),
+            )
+        )
+    if not rows:
+        return ["No matched SSL-v2 aggregate row was available."]
+    return _markdown_table(
+        (
+            "matched rows",
+            "mean delta macro-F1",
+            "mean delta MCC",
+            "mean delta ECE",
+            "mean delta Brier",
+        ),
+        rows,
+    )
+
+
+def _confidence_filtered_block(
+    confidence_filtered: pd.DataFrame,
+    confidence_status: Mapping[str, Any],
+) -> list[str]:
+    if confidence_filtered.empty:
+        reason = str(confidence_status.get("reason") or "prediction-level artefacts are required")
+        return [
+            *_wrap("Confidence-filtered diagnostics were not computed: " + reason + "."),
+            "",
+            *_wrap(
+                "They are emitted automatically when per-run predictions are "
+                "present in the benchmark runs/ tree at analysis time."
+            ),
+        ]
+    overall = confidence_filtered[
+        (confidence_filtered["grouping"] == "overall")
+        & (confidence_filtered["ssl_objective"] == "market_state_multitask")
+    ]
+    if overall.empty:
+        return ["No overall confidence-filtered rows were available."]
+    rows: list[tuple[str, ...]] = []
+    for _, row in overall.sort_values("threshold").iterrows():
+        rows.append(
+            (
+                _fmt(row.get("threshold")),
+                _fmt(row.get("mean_ssl_active_fraction")),
+                _fmt(row.get("mean_ssl_macro_f1")),
+                _fmt(row.get("mean_delta_macro_f1")),
+                _fmt(row.get("mean_delta_mcc")),
+            )
+        )
+    return _markdown_table(
+        (
+            "threshold",
+            "SSL-v2 active fraction",
+            "SSL-v2 macro-F1",
+            "delta macro-F1",
+            "delta MCC",
+        ),
+        rows,
+    )
+
+
+def _execution_proxy_block(execution_proxy: Mapping[str, Any]) -> list[str]:
+    deferred = ", ".join(str(item) for item in execution_proxy.get("deferred_proxies", []))
+    lines = [
+        *_wrap(
+            "Active fraction is reported above through the confidence-filtered "
+            "diagnostics. The remaining execution-aware proxies are deferred."
+        ),
+        "",
+        f"- deferred proxies: {deferred}",
+        f"- computable from retained artefacts: "
+        f"{execution_proxy.get('computable_from_retained_artefacts')}",
+        f"- prediction-level artefacts required: "
+        f"{execution_proxy.get('prediction_level_artefacts_required')}",
+        f"- execution hook: `{execution_proxy.get('execution_hook_command')}` "
+        f"({execution_proxy.get('execution_hook')})",
+        "",
+        "Reason:",
+        "",
+        *_wrap(str(execution_proxy.get("reason"))),
+        "",
+        "Storage-light design note for future runs:",
+        "",
+        *_wrap(str(execution_proxy.get("storage_light_design_note"))),
+        "",
+        *_wrap("Claim boundary: " + str(execution_proxy.get("claim_boundary"))),
+    ]
+    return lines
 
 
 _RESERVED_SHUTIL = shutil

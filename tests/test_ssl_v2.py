@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -634,3 +635,163 @@ def test_ssl_v2_partial_real_when_not_all_runs_complete() -> None:
         planned=12,
     )
     assert fallback_level == "complete_real"
+
+
+def test_ssl_v2_multiseed_complete_real_scope_label() -> None:
+    evidence_level, scope_label = runner._scope_labels(
+        folds=(1, 2, 3, 4, 5),
+        horizons=(10, 50),
+        seeds=(0, 1, 2),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=60,
+        planned=60,
+    )
+    assert evidence_level == "complete_real"
+    assert scope_label == "folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real"
+
+
+def test_ssl_v2_multiseed_partial_when_not_all_runs_complete() -> None:
+    evidence_level, scope_label = runner._scope_labels(
+        folds=(1, 2, 3, 4, 5),
+        horizons=(10, 50),
+        seeds=(0, 1, 2),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=59,
+        planned=60,
+    )
+    assert evidence_level == "partial_real"
+    assert scope_label == "limited_ssl_v2_partial_real_slice"
+
+
+def test_ssl_v2_unrecognised_seed_set_never_complete_real() -> None:
+    # A seed set that is neither {0} nor {0,1,2} must stay partial_real even when
+    # every planned run completes, so an ad-hoc sweep is never promoted silently.
+    evidence_level, scope_label = runner._scope_labels(
+        folds=(1, 2, 3, 4, 5),
+        horizons=(10, 50),
+        seeds=(0, 1),
+        lookbacks=(50,),
+        objectives=("supervised", "market_state_multitask"),
+        max_epochs=25,
+        patience=5,
+        smoke_test=False,
+        completed=40,
+        planned=40,
+    )
+    assert evidence_level == "partial_real"
+    assert scope_label == "limited_ssl_v2_partial_real_slice"
+
+
+def _write_run_predictions(
+    source: Path,
+    *,
+    fold: int,
+    horizon: int,
+    seed: int,
+    lookback: int,
+    objective: str,
+    rng: np.random.Generator,
+    n_rows: int = 80,
+) -> None:
+    """Write a tiny benchmark run predictions.csv at the canonical run path."""
+    run_dir = (
+        source
+        / "runs"
+        / f"fold_{fold}"
+        / f"horizon_{horizon}"
+        / f"seed_{seed}"
+        / f"lookback_{lookback}"
+        / objective
+    )
+    run_dir.mkdir(parents=True, exist_ok=True)
+    y_true = rng.integers(1, 4, size=n_rows)
+    y_pred = y_true.copy()
+    # SSL-v2 is made slightly more accurate than the supervised baseline.
+    error_rate = 0.45 if objective == "supervised" else 0.30
+    flip = rng.random(n_rows) < error_rate
+    y_pred[flip] = rng.integers(1, 4, size=int(flip.sum()))
+    confidence = rng.uniform(0.34, 0.99, size=n_rows)
+    pd.DataFrame(
+        {
+            "split": "test",
+            "y_true": y_true,
+            "y_pred": y_pred,
+            "confidence": confidence,
+        }
+    ).to_csv(run_dir / "predictions.csv", index=False)
+
+
+def test_ssl_v2_confidence_filtered_diagnostics_from_predictions(tmp_path: Path) -> None:
+    source = tmp_path / "src"
+    _write_ssl_v2_analysis_source(source, folds=(1, 2))
+    rng = np.random.default_rng(7)
+    for fold in (1, 2):
+        for horizon in (10, 50):
+            for objective in ("supervised", "market_state_multitask"):
+                _write_run_predictions(
+                    source,
+                    fold=fold,
+                    horizon=horizon,
+                    seed=0,
+                    lookback=50,
+                    objective=objective,
+                    rng=rng,
+                )
+    out = tmp_path / "out"
+    summary = analyse_ssl_v2_results(source, out_dir=out)
+    assert summary.execution_proxy_available is True
+    assert summary.confidence_filtered_rows > 0
+
+    confidence = pd.read_csv(out / "ssl_v2_confidence_filtered.csv")
+    assert set(confidence["grouping"]) == {"by_horizon", "overall"}
+    thresholds = sorted({round(float(value), 2) for value in confidence["threshold"]})
+    assert thresholds == [0.33, 0.5, 0.7, 0.85, 0.95]
+    overall = confidence[confidence["grouping"] == "overall"]
+    # Active fraction must fall (and abstention rise) as the threshold tightens.
+    by_threshold = overall.sort_values("threshold")
+    active = by_threshold["mean_ssl_active_fraction"].tolist()
+    assert active == sorted(active, reverse=True)
+    assert (by_threshold["mean_ssl_active_fraction"].iloc[0]) == 1.0
+
+    # The grouped delta artefacts the multi-seed scope requires must all exist.
+    for name in (
+        "ssl_v2_delta_overall.csv",
+        "ssl_v2_delta_by_seed.csv",
+        "ssl_v2_delta_by_fold_horizon.csv",
+    ):
+        assert (out / name).is_file()
+
+    note = json.loads((out / "ssl_v2_execution_proxy.json").read_text(encoding="utf-8"))
+    assert note["active_fraction_reported"] is True
+    assert note["prediction_level_artefacts_required"] is True
+    assert note["computable_from_retained_artefacts"] is False
+    assert note["execution_hook"] == "execution_centrepiece"
+    assert set(note["deferred_proxies"]) == {
+        "turnover_proxy",
+        "cost_adjusted_proxy",
+        "latency_sensitivity",
+        "adverse_selection_proxy",
+    }
+
+
+def test_ssl_v2_confidence_filtered_absent_without_predictions(tmp_path: Path) -> None:
+    # Retained summary-light artefacts have no per-run predictions: diagnostics must
+    # degrade gracefully and flag that prediction-level artefacts are required.
+    source = tmp_path / "src"
+    _write_ssl_v2_analysis_source(source, folds=(1,))
+    out = tmp_path / "out"
+    summary = analyse_ssl_v2_results(source, out_dir=out)
+    assert summary.execution_proxy_available is False
+    assert summary.confidence_filtered_rows == 0
+    assert pd.read_csv(out / "ssl_v2_confidence_filtered.csv").empty
+    note = json.loads((out / "ssl_v2_execution_proxy.json").read_text(encoding="utf-8"))
+    assert note["active_fraction_reported"] is False
+    assert note["prediction_level_artefacts_required"] is True

@@ -1473,6 +1473,43 @@ def _analyse_fi2010_uncertainty_impl(
     return 0
 
 
+def _analyse_fi2010_ssl_v2_results_impl(
+    *,
+    ssl_v2_dir: Path,
+    out: Path,
+) -> int:
+    """Analyse stored FI-2010 SSL-v2 benchmark artefacts and write a report.
+
+    Retained summary-light tables are always read. Per-run predictions, when
+    present in the benchmark ``runs/`` tree, additionally enable the
+    confidence-filtered diagnostics; deleted raw prediction files are never
+    required.
+    """
+    from chronoslob.analysis.ssl_v2_analysis import analyse_ssl_v2_results
+
+    try:
+        summary = analyse_ssl_v2_results(ssl_v2_dir, out_dir=out)
+    except FileNotFoundError as exc:
+        print(f"File not found: {exc}", file=sys.stderr)
+        return 2
+    except (OSError, ValueError, TypeError) as exc:
+        print(f"FI-2010 SSL-v2 analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("ChronosLOB FI-2010 SSL-v2 analysis")
+    print(f"  benchmark input:        {summary.ssl_v2_dir}")
+    print(f"  output directory:       {summary.out_dir}")
+    print(f"  evidence level:         {summary.evidence_level}")
+    print(f"  matched SSL-v2 rows:    {summary.ssl_v2_matched_rows}")
+    print(f"  confidence rows:        {summary.confidence_filtered_rows}")
+    print(f"  active-fraction proxy:  {summary.execution_proxy_available}")
+    print(f"  failures:               {summary.failure_count}")
+    for claim_id, status in sorted(summary.claim_statuses.items()):
+        print(f"    claim {claim_id}: {status}")
+    print("  network calls:          none performed")
+    return 0
+
+
 def _analyse_fi2010_ssl_results_impl(
     *,
     full_grid_dir: Path | None,
@@ -4568,6 +4605,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             "analyse-fi2010-feature-ablations|"
             "analyse-fi2010-uncertainty|"
             "analyse-fi2010-ssl-results|"
+            "analyse-fi2010-ssl-v2-results|"
             "analyse-fi2010-execution-v3|"
             "build-execution-centrepiece|"
             "run-paper-experiment|"
@@ -5827,6 +5865,34 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             out=parsed.out,
             make_figures=bool(parsed.make_figures),
             overwrite=bool(parsed.overwrite),
+        )
+    if command == "analyse-fi2010-ssl-v2-results":
+        parser = argparse.ArgumentParser(
+            prog="chronoslob analyse-fi2010-ssl-v2-results",
+            description=(
+                "Build the scoped SSL-v2 analysis from retained FI-2010 SSL-v2 "
+                "benchmark tables. Aggregate, seed, horizon, fold and "
+                "fold-by-horizon deltas and a claim assessment are written. "
+                "Per-run predictions, when present, enable confidence-filtered "
+                "diagnostics; deleted raw prediction files are never required."
+            ),
+        )
+        parser.add_argument(
+            "--ssl-v2",
+            type=Path,
+            default=Path("experiments/fi2010_ssl_v2_benchmark"),
+            help="FI-2010 SSL-v2 benchmark artefact directory.",
+        )
+        parser.add_argument(
+            "--out",
+            type=Path,
+            default=Path("reports/ssl_v2_analysis"),
+            help="Output directory for the SSL-v2 analysis artefacts.",
+        )
+        parsed = parser.parse_args(args[1:])
+        return _analyse_fi2010_ssl_v2_results_impl(
+            ssl_v2_dir=parsed.ssl_v2,
+            out=parsed.out,
         )
     if command == "analyse-fi2010-execution-v3":
         parser = argparse.ArgumentParser(
@@ -7692,6 +7758,16 @@ if typer is not None:
         "--overwrite",
         help="Replace the output directory if it already exists.",
     )
+    _ANALYSE_SSL_V2_INPUT_OPTION = typer.Option(
+        Path("experiments/fi2010_ssl_v2_benchmark"),
+        "--ssl-v2",
+        help="FI-2010 SSL-v2 benchmark artefact directory.",
+    )
+    _ANALYSE_SSL_V2_OUT_OPTION = typer.Option(
+        Path("reports/ssl_v2_analysis"),
+        "--out",
+        help="Output directory for the SSL-v2 analysis artefacts.",
+    )
     _ANALYSE_EXEC_V3_INPUT_OPTION = typer.Option(
         Path("experiments/fi2010_execution_v3"),
         "--execution-v3",
@@ -8898,6 +8974,18 @@ if typer is not None:
             bootstrap_iterations=bootstrap_iterations,
             bootstrap_seed=bootstrap_seed,
             overwrite=overwrite,
+        )
+        if exit_code != 0:
+            raise SystemExit(exit_code)
+
+    def analyse_fi2010_ssl_v2_results(
+        ssl_v2: Path = _ANALYSE_SSL_V2_INPUT_OPTION,
+        out: Path = _ANALYSE_SSL_V2_OUT_OPTION,
+    ) -> None:
+        """Build the scoped SSL-v2 analysis from retained benchmark artefacts."""
+        exit_code = _analyse_fi2010_ssl_v2_results_impl(
+            ssl_v2_dir=ssl_v2,
+            out=out,
         )
         if exit_code != 0:
             raise SystemExit(exit_code)
@@ -10802,6 +10890,7 @@ if typer is not None:
     app.command("analyse-fi2010-feature-ablations")(analyse_fi2010_feature_ablations)
     app.command("analyse-fi2010-uncertainty")(analyse_fi2010_uncertainty)
     app.command("analyse-fi2010-ssl-results")(analyse_fi2010_ssl_results)
+    app.command("analyse-fi2010-ssl-v2-results")(analyse_fi2010_ssl_v2_results)
     app.command("analyse-fi2010-execution-v3")(analyse_fi2010_execution_v3)
     app.command("build-execution-centrepiece")(build_execution_centrepiece)
     app.command("run-fi2010-brutal-ablations")(run_fi2010_brutal_ablations)

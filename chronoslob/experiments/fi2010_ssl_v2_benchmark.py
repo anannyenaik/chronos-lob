@@ -135,6 +135,14 @@ SSL_V2_DEFAULT_LOOKBACKS: tuple[int, ...] = (50,)
 SSL_V2_COMPLETE_TARGET_FOLDS = {1, 2, 3}
 SSL_V2_TARGET_HORIZONS = {10, 50}
 SSL_V2_TARGET_SEEDS = {0}
+SSL_V2_MULTISEED_TARGET_SEEDS = {0, 1, 2}
+# Recognised "designed" seed sets that may earn a complete_real label when every
+# planned run completes. Any other seed set stays partial_real so a reduced or
+# ad-hoc sweep is never silently promoted to a complete scope.
+SSL_V2_COMPLETE_TARGET_SEED_SETS: tuple[frozenset[int], ...] = (
+    frozenset(SSL_V2_TARGET_SEEDS),
+    frozenset(SSL_V2_MULTISEED_TARGET_SEEDS),
+)
 SSL_V2_TARGET_LOOKBACKS = {50}
 SSL_V2_TARGET_MAX_EPOCHS = 25
 SSL_V2_TARGET_PATIENCE = 5
@@ -1543,10 +1551,11 @@ def _scope_labels(
 ) -> tuple[str, str]:
     if smoke_test:
         return "smoke_test_only", "smoke_code_path_only"
+    seed_set = frozenset(seeds)
     complete_target = (
         set(folds).issuperset(SSL_V2_COMPLETE_TARGET_FOLDS)
         and set(horizons) == SSL_V2_TARGET_HORIZONS
-        and set(seeds) == SSL_V2_TARGET_SEEDS
+        and seed_set in SSL_V2_COMPLETE_TARGET_SEED_SETS
         and set(lookbacks) == SSL_V2_TARGET_LOOKBACKS
         and set(objectives).issuperset({"supervised", "market_state_multitask"})
         and max_epochs >= SSL_V2_TARGET_MAX_EPOCHS
@@ -1555,7 +1564,15 @@ def _scope_labels(
     )
     if complete_target:
         fold_token = "_".join(str(fold) for fold in sorted(set(folds)))
-        return "complete_real", f"folds_{fold_token}_h10_h50_complete_real"
+        # The single-seed (seed 0) label is kept stable for backward compatibility;
+        # any broader designed seed set adds an explicit, deterministic seeds token.
+        if seed_set == frozenset(SSL_V2_TARGET_SEEDS):
+            return "complete_real", f"folds_{fold_token}_h10_h50_complete_real"
+        seed_token = "_".join(str(seed) for seed in sorted(seed_set))
+        return (
+            "complete_real",
+            f"folds_{fold_token}_h10_h50_seeds_{seed_token}_complete_real",
+        )
     return "partial_real", "limited_ssl_v2_partial_real_slice"
 
 
