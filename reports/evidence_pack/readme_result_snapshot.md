@@ -9,12 +9,12 @@
 | fi2010_neural_full_grid | archived_valid | no |
 | fi2010_neural_proper_training_subset | partial_real | no |
 | ssl_failure_analysis_report | complete_real | no |
-| fi2010_ssl_v2_benchmark | partial_real | no |
-| ssl_v2_analysis_report | partial_real | no |
+| fi2010_ssl_v2_benchmark | complete_real | no |
+| ssl_v2_analysis_report | complete_real | no |
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | archived_valid | no |
 | execution_v3_analysis_report | complete_real | no |
-| execution_centrepiece_report | complete_real | no |
+| execution_centrepiece_report | archived_valid | no |
 | feature_registry_audit_outputs | optional_missing | no |
 | feature_ablation_outputs | partial_real | no |
 | feature_ablation_analysis_report | complete_real | no |

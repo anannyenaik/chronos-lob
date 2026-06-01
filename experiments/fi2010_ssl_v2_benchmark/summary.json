@@ -1,5 +1,5 @@
 {
-  "aggregate_rows": 6,
+  "aggregate_rows": 4,
   "artefacts": {
     "aggregate_summary": "aggregate_summary.csv",
     "aggregate_summary_json": "aggregate_summary.json",
@@ -20,10 +20,10 @@
   "baseline_source_dir": "experiments\\fi2010_neural_proper_training_subset_v2",
   "batch_size": 1024,
   "claim_boundary": "SSL-v2 evidence is limited to the exact stored folds, horizons, seeds, lookbacks and objectives; no broad SSL, calibration or trading claim follows.",
-  "comparison_rows": 4,
-  "completed_run_count": 6,
+  "comparison_rows": 8,
+  "completed_run_count": 16,
   "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
-  "created_at": "2026-05-30T18:39:08.057106Z",
+  "created_at": "2026-06-01T00:43:55.269417Z",
   "device": "cpu",
   "early_stopping_patience": 5,
   "environment": {
@@ -31,17 +31,20 @@
     "platform": "Windows-10-10.0.19045-SP0",
     "python": "3.11.9"
   },
-  "evidence_level": "partial_real",
+  "evidence_level": "complete_real",
   "failed_run_count": 0,
   "folds": [
-    1
+    1,
+    2,
+    3,
+    4
   ],
-  "git_commit": "84aa70ebef89532e6b2696cccbc689c8ab99f56e",
+  "git_commit": "2330a15cae6a8ba1ba1ad2df86d0983708c833bc",
   "horizons": [
     10,
     50
   ],
-  "imported_baseline_count": 4,
+  "imported_baseline_count": 0,
   "lookbacks": [
     50
   ],
@@ -49,20 +52,17 @@
   "missing_pair_count": 0,
   "objectives": [
     "supervised",
-    "masked_reconstruction",
     "market_state_multitask"
   ],
   "output_dir": "experiments\\fi2010_ssl_v2_benchmark",
   "pretrain_epochs": 5,
   "processed_root": "data\\processed\\fi2010",
-  "run_count": 6,
+  "run_count": 16,
   "runner_version": "fi2010-ssl-v2-benchmark/v1",
-  "scope_label": "limited_ssl_v2_partial_real_slice",
+  "scope_label": "folds_1_2_3_4_h10_h50_complete_real",
   "seeds": [
     0
   ],
   "smoke_test": false,
-  "warnings": [
-    "4 supervised/SSL-v1 baseline run(s) were imported from existing proper-training artefacts rather than retrained."
-  ]
+  "warnings": []
 }

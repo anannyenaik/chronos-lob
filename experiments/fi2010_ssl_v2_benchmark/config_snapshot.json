@@ -5,9 +5,12 @@
   "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
   "contrastive": false,
   "early_stopping_patience": 5,
-  "evidence_level": "partial_real",
+  "evidence_level": "complete_real",
   "folds": [
-    1
+    1,
+    2,
+    3,
+    4
   ],
   "future_bucket_count": 3,
   "horizons": [
@@ -21,13 +24,12 @@
   "max_epochs": 25,
   "objectives": [
     "supervised",
-    "masked_reconstruction",
     "market_state_multitask"
   ],
   "pretrain_epochs": 5,
   "processed_root": "data\\processed\\fi2010",
   "runner_version": "fi2010-ssl-v2-benchmark/v1",
-  "scope_label": "limited_ssl_v2_partial_real_slice",
+  "scope_label": "folds_1_2_3_4_h10_h50_complete_real",
   "seeds": [
     0
   ]

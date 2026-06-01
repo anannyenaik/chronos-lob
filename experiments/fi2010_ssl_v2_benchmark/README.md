@@ -5,17 +5,17 @@ It evaluates a failure-analysis-motivated second-generation SSL objective agains
 
 ## Scope
 
-- folds: 1
+- folds: 1, 2, 3, 4
 - horizons: 10, 50
 - seeds: 0
 - lookbacks: 50
-- objectives: supervised, masked_reconstruction, market_state_multitask
+- objectives: supervised, market_state_multitask
 - SSL-v2 pretrain epochs: 5
 - fine-tune max epochs: 25
 - early-stopping patience: 5
-- evidence level: partial_real
-- scope label: limited_ssl_v2_partial_real_slice
-- imported baseline runs: 4
+- evidence level: complete_real
+- scope label: folds_1_2_3_4_h10_h50_complete_real
+- imported baseline runs: 0
 
 ## Claim Boundaries
 

@@ -6,8 +6,8 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-30T23:00:20.348878+00:00 |
-| git_commit | 597b3599a3a437ec06224f2ae1f8e5a91d81041f |
+| generated_at | 2026-06-01T01:05:17.752690+00:00 |
+| git_commit | 2330a15cae6a8ba1ba1ad2df86d0983708c833bc |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
@@ -385,15 +385,15 @@ used only for context.
 A second-generation SSL objective was added after the SSL failure analysis showed that first-generation random field reconstruction and next-field prediction did not broadly improve predictive metrics
 or calibration. The SSL-v2 objective is market-state-aware and remains a scoped comparison, not a general representation or trading claim.
 
-- evidence level: partial_real
-- scope label: limited_ssl_v2_partial_real_slice
-- matched supervised-vs-SSL-v2 rows: 2
+- evidence level: complete_real
+- scope label: folds_1_2_3_4_h10_h50_complete_real
+- matched supervised-vs-SSL-v2 rows: 8
 - failures: 0
 
 | horizon | matched rows | mean delta macro-F1 | mean delta MCC | mean delta ECE | mean delta Brier |
 | --- | --- | --- | --- | --- | --- |
-| 10 | 1 | 0.0794 | 0.0817 | 0.0096 | 0.0279 |
-| 50 | 1 | -0.0816 | -0.0758 | 0.0928 | 0.0557 |
+| 10 | 4 | 0.0055 | 0.0279 | 0.0115 | -0.0033 |
+| 50 | 4 | -0.0434 | -0.0472 | 0.0331 | 0.0367 |
 
 - SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the stored scope.
 - SSL-v2 calibration improvement is reported only when ECE and Brier deltas both support it.
@@ -916,14 +916,14 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
 | proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
 | ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
-| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | fe253db1518107d313aa30d4379bfd5ac6f171ce2fda2df7be180d3077284715 |
-| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 4a50f56e5f5fb3f8ebf7429e5dcb60b7c66b0b464b823b586d3aac80dca50783 |
-| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | 9522fac463f4586d5a240f3b900ba882f1d6ff4bd84684bcb91812932953ef52 |
-| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | d565b80283c529a713810276483ef5c4922c1fdb3d1dd2330764fcd00146617f |
-| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | 4ca94fbe955a81d0305348cdc4bd1cd226822e79713d524a3b3ef98db2e022bd |
-| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | c1b1b4d1b6ea2db9cf9c444bbb0bc6b8ddc44d881d440beb96c5e292bf5963ed |
-| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 4075f59f1dbd8cc12710648a64f0b09f8523524139476c147c23906046853a88 |
-| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | d2fdf047ceb580026eb5804a58bfa5c73d39abe57f7c9d4fb4f3f5c49b6fb62d |
+| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | 6fa2102241b4533a7a3d61802eadbaecc21a41472a6457430c7011b9d4ba3315 |
+| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | b85c65a67e194506e18ea352fc6be6a8ce2dd66f4736f14949f123b0706debd1 |
+| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | f89fb1c17d1aec58ca7f32cba280d42be14e62f4984bc5dbb6e7be66f4303cdc |
+| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 55f370557037fc6062dcb183e09c2da771ac25c694d9a54161d949e8f92feaac |
+| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | c380728bcf4b29a3a4f88e0db1f33954841efc26b1543fb14531f1e2dec85619 |
+| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 4d0d7cc62525070975c78f9b2cfb24f5944e6aadd6ddaa03f47a34827a0aacad |
+| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 523dea9840c12576429add467b9ed1aa59694e16eec02909397d2f9faa6b6592 |
+| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | c381775196d1decf6bb658c7add02b08d34a1c2fda8e41343b7bf69c9e320e6e |
 | synthetic_lob_dir | reports/synthetic_lob_extension | directory |
 | synthetic_lob_summary | reports/synthetic_lob_extension/summary.json | 21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea |
 | synthetic_lob_synthetic_benchmark_summary | reports/synthetic_lob_extension/synthetic_benchmark_summary.csv | 6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea |

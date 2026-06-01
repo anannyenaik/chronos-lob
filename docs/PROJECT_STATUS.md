@@ -94,13 +94,15 @@ and records why SSL is not a broad success: the completed grid does not improve
 overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 50 in the partial proper-training subset, and calibration worsened there.
 
-The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a partial-real
-failure-analysis-motivated follow-up. It tests a market-state-aware multitask
-objective on fold 1, horizons 10/50, seed 0 and lookback 50. SSL-v2 improves
-macro-F1 and MCC at horizon 10 but worsens ECE/Brier there; at horizon 50 it
-degrades macro-F1, MCC, ECE and Brier. The stored analysis in
-`reports/ssl_v2_analysis/` supports implementation and scoped evaluation only,
-not predictive improvement, calibration improvement or broad SSL improvement.
+The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a complete-real
+failure-analysis-motivated follow-up against a matched supervised baseline on
+folds 1-4, horizons 10/50, seed 0 and lookback 50 (16 runs, 0 failed, 8 matched
+comparison cells). Across the eight cells the mean macro-F1 (-0.019) and MCC
+(-0.010) deltas are neutral-to-negative and mean ECE (+0.022) and Brier (+0.017)
+worsen; macro-F1 improves in only 3 of 8 cells and ECE in 2 of 8. The stored
+analysis in `reports/ssl_v2_analysis/` supports implementation and scoped
+evaluation only, not predictive improvement, calibration improvement or broad
+SSL improvement.
 
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
@@ -129,8 +131,8 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   not a performance-maximising neural benchmark.
 - The standalone SSL runner output is obsolete and superseded; the completed
   matched grid is the current SSL comparison evidence.
-- SSL-v2 evidence is partial_real and mixed across horizons; it does not change
-  the broad SSL claim boundary.
+- SSL-v2 evidence is complete_real for folds 1-4 and neutral-to-negative on
+  average; it does not change the broad SSL claim boundary.
 - Generalisation beyond FI-2010 requires additional documented experiment
   records.
 - The synthetic event-level extension is synthetic only. Its results do not

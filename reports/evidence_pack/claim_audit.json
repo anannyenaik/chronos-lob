@@ -233,7 +233,7 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_evaluated",
       "claim_text": "SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
-      "reason": "2 matched supervised-vs-SSL-v2 row(s) are present.",
+      "reason": "8 matched supervised-vs-SSL-v2 row(s) are present.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
@@ -794,5 +794,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-05-30T23:00:45.456473+00:00"
+  "generated_at": "2026-06-01T01:06:23.972337+00:00"
 }

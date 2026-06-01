@@ -40,10 +40,11 @@ calibration and execution-aware evaluation.
   longer-training subset and records that the completed grid supports no broad SSL
   improvement; the only positive predictive-metric signal is narrow to fold 1,
   horizon 50 in the partial subset, where calibration worsened.
-- A partial-real SSL-v2 benchmark and analysis. The second-generation objective
+- A complete-real SSL-v2 benchmark and analysis. The second-generation objective
   uses structured group masking plus future spread, volatility, return and
-  imbalance auxiliary heads. The stored fold-1 horizons-10/50 scope supports
-  implementation and evaluation only; predictive and calibration improvement
+  imbalance auxiliary heads. The stored folds 1-4, horizons 10/50, seed 0 scope
+  supports implementation and evaluation only; mean deltas are neutral-to-negative
+  with calibration worse on average, so predictive and calibration improvement
   claims remain unsupported.
 - A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
   across folds 1-5, with a single-seed and lookback-20 caveat, reported
