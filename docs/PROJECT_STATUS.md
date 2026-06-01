@@ -6,6 +6,10 @@ ChronosLOB is a research-engineering platform for limit order book
 representation learning, short-horizon market-state forecasting, calibration
 and offline execution-aware proxy diagnostics.
 
+The central public interpretation is the forecasting-versus-signal-quality gap:
+predictive metrics and calibration have to be read separately from confidence,
+active-fraction, turnover, cost, latency and adverse-selection proxy diagnostics.
+
 ## Implemented
 
 - Local loaders, schemas, validators and small synthetic fixtures.
@@ -82,6 +86,11 @@ crypto-market depth-stream engineering evidence only: not equity-market
 evidence, not live trading, not profitability evidence and not predictive
 success evidence. See [BINANCE_L2_EXTENSION.md](BINANCE_L2_EXTENSION.md).
 
+The strongest project hook is the execution centrepiece, not broad SSL success.
+It shows how forecast metrics can diverge from retained offline signal-quality
+proxy diagnostics under confidence, cost, latency, turnover and
+adverse-selection assumptions.
+
 The strongest stored classical row is `gradient_boosting`; the strongest stored
 reduced-scope supervised neural row is `matrix_transformer`. The completed
 neural full grid compares supervised, masked-reconstruction SSL and next-field
@@ -98,12 +107,13 @@ The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a complete-real
 failure-analysis-motivated follow-up against a matched supervised baseline on
 folds 1-5, horizons 10/50, seed 0 and lookback 50 (20 runs, 0 failed, 10 matched
 comparison cells). Across the ten cells the mean macro-F1 (+0.028) and MCC
-(+0.057) deltas now support scoped predictive improvement, driven mainly by fold
-5 at horizon 10. Mean ECE still worsens (+0.005), while mean Brier improves
-(-0.030), so calibration improvement remains unsupported. The stored analysis in
-`reports/ssl_v2_analysis/` supports implementation, scoped evaluation and scoped
-predictive improvement only, not calibration improvement or broad SSL
-improvement.
+(+0.057) deltas support scoped predictive improvement for exactly that stored
+seed-0 slice, driven mainly by fold 5 at horizon 10. The multi-seed harness
+exists, but SSL-v2 seeds 1 and 2 are deferred. Mean ECE still worsens (+0.005),
+while mean Brier improves (-0.030), so calibration improvement remains
+unsupported. The stored analysis in `reports/ssl_v2_analysis/` supports
+implementation, scoped evaluation and scoped predictive improvement only, not
+calibration improvement or broad SSL improvement.
 
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the

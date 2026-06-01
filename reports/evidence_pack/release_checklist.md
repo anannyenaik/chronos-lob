@@ -46,7 +46,7 @@
 
 ## Paper Boundary
 
-- [ ] Manual paper not yet written.
+- [ ] Manual paper not yet written; public reports are artefact summaries.
 
 ## Blocked Claims
 

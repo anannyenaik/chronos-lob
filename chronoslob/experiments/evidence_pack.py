@@ -1022,7 +1022,10 @@ def _classify_artefact(
             # An older generating commit or intentionally removed heavy raw inputs
             # is not a failure: content-complete artefacts stay valid (archived),
             # while partial artefacts keep their completion status.
-            if status == "complete_real":
+            if (
+                status == "complete_real"
+                and spec.artefact_type != "fi2010_ssl_v2_benchmark"
+            ):
                 status = "archived_valid"
         elif staleness.state == "unknown":
             status = "unknown_staleness"
@@ -1881,7 +1884,8 @@ def _audit_ssl_v2_claims(
             reason=str(source.get("reason", "Read from SSL-v2 claim assessment.")),
             safe_rewording=(
                 "Report SSL-v2 only as a scoped, failure-analysis-motivated "
-                "objective with metric-specific deltas."
+                "objective with metric-specific deltas and exact fold, horizon, "
+                "seed and lookback scope."
             ),
             category=category,
         )
@@ -1894,17 +1898,17 @@ def _audit_ssl_v2_claims(
         ),
         _entry(
             claim_id="empirical.ssl_v2_evaluated",
-            claim_text="SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
+            claim_text="SSL-v2 was evaluated in the exact stored FI-2010 scope.",
             source_claim_id="ssl_v2_evaluated",
         ),
         _entry(
             claim_id="empirical.ssl_v2_predictive_improvement",
-            claim_text="SSL-v2 improved predictive metrics in the stored scope.",
+            claim_text="SSL-v2 improved predictive metrics in the exact stored scope.",
             source_claim_id="ssl_v2_predictive_improvement",
         ),
         _entry(
             claim_id="empirical.ssl_v2_calibration_improvement",
-            claim_text="SSL-v2 improved calibration in the stored scope.",
+            claim_text="SSL-v2 improved calibration in the exact stored scope.",
             source_claim_id="ssl_v2_calibration_improvement",
         ),
     ]
@@ -3002,7 +3006,8 @@ def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
         "",
         "Status vocabulary:",
         "",
-        "- `complete_real`: required non-smoke artefacts are present and pass completion checks.",
+        "- `complete_real`: required non-smoke artefacts are present and pass completion checks; "
+        "freshness is tracked separately.",
         "- `archived_valid`: content-complete evidence generated at an older commit, or whose "
         "heavy raw predictions/checkpoints were intentionally removed; retained summaries match.",
         "- `partial_real`: real artefacts exist, but the scope is incomplete, mixed or has "
@@ -3194,6 +3199,11 @@ def _render_conservative_bullets(claims: Sequence[ClaimAuditEntry]) -> str:
             "- Added offline execution-aware proxy diagnostics with explicit scope "
             "and release-claim boundaries."
         )
+    if "general.execution_centrepiece_report" in supported:
+        lines.append(
+            "- Added an execution centrepiece that separates forecast quality from "
+            "offline signal-quality proxy diagnostics."
+        )
     if "general.feature_ablations" in supported:
         lines.append(
             "- Added FI-2010 microstructure feature-ablation diagnostics that separate "
@@ -3244,6 +3254,30 @@ def _render_strong_bullets(
             "",
         ]
     )
+    if "general.execution_centrepiece_report" in supported:
+        lines.extend(
+            [
+                "Bullet:",
+                (
+                    '"Showed that forecasting quality and execution-aware signal '
+                    'quality are different diagnostics in the retained FI-2010 '
+                    'artefacts."'
+                ),
+                "",
+                "Status:",
+                "supported only if:",
+                "- execution centrepiece status = complete_real or archived_valid",
+                "- execution-centrepiece claim assessment marks the gap analysis supported",
+                "- wording stays within offline proxy diagnostics",
+                "",
+                "Safe fallback:",
+                (
+                    '"Built a retained-table execution centrepiece for comparing '
+                    'forecast metrics with offline signal-quality proxy diagnostics."'
+                ),
+                "",
+            ]
+        )
     lines.extend(
         [
             "Bullet:",
@@ -3288,7 +3322,9 @@ def _render_readme_snapshot(
     claim_by_id = {entry.claim_id: entry for entry in claims}
     classical = by_name.get("fi2010_classical_benchmarks")
     grid = by_name.get("fi2010_neural_full_grid")
+    ssl_v2 = by_name.get("fi2010_ssl_v2_benchmark")
     execution = by_name.get("execution_v3_outputs")
+    centrepiece = by_name.get("execution_centrepiece_report")
     feature = by_name.get("feature_ablation_outputs")
     figures = by_name.get("fi2010_figures")
     lines = [
@@ -3313,7 +3349,9 @@ def _render_readme_snapshot(
         _result_line("Best classical result", classical),
         _result_line("Best neural full-grid result", grid),
         _ssl_snapshot_line(claim_by_id),
+        _ssl_v2_snapshot_line(claim_by_id, ssl_v2),
         _component_status_line("Execution-v3", execution),
+        _component_status_line("Execution centrepiece", centrepiece),
         _component_status_line("Feature ablations", feature),
         _component_status_line("Figures", figures),
         "",
@@ -3322,6 +3360,8 @@ def _render_readme_snapshot(
         "- Smoke diagnostics are labelled as smoke diagnostics and are not empirical evidence.",
         _full_grid_limitation_line(grid),
         "- SSL improvement language is blocked unless real aggregate deltas support it.",
+        "- SSL-v2 predictive improvement is scoped to the exact stored seed-0 "
+        "folds 1-5, horizons 10/50, lookback-50 slice; seeds 1 and 2 are deferred.",
         "- Execution-v3 metrics are offline proxy diagnostics, not deployed execution results.",
         "- FI-2010 snapshot features do not expose event-level order flow or queue position.",
         "",
@@ -3372,6 +3412,29 @@ def _ssl_snapshot_line(claims: Mapping[str, ClaimAuditEntry]) -> str:
     return (
         "- SSL comparison: no broad SSL improvement claim; see claim_audit.md for "
         f"macro-F1={macro.status}, calibration={calibration.status}."
+    )
+
+
+def _ssl_v2_snapshot_line(
+    claims: Mapping[str, ClaimAuditEntry],
+    record: ArtefactInventoryRow | None,
+) -> str:
+    predictive = claims.get("empirical.ssl_v2_predictive_improvement")
+    calibration = claims.get("empirical.ssl_v2_calibration_improvement")
+    if record is None or record.status in _BAD_STATUSES:
+        return "- SSL-v2: not cleanly supported in the evidence pack."
+    if record.status == "smoke_test_only":
+        return "- SSL-v2: smoke diagnostics only; no empirical result claimed."
+    if predictive is not None and predictive.status == "supported":
+        calibration_status = calibration.status if calibration is not None else "not audited"
+        return (
+            "- SSL-v2: scoped predictive improvement is supported only for the "
+            "exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 scope; "
+            f"calibration={calibration_status} and broad SSL remains unsupported."
+        )
+    return (
+        "- SSL-v2: implementation and scoped evaluation are recorded, but no "
+        "predictive-improvement claim is supported."
     )
 
 
@@ -3649,7 +3712,9 @@ def _render_release_checklist() -> str:
             "Unsupported claims removed.",
         ],
         "Public Bullets": ["Check conservative and stronger public bullet files."],
-        "Paper Boundary": ["Manual paper not yet written."],
+        "Paper Boundary": [
+            "Manual paper not yet written; public reports are artefact summaries."
+        ],
         "Blocked Claims": ["No live-trading or profitability claims."],
     }
     lines = ["# Release Checklist", ""]

@@ -1,9 +1,22 @@
-# ChronosLOB: Self-Supervised Market Microstructure Modelling for Execution-Aware Validation
+# ChronosLOB: Forecasting Quality Is Not Trading-Signal Quality
 
-A leakage-safe FI-2010 market microstructure research platform comparing
-classical, supervised transformer and self-supervised transformer variants with
-calibration, execution-aware proxy diagnostics, feature ablations and
-reproducible evidence tracking.
+A leakage-safe FI-2010 market microstructure research platform for separating
+forecast quality from execution-aware signal-quality diagnostics under explicit
+confidence, cost, latency, turnover and adverse-selection proxy assumptions.
+
+## Central Finding
+
+ChronosLOB's central public result is not that self-supervised learning wins
+broadly. It is that forecasting quality and trading-signal quality are different
+evidence streams. The execution centrepiece joins retained predictive and
+calibration summaries to confidence-filtered active fraction, turnover proxy,
+cost-adjusted proxy, latency sensitivity and adverse-selection proxy diagnostics.
+
+![Forecasting versus signal quality](reports/execution_centrepiece/forecasting_vs_signal_quality.png)
+
+The centrepiece is an offline diagnostic over stored artefacts. It is not PnL,
+not profitability evidence, not live trading evidence and not a production
+execution simulator.
 
 ## What This Is
 
@@ -30,10 +43,10 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
 | Neural full grid | `archived_valid` | Folds 1-5, horizons 10/20/50, seeds 0-2, one-epoch matched grid. |
 | Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50, max 25 epochs, patience 5; matched SSL comparisons are exact-scope only. |
 | SSL comparison | `archived_valid` | Tested in the matched grid; no SSL improvement is supported. |
-| SSL-v2 benchmark | `complete_real` | Market-state SSL objective vs matched supervised baseline, folds 1-5 horizons 10/50 seed 0 lookback 50; scoped predictive deltas are positive after fold 5, but calibration improvement is not supported and no broad SSL improvement is claimed. |
+| SSL-v2 benchmark | `complete_real` | Market-state SSL objective vs matched supervised baseline in the exact stored seed-0 scope: folds 1-5, horizons 10/50, lookback 50. Scoped predictive improvement is supported there; seeds 1 and 2 are deferred, calibration improvement is unsupported and no broad SSL improvement is claimed. |
 | Execution-v3 | `archived_valid` | Offline execution-aware proxy diagnostic only. |
 | Execution-v3 analysis | `complete_real` | Richer proxy breakdown; regime diagnostics skipped; not PnL. |
-| Execution centrepiece | `complete_real` | Forecasting-versus-signal-quality gap under retained proxy diagnostics. |
+| Execution centrepiece | `archived_valid` | Forecasting-versus-signal-quality gap under retained proxy diagnostics. |
 | Feature ablations | `partial_real` | Logistic/ridge folds 1-5, horizons 10/20/50, seeds 0-2 plus a small gradient-boosting slice; scoped feature-stability analysis only. |
 | Figures | real | Unsupported regime plots are skipped explicitly. |
 | Synthetic event-level extension | `archived_valid` | Controlled synthetic event simulator; not real-market evidence; FI-2010 limits unchanged. |
@@ -42,6 +55,9 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
 
 ## Main Findings
 
+- The strongest project hook is the execution centrepiece: forecasting quality
+  and trading-signal quality diverge under confidence, cost, latency, turnover
+  and adverse-selection proxy diagnostics.
 - Gradient boosting remains the strongest stored classical benchmark in the
   current artefacts.
 - The completed matched neural grid compares supervised, masked-SSL and
@@ -61,12 +77,13 @@ raw run artefacts were intentionally removed. It is not a broken-evidence status
   SSL improvement claim; the only positive predictive-metric signal is narrow to
   fold 1, horizon 50 in the partial proper-training subset, while calibration
   worsened.
-- SSL-v2 adds a second-generation, market-state-aware objective motivated by
-  that failure analysis. In the complete-real folds 1-5, horizons 10/50, seed 0,
-  lookback 50 scope, mean macro-F1 (+0.028) and MCC (+0.057) deltas now support
-  a scoped predictive improvement. ECE still worsens on average (+0.005), while
-  Brier improves (-0.030), so calibration improvement and broad SSL improvement
-  claims remain unsupported.
+- SSL-v2 is a scoped empirical follow-up, not the main hook. In the
+  complete-real seed-0 scope (folds 1-5, horizons 10/50, lookback 50), mean
+  macro-F1 (+0.028) and MCC (+0.057) deltas support a predictive-metric
+  improvement for exactly that stored slice. The multi-seed harness exists, but
+  seeds 1 and 2 are deferred. ECE still worsens on average (+0.005), while Brier
+  improves (-0.030), so calibration improvement and broad SSL improvement claims
+  remain unsupported.
 - The one-epoch matched full grid is separate from the earlier 25-epoch
   reduced-scope neural benchmark.
 - Execution-v3 is an offline cost-adjusted proxy diagnostic, not PnL or
@@ -163,6 +180,7 @@ python -m chronoslob.cli build-evidence-pack \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
   --final-report reports/chronoslob_final_empirical_report.md \
   --binance-l2 reports/binance_l2_extension \
   --strict \

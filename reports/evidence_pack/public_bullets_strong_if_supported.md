@@ -18,6 +18,18 @@ Safe fallback:
 "Built infrastructure to compare supervised and self-supervised transformer variants under leakage-safe FI-2010 evaluation."
 
 Bullet:
+"Showed that forecasting quality and execution-aware signal quality are different diagnostics in the retained FI-2010 artefacts."
+
+Status:
+supported only if:
+- execution centrepiece status = complete_real or archived_valid
+- execution-centrepiece claim assessment marks the gap analysis supported
+- wording stays within offline proxy diagnostics
+
+Safe fallback:
+"Built a retained-table execution centrepiece for comparing forecast metrics with offline signal-quality proxy diagnostics."
+
+Bullet:
 "Generated artefact-backed execution-aware proxy diagnostics for stored FI-2010 predictions."
 
 Status:

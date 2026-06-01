@@ -4,4 +4,5 @@
 - Implemented leakage-aware FI-2010 evaluation workflows with traceable stored benchmark outputs.
 - Added train-only self-supervised pretraining paths for transformer experiments with artefact-backed comparison hooks.
 - Added offline execution-aware proxy diagnostics with explicit scope and release-claim boundaries.
+- Added an execution centrepiece that separates forecast quality from offline signal-quality proxy diagnostics.
 - Added FI-2010 microstructure feature-ablation diagnostics that separate snapshot-supported features from unsupported event-level concepts.

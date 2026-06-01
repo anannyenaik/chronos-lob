@@ -16,10 +16,10 @@
   - status: partially_supported
   - reason: Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.
   - safe wording: The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.
-- SSL-v2 improved calibration in the stored scope.
+- SSL-v2 improved calibration in the exact stored scope.
   - status: unsupported
   - reason: ECE and Brier deltas do not jointly support calibration improvement.
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
 - SSL improved execution-aware proxy metrics
   - status: needs_real_evidence
   - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.

@@ -5,7 +5,9 @@ artefacts. It inventories stored outputs, separates smoke diagnostics from real
 empirical evidence, audits common public claims and writes conservative public
 summaries.
 
-It does not train models, create new results or write the manual paper.
+It does not train models, create new results or write a manual paper. Public
+reports remain generated artefact summaries until a paper scope is chosen
+separately.
 
 ## Build Command
 
@@ -19,6 +21,7 @@ python -m chronoslob.cli build-evidence-pack \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
   --final-report reports/chronoslob_final_empirical_report.md \
   --strict \
   --overwrite
@@ -40,7 +43,8 @@ Each artefact group has a completeness status and a separate freshness state.
 This keeps valid retained summaries from looking broken just because their
 generating commit is older than the current repository commit.
 
-- `complete_real`: required non-smoke artefacts are present and completion checks pass.
+- `complete_real`: required non-smoke artefacts are present and completion checks
+  pass; freshness is tracked separately.
 - `archived_valid`: complete retained summaries/manifests remain content-valid,
   but the generating commit is older or heavy raw predictions/checkpoints were
   intentionally removed. This carries the same evidential weight as
@@ -142,9 +146,12 @@ profile copy.
 At the current public-release point, the neural full grid and execution-v3 are
 `archived_valid`, feature ablations are `partial_real`, feature-ablation
 analysis is `complete_real`, figure outputs are real with unsupported regime
-plots skipped, and the manual paper has not yet been written. The matched full
-grid supports the existence of a supervised-vs-SSL comparison, but it does not
-support SSL improvement language.
+plots skipped, and the manual paper has not yet been written. The strongest
+public hook is the execution centrepiece: forecasting quality and
+trading-signal quality diverge under confidence, cost, latency, turnover and
+adverse-selection proxy diagnostics. The matched full grid supports the
+existence of a supervised-vs-SSL comparison, but it does not support broad SSL
+improvement language.
 
 A dedicated SSL analysis artefact (`ssl_failure_analysis_report`, built by
 `analyse-fi2010-ssl-results` into `reports/ssl_failure_analysis/`) is recorded in
@@ -155,10 +162,11 @@ SSL improvement and SSL calibration improvement remain unsupported.
 
 The SSL-v2 benchmark (`fi2010_ssl_v2_benchmark`) and analysis
 (`ssl_v2_analysis_report`) are inventoried separately from SSL-v1. The current
-stored scope is partial_real: fold 1, horizons 10/50, seed 0, lookback 50.
-Claim rows support SSL-v2 implementation and scoped evaluation, while SSL-v2
-predictive improvement, SSL-v2 calibration improvement and broad SSL improvement
-remain unsupported.
+stored scope is `complete_real`: folds 1-5, horizons 10/50, seed 0, lookback 50.
+Claim rows support SSL-v2 implementation, scoped evaluation and a predictive
+metric improvement only for that exact stored seed-0 scope. The multi-seed
+harness exists, but seeds 1 and 2 are deferred. SSL-v2 calibration improvement
+and broad SSL improvement remain unsupported.
 
 A dedicated execution-v3 analysis artefact (`execution_v3_analysis_report`, built
 by `analyse-fi2010-execution-v3` into `reports/execution_v3_analysis/`) is also

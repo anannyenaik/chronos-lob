@@ -10,23 +10,23 @@
     },
     {
       "claim_id": "ssl_v2_evaluated",
-      "claim_text": "SSL-v2 was evaluated in the stored FI-2010 scope.",
+      "claim_text": "SSL-v2 was evaluated in the exact stored FI-2010 scope.",
       "reason": "10 matched supervised-vs-SSL-v2 row(s) are present.",
-      "scope": "evidence level complete_real",
+      "scope": "folds [1, 2, 3, 4, 5], horizons [10, 50], seeds [0], lookbacks [50]; evidence level complete_real",
       "status": "supported"
     },
     {
       "claim_id": "ssl_v2_predictive_improvement",
-      "claim_text": "SSL-v2 improves predictive metrics in the stored scope.",
-      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows.",
-      "scope": "exact stored scope; evidence level complete_real",
+      "claim_text": "SSL-v2 improves predictive metrics in the exact stored scope.",
+      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows in the exact stored scope.",
+      "scope": "folds [1, 2, 3, 4, 5], horizons [10, 50], seeds [0], lookbacks [50]; evidence level complete_real",
       "status": "supported"
     },
     {
       "claim_id": "ssl_v2_calibration_improvement",
-      "claim_text": "SSL-v2 improves calibration in the stored scope.",
+      "claim_text": "SSL-v2 improves calibration in the exact stored scope.",
       "reason": "ECE and Brier deltas do not jointly support calibration improvement.",
-      "scope": "exact stored scope; evidence level complete_real",
+      "scope": "folds [1, 2, 3, 4, 5], horizons [10, 50], seeds [0], lookbacks [50]; evidence level complete_real",
       "status": "unsupported"
     },
     {
@@ -51,7 +51,7 @@
       "status": "forbidden"
     }
   ],
-  "created_at": "2026-06-01T13:07:33.533860+00:00",
+  "created_at": "2026-06-01T15:45:37.970871+00:00",
   "evidence_level": "complete_real",
   "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark"
 }

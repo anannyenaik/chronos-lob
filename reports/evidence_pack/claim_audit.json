@@ -222,7 +222,7 @@
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
-      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.",
       "status": "supported",
       "supporting_artefacts": [
         "fi2010_ssl_v2_benchmark",
@@ -232,13 +232,13 @@
     {
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_evaluated",
-      "claim_text": "SSL-v2 was evaluated in a scoped FI-2010 benchmark.",
+      "claim_text": "SSL-v2 was evaluated in the exact stored FI-2010 scope.",
       "reason": "10 matched supervised-vs-SSL-v2 row(s) are present.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
-      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.",
       "status": "supported",
       "supporting_artefacts": [
         "fi2010_ssl_v2_benchmark",
@@ -248,13 +248,13 @@
     {
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_predictive_improvement",
-      "claim_text": "SSL-v2 improved predictive metrics in the stored scope.",
-      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows.",
+      "claim_text": "SSL-v2 improved predictive metrics in the exact stored scope.",
+      "reason": "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows in the exact stored scope.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
-      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.",
       "status": "supported",
       "supporting_artefacts": [
         "fi2010_ssl_v2_benchmark",
@@ -264,13 +264,13 @@
     {
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_calibration_improvement",
-      "claim_text": "SSL-v2 improved calibration in the stored scope.",
+      "claim_text": "SSL-v2 improved calibration in the exact stored scope.",
       "reason": "ECE and Brier deltas do not jointly support calibration improvement.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
-      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.",
+      "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.",
       "status": "unsupported",
       "supporting_artefacts": []
     },
@@ -797,5 +797,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-06-01T13:10:50.037972+00:00"
+  "generated_at": "2026-06-01T15:46:58.673703+00:00"
 }

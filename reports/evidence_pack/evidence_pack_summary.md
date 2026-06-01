@@ -5,7 +5,7 @@ Completeness and freshness are tracked separately, so a valid retained summary i
 
 Status vocabulary:
 
-- `complete_real`: required non-smoke artefacts are present and pass completion checks.
+- `complete_real`: required non-smoke artefacts are present and pass completion checks; freshness is tracked separately.
 - `archived_valid`: content-complete evidence generated at an older commit, or whose heavy raw predictions/checkpoints were intentionally removed; retained summaries match.
 - `partial_real`: real artefacts exist, but the scope is incomplete, mixed or has explicit skipped diagnostics.
 - `optional_missing`: an optional artefact was never stored; no core claim depends on it.
@@ -23,7 +23,7 @@ The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`
 | fi2010_neural_full_grid | archived_valid | archived | no | 135 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_proper_training_subset | partial_real | archived | no | 6 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_failure_analysis_report | complete_real | fresh | no | 4 |  | Hash/commit staleness checks passed. |
-| fi2010_ssl_v2_benchmark | complete_real | fresh | no | 20 | 0 | Hash/commit staleness checks passed. |
+| fi2010_ssl_v2_benchmark | complete_real | archived | no | 20 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_v2_analysis_report | complete_real | fresh | no |  | 0 | Hash/commit staleness checks passed. |
 | fi2010_figures | partial_real | fresh | no | 17 |  | Hash/commit staleness checks passed. |
 | execution_v3_outputs | archived_valid | archived | no | 4800519 | 0 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
@@ -55,6 +55,7 @@ Recomputation commands for each artefact are listed in `reproduction_commands.md
 | fi2010_classical_benchmarks | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_full_grid | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_proper_training_subset | partial_real | ef0724fb55e5 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| fi2010_ssl_v2_benchmark | complete_real | 07f47078ea09 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | execution_v3_outputs | archived_valid | a72d46f0a1d7 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
 | execution_centrepiece_report | archived_valid | 597b3599a3a4 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | feature_ablation_outputs | partial_real | 21807a9b9217 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |

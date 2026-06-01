@@ -2,8 +2,13 @@
   "analysis_version": "fi2010-ssl-v2-analysis/v1",
   "artefacts": {
     "claim_assessment": "ssl_v2_claim_assessment.json",
+    "confidence_filtered": "ssl_v2_confidence_filtered.csv",
     "delta_by_fold": "ssl_v2_delta_by_fold.csv",
+    "delta_by_fold_horizon": "ssl_v2_delta_by_fold_horizon.csv",
     "delta_by_horizon": "ssl_v2_delta_by_horizon.csv",
+    "delta_by_seed": "ssl_v2_delta_by_seed.csv",
+    "delta_overall": "ssl_v2_delta_overall.csv",
+    "execution_proxy_note": "ssl_v2_execution_proxy.json",
     "figure_manifest": "figure_manifest.json",
     "loss_components": "ssl_v2_loss_components.csv",
     "metric_summary": "ssl_v2_metric_summary.csv",
@@ -19,12 +24,63 @@
     "ssl_v2_objective_implemented": "supported",
     "ssl_v2_predictive_improvement": "supported"
   },
-  "created_at": "2026-06-01T13:07:33.540813+00:00",
+  "confidence_filtered_rows": 15,
+  "confidence_filtered_status": {
+    "predictions_available": true,
+    "reason": "",
+    "runs_missing_predictions": 0,
+    "runs_with_predictions": 10,
+    "thresholds": [
+      0.33,
+      0.5,
+      0.7,
+      0.85,
+      0.95
+    ]
+  },
+  "created_at": "2026-06-01T15:45:37.982838+00:00",
   "evidence_level": "complete_real",
+  "execution_proxy_available": true,
+  "execution_proxy_note": {
+    "active_fraction_reported": true,
+    "active_fraction_source": "ssl_v2_confidence_filtered.csv",
+    "analysis_version": "fi2010-ssl-v2-analysis/v1",
+    "claim_boundary": "Execution proxies are offline signal-quality diagnostics; no PnL, live-trading, tradability or production execution claim is implied.",
+    "computable_from_retained_artefacts": false,
+    "deferred_proxies": [
+      "turnover_proxy",
+      "cost_adjusted_proxy",
+      "latency_sensitivity",
+      "adverse_selection_proxy"
+    ],
+    "execution_hook": "execution_centrepiece",
+    "execution_hook_command": "build-execution-centrepiece",
+    "execution_hook_inputs": "retained reports/execution_v3_analysis summary-light tables built from the neural full grid; the centrepiece never reopens raw predictions",
+    "prediction_level_artefacts_required": true,
+    "reason": "The retained SSL-v2 benchmark artefacts are summary-light. The turnover, cost-adjusted, latency-sensitivity and adverse-selection proxies need per-run test predictions, which are stored as git-ignored heavy artefacts and are not part of the retained set.",
+    "storage_light_design_note": "Future SSL-v2 runs can emit per-(run, threshold) execution summary rows at evaluation time - active fraction, signal-change turnover proxy, cost-adjusted proxy, a latency-step degradation sweep and an adverse-selection proxy - and persist only the aggregated per-threshold table, mirroring the execution-v3 *_summary.csv tables, without ever storing raw per-row predictions. analyse-fi2010-ssl-v2-results would then aggregate those tables and the execution centrepiece could ingest them through its existing summary-light interface."
+  },
   "failure_count": 0,
+  "folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "horizons": [
+    10,
+    50
+  ],
+  "lookbacks": [
+    50
+  ],
   "matched_rows": 10,
   "out_dir": "reports\\ssl_v2_analysis",
   "scope_label": "folds_1_2_3_4_5_h10_h50_complete_real",
+  "seeds": [
+    0
+  ],
   "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark",
   "ssl_v2_matched_rows": 10
 }

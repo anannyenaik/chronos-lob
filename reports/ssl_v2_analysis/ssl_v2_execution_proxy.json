@@ -1,0 +1,19 @@
+{
+  "active_fraction_reported": true,
+  "active_fraction_source": "ssl_v2_confidence_filtered.csv",
+  "analysis_version": "fi2010-ssl-v2-analysis/v1",
+  "claim_boundary": "Execution proxies are offline signal-quality diagnostics; no PnL, live-trading, tradability or production execution claim is implied.",
+  "computable_from_retained_artefacts": false,
+  "deferred_proxies": [
+    "turnover_proxy",
+    "cost_adjusted_proxy",
+    "latency_sensitivity",
+    "adverse_selection_proxy"
+  ],
+  "execution_hook": "execution_centrepiece",
+  "execution_hook_command": "build-execution-centrepiece",
+  "execution_hook_inputs": "retained reports/execution_v3_analysis summary-light tables built from the neural full grid; the centrepiece never reopens raw predictions",
+  "prediction_level_artefacts_required": true,
+  "reason": "The retained SSL-v2 benchmark artefacts are summary-light. The turnover, cost-adjusted, latency-sensitivity and adverse-selection proxies need per-run test predictions, which are stored as git-ignored heavy artefacts and are not part of the retained set.",
+  "storage_light_design_note": "Future SSL-v2 runs can emit per-(run, threshold) execution summary rows at evaluation time - active fraction, signal-change turnover proxy, cost-adjusted proxy, a latency-step degradation sweep and an adverse-selection proxy - and persist only the aggregated per-threshold table, mirroring the execution-v3 *_summary.csv tables, without ever storing raw per-row predictions. analyse-fi2010-ssl-v2-results would then aggregate those tables and the execution centrepiece could ingest them through its existing summary-light interface."
+}

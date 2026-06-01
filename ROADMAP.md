@@ -2,7 +2,9 @@
 
 ChronosLOB is developed as research software for market microstructure
 modelling: reproducible data pipelines, leakage-safe labels, sequence models,
-calibration and execution-aware evaluation.
+calibration and execution-aware evaluation. The public evidence story now
+centres on the gap between forecast quality and execution-aware signal quality,
+with self-supervised results reported as scoped empirical diagnostics.
 
 ## Completed
 
@@ -24,6 +26,9 @@ calibration and execution-aware evaluation.
 - Reproducibility infrastructure: typed configs, deterministic smoke checks,
   release-readiness inspection, strict audit checks and experiment artefact
   validation.
+- An execution centrepiece (`build-execution-centrepiece`) that joins retained
+  predictive, calibration and execution-aware proxy summaries into the central
+  forecasting-versus-signal-quality gap report and figure.
 - Real FI-2010 multi-fold classical evidence on the official NoAuction ZScore
   folds 1-5, using official split-aware evaluation.
 - A completed one-epoch matched neural full grid across folds 1-5, horizons
@@ -43,9 +48,10 @@ calibration and execution-aware evaluation.
 - A complete-real SSL-v2 benchmark and analysis. The second-generation objective
   uses structured group masking plus future spread, volatility, return and
   imbalance auxiliary heads. The stored folds 1-5, horizons 10/50, seed 0 scope
-  supports implementation, evaluation and scoped predictive improvement; ECE
-  still worsens on average, so calibration improvement and broad SSL improvement
-  claims remain unsupported.
+  supports implementation, evaluation and scoped predictive improvement for
+  exactly that stored slice. The multi-seed harness exists, but SSL-v2 seeds 1
+  and 2 are deferred. ECE still worsens on average, so calibration improvement
+  and broad SSL improvement claims remain unsupported.
 - A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
   across folds 1-5, with a single-seed and lookback-20 caveat, reported
   separately from the matched grid.
@@ -57,9 +63,6 @@ calibration and execution-aware evaluation.
   retained execution-v3 tables, covering confidence filtering, active fraction,
   turnover, cost, latency, fill and adverse-selection proxies, with regime
   diagnostics explicitly skipped and no PnL or live-trading claim.
-- An execution centrepiece (`build-execution-centrepiece`) that joins retained
-  predictive, calibration and execution-aware proxy summaries into a central
-  forecasting-versus-signal-quality gap report and figure.
 - A storage-light FI-2010 scoped feature-stability analysis: logistic/ridge
   folds 1-5, horizons 10/20/50 and seeds 0-2, plus a small gradient-boosting
   slice over key groups. `snapshot_order_flow_proxy` remains a labelled snapshot
@@ -101,9 +104,9 @@ calibration and execution-aware evaluation.
   making any broader SSL improvement claim.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when
   data access and licensing allow.
-- Improve execution modelling with richer queue-position, partial-fill,
-  latency and market-impact assumptions while keeping the current offline
-  research boundary clear.
+- Improve execution modelling with richer documented fill, latency and
+  market-impact assumptions while keeping the current offline research boundary
+  clear. Queue-priority mechanics remain unsupported by FI-2010 snapshots.
 - Add richer regime analysis based on genuine stored regime features rather
   than row-number or timestamp-derived substitutes.
 - Continue tightening report generation so public tables and summaries are

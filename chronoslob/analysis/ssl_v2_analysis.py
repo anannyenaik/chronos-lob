@@ -175,6 +175,10 @@ def analyse_ssl_v2_results(
         "out_dir": str(output),
         "evidence_level": summary.get("evidence_level"),
         "scope_label": summary.get("scope_label"),
+        "folds": summary.get("folds"),
+        "horizons": summary.get("horizons"),
+        "seeds": summary.get("seeds"),
+        "lookbacks": summary.get("lookbacks"),
         "matched_rows": matched_rows,
         "ssl_v2_matched_rows": ssl_v2_matched_rows,
         "failure_count": failure_count,
@@ -272,6 +276,11 @@ def _assess_claims(
     loss_components: pd.DataFrame | None,
 ) -> list[dict[str, Any]]:
     evidence_level = str(summary.get("evidence_level", "missing"))
+    scope_text = (
+        f"folds {summary.get('folds')}, horizons {summary.get('horizons')}, "
+        f"seeds {summary.get('seeds')}, lookbacks {summary.get('lookbacks')}; "
+        f"evidence level {evidence_level}"
+    )
     v2_rows = comparison[
         (comparison.get("ssl_objective") == "market_state_multitask")
         & (comparison.get("status") == "matched")
@@ -312,9 +321,9 @@ def _assess_claims(
         },
         {
             "claim_id": "ssl_v2_evaluated",
-            "claim_text": "SSL-v2 was evaluated in the stored FI-2010 scope.",
+            "claim_text": "SSL-v2 was evaluated in the exact stored FI-2010 scope.",
             "status": "supported" if evaluated else "needs_real_evidence",
-            "scope": f"evidence level {evidence_level}",
+            "scope": scope_text,
             "reason": (
                 f"{len(v2_rows)} matched supervised-vs-SSL-v2 row(s) are present."
                 if evaluated
@@ -323,22 +332,24 @@ def _assess_claims(
         },
         {
             "claim_id": "ssl_v2_predictive_improvement",
-            "claim_text": "SSL-v2 improves predictive metrics in the stored scope.",
+            "claim_text": "SSL-v2 improves predictive metrics in the exact stored scope.",
             "status": "supported" if predictive_supported else "unsupported",
-            "scope": f"exact stored scope; evidence level {evidence_level}",
+            "scope": scope_text,
             "reason": (
-                "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 rows."
+                "Mean macro-F1 and MCC deltas are positive for matched SSL-v2 "
+                "rows in the exact stored scope."
                 if predictive_supported
                 else "Matched SSL-v2 macro-F1/MCC deltas do not jointly support improvement."
             ),
         },
         {
             "claim_id": "ssl_v2_calibration_improvement",
-            "claim_text": "SSL-v2 improves calibration in the stored scope.",
+            "claim_text": "SSL-v2 improves calibration in the exact stored scope.",
             "status": "supported" if calibration_supported else "unsupported",
-            "scope": f"exact stored scope; evidence level {evidence_level}",
+            "scope": scope_text,
             "reason": (
-                "Mean ECE and Brier deltas improve for matched SSL-v2 rows."
+                "Mean ECE and Brier deltas improve for matched SSL-v2 rows in "
+                "the exact stored scope."
                 if calibration_supported
                 else "ECE and Brier deltas do not jointly support calibration improvement."
             ),
@@ -671,6 +682,8 @@ def _render_report(
         "SSL-v2 was added because the first-generation SSL analysis found that random "
         "field reconstruction and next-field prediction did not broadly improve "
         "downstream predictive or calibration metrics.",
+        "The current closure is seed 0 only; the multi-seed harness exists, but "
+        "seeds 1 and 2 are deferred.",
         "",
         "## Predictive Metrics",
         "",

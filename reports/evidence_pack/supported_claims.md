@@ -32,13 +32,13 @@
   - safe wording: SSL objectives were implemented and evaluated under matched settings.
 - SSL-v2 was implemented as a market-state-aware objective.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
-- SSL-v2 was evaluated in a scoped FI-2010 benchmark.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+- SSL-v2 was evaluated in the exact stored FI-2010 scope.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
-- SSL-v2 improved predictive metrics in the stored scope.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+- SSL-v2 improved predictive metrics in the exact stored scope.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
 - Gradient boosting remained the strongest classical baseline
   - support: fi2010_classical_benchmarks
   - safe wording: Name the best classical model from the stored result table and include the metric, split and scope.

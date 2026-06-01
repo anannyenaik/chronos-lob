@@ -15,9 +15,13 @@ artefacts. It does not train models, download data or infer missing metrics.
 - `experiments/fi2010_brutal_ablations/`
 - `experiments/fi2010_execution_v2/`
 - optional `experiments/fi2010_execution_v3/`
+- optional `reports/execution_centrepiece/`
 - `experiments/fi2010_external_context/`
 - optional `experiments/fi2010_neural_full_grid/`
+- optional `experiments/fi2010_neural_proper_training_subset_v2/`
+- optional `reports/ssl_v2_analysis/`
 - optional `experiments/fi2010_feature_ablations/`
+- optional `reports/feature_ablation_analysis/`
 - optional `reports/evidence_pack/`
 - optional `reports/synthetic_lob_extension/`
 - optional `reports/binance_l2_extension/`
@@ -38,9 +42,13 @@ python -m chronoslob.cli build-final-empirical-report \
   --ablations experiments/fi2010_brutal_ablations \
   --execution experiments/fi2010_execution_v2 \
   --execution-v3 experiments/fi2010_execution_v3 \
+  --execution-centrepiece reports/execution_centrepiece \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --ssl-v2-analysis reports/ssl_v2_analysis \
   --feature-ablations experiments/fi2010_feature_ablations \
+  --feature-ablation-analysis reports/feature_ablation_analysis \
   --evidence-pack reports/evidence_pack \
   --synthetic-lob reports/synthetic_lob_extension \
   --binance-l2 reports/binance_l2_extension \
@@ -61,6 +69,16 @@ When `--execution-v3` is supplied, the report includes execution-v3 status,
 confidence filtering, cost sensitivity, latency sensitivity, fill assumptions,
 adverse-selection proxy rows and skipped diagnostics. When it is missing, the
 report explicitly states that no execution-v3 claim is made.
+
+When `--execution-centrepiece` is supplied, the report includes the
+forecasting-versus-signal-quality gap section near the top-level interpretation.
+It uses retained proxy tables only and does not read raw predictions or realised
+execution outcomes.
+
+When `--ssl-v2-analysis` is supplied, the report includes the scoped SSL-v2
+interpretation: predictive improvement is supported only for the exact stored
+seed-0 folds 1-5, horizons 10/50, lookback-50 scope. Seeds 1 and 2 are deferred,
+calibration improvement is unsupported and no broad SSL improvement follows.
 
 When `--feature-ablations` is supplied, the report includes feature registry
 status, unsupported FI-2010 groups, proxy warnings, aggregate ablation rows and
@@ -85,17 +103,22 @@ skipped or missing sections.
 ## Claim Boundaries
 
 The report states that classical results are multi-fold, neural results are
-reduced-scope and single-seed, execution-aware metrics are offline
-execution-aware proxy diagnostics, external comparisons are protocol context
-only, feature-ablation results are interpreted only when matching non-smoke
-baselines exist, and full-grid neural results are claimed only when non-smoke
-aggregate artefacts exist. Smoke-test full-grid, execution-v3 and
-feature-ablation artefacts are labelled as code-path checks. No profitability,
-tradability, live-trading, SSL superiority, true order-flow imbalance,
-cancellation imbalance, trade imbalance, queue-position or SOTA claim is made.
+split by scope: the one-epoch matched full grid is multi-fold and multi-seed,
+the proper-training subset is partial-real seed-0 evidence, and SSL-v2
+predictive improvement is limited to the exact stored seed-0 scope.
+Execution-aware metrics are offline proxy diagnostics, external comparisons are
+protocol context only, feature-ablation results are interpreted only when
+matching non-smoke baselines exist, and full-grid neural results are claimed
+only when non-smoke aggregate artefacts exist. Smoke-test full-grid,
+execution-v3 and feature-ablation artefacts are labelled as code-path checks. No
+profitability, tradability, live-trading, broad SSL superiority, SSL calibration
+improvement, true order-flow imbalance, cancellation imbalance, trade imbalance,
+queue-position or SOTA claim is made.
 
 ## Limitations
 
-Neural evidence is not multi-seed. Execution outputs do not model queues,
-market impact or venue mechanics. External benchmark papers are referenced for
-protocol context without importing external numeric metrics.
+The matched one-epoch full grid is multi-seed, but the proper-training and
+SSL-v2 predictive-result scopes are seed 0 only. SSL-v2 seeds 1 and 2 are
+deferred. Execution outputs do not model queue priority, market impact or venue
+mechanics. External benchmark papers are referenced for protocol context without
+importing external numeric metrics.

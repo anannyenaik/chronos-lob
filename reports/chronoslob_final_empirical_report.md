@@ -6,13 +6,14 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-06-01T13:09:16.812309+00:00 |
-| git_commit | 07f47078ea0971aa394945cc555fef69f05b346e |
+| generated_at | 2026-06-01T15:46:38.603136+00:00 |
+| git_commit | 7b8a35c1b5ebf57baab6e2e978dc7fa592ac2448 |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
 | proper_training_neural_scope | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50, objectives supervised, masked_reconstruction, next_field; max_epochs 25, patience 5; validation-only early stopping with best checkpoint restored before test |
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
+| ssl_v2_scope | complete_real; exact stored seed-0 scope; folds 1, 2, 3, 4, 5, horizons 10, 50, lookback 50; predictive=supported, calibration=unsupported; seeds 1 and 2 deferred |
 | legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
 | best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
 | execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
@@ -24,11 +25,12 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 
 ## Evidence Status Summary
 
-This summary uses the same status language as the README and the evidence pack.
+This summary uses the same status language as the README and the evidence pack. Its central interpretation is the forecasting-versus-signal-quality gap, not broad SSL success.
 
-What is complete (`complete_real`):
+What is complete or retained (`complete_real` / `archived_valid`):
 
 - Multi-fold classical FI-2010 benchmark across the stored folds.
+- Execution centrepiece linking forecast metrics to offline signal-quality proxy diagnostics.
 - One-epoch matched neural full grid across folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field.
 - A matched supervised-vs-SSL comparison inside that grid.
 - Execution-v3 offline cost-adjusted proxy diagnostics.
@@ -45,7 +47,8 @@ What is separate legacy / reduced-scope evidence:
 
 What is not claimed:
 
-- No SSL improvement: SSL was implemented and tested under matched settings, but no SSL improvement is supported.
+- No overall SSL improvement is supported: first-generation SSL and the matched full grid do not support broad improvement; SSL-v2 predictive improvement is scoped to the exact stored seed-0 slice.
+- No SSL calibration improvement; SSL-v2 ECE and Brier deltas do not jointly support that claim.
 - No profitability, tradability, live-trading, PnL, SOTA, foundation-model or production-execution-simulator claim.
 - No true event-level order flow or queue position is observed from FI-2010 snapshots.
 
@@ -53,6 +56,44 @@ The completed matched full grid is a one-epoch comparison grid. It is useful for
 result.
 
 The earlier 25-epoch reduced-scope supervised matrix-transformer result is reported separately and is not used as matched SSL evidence.
+
+## Forecasting versus Signal-Quality Gap
+
+The execution centrepiece is the compact bridge between forecast metrics and execution-aware signal-quality proxy diagnostics.
+This is the central public interpretation: forecasting quality and trading-signal quality are different evidence streams.
+It uses retained execution-v3 analysis tables, retained full-grid predictive/calibration summaries and no deleted raw predictions.
+
+| field | value |
+| --- | --- |
+| centrepiece_report | reports/execution_centrepiece/execution_centrepiece.md |
+| central_figure | reports/execution_centrepiece/forecasting_vs_signal_quality.png |
+| raw_predictions_required | False |
+| payoff_mode | unit_payoff |
+| cost_mode | unit_proxy |
+| claim_statuses | PnL=forbidden, active_fraction_analysis=supported, adverse_selection_confidence_analysis=supported, confidence_filtering_tradeoff_analysis=supported, forecasting_vs_signal_quality_gap_analysis=supported, latency_cost_gap_analysis=supported, live_trading=forbidden, profitability_or_tradability=forbidden, turnover_proxy_analysis=supported |
+
+Representative metric-to-proxy rows:
+
+| pretraining_objective | horizon | predictive_macro_f1 | predictive_ece | active_fraction_at_0_70 | turnover_proxy_at_0_70 | cost_adjusted_proxy_at_0_70 | latency_degradation_vs_lag0 | high_confidence_adverse_selection_proxy |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| masked_reconstruction | 10 | 0.323277585413822 | 0.1424651832931761 | 0.0023678115390002 | 0.0023678742642733 | -62.69230769230769 | -485.3333333333333 | unavailable |
+| masked_reconstruction | 20 | 0.354660208701847 | 0.1281113254174867 | 0.0086694443779239 | 0.0086696758466101 | -165.53846153846155 | -1055.4666666666667 | unavailable |
+| masked_reconstruction | 50 | 0.4147550866093952 | 0.0854119535713275 | 0.0329805925999047 | 0.0329814951974662 | -101.28571428571428 | -2236.4666666666667 | 0.2019464720194647 |
+| next_field | 10 | 0.273269787401566 | 0.0846766037360791 | 0.0090780502236704 | 0.009078315688073 | -187.46666666666667 | -37.2 | 0.1236559139784946 |
+| next_field | 20 | 0.2805151636127316 | 0.0955842958047957 | 0.0231301855881019 | 0.0231307789279695 | -405.61538461538464 | -337.46666666666664 | 0.1372194062273714 |
+| next_field | 50 | 0.3822988716148037 | 0.0845739935464671 | 0.0542928484519512 | 0.0542945103471378 | -219.83333333333331 | -1974.1333333333332 | 0.2769878883622959 |
+
+Explicitly unavailable fields:
+
+| field | reason |
+| --- | --- |
+| confidence_filtered_ece | unavailable: retained confidence-threshold tables do not include ECE |
+| raw_predictions | not required and not read; deleted raw predictions are unavailable |
+| realised_execution | unavailable: offline diagnostic has no broker or venue fills |
+| supported_regime_diagnostics | unavailable: retained tables lack regime labels or snapshot context |
+
+Conservative interpretation: the forecasting-versus-signal-quality gap does not establish profitability or tradability.
+It shows why macro-F1 and calibration must be read alongside confidence filtering, active fraction, turnover proxy, cost-adjusted proxy, latency sensitivity and adverse-selection proxy diagnostics.
 
 ## Evidence Pack Audit
 
@@ -68,7 +109,8 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 Release caveats from the evidence pack:
 
 - Smoke diagnostics are not empirical evidence.
-- SSL improvement language requires real aggregate comparison artefacts.
+- Broad SSL improvement and SSL calibration improvement remain unsupported.
+- SSL-v2 predictive improvement is scoped to the exact stored seed-0 scope.
 - Execution-v3 metrics remain offline proxy diagnostics.
 - FI-2010 snapshot features do not expose event-level order flow or queue position.
 
@@ -385,6 +427,8 @@ used only for context.
 A second-generation SSL objective was added after the SSL failure analysis showed that first-generation random field reconstruction and next-field prediction did not broadly improve predictive metrics
 or calibration. The SSL-v2 objective is market-state-aware and remains a scoped comparison, not a general representation or trading claim.
 
+The current SSL-v2 closure is complete-real for seed 0 only. The multi-seed harness exists, but seeds 1 and 2 are deferred.
+
 - evidence level: complete_real
 - scope label: folds_1_2_3_4_5_h10_h50_complete_real
 - matched supervised-vs-SSL-v2 rows: 10
@@ -395,9 +439,9 @@ or calibration. The SSL-v2 objective is market-state-aware and remains a scoped 
 | 10 | 5 | 0.0859 | 0.1459 | -0.0140 | -0.0835 |
 | 50 | 5 | -0.0305 | -0.0327 | 0.0246 | 0.0233 |
 
-- SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the stored scope.
-- SSL-v2 calibration improvement is reported only when ECE and Brier deltas both support it.
-- Broad SSL improvement remains bounded by the combined SSL-v1 and SSL-v2 evidence.
+- SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the exact stored seed-0 scope.
+- SSL-v2 calibration improvement remains unsupported because ECE and Brier deltas do not jointly support it.
+- Broad SSL improvement remains unsupported under the combined SSL-v1 and SSL-v2 evidence.
 
 | claim | status |
 | --- | --- |
@@ -697,43 +741,6 @@ Skipped diagnostics:
 
 Conservative interpretation: execution-v3 can show how stored FI-2010 signals respond to confidence filters, costs, latency and fill proxy assumptions. It does not establish deployable execution quality.
 
-## Forecasting versus Signal-Quality Gap
-
-The execution centrepiece is the compact reviewer-facing bridge between forecast metrics and execution-aware signal-quality proxy diagnostics.
-It uses retained execution-v3 analysis tables, retained full-grid predictive/calibration summaries and no deleted raw predictions.
-
-| field | value |
-| --- | --- |
-| centrepiece_report | reports/execution_centrepiece/execution_centrepiece.md |
-| central_figure | reports/execution_centrepiece/forecasting_vs_signal_quality.png |
-| raw_predictions_required | False |
-| payoff_mode | unit_payoff |
-| cost_mode | unit_proxy |
-| claim_statuses | PnL=forbidden, active_fraction_analysis=supported, adverse_selection_confidence_analysis=supported, confidence_filtering_tradeoff_analysis=supported, forecasting_vs_signal_quality_gap_analysis=supported, latency_cost_gap_analysis=supported, live_trading=forbidden, profitability_or_tradability=forbidden, turnover_proxy_analysis=supported |
-
-Representative metric-to-proxy rows:
-
-| pretraining_objective | horizon | predictive_macro_f1 | predictive_ece | active_fraction_at_0_70 | turnover_proxy_at_0_70 | cost_adjusted_proxy_at_0_70 | latency_degradation_vs_lag0 | high_confidence_adverse_selection_proxy |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| masked_reconstruction | 10 | 0.323277585413822 | 0.1424651832931761 | 0.0023678115390002 | 0.0023678742642733 | -62.69230769230769 | -485.3333333333333 | unavailable |
-| masked_reconstruction | 20 | 0.354660208701847 | 0.1281113254174867 | 0.0086694443779239 | 0.0086696758466101 | -165.53846153846155 | -1055.4666666666667 | unavailable |
-| masked_reconstruction | 50 | 0.4147550866093952 | 0.0854119535713275 | 0.0329805925999047 | 0.0329814951974662 | -101.28571428571428 | -2236.4666666666667 | 0.2019464720194647 |
-| next_field | 10 | 0.273269787401566 | 0.0846766037360791 | 0.0090780502236704 | 0.009078315688073 | -187.46666666666667 | -37.2 | 0.1236559139784946 |
-| next_field | 20 | 0.2805151636127316 | 0.0955842958047957 | 0.0231301855881019 | 0.0231307789279695 | -405.61538461538464 | -337.46666666666664 | 0.1372194062273714 |
-| next_field | 50 | 0.3822988716148037 | 0.0845739935464671 | 0.0542928484519512 | 0.0542945103471378 | -219.83333333333331 | -1974.1333333333332 | 0.2769878883622959 |
-
-Explicitly unavailable fields:
-
-| field | reason |
-| --- | --- |
-| confidence_filtered_ece | unavailable: retained confidence-threshold tables do not include ECE |
-| raw_predictions | not required and not read; deleted raw predictions are unavailable |
-| realised_execution | unavailable: offline diagnostic has no broker or venue fills |
-| supported_regime_diagnostics | unavailable: retained tables lack regime labels or snapshot context |
-
-Conservative interpretation: the forecasting-versus-signal-quality gap does not establish profitability or tradability.
-It shows why macro-F1 and calibration must be read alongside confidence filtering, active fraction, turnover proxy, cost-adjusted proxy, latency sensitivity and adverse-selection proxy diagnostics.
-
 ## External Benchmark Context
 
 External comparisons are protocol context, not ranking claims. No external numeric metrics are imported into this report.
@@ -790,6 +797,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 - External references are used only to document protocol context.
 - The one-epoch full neural grid artefacts compare supervised and SSL matrix-transformer variants under matched fold, horizon, seed, lookback, architecture and preprocessing keys; this is matched
   comparison evidence and supports no SSL improvement claim.
+- SSL-v2 artefacts support a predictive-metric improvement only for the exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 scope; calibration and broad SSL improvement remain unsupported.
 - Execution-v3 artefacts support an offline execution-aware proxy diagnostic over stored FI-2010 full-grid predictions.
 - The execution centrepiece supports a forecasting-versus-signal-quality gap analysis using retained predictive, calibration and proxy diagnostic tables.
 - Feature-ablation artefacts support leakage-safe FI-2010 snapshot feature-family diagnostics with proxy features labelled as proxies.
@@ -800,7 +808,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 - Production execution quality or market-impact realism.
 - Unsupported live-trading claims from execution-v3 proxy diagnostics.
 - Foundation-model status.
-- SSL improvement or SOTA status.
+- Broad SSL improvement, SSL calibration improvement or SOTA status.
 - A full-grid SSL improvement claim when the full-grid directory is missing, smoke-only or contains failed matched runs.
 - True order-flow, cancellation, trade-imbalance or queue-position claims from FI-2010 feature ablations; absent event-level fields remain unsupported.
 - Neural superiority over the classical family.
@@ -814,6 +822,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | neural_scope | single seed and single lookback in stored reduced-scope artefacts |
 | execution_scope | offline execution-aware proxy diagnostics only; queue, impact and venue mechanics are not modelled |
 | execution_centrepiece_scope | forecasting-versus-signal-quality gap analysis over retained proxy tables; no raw predictions or realised execution outcomes are read |
+| ssl_v2_scope | complete-real only for folds 1-5, horizons 10/50, seed 0 and lookback 50; seeds 1 and 2 are deferred |
 | external_scope | protocol context only; no external numeric metrics are copied |
 | prediction_checkpoint_policy | full predictions and checkpoints are not required by this report builder |
 | full_neural_grid_scope | reported only when aggregate artefacts are supplied; smoke artefacts are not empirical evidence |
@@ -916,14 +925,14 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
 | proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
 | ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
-| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | c64dd5a9649cf327771e3549633ddae32961120ff8e013d23968580db1b9e5b2 |
-| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 88e420e19c0dbdba243ba81bd5a591b1aa2bb93ceee83c0d6e1bea7b52132e58 |
-| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | cb69ce15fd278836c784b7eb649b9fc7c4c633c47251cf50c8af1232cae01ee1 |
+| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | 6841ef6d1a252435b6af800b1dfdeb82ab073610758e265b9f5644b6c921fcf7 |
+| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 59599c39849ddf3eef2d791590e6964c35122aed6b786847cdcd4466f3eeaad6 |
+| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | 526c639fffd60d71ffa7a0862d5d093891a41b8b2fa3069c3ae89977813b52aa |
 | ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 48999fe3361c89ba7954727905a23c4e27b0ad8e620903231db71fd196974110 |
 | ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | ecee3938b5eef85eed57d3707bcb75662dce5df691172a06ef5c3dba543a9b1a |
 | ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 220aaf29b0744be35cd32c5fc95e3073abd5c085d5c8afadc3c8015cc2e8e882 |
 | ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 8c33002c24bebe0adca89834c90271be4f749feede3ef1b07ba6375eba49be00 |
-| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | e06abee7260b349c5010a3cd6560d14b3772abed72db8141fd780c8d94dca9d3 |
+| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | 37104de8aea10ea818b6d04f940417d04606fc7edc68688a7cb6333479957b8c |
 | synthetic_lob_dir | reports/synthetic_lob_extension | directory |
 | synthetic_lob_summary | reports/synthetic_lob_extension/summary.json | 21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea |
 | synthetic_lob_synthetic_benchmark_summary | reports/synthetic_lob_extension/synthetic_benchmark_summary.csv | 6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea |
@@ -947,9 +956,12 @@ python -m chronoslob.cli build-final-empirical-report \
   --execution-v3 experiments/fi2010_execution_v3 \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --ssl-v2-analysis reports/ssl_v2_analysis \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --execution-centrepiece reports/execution_centrepiece \
+  --evidence-pack reports/evidence_pack \
   --out reports/chronoslob_final_empirical_report.md \
   --overwrite
 
