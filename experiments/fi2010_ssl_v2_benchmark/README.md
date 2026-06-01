@@ -17,6 +17,9 @@ It evaluates a failure-analysis-motivated second-generation SSL objective agains
 - scope label: folds_1_2_3_4_5_h10_h50_complete_real
 - imported baseline runs: 0
 
+The multi-seed harness exists, but seeds 1 and 2 are deferred. Predictive
+improvement is therefore supported only for the exact stored seed-0 scope above.
+
 ## Claim Boundaries
 
 - Predictive metric deltas are limited to this exact stored scope.

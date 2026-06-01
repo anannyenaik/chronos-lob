@@ -23,13 +23,15 @@ Date: 2026-05-29
 
 | Area | Issue | Edit made or recommendation |
 | --- | --- | --- |
+| Public story | The opening story still treated SSL as the centrepiece. | README and status docs now lead with the forecasting-versus-signal-quality gap. |
 | README | Stale placeholder wording around SSL/full-grid evidence and reduced-scope neural evidence. | Rewritten around current statuses, matched-grid caveats and non-claims. |
 | README | Result language previously mixed infrastructure with empirical findings. | Added compact evidence-status table and separated findings from non-claims. |
 | Project status | Neural evidence still read as single-seed only. | Updated to distinguish completed one-epoch full grid from the separate 25-epoch reduced-scope benchmark. |
+| SSL-v2 | Earlier evidence-pack text still described the old fold-1 partial scope. | Updated to complete-real folds 1-5, horizons 10/50, seed 0, with seeds 1 and 2 deferred. |
 | Evidence pack | Generated public bullet files were framed too broadly. | Generator now writes `public_bullets_*` files and describes them as public release summaries, not personal-profile copy. |
 | Claim audit | Mixed SSL rows could be interpreted as partial support for broad SSL improvement. | Audit now treats mixed broad SSL-improvement claims as unsupported. |
 | Execution-v3 | Generated notes changed, making the manifest stale. | Regenerated execution-v3 and dependent figures. |
-| Feature ablations | Partial scope needed clearer context. | Docs and final report now state the current folds/horizon/models and the unfinished scope. |
+| Feature ablations | Partial scope needed clearer context. | Docs and final report now state the current folds, horizons, seeds, models and small non-linear slice. |
 | Figures | Skipped regime diagnostics could look like missing results. | Figure docs now state regime plots are skipped because labels are unavailable. |
 | Generated reports | `What This Proves` was too strong. | Final report generator now renders `What This Supports` and `What This Does Not Claim`. |
 | Legacy reports | Older architecture/execution docs used PnL/backtest wording where proxy wording is clearer. | Reworded the most visible cases; remaining historical/generated occurrences are caveated in the claim scan. |
@@ -42,6 +44,10 @@ Date: 2026-05-29
 - `snapshot_order_flow_proxy` is a snapshot-delta proxy, not true event-level OFI.
 - The one-epoch matched neural grid is not the same artefact as the 25-epoch reduced-scope neural benchmark.
 - No SSL improvement is supported by the matched full grid.
+- SSL-v2 predictive improvement is scoped to the exact stored seed-0 folds 1-5,
+  horizons 10/50 slice; SSL-v2 calibration improvement remains unsupported.
+- The execution centrepiece is the strongest public hook and remains an offline
+  proxy diagnostic, not profitability or live-trading evidence.
 
 ## Generated Artefacts
 

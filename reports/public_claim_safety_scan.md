@@ -14,7 +14,7 @@ rg -n -i --glob "*.md" "profitable|profit|PnL|alpha|tradable|live trading|automa
 | --- | --- | --- | --- |
 | profitable / profit | README, docs, reports, experiment model cards | Kept only in explicit non-claim language; replaced older result-style wording where present. | Claim-audit forbidden rows and limitation statements. |
 | PnL | README, execution-v3 docs, final report, older reports | Replaced visible report wording with `cost-adjusted proxy` where it described diagnostics. | Remaining occurrences explicitly say not PnL or appear in historical/generated archives. |
-| alpha | README title, claim audit, real-run summary | Kept only in the requested project title and in blocked `tradable alpha` language. | No tradable-alpha claim remains. |
+| alpha | claim audit, real-run summary | Kept only in blocked `tradable alpha` language. | No tradable-alpha claim remains. |
 | tradable / live trading / automated order-placement | README, safety docs, execution docs, generated reports | Kept only as explicit non-claims. README now states the project is not automated order-placement software. | Historical model cards use non-claim wording. |
 | SOTA / state-of-the-art | README, final report, research protocol, claim audit | Kept only as blocked/non-claim wording; final report now says no SOTA status. | Claim audit and historical protocol limitations. |
 | foundation model / foundation-model | README, docs, claim audit | Kept only as blocked/non-claim wording. | Claim audit and limitation statements. |

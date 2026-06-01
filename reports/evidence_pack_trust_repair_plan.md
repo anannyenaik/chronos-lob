@@ -66,7 +66,7 @@ outputs, so rebuilding the pack no longer marks the report `stale`.
 | synthetic_lob_extension_report | stale | archived_valid | older generating commit; summaries verify |
 | fi2010_neural_proper_training_subset | stale | partial_real | older commit; scope intentionally partial |
 | feature_ablation_outputs | stale | partial_real | older commit; scope intentionally partial |
-| fi2010_ssl_v2_benchmark | partial_real | partial_real | unchanged; scoped slice |
+| fi2010_ssl_v2_benchmark | partial_real | complete_real | folds 1-5, horizons 10/50, seed 0 closed; freshness tracked separately |
 | binance_l2_extension_report | stale | partial_real | older commit; fixture-shaped replay |
 | fi2010_ssl_runner_outputs | missing | obsolete_superseded | superseded by full grid and SSL-v2 |
 | feature_registry_audit_outputs | missing | optional_missing | optional; no core claim needs it |
@@ -76,13 +76,14 @@ outputs, so rebuilding the pack no longer marks the report `stale`.
 | feature_ablation_analysis_report | complete_real | complete_real | unchanged |
 | ablation_figures | complete_real | complete_real | unchanged |
 | fi2010_figures | partial_real | partial_real | unchanged; skipped diagnostics |
-| ssl_v2_analysis_report | partial_real | partial_real | unchanged; scoped slice |
+| ssl_v2_analysis_report | partial_real | complete_real | scoped SSL-v2 analysis rebuilt from retained tables |
 | final_empirical_report | complete_real | complete_real | rebuilt at the current commit |
 
 Status counts before: complete_real=5, missing=2, partial_real=3, stale=7,
-unknown_staleness=1. After: archived_valid=4, complete_real=5, partial_real=6,
-obsolete_superseded=1, optional_missing=1, unknown_staleness=1. No genuinely
-`stale` and no `missing` required artefacts remain.
+unknown_staleness=1. Current release counts: archived_valid=5, complete_real=7,
+partial_real=4, obsolete_superseded=1, optional_missing=1,
+unknown_staleness=1. No genuinely `stale` and no `missing` required artefacts
+remain.
 
 ## Claim-audit effects
 
@@ -93,8 +94,8 @@ supervised-vs-SSL comparison, train-only SSL, execution-aware proxy diagnostics,
 feature ablations, best classical baseline and confidence filtering.
 
 Claim-status counts before: supported=14, partially_supported=11, unsupported=8,
-forbidden=15, needs_real_evidence=2. After: supported=22, partially_supported=3,
-unsupported=8, forbidden=15, needs_real_evidence=2.
+forbidden=15, needs_real_evidence=2. Current release counts: supported=30,
+partially_supported=3, unsupported=7, forbidden=18, needs_real_evidence=2.
 
 ## What stays unsupported or forbidden
 
@@ -102,7 +103,9 @@ The repair does not weaken any boundary:
 
 - broad SSL improvement and SSL calibration improvement stay unsupported (matched
   deltas are mixed or negative);
-- SSL-v2 predictive and calibration improvement stay unsupported;
+- SSL-v2 predictive improvement is supported only for the exact stored seed-0
+  folds 1-5, horizons 10/50, lookback-50 scope; SSL-v2 calibration improvement
+  remains unsupported;
 - synthetic real-market generalisation and Binance equity-market generalisation
   stay unsupported;
 - profitability, tradable alpha, live trading, production execution simulation,

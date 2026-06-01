@@ -8,21 +8,29 @@ ChronosLOB contains a leakage-safe FI-2010 research platform with classical
 benchmarks, supervised and self-supervised transformer comparison
 infrastructure, calibration diagnostics, execution-aware proxy diagnostics,
 feature ablations, generated figures and an evidence pack with claim auditing.
+The public story now centres on the execution-aware gap between forecast quality
+and trading-signal quality.
 
-## Complete Evidence
+## Retained Evidence
 
-- Classical FI-2010 benchmark artefacts: `complete_real`.
-- Neural full grid: `complete_real`, 135/135 matched one-epoch runs across
+- Classical FI-2010 benchmark artefacts: `archived_valid`.
+- Neural full grid: `archived_valid`, 135/135 matched one-epoch runs across
   folds 1-5, horizons 10/20/50, seeds 0-2 and supervised/masked/next-field
   objectives.
-- Execution-v3: `complete_real`, offline cost-adjusted proxy diagnostics from
+- Execution-v3: `archived_valid`, offline cost-adjusted proxy diagnostics from
   stored neural-grid predictions.
+- Execution-v3 analysis: `complete_real`, using retained proxy tables.
+- Execution centrepiece: `archived_valid`, with the
+  forecasting-versus-signal-quality figure and retained proxy diagnostics.
+- SSL-v2: `complete_real` for folds 1-5, horizons 10/50, seed 0 and lookback 50.
 - Final empirical report and evidence pack: regenerated from stored artefacts.
 
 ## Partial Evidence
 
-- Feature ablations: `partial_real`, currently folds 1-5, horizon 10, seeds 0-2
-  and logistic/ridge models.
+- Proper-training neural subset: `partial_real`, currently fold 1, horizons
+  10/50, seed 0 and lookback 50.
+- Feature ablations: `partial_real`, with logistic/ridge folds 1-5, horizons
+  10/20/50 and seeds 0-2, plus a small gradient-boosting slice.
 - Figure outputs: real and traceable, with unsupported regime plots skipped
   because regime labels are unavailable.
 - Project-audit archive: `unknown_staleness`.
@@ -30,9 +38,11 @@ feature ablations, generated figures and an evidence pack with claim auditing.
 ## What Did Not Work
 
 - SSL pretraining did not improve the completed matched full-grid comparison.
-- The standalone SSL runner artefact is missing.
-- Feature ablations beyond horizon 10 and beyond logistic/ridge remain
-  unfinished because the wider scope was too expensive for this pass.
+- Broad SSL improvement remains unsupported.
+- SSL-v2 calibration improvement remains unsupported; the predictive-metric
+  improvement is scoped to the exact stored seed-0 SSL-v2 slice.
+- The standalone SSL runner artefact is superseded by the matched full grid and
+  SSL-v2 benchmark.
 - Regime execution plots are skipped because the required regime labels are not
   present in prediction artefacts.
 
@@ -48,9 +58,8 @@ feature ablations, generated figures and an evidence pack with claim auditing.
 
 ## Future Work
 
-- Broaden feature ablations to horizons 20/50 and slower model families.
-- Produce standalone SSL-runner evidence only if it adds useful, non-duplicative
-  support beyond the matched full grid.
+- Broaden SSL-v2 beyond seed 0; seeds 1 and 2 are deferred.
+- Broaden non-linear feature-ablation coverage beyond the current small slice.
 - Refresh the project-audit archive to clear `unknown_staleness`.
 - Write the manual paper only after deciding its scope separately from generated
   reports.
