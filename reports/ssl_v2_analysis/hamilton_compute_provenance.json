@@ -1,0 +1,73 @@
+{
+  "benchmark_scope": {
+    "folds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "horizons": [
+      10,
+      50
+    ],
+    "lookbacks": [
+      50
+    ],
+    "new_seeds_run_on_hamilton": [
+      1,
+      2
+    ],
+    "objectives": [
+      "supervised",
+      "market_state_multitask"
+    ],
+    "retained_aggregate_seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "compute_environment": {
+    "cluster": "Durham University Hamilton 8 / NCC HPC",
+    "cuda_module": "cuda/12.4.1",
+    "gpu": "NVIDIA H200 NVL MIG 1g.18gb",
+    "python": "3.12.6",
+    "pytorch": "2.5.1+cu124",
+    "slurm_partitions": [
+      "cuda",
+      "test"
+    ]
+  },
+  "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
+  "jobs": {
+    "array": {
+      "completed_tasks": 20,
+      "concurrency_limit": 4,
+      "failed_tasks": 0,
+      "job_id": "17369436",
+      "maximum_task_elapsed": "00:09:13",
+      "minimum_task_elapsed": "00:01:02"
+    },
+    "consolidation": {
+      "elapsed": "00:00:09",
+      "job_id": "17369477",
+      "validated_completed_runs": 60
+    },
+    "cpu_smoke": {
+      "elapsed": "00:00:08",
+      "job_id": "17369428"
+    },
+    "gpu_smoke": {
+      "elapsed": "00:00:05",
+      "job_id": "17369429"
+    },
+    "timing": {
+      "elapsed": "00:01:02",
+      "job_id": "17369434"
+    }
+  },
+  "reproducibility_note": "Slurm array tasks were independent by fold, horizon and seed. CUBLAS_WORKSPACE_CONFIG=:4096:8 was set for the array. PyTorch still warned that memory-efficient attention used a non-deterministic algorithm under the repository's warn-only deterministic setting, so bitwise GPU reproducibility is not claimed.",
+  "run_date": "2026-06-07",
+  "storage_policy": "Retained reports, summaries and compact run metadata are committed. Large checkpoints, raw prediction files and cluster logs are excluded."
+}

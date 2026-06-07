@@ -506,7 +506,10 @@ def test_final_report_section_distinguishes_sources_and_states_conclusions() -> 
     assert "ssl_failure_analysis.md" in text
     assert "Full-grid SSL does not improve overall" in text
     assert "fold-1/horizon-50" in text
-    assert "No broad SSL improvement and no calibration improvement is claimed" in text
+    assert (
+        "No broad SSL improvement or broad calibration improvement is claimed "
+        "from the SSL-v1 and matched full-grid evidence"
+    ) in text
 
 
 def test_evidence_pack_records_ssl_analysis_and_claims(tiny_artefacts: dict[str, Path]) -> None:

@@ -129,6 +129,7 @@ def analyse_ssl_v2_results(
             comparison=comparison,
             delta_by_horizon=delta_by_horizon,
             delta_by_fold=delta_by_fold,
+            delta_by_seed=delta_by_seed,
             delta_overall=delta_overall,
             confidence_filtered=confidence_filtered,
             confidence_status=confidence_status,
@@ -168,6 +169,8 @@ def analyse_ssl_v2_results(
         "figure_manifest": "figure_manifest.json",
         "summary": "summary.json",
     }
+    if (output / "hamilton_compute_provenance.json").is_file():
+        artefacts["compute_provenance"] = "hamilton_compute_provenance.json"
     analysis_summary = {
         "analysis_version": SSL_V2_ANALYSIS_VERSION,
         "created_at": datetime.now(UTC).isoformat(),
@@ -652,6 +655,7 @@ def _render_report(
     comparison: pd.DataFrame,
     delta_by_horizon: pd.DataFrame,
     delta_by_fold: pd.DataFrame,
+    delta_by_seed: pd.DataFrame,
     delta_overall: pd.DataFrame,
     confidence_filtered: pd.DataFrame,
     confidence_status: Mapping[str, Any],
@@ -682,8 +686,8 @@ def _render_report(
         "SSL-v2 was added because the first-generation SSL analysis found that random "
         "field reconstruction and next-field prediction did not broadly improve "
         "downstream predictive or calibration metrics.",
-        "The current closure is seed 0 only; the multi-seed harness exists, but "
-        "seeds 1 and 2 are deferred.",
+        "The current closure covers the exact stored folds, horizons, seeds and "
+        "lookbacks listed above.",
         "",
         "## Predictive Metrics",
         "",
@@ -722,6 +726,9 @@ def _render_report(
         "",
     ]
     lines += _aggregate_delta_block(delta_overall)
+    mixed_note = _mixed_delta_note(delta_by_seed=delta_by_seed, delta_by_horizon=delta_by_horizon)
+    if mixed_note:
+        lines += ["", *_wrap(mixed_note)]
     lines += [
         "",
         "## Confidence-Filtered Diagnostics",
@@ -823,6 +830,29 @@ def _aggregate_delta_block(delta_overall: pd.DataFrame) -> list[str]:
         ),
         rows,
     )
+
+
+def _mixed_delta_note(*, delta_by_seed: pd.DataFrame, delta_by_horizon: pd.DataFrame) -> str:
+    def _negative_groups(frame: pd.DataFrame, group: str) -> list[str]:
+        if frame.empty:
+            return []
+        rows = frame[frame.get("ssl_objective") == "market_state_multitask"]
+        return [
+            str(row.get(group))
+            for _, row in rows.iterrows()
+            if float(row.get("mean_delta_macro_f1", 0.0)) < 0.0
+        ]
+
+    negative_seeds = _negative_groups(delta_by_seed, "seed")
+    negative_horizons = _negative_groups(delta_by_horizon, "horizon")
+    if not negative_seeds and not negative_horizons:
+        return ""
+    parts = []
+    if negative_seeds:
+        parts.append("negative mean macro-F1 for seed(s) " + ", ".join(negative_seeds))
+    if negative_horizons:
+        parts.append("negative mean macro-F1 for horizon(s) " + ", ".join(negative_horizons))
+    return "Aggregate support is not uniform across strata: " + "; ".join(parts) + "."
 
 
 def _confidence_filtered_block(

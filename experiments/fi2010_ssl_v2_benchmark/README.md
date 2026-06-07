@@ -7,18 +7,15 @@ It evaluates a failure-analysis-motivated second-generation SSL objective agains
 
 - folds: 1, 2, 3, 4, 5
 - horizons: 10, 50
-- seeds: 0
+- seeds: 0, 1, 2
 - lookbacks: 50
 - objectives: supervised, market_state_multitask
 - SSL-v2 pretrain epochs: 5
 - fine-tune max epochs: 25
 - early-stopping patience: 5
 - evidence level: complete_real
-- scope label: folds_1_2_3_4_5_h10_h50_complete_real
+- scope label: folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real
 - imported baseline runs: 0
-
-The multi-seed harness exists, but seeds 1 and 2 are deferred. Predictive
-improvement is therefore supported only for the exact stored seed-0 scope above.
 
 ## Claim Boundaries
 

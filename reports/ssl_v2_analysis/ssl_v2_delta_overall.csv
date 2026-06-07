@@ -1,2 +1,2 @@
 ssl_objective,matched_run_count,mean_delta_macro_f1,mean_delta_mcc,mean_delta_ece,mean_delta_brier_score,macro_f1_wins,ece_wins
-market_state_multitask,10,0.02769689604392379,0.056615464944082296,0.005259939146806179,-0.030140044217033833,5,4
+market_state_multitask,30,0.011218473519528652,0.025924917417425513,-0.0030002979827322,-0.023540601649400465,13,12

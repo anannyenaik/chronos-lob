@@ -17,19 +17,19 @@
     "summary": "summary.json",
     "training_curves_summary": "training_curves_summary.csv"
   },
-  "baseline_source_dir": "experiments\\fi2010_neural_proper_training_subset_v2",
+  "baseline_source_dir": "experiments/fi2010_neural_proper_training_subset_v2",
   "batch_size": 1024,
   "claim_boundary": "SSL-v2 evidence is limited to the exact stored folds, horizons, seeds, lookbacks and objectives; no broad SSL, calibration or trading claim follows.",
-  "comparison_rows": 10,
-  "completed_run_count": 20,
-  "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
-  "created_at": "2026-06-01T12:38:07.058283Z",
+  "comparison_rows": 30,
+  "completed_run_count": 60,
+  "config_path": "configs/experiments/fi2010_neural_proper_training.yaml",
+  "created_at": "2026-06-07T17:51:47.245603Z",
   "device": "cpu",
   "early_stopping_patience": 5,
   "environment": {
     "package_version": "0.1.0",
-    "platform": "Windows-10-10.0.19045-SP0",
-    "python": "3.11.9"
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.12.6"
   },
   "evidence_level": "complete_real",
   "failed_run_count": 0,
@@ -40,7 +40,7 @@
     4,
     5
   ],
-  "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
+  "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
   "horizons": [
     10,
     50
@@ -55,14 +55,16 @@
     "supervised",
     "market_state_multitask"
   ],
-  "output_dir": "experiments\\fi2010_ssl_v2_benchmark",
+  "output_dir": "experiments/fi2010_ssl_v2_benchmark",
   "pretrain_epochs": 5,
-  "processed_root": "data\\processed\\fi2010",
-  "run_count": 20,
+  "processed_root": "data/processed/fi2010",
+  "run_count": 60,
   "runner_version": "fi2010-ssl-v2-benchmark/v1",
-  "scope_label": "folds_1_2_3_4_5_h10_h50_complete_real",
+  "scope_label": "folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real",
   "seeds": [
-    0
+    0,
+    1,
+    2
   ],
   "smoke_test": false,
   "warnings": []

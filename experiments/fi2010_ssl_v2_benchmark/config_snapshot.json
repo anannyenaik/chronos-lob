@@ -1,8 +1,8 @@
 {
-  "baseline_source_dir": "experiments\\fi2010_neural_proper_training_subset_v2",
+  "baseline_source_dir": "experiments/fi2010_neural_proper_training_subset_v2",
   "batch_size": 1024,
   "claim_boundary": "second-generation SSL objective, scoped comparison only",
-  "config_path": "configs\\experiments\\fi2010_neural_proper_training.yaml",
+  "config_path": "configs/experiments/fi2010_neural_proper_training.yaml",
   "contrastive": false,
   "early_stopping_patience": 5,
   "evidence_level": "complete_real",
@@ -28,10 +28,12 @@
     "market_state_multitask"
   ],
   "pretrain_epochs": 5,
-  "processed_root": "data\\processed\\fi2010",
+  "processed_root": "data/processed/fi2010",
   "runner_version": "fi2010-ssl-v2-benchmark/v1",
-  "scope_label": "folds_1_2_3_4_5_h10_h50_complete_real",
+  "scope_label": "folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real",
   "seeds": [
-    0
+    0,
+    1,
+    2
   ]
 }

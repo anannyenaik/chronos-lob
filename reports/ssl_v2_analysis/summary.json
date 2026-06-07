@@ -2,6 +2,7 @@
   "analysis_version": "fi2010-ssl-v2-analysis/v1",
   "artefacts": {
     "claim_assessment": "ssl_v2_claim_assessment.json",
+    "compute_provenance": "hamilton_compute_provenance.json",
     "confidence_filtered": "ssl_v2_confidence_filtered.csv",
     "delta_by_fold": "ssl_v2_delta_by_fold.csv",
     "delta_by_fold_horizon": "ssl_v2_delta_by_fold_horizon.csv",
@@ -19,7 +20,7 @@
     "broad_ssl_improvement": "unsupported",
     "foundation_model": "forbidden",
     "sota": "forbidden",
-    "ssl_v2_calibration_improvement": "unsupported",
+    "ssl_v2_calibration_improvement": "supported",
     "ssl_v2_evaluated": "supported",
     "ssl_v2_objective_implemented": "supported",
     "ssl_v2_predictive_improvement": "supported"
@@ -29,7 +30,7 @@
     "predictions_available": true,
     "reason": "",
     "runs_missing_predictions": 0,
-    "runs_with_predictions": 10,
+    "runs_with_predictions": 30,
     "thresholds": [
       0.33,
       0.5,
@@ -38,7 +39,7 @@
       0.95
     ]
   },
-  "created_at": "2026-06-01T15:45:37.982838+00:00",
+  "created_at": "2026-06-07T17:52:46.749925+00:00",
   "evidence_level": "complete_real",
   "execution_proxy_available": true,
   "execution_proxy_note": {
@@ -75,12 +76,14 @@
   "lookbacks": [
     50
   ],
-  "matched_rows": 10,
-  "out_dir": "reports\\ssl_v2_analysis",
-  "scope_label": "folds_1_2_3_4_5_h10_h50_complete_real",
+  "matched_rows": 30,
+  "out_dir": "reports/ssl_v2_analysis",
+  "scope_label": "folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real",
   "seeds": [
-    0
+    0,
+    1,
+    2
   ],
-  "ssl_v2_dir": "experiments\\fi2010_ssl_v2_benchmark",
-  "ssl_v2_matched_rows": 10
+  "ssl_v2_dir": "experiments/fi2010_ssl_v2_benchmark",
+  "ssl_v2_matched_rows": 30
 }
