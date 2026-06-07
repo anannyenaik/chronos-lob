@@ -1,6 +1,6 @@
 # Binance L2 Extension Schema
 
-Typed schemas for the real event-level aggregated L2 replay path. Binance
+Typed schemas for the real captured aggregated L2 replay path. Binance
 diff-depth updates are aggregated level updates, not individual order
 events.
 

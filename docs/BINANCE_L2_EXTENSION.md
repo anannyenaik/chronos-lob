@@ -1,15 +1,18 @@
-# Real Event-Level L2 Replay Extension (Binance Spot)
+# Binance Spot Aggregated L2 Replay
 
 ChronosLOB includes a storage-light, offline path that ingests a Binance Spot
 L2 depth snapshot plus a diff-depth update stream, reconstructs the local order
 book deterministically and validates update continuity and book invariants. It
-adds an aggregated real-venue depth-stream engineering path alongside FI-2010
-snapshots and the synthetic event-level extension.
+adds an aggregated crypto-venue depth-stream engineering path alongside FI-2010
+snapshots and the synthetic event-level extension. The committed sample uses
+Binance-shaped synthetic fixtures; user-supplied local captures are required
+for exchange-data evidence.
 
 ## What this is, and what it is not
 
-- It is real crypto-market order-book data engineering evidence: a real
-  event-level aggregated depth-stream ingestion and replay path.
+- It is an offline aggregated crypto-market order-book ingestion and replay
+  path. Fixture runs are engineering checks; local captures are required for
+  exchange-data evidence.
 - Binance diff-depth updates are **aggregated level updates**, not individual
   order-event data. A positive quantity upserts a price level; a zero quantity
   removes it.

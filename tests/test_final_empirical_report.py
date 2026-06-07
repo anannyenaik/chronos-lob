@@ -618,11 +618,11 @@ def test_report_contains_key_sections_and_paths(
 
     text = report_path.read_text(encoding="utf-8")
     for section in (
-        "## Evidence Snapshot",
-        "## Main Result Table",
-        "## Uncertainty Summary",
-        "## Artefact Traceability",
-        "## Reproduction Commands",
+        "## Executive Summary",
+        "## Evidence Map",
+        "## FI-2010 Benchmark Evidence",
+        "## Reproducibility and Artefacts",
+        "## Deferred Work",
     ):
         assert section in text
     assert "multi-fold" in text
@@ -792,7 +792,7 @@ def test_report_includes_actual_feature_ablation_stability_scope(
     )
 
     text = report_path.read_text(encoding="utf-8")
-    assert "## Feature Ablation and Stability Analysis" in text
+    assert "## Feature-Stability Analysis" in text
     assert "partial_real" in text
     assert "10, 20, 50" in text
     assert "not causal feature importance" in text
@@ -904,7 +904,7 @@ def test_final_report_consumes_evidence_pack_summary(
     )
 
     text = report_path.read_text(encoding="utf-8")
-    assert "## Evidence Pack Audit" in text
+    assert "### Claim Audit" in text
     assert "supported=1" in text
     assert "Release caveats from the evidence pack" in text
 
@@ -927,7 +927,7 @@ def test_final_report_references_execution_centrepiece(
     )
 
     text = report_path.read_text(encoding="utf-8")
-    assert "## Forecasting versus Signal-Quality Gap" in text
+    assert "## Main Finding: Forecasting versus Signal-Quality Gap" in text
     assert "execution_centrepiece.md" in text
     assert "forecasting-versus-signal-quality gap" in text
     assert "raw predictions" in text

@@ -31,7 +31,7 @@ trading, production model-serving, production HFT or SOTA modelling. The smoke
 run reduces a cross-entropy loss so the network is genuinely *trained* rather
 than random, but the learned relationship is an artificial synthetic rule with
 no market meaning. The exported logits are consumed by Asterion as a
-deterministic **plumbing score**, not an alpha signal.
+deterministic **integration-check score**, not an alpha signal.
 
 ## Architecture / contract
 

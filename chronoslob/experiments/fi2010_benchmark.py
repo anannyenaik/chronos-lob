@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import yaml  # type: ignore[import-untyped]
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from chronoslob.data.fi2010 import FI2010Config, FI2010Dataset, load_fi2010

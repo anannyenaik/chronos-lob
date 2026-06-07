@@ -27,8 +27,9 @@ The serious config covers two supervised neural baselines:
 - `deeplob_style`
 - `matrix_transformer`
 
-No SSL result is reported yet, and no self-supervised pretraining path is
-enabled by this protocol.
+This supervised protocol does not itself run SSL. Retained matched SSL evidence
+is reported separately in the one-epoch neural full grid, the partial
+proper-training subset and the scoped SSL-v2 benchmark.
 
 ## Config
 
@@ -127,6 +128,6 @@ single epoch. The full configured grid requires an explicit
 
 ## Claim Boundary
 
-No neural superiority claim is made. No profitability, deployment, live
-tradability, foundation-model or state-of-the-art claim is made. No SSL result
-is reported yet.
+No neural superiority claim is made. This protocol does not establish
+deployment or live-market execution quality. SSL claims must be taken only from
+the separately retained matched artefacts and their exact recorded scopes.

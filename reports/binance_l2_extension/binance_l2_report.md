@@ -1,4 +1,4 @@
-# ChronosLOB Real Event-Level L2 Replay Extension (Binance Spot)
+# ChronosLOB Binance Spot Aggregated L2 Replay
 
 This sample report is generated from small Binance-shaped synthetic
 fixtures using the same local snapshot-plus-diff replay contract used
@@ -18,7 +18,7 @@ cancellations and does not model queue position from diff-depth alone.
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-05-30T17:21:24.901650+00:00 |
+| generated_at | 2026-06-07T01:08:35.814319+00:00 |
 | symbol | TESTUSDT |
 | venue | binance |
 | evidence_level | binance_l2_fixture_replay |
@@ -124,7 +124,7 @@ git-ignored local directory and are never committed.
 | claim | status | reason |
 | --- | --- | --- |
 | binance_l2_replay_pipeline | supported | Snapshot-plus-diff replay reconstructs the book and passes the continuity and invariant checks. |
-| real_event_level_stream_path | needs_real_evidence | The bundled sample uses Binance-shaped synthetic fixtures; the same offline parser/replay path accepts user-supplied local Binance captures. |
+| real_captured_aggregated_l2_stream_path | needs_real_evidence | The bundled sample uses Binance-shaped synthetic fixtures; the same offline parser/replay path accepts user-supplied local Binance captures. |
 | binance_update_continuity_validation | supported | Update-id bracketing, stale-event and gap checks are enforced. |
 | binance_order_book_invariants | supported | Non-negative depth and best bid below best ask are validated. |
 | real_market_predictive_success | unsupported | No predictive or returns evidence is produced by replay. |

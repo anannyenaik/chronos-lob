@@ -386,7 +386,7 @@ def test_final_report_includes_synthetic_section(tmp_path: Path) -> None:
         overwrite=True,
     )
     text = out.read_text(encoding="utf-8")
-    assert "## Synthetic Event-Level Extension" in text
+    assert "## Synthetic Event-Level Replay" in text
     assert "does not provide real-market evidence" in text
     assert "does not change FI-2010 limitations" in text
 

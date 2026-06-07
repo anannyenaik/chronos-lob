@@ -3046,7 +3046,7 @@ def _replay_binance_l2_sample_impl(
         print(f"Binance L2 replay extension failed: {exc}", file=sys.stderr)
         return 1
 
-    print("ChronosLOB real event-level L2 replay extension (Binance Spot, offline)")
+    print("ChronosLOB Binance Spot aggregated L2 replay (offline)")
     print(f"  output directory:   {result.out_dir}")
     print(f"  files written:      {len(result.files_written)}")
     print(f"  snapshot path:      {snapshot_path}")

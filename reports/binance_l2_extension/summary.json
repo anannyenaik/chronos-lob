@@ -24,8 +24,8 @@
   "feature_row_count": 3,
   "fixture_data": true,
   "gap_count": 0,
-  "generated_at": "2026-05-30T17:21:24.901650+00:00",
-  "git_commit": "8d69fbb00a10130a4781babe6de39ea81128613d",
+  "generated_at": "2026-06-07T01:08:35.814319+00:00",
+  "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
   "input_file_hashes": {
     "tests/fixtures/binance/synthetic_diff_updates.jsonl": "9d0128cb3e68dc619275f326a8eeee56c2057996985639a1fb6d605fba53a788",
     "tests/fixtures/binance/synthetic_snapshot.json": "6494612480d6bbcb35bf3d0a5cc3139c57b16847edb4867b3c4e7eb67a93c4ac"

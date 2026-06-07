@@ -8,11 +8,11 @@ and refer here for boundaries.
 
 ## Research Scope
 
-The platform studies whether self-supervised representations of order
-book dynamics can improve short-horizon market-state forecasting, and
-whether those forecasts remain useful under explicit execution
-assumptions. Forecast quality, calibration quality and cost-aware
-signal quality are reported as separate evidence streams.
+The platform tests whether market-microstructure forecasts remain meaningful
+under leakage-safe validation, calibration checks, feature-stability analysis,
+event-level replay and execution-aware proxy diagnostics. Forecast quality,
+calibration quality and signal-quality proxies are reported as separate
+evidence streams.
 
 ## Data Limitations
 
@@ -44,13 +44,13 @@ signal quality are reported as separate evidence streams.
 
 ## Execution-Validation Limitations
 
-The execution-aware validation layer is a deterministic research
-simulation. It supports configured fees, spread costs, row-step
-latency, turnover, passive fill proxies, adverse-selection labels and
-simple risk constraints.
+The execution-aware validation layer provides deterministic offline proxy
+diagnostics. It supports configured fees, spread costs, row-step latency,
+turnover, passive fill proxies, adverse-selection labels and simple risk
+constraints.
 
-It does not model live trading, broker or exchange integration,
-venue-specific queue priority, live partial fills, queue dynamics,
+It does not report realised returns or model live trading, broker or exchange
+integration, venue-specific queue priority, live partial fills, queue dynamics,
 market impact or portfolio optimisation.
 Any future execution-aware result must state these assumptions.
 

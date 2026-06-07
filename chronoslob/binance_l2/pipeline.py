@@ -275,7 +275,7 @@ def _build_claim_assessment(*, replay_ok: bool, fixture_data: bool) -> dict[str,
                     "continuity and invariant checks."
                 ),
             },
-            "real_event_level_stream_path": {
+            "real_captured_aggregated_l2_stream_path": {
                 "status": real_stream_status,
                 "reason": real_stream_reason,
             },

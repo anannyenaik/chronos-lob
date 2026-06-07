@@ -1,65 +1,62 @@
-# Public Release Notes
+# ChronosLOB v0.2.0 Alpha Release Notes
 
-Date: 2026-05-29
+Date: 2026-06-07
 
-## Current Contents
+## Headline
 
-ChronosLOB contains a leakage-safe FI-2010 research platform with classical
-benchmarks, supervised and self-supervised transformer comparison
-infrastructure, calibration diagnostics, execution-aware proxy diagnostics,
-feature ablations, generated figures and an evidence pack with claim auditing.
-The public story now centres on the execution-aware gap between forecast quality
-and trading-signal quality.
+ChronosLOB v0.2.0 presents a claim-audited public evidence release centred on
+one result: forecasting metrics and trading-signal diagnostics can diverge.
 
-## Retained Evidence
+## What Changed
 
-- Classical FI-2010 benchmark artefacts: `archived_valid`.
-- Neural full grid: `archived_valid`, 135/135 matched one-epoch runs across
-  folds 1-5, horizons 10/20/50, seeds 0-2 and supervised/masked/next-field
-  objectives.
-- Execution-v3: `archived_valid`, offline cost-adjusted proxy diagnostics from
-  stored neural-grid predictions.
-- Execution-v3 analysis: `complete_real`, using retained proxy tables.
-- Execution centrepiece: `archived_valid`, with the
-  forecasting-versus-signal-quality figure and retained proxy diagnostics.
-- SSL-v2: `complete_real` for folds 1-5, horizons 10/50, seed 0 and lookback 50.
-- Final empirical report and evidence pack: regenerated from stored artefacts.
+- Aligned the README, roadmap, project status, safety document, evidence pack
+  and generated final report around one conservative public narrative.
+- Reorganised the final empirical report into an evidence-led public report
+  rather than an experiment-by-experiment dump.
+- Clarified artefact completeness and freshness through `complete_real`,
+  `partial_real`, `archived_valid`, `optional_missing`,
+  `obsolete_superseded` and `unknown_staleness`.
+- Added the SSL-v2 seed-1 and seed-2 refresh run with Slurm on Durham University
+  Hamilton/NCC HPC.
+- Updated release metadata from `0.1.0` to `0.2.0` alpha.
 
-## Partial Evidence
+## Evidence Included
 
-- Proper-training neural subset: `partial_real`, currently fold 1, horizons
-  10/50, seed 0 and lookback 50.
-- Feature ablations: `partial_real`, with logistic/ridge folds 1-5, horizons
-  10/20/50 and seeds 0-2, plus a small gradient-boosting slice.
-- Figure outputs: real and traceable, with unsupported regime plots skipped
-  because regime labels are unavailable.
-- Project-audit archive: `unknown_staleness`.
+- Leakage-safe FI-2010 classical benchmark evidence.
+- Matched supervised and SSL comparison evidence.
+- Scoped mean SSL-v2 predictive and calibration improvement for the exact stored
+  folds 1-5, horizons 10/50, seeds 0-2, lookback-50 slice.
+- Calibration and confidence-filtering diagnostics.
+- Scoped FI-2010 snapshot-feature stability analysis.
+- Offline execution-aware proxy diagnostics and the execution centrepiece.
+- Controlled synthetic event-level replay.
+- Binance Spot aggregated L2 replay engineering evidence, with the committed
+  sample explicitly fixture-backed.
 
-## What Did Not Work
+## Limitations
 
-- SSL pretraining did not improve the completed matched full-grid comparison.
-- Broad SSL improvement remains unsupported.
-- SSL-v2 calibration improvement remains unsupported; the predictive-metric
-  improvement is scoped to the exact stored seed-0 SSL-v2 slice.
-- The standalone SSL runner artefact is superseded by the matched full grid and
-  SSL-v2 benchmark.
-- Regime execution plots are skipped because the required regime labels are not
-  present in prediction artefacts.
+- SSL-v2 results are mixed by seed and horizon; broad SSL improvement is
+  unsupported.
+- Execution evidence is offline proxy diagnostics only.
+- FI-2010 does not expose true event-level order flow or queue position.
+- Feature ablations are not causal feature importance.
+- Synthetic results do not establish real-market generalisation.
+- Binance replay does not establish equity-market or predictive success.
 
-## Intentionally Not Claimed
+## Deferred Work
 
-- No live trading.
-- No profitability or PnL.
-- No tradable alpha.
-- No SOTA or foundation-model status.
-- No production execution simulator.
-- No true event-level OFI, cancellation imbalance, trade imbalance or
-  queue-position modelling from FI-2010 snapshots.
+- A broader proper-training neural benchmark.
+- Broader non-linear feature-stability coverage.
+- The manual paper.
 
-## Future Work
+## Reproducibility
 
-- Broaden SSL-v2 beyond seed 0; seeds 1 and 2 are deferred.
-- Broaden non-linear feature-ablation coverage beyond the current small slice.
-- Refresh the project-audit archive to clear `unknown_staleness`.
-- Write the manual paper only after deciding its scope separately from generated
-  reports.
+```powershell
+python -m pytest -q
+python -m ruff check .
+python -m mypy chronoslob
+python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-release-readiness
+python -m chronoslob.cli run-project-audit --strict
+git diff --check
+```

@@ -47,11 +47,10 @@ with self-supervised results reported as scoped empirical diagnostics.
   horizon 50 in the partial subset, where calibration worsened.
 - A complete-real SSL-v2 benchmark and analysis. The second-generation objective
   uses structured group masking plus future spread, volatility, return and
-  imbalance auxiliary heads. The stored folds 1-5, horizons 10/50, seed 0 scope
-  supports implementation, evaluation and scoped predictive improvement for
-  exactly that stored slice. The multi-seed harness exists, but SSL-v2 seeds 1
-  and 2 are deferred. ECE still worsens on average, so calibration improvement
-  and broad SSL improvement claims remain unsupported.
+  imbalance auxiliary heads. The stored folds 1-5, horizons 10/50, seeds 0-2
+  scope supports implementation, evaluation and mean predictive and calibration
+  improvement for exactly that stored slice. Results are mixed by seed and
+  horizon, and broad SSL improvement remains unsupported.
 - A separate, earlier 25-epoch reduced-scope supervised neural FI-2010 benchmark
   across folds 1-5, with a single-seed and lookback-20 caveat, reported
   separately from the matched grid.
@@ -89,10 +88,6 @@ with self-supervised results reported as scoped empirical diagnostics.
 
 ## In Progress and Next
 
-- Broaden the proper-training neural subset beyond the current fold-1,
-  horizons-10/50, seed-0, lookback-50 slice, while keeping official split-aware
-  evaluation, train-only preprocessing and validation-only model selection
-  intact.
 - Broaden non-linear feature-ablation coverage beyond the current small
   gradient-boosting slice before making broader model-family statements.
 - Extend evidence beyond FI-2010 to other limit order book datasets where data
@@ -100,7 +95,7 @@ with self-supervised results reported as scoped empirical diagnostics.
 - Run and document user-supplied Binance Spot L2 captures when local data is
   available; keep raw captures outside git and report only compact summaries.
 - Broaden genuine train-only SSL-v2 pretraining and supervised fine-tuning
-  evidence beyond the current folds 1-5, horizons 10/50, seed-0 scope before
+  evidence beyond the current folds 1-5, horizons 10/50, seeds 0-2 scope before
   making any broader SSL improvement claim.
 - Extend data adapters for LOBSTER, ITCH or other limit order book formats when
   data access and licensing allow.
@@ -112,6 +107,12 @@ with self-supervised results reported as scoped empirical diagnostics.
 - Continue tightening report generation so public tables and summaries are
   rebuilt directly from stored artefacts and keep the archived/optional/superseded
   taxonomy easy for reviewers to audit.
+
+## Deferred Work
+
+- A broader proper-training neural benchmark across folds, seeds and lookbacks.
+- The manual paper; generated public reports remain artefact summaries until its
+  scope is chosen explicitly.
 
 ## Evaluation Principles
 

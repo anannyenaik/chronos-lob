@@ -33,7 +33,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import yaml  # type: ignore[import-untyped]
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chronoslob import __version__

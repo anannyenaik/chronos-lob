@@ -255,14 +255,21 @@ def _build_dataset(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
             labels.append(1)  # flat
     X = np.stack(windows).astype(np.float32)
     y = np.array(labels, dtype=np.int64)
-    counts = {int(k): int(v) for k, v in zip(*np.unique(y, return_counts=True))}
+    counts = {
+        int(k): int(v)
+        for k, v in zip(*np.unique(y, return_counts=True), strict=True)
+    }
     return {
         "X": X,
         "y": y,
         "mean": mean.astype(np.float64),
         "std": std.astype(np.float64),
         "threshold": threshold,
-        "class_counts": {"down": counts.get(0, 0), "flat": counts.get(1, 0), "up": counts.get(2, 0)},
+        "class_counts": {
+            "down": counts.get(0, 0),
+            "flat": counts.get(1, 0),
+            "up": counts.get(2, 0),
+        },
         "n_windows": int(X.shape[0]),
         "n_snapshots": len(snapshots),
     }
@@ -465,7 +472,8 @@ def build_metadata(
             "No predictive quality claim.",
             "No trading profitability or alpha claim.",
             "Accuracy/loss are diagnostic context only, with no trading significance.",
-            "Recorded public Binance crypto L2 depth only; not L3, not equities, not market realism.",
+            "Recorded public Binance crypto L2 depth only; not L3, equities or "
+            "market realism.",
             "No live trading, no authenticated connectivity, no order placement.",
             "Not production model-serving infrastructure.",
             "Not production-HFT infrastructure.",

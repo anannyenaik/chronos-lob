@@ -86,7 +86,7 @@ def test_binance_l2_pipeline_writes_storage_light_fixture_report(tmp_path: Path)
 
     claims = _read_json(out / "binance_claim_assessment.json")["claims"]
     assert claims["binance_l2_replay_pipeline"]["status"] == "supported"
-    assert claims["real_event_level_stream_path"]["status"] == "needs_real_evidence"
+    assert claims["real_captured_aggregated_l2_stream_path"]["status"] == "needs_real_evidence"
     assert claims["live_trading_or_profitability"]["status"] == "forbidden"
 
 
@@ -177,7 +177,10 @@ def test_evidence_pack_audits_binance_l2_fixture_claims(tmp_path: Path) -> None:
 
     claims = {claim.claim_id: claim for claim in audit_claims(records)}
     assert claims["binance_l2.replay_pipeline"].status == "supported"
-    assert claims["binance_l2.real_event_level_stream_path"].status == "needs_real_evidence"
+    assert (
+        claims["binance_l2.real_captured_aggregated_l2_stream_path"].status
+        == "needs_real_evidence"
+    )
     assert claims["binance_l2.equity_market_generalisation"].status == "unsupported"
     assert claims["binance_l2.live_trading_or_profitability"].status == "forbidden"
 
@@ -202,7 +205,7 @@ def test_final_report_includes_binance_l2_section(tmp_path: Path) -> None:
     )
 
     text = report_path.read_text(encoding="utf-8")
-    assert "## Real Event-Level L2 Replay Extension" in text
+    assert "## Binance L2 Replay" in text
     assert "binance_l2_fixture_replay" in text
     assert "aggregated depth-stream" in text
     assert "ingestion and replay" in text

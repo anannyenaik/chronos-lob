@@ -463,7 +463,7 @@ def test_final_report_skips_ssl_when_not_supplied(tmp_path: Path) -> None:
         overwrite=True,
     )
     text = report_path.read_text(encoding="utf-8")
-    assert "## Self-Supervised Pretraining" in text
+    assert "### Self-Supervised Pretraining" in text
     assert "No SSL result is claimed" in text
     assert "Self-Supervised Pretraining" in summary.skipped_sections
     # No SSL comparison row is rendered.

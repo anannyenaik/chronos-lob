@@ -393,7 +393,7 @@ def test_report_builder_marks_smoke_full_grid_as_unsupported(
     )
 
     text = report_path.read_text(encoding="utf-8")
-    assert "## Full Neural Grid" in text
+    assert "### Full Neural Grid" in text
     assert "smoke-test-only" in text
     assert "not empirical evidence" in text
     assert "Full Neural Grid" in summary.skipped_sections
@@ -431,6 +431,8 @@ def test_report_builder_distinguishes_missing_and_real_full_grid(
     assert "Status: loaded" in real_text
     assert "Matched SSL deltas" in real_text
     assert "Full Neural Grid" not in real_summary.skipped_sections
+    assert "Self-Supervised Pretraining" not in real_summary.skipped_sections
+    assert "SSL input not supplied" not in real_summary.missing_sections
 
 
 def test_smoke_cli_writes_expected_directory_structure(

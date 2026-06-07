@@ -1,8 +1,8 @@
 """Markdown report, schema doc and optional figures for the Binance L2 extension.
 
-The wording is deliberately conservative. Binance L2 evidence is real
-event-level aggregated depth-stream ingestion/replay engineering evidence for a
-crypto venue. It is not equity-market evidence, not live trading and not
+The wording is deliberately conservative. Binance L2 evidence is aggregated
+depth-stream ingestion/replay engineering evidence for a crypto venue. It is
+not individual-order event evidence, equity-market evidence, live trading or
 profitability or predictive-success evidence, and it complements (does not
 replace) the FI-2010 and synthetic evidence.
 """
@@ -47,7 +47,7 @@ def render_binance_report_markdown(
         intro = [
             "This report is generated from a Binance Spot L2 depth snapshot plus a",
             "diff-depth update stream, replayed offline into a local order book. It",
-            "demonstrates a real event-level aggregated depth-stream ingestion and",
+            "demonstrates a real captured aggregated depth-stream ingestion and",
             "replay path for a crypto venue.",
         ]
         scope = [
@@ -56,7 +56,7 @@ def render_binance_report_markdown(
             "success.",
         ]
     lines: list[str] = [
-        "# ChronosLOB Real Event-Level L2 Replay Extension (Binance Spot)",
+        "# ChronosLOB Binance Spot Aggregated L2 Replay",
         "",
         *intro,
         *scope,
@@ -283,7 +283,7 @@ def render_schema_markdown() -> str:
     lines = [
         "# Binance L2 Extension Schema",
         "",
-        "Typed schemas for the real event-level aggregated L2 replay path. Binance",
+        "Typed schemas for the real captured aggregated L2 replay path. Binance",
         "diff-depth updates are aggregated level updates, not individual order",
         "events.",
         "",

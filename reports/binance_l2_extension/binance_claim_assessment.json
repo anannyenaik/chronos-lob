@@ -25,7 +25,7 @@
       "reason": "Replay is offline; no live trading or returns are implied.",
       "status": "forbidden"
     },
-    "real_event_level_stream_path": {
+    "real_captured_aggregated_l2_stream_path": {
       "reason": "The bundled sample uses Binance-shaped synthetic fixtures; the same offline parser/replay path accepts user-supplied local Binance captures.",
       "status": "needs_real_evidence"
     },
