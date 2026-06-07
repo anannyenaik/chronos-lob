@@ -64,6 +64,16 @@ experiments/fi2010_midprice_h10/predictions.parquet
 experiments/fi2010_neural_full_grid/runs/
 experiments/fi2010_neural_proper_training_subset/runs/
 experiments/fi2010_neural_proper_training_subset_v2/runs/
+# Hamilton proper-training neural benchmark (this phase): per-cell timing and
+# array task outputs are regenerable and storage-heavy; only retained,
+# consolidated summaries are committed deliberately, never the raw task trees.
+experiments/fi2010_proper_neural_hamilton_timing/
+experiments/fi2010_proper_neural_hamilton_tasks/
+# Broader proper-training neural grid (separate from the published subset_v2 so
+# existing SSL-v2 baseline evidence is never mutated): ignore the heavy per-run
+# tree and predictions; its top-level aggregate summaries are committed
+# deliberately, exactly as for the existing subset_v2 directory.
+experiments/fi2010_neural_proper_training_broader/runs/
 experiments/fi2010_feature_ablations/runs/
 experiments/fi2010_feature_ablations/features/
 # Cached feature matrices and per-run row-level predictions are regenerable
