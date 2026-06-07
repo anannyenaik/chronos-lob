@@ -3,12 +3,11 @@
 ChronosLOB is designed as a local, reproducible research artefact. This page
 records the canonical validation and FI-2010 reproduction flow.
 
-The current public result path is the multi-fold FI-2010 flow: local
-acquisition and conversion, `prepare-fi2010-multifold`,
-`run-fi2010-multifold-classical`, the reduced-scope
-`run-fi2010-neural-benchmark`, `analyse-fi2010-uncertainty`,
-`run-fi2010-brutal-ablations`, `run-fi2010-execution-v2`, external context
-review and `build-final-empirical-report`.
+The current public result path is the retained-artefact flow: leakage-safe
+FI-2010 benchmark evidence, supervised and SSL comparisons, calibration and
+confidence filtering, feature-stability analysis, execution-aware proxy
+diagnostics and `build-final-empirical-report`. Synthetic event-level replay and
+Binance Spot aggregated L2 replay are supporting engineering evidence.
 
 The empirical study contract for FI-2010 is defined in
 [RESEARCH_PROTOCOL.md](RESEARCH_PROTOCOL.md). The multi-fold study config
@@ -309,18 +308,45 @@ python -m chronoslob.cli build-final-empirical-report \
   --uncertainty experiments/fi2010_uncertainty \
   --ablations experiments/fi2010_brutal_ablations \
   --execution experiments/fi2010_execution_v2 \
+  --execution-v3 experiments/fi2010_execution_v3 \
+  --execution-centrepiece reports/execution_centrepiece \
   --external experiments/fi2010_external_context \
+  --neural-full-grid experiments/fi2010_neural_full_grid \
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --ssl-v2-analysis reports/ssl_v2_analysis \
+  --feature-ablations experiments/fi2010_feature_ablations \
+  --feature-ablation-analysis reports/feature_ablation_analysis \
+  --evidence-pack reports/evidence_pack \
+  --synthetic-lob reports/synthetic_lob_extension \
+  --binance-l2 reports/binance_l2_extension \
   --out reports/chronoslob_final_empirical_report.md \
   --overwrite
 ```
 
+## Hamilton SSL-v2 Refresh
+
+The seed-1 and seed-2 SSL-v2 refresh was run with Slurm on Durham University
+Hamilton/NCC HPC. Independent array tasks covered one fold, horizon and seed pair
+each, with both supervised and market-state multitask objectives in each task.
+The array used a maximum concurrency of four.
+
+The retained aggregate combines the pre-existing seed-0 runs with the Hamilton
+seed-1 and seed-2 runs. Reports, summaries and compact run metadata are retained;
+large checkpoints, raw predictions and cluster logs are intentionally excluded.
+See
+[`reports/ssl_v2_analysis/hamilton_compute_provenance.json`](../reports/ssl_v2_analysis/hamilton_compute_provenance.json)
+for the recorded environment, Slurm jobs and GPU determinism caveat.
+
 ## Full Local Validation
 
-```bash
-python -m pytest
-python -m compileall -q chronoslob tests
+```powershell
+python -m pytest -q
 python -m ruff check .
 python -m mypy chronoslob
+python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-release-readiness
+python -m chronoslob.cli run-project-audit --strict
+git diff --check
 ```
 
 ## Reporting Rule

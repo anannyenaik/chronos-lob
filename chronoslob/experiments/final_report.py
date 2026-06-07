@@ -29,34 +29,20 @@ FINAL_EMPIRICAL_REPORT_BUILDER_VERSION = "phase-k/final-empirical-report/v1"
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
 _SECTION_TITLES: tuple[str, ...] = (
-    "Evidence Snapshot",
-    "Evidence Status Summary",
-    "Forecasting versus Signal-Quality Gap",
-    "Evidence Pack Audit",
-    "Research Question",
-    "Dataset And Split Protocol",
-    "Model Families",
-    "Main Result Table",
-    "Self-Supervised Pretraining",
-    "Full Neural Grid",
-    "Proper-Training Neural Subset",
-    "Legacy Reduced-Scope Benchmark",
-    "SSL Interpretation",
+    "Executive Summary",
+    "Evidence Map",
+    "Main Finding: Forecasting versus Signal-Quality Gap",
+    "FI-2010 Benchmark Evidence",
+    "Supervised and SSL Evidence",
     "SSL Failure Analysis",
-    "Second-Generation SSL Objective",
-    "Figure Index",
-    "Uncertainty Summary",
-    "Ablation Summary",
-    "Feature Ablation and Stability Analysis",
-    "Execution-Aware Proxy Summary",
-    "External Benchmark Context",
-    "Synthetic Event-Level Extension",
-    "Real Event-Level L2 Replay Extension",
-    "What This Supports",
-    "What This Does Not Claim",
+    "SSL-v2 Scoped Result",
+    "Feature-Stability Analysis",
+    "Execution-Aware Proxy Diagnostics",
+    "Synthetic Event-Level Replay",
+    "Binance L2 Replay",
     "Limitations",
-    "Artefact Traceability",
-    "Reproduction Commands",
+    "Reproducibility and Artefacts",
+    "Deferred Work",
 )
 
 # SSL rows are admitted only when these artefacts exist and the recorded
@@ -181,6 +167,7 @@ _OPTIONAL_SSL_V2_ANALYSIS_FILES = (
     "ssl_v2_loss_components.csv",
     "ssl_v2_claim_assessment.json",
     "figure_manifest.json",
+    "hamilton_compute_provenance.json",
 )
 
 
@@ -546,7 +533,7 @@ def _load_final_report_data(
     feature_ablation = _load_optional_artefacts(
         directory=feature_ablation_dir,
         label="feature_ablations",
-        section_title="Feature Ablation and Stability Analysis",
+        section_title="Feature-Stability Analysis",
         expected_files=_OPTIONAL_FEATURE_ABLATION_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -558,7 +545,7 @@ def _load_final_report_data(
         _load_optional_artefacts(
             directory=feature_ablation_analysis_dir,
             label="feature_ablation_analysis",
-            section_title="Feature Ablation and Stability Analysis",
+            section_title="Feature-Stability Analysis",
             expected_files=_OPTIONAL_FEATURE_ABLATION_ANALYSIS_FILES,
             input_paths=input_paths,
             file_hashes=file_hashes,
@@ -572,7 +559,7 @@ def _load_final_report_data(
     execution = _load_optional_artefacts(
         directory=execution_dir,
         label="execution",
-        section_title="Execution-Aware Proxy Summary",
+        section_title="Execution-Aware Proxy Diagnostics",
         expected_files=_OPTIONAL_EXECUTION_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -583,7 +570,7 @@ def _load_final_report_data(
     execution_v3 = _load_optional_artefacts(
         directory=execution_v3_dir,
         label="execution_v3",
-        section_title="Execution-Aware Proxy Summary",
+        section_title="Execution-Aware Proxy Diagnostics",
         expected_files=_OPTIONAL_EXECUTION_V3_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -594,7 +581,7 @@ def _load_final_report_data(
     execution_centrepiece = _load_optional_artefacts(
         directory=execution_centrepiece_dir,
         label="execution_centrepiece",
-        section_title="Forecasting versus Signal-Quality Gap",
+        section_title="Main Finding: Forecasting versus Signal-Quality Gap",
         expected_files=_OPTIONAL_EXECUTION_CENTREPIECE_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -616,7 +603,7 @@ def _load_final_report_data(
     synthetic = _load_optional_artefacts(
         directory=synthetic_lob_dir,
         label="synthetic_lob",
-        section_title="Synthetic Event-Level Extension",
+        section_title="Synthetic Event-Level Replay",
         expected_files=_OPTIONAL_SYNTHETIC_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -627,7 +614,7 @@ def _load_final_report_data(
     binance_l2 = _load_optional_artefacts(
         directory=binance_l2_dir,
         label="binance_l2",
-        section_title="Real Event-Level L2 Replay Extension",
+        section_title="Binance L2 Replay",
         expected_files=_OPTIONAL_BINANCE_L2_FILES,
         input_paths=input_paths,
         file_hashes=file_hashes,
@@ -639,7 +626,7 @@ def _load_final_report_data(
         _load_optional_artefacts(
             directory=ssl_v2_analysis_dir,
             label="ssl_v2_analysis",
-            section_title="Second-Generation SSL Objective",
+            section_title="SSL-v2 Scoped Result",
             expected_files=_OPTIONAL_SSL_V2_ANALYSIS_FILES,
             input_paths=input_paths,
             file_hashes=file_hashes,
@@ -674,6 +661,19 @@ def _load_final_report_data(
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
     )
+    matched_full_grid_ssl = (
+        full_grid.available
+        and full_grid.evidence_level != "smoke_test_only"
+        and any(row.get("status") == "matched" for row in full_grid.comparison_rows)
+    )
+    if not ssl.admitted and ssl.reason == "SSL input not supplied" and matched_full_grid_ssl:
+        warning = f"SSL input not supplied; {_SSL_SECTION_TITLE} will be marked skipped."
+        if warning in warnings:
+            warnings.remove(warning)
+        if _SSL_SECTION_TITLE in skipped_sections:
+            skipped_sections.remove(_SSL_SECTION_TITLE)
+        if ssl.reason in missing_sections:
+            missing_sections.remove(ssl.reason)
     proper_training = _load_proper_training_artefacts(
         directory=proper_training_dir,
         input_paths=input_paths,
@@ -1241,54 +1241,174 @@ def _render_report(data: _FinalReportData, headline_metrics: dict[str, Any]) -> 
         "Generated from stored FI-2010 artefacts only. No model training is run by this builder.",
         "",
     ]
-    lines.extend(_section("Evidence Snapshot", _render_evidence_snapshot(data, headline_metrics)))
-    lines.extend(_section("Evidence Status Summary", _render_evidence_status_summary(data)))
+    lines.extend(_section("Executive Summary", _render_executive_summary(data)))
     lines.extend(
         _section(
-            "Forecasting versus Signal-Quality Gap",
+            "Evidence Map",
+            [
+                *_subsection(
+                    "Stored Evidence Snapshot",
+                    _render_evidence_snapshot(data, headline_metrics),
+                ),
+                *_subsection("Evidence Status", _render_evidence_status_summary(data)),
+                *_subsection("Claim Audit", _render_evidence_pack_audit(data)),
+            ],
+        )
+    )
+    lines.extend(
+        _section(
+            "Main Finding: Forecasting versus Signal-Quality Gap",
             _render_forecasting_signal_gap(data),
         )
     )
-    lines.extend(_section("Evidence Pack Audit", _render_evidence_pack_audit(data)))
-    lines.extend(_section("Research Question", _render_research_question()))
-    lines.extend(_section("Dataset And Split Protocol", _render_dataset_protocol(data)))
-    lines.extend(_section("Model Families", _render_model_families(data)))
-    lines.extend(_section("Main Result Table", _render_main_results(data)))
-    lines.extend(_section(_SSL_SECTION_TITLE, _render_ssl(data)))
-    lines.extend(_section(_FULL_GRID_SECTION_TITLE, _render_full_grid(data)))
-    lines.extend(_section(_PROPER_TRAINING_SECTION_TITLE, _render_proper_training(data)))
-    lines.extend(_section("Legacy Reduced-Scope Benchmark", _render_legacy_neural_benchmark(data)))
-    lines.extend(_section("SSL Interpretation", _render_ssl_interpretation(data)))
-    lines.extend(_section("SSL Failure Analysis", _render_ssl_failure_analysis(data)))
     lines.extend(
-        _section("Second-Generation SSL Objective", _render_ssl_v2_analysis(data))
-    )
-    lines.extend(_section("Figure Index", _render_figure_index(data)))
-    lines.extend(_section("Uncertainty Summary", _render_uncertainty(data)))
-    lines.extend(_section("Ablation Summary", _render_ablations(data)))
-    lines.extend(
-        _section("Feature Ablation and Stability Analysis", _render_feature_ablations(data))
-    )
-    lines.extend(_section("Execution-Aware Proxy Summary", _render_execution(data)))
-    lines.extend(_section("External Benchmark Context", _render_external(data)))
-    lines.extend(
-        _section("Synthetic Event-Level Extension", _render_synthetic_extension(data))
+        _section(
+            "FI-2010 Benchmark Evidence",
+            [
+                *_subsection("Research Question", _render_research_question()),
+                *_subsection("Dataset and Split Protocol", _render_dataset_protocol(data)),
+                *_subsection("Model Families", _render_model_families(data)),
+                *_subsection("Main Result Table", _render_main_results(data)),
+                *_subsection("Uncertainty Summary", _render_uncertainty(data)),
+                *_subsection("Ablation Summary", _render_ablations(data)),
+                *_subsection("External Benchmark Context", _render_external(data)),
+            ],
+        )
     )
     lines.extend(
         _section(
-            "Real Event-Level L2 Replay Extension", _render_binance_l2_extension(data)
+            "Supervised and SSL Evidence",
+            [
+                *_subsection(_SSL_SECTION_TITLE, _render_ssl(data)),
+                *_subsection(_FULL_GRID_SECTION_TITLE, _render_full_grid(data)),
+                *_subsection(_PROPER_TRAINING_SECTION_TITLE, _render_proper_training(data)),
+                *_subsection(
+                    "Legacy Reduced-Scope Benchmark",
+                    _render_legacy_neural_benchmark(data),
+                ),
+                *_subsection("SSL Interpretation", _render_ssl_interpretation(data)),
+                *_subsection("SSL Failure Analysis", _render_ssl_failure_analysis(data)),
+            ],
         )
     )
-    lines.extend(_section("What This Supports", _render_what_this_proves(data)))
-    lines.extend(_section("What This Does Not Claim", _render_what_this_does_not_prove(data)))
-    lines.extend(_section("Limitations", _render_limitations(data)))
-    lines.extend(_section("Artefact Traceability", _render_traceability(data)))
-    lines.extend(_section("Reproduction Commands", _render_reproduction_commands()))
+    lines.extend(_section("SSL-v2 Scoped Result", _render_ssl_v2_analysis(data)))
+    lines.extend(
+        _section("Feature-Stability Analysis", _render_feature_ablations(data))
+    )
+    lines.extend(
+        _section(
+            "Execution-Aware Proxy Diagnostics",
+            [
+                *_render_execution(data),
+                *_subsection("Figure Index", _render_figure_index(data)),
+            ],
+        )
+    )
+    lines.extend(
+        _section("Synthetic Event-Level Replay", _render_synthetic_extension(data))
+    )
+    lines.extend(_section("Binance L2 Replay", _render_binance_l2_extension(data)))
+    lines.extend(
+        _section(
+            "Limitations",
+            [
+                *_subsection("What Should Not Be Inferred", _render_what_this_does_not_prove(data)),
+                *_subsection("Scope Limitations", _render_limitations(data)),
+            ],
+        )
+    )
+    lines.extend(
+        _section(
+            "Reproducibility and Artefacts",
+            [
+                *_subsection("What the Artefacts Support", _render_what_this_proves(data)),
+                *_subsection("Artefact Traceability", _render_traceability(data)),
+                *_subsection("Reproduction Commands", _render_reproduction_commands()),
+            ],
+        )
+    )
+    lines.extend(_section("Deferred Work", _render_deferred_work(data)))
     return "\n".join(lines).rstrip() + "\n"
 
 
 def _section(title: str, body: Sequence[str]) -> list[str]:
     return [f"## {title}", "", *body, ""]
+
+
+def _subsection(title: str, body: Sequence[str]) -> list[str]:
+    return [f"### {title}", "", *body, ""]
+
+
+def _render_executive_summary(data: _FinalReportData) -> list[str]:
+    ssl_v2_available = (
+        data.ssl_v2_analysis.directory is not None
+        and data.ssl_v2_analysis.summary is not None
+    )
+    ssl_v2_summary = data.ssl_v2_analysis.summary or {}
+    ssl_v2_claims = _ssl_v2_claim_statuses(data)
+    lines = [
+        *_wrap_prose(
+            "ChronosLOB tests whether market-microstructure forecasts remain meaningful "
+            "under leakage-safe validation, calibration checks, feature-stability "
+            "analysis, event-level replay and execution-aware proxy diagnostics."
+        ),
+        "",
+        *_wrap_prose(
+            "The main finding is that forecasting metrics and signal-quality diagnostics "
+            "can diverge. The retained execution centrepiece shows why predictive metrics "
+            "must be read alongside confidence filtering, active fraction, turnover, "
+            "cost, latency and adverse-selection proxy diagnostics."
+        ),
+        "",
+        *_wrap_prose(
+            "Supported: leakage-safe FI-2010 benchmark evidence, matched supervised/SSL "
+            "comparisons, scoped feature-stability analysis, controlled synthetic "
+            "event-level replay and an offline Binance Spot aggregated L2 replay path."
+        ),
+    ]
+    if ssl_v2_available:
+        lines.extend(
+            [
+                "",
+                *_wrap_prose(
+                    "Scoped result: SSL-v2 predictive improvement is "
+                    f"{ssl_v2_claims.get('ssl_v2_predictive_improvement', 'not audited')} "
+                    f"in the exact stored {_ssl_v2_scope_text(ssl_v2_summary)}. "
+                    "SSL-v2 calibration improvement is "
+                    f"{ssl_v2_claims.get('ssl_v2_calibration_improvement', 'not audited')}; "
+                    "broad SSL improvement remains unsupported."
+                ),
+            ]
+        )
+    deferred = "a broader proper-training neural benchmark and the manual paper"
+    if not _ssl_v2_is_multiseed(data):
+        deferred = f"multi-seed SSL-v2, {deferred}"
+    lines.extend(
+        [
+            "",
+            *_wrap_prose(
+                f"Deferred: {deferred}."
+            ),
+            "",
+            *_wrap_prose(
+                "Do not infer profitability, tradability, live-market execution quality, "
+                "equity-market generalisation from Binance replay, causal feature "
+                "importance or true event-level order flow from FI-2010 snapshots."
+            ),
+        ]
+    )
+    return lines
+
+
+def _render_deferred_work(data: _FinalReportData) -> list[str]:
+    lines = [
+        "- A broader proper-training neural benchmark across folds, seeds and lookbacks.",
+        "- Broader non-linear feature-stability coverage.",
+        "- A manual paper; generated reports remain artefact summaries.",
+    ]
+    if not _ssl_v2_is_multiseed(data):
+        lines.insert(0, "- Multi-seed SSL-v2 beyond the retained scope.")
+    return lines
 
 
 def _render_evidence_snapshot(
@@ -1397,22 +1517,36 @@ def _ssl_v2_snapshot(data: _FinalReportData) -> str:
     if artefacts.directory is None or artefacts.summary is None:
         return "not supplied; no SSL-v2 result claimed"
     summary = artefacts.summary
-    claim_payload = artefacts.json_payloads.get("ssl_v2_claim_assessment.json", {})
-    claims = claim_payload.get("claims", [])
-    claim_status = {
+    claim_status = _ssl_v2_claim_statuses(data)
+    return (
+        f"{_mapping_str(summary, 'evidence_level')}; exact stored "
+        f"{_ssl_v2_scope_text(summary)}; predictive="
+        f"{claim_status.get('ssl_v2_predictive_improvement', 'not audited')}, "
+        f"calibration={claim_status.get('ssl_v2_calibration_improvement', 'not audited')}"
+    )
+
+
+def _ssl_v2_claim_statuses(data: _FinalReportData) -> dict[str, str]:
+    payload = data.ssl_v2_analysis.json_payloads.get("ssl_v2_claim_assessment.json", {})
+    claims = payload.get("claims", [])
+    return {
         str(item.get("claim_id")): str(item.get("status"))
         for item in claims
         if isinstance(item, Mapping)
     }
+
+
+def _ssl_v2_scope_text(summary: Mapping[str, Any]) -> str:
     return (
-        f"{_mapping_str(summary, 'evidence_level')}; exact stored seed-0 scope; "
-        f"folds {_join_values(_mapping_list(summary, 'folds'))}, horizons "
-        f"{_join_values(_mapping_list(summary, 'horizons'))}, lookback "
-        f"{_join_values(_mapping_list(summary, 'lookbacks'))}; predictive="
-        f"{claim_status.get('ssl_v2_predictive_improvement', 'not audited')}, "
-        f"calibration={claim_status.get('ssl_v2_calibration_improvement', 'not audited')}; "
-        "seeds 1 and 2 deferred"
+        f"scope: folds {_join_values(_mapping_list(summary, 'folds'))}, horizons "
+        f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
+        f"{_join_values(_mapping_list(summary, 'seeds'))}, lookbacks "
+        f"{_join_values(_mapping_list(summary, 'lookbacks'))}"
     )
+
+
+def _ssl_v2_is_multiseed(data: _FinalReportData) -> bool:
+    return len(_mapping_list(data.ssl_v2_analysis.summary, "seeds")) > 1
 
 
 def _proper_training_snapshot(data: _FinalReportData) -> str:
@@ -1508,16 +1642,27 @@ def _render_evidence_status_summary(data: _FinalReportData) -> list[str]:
             f"{_join_values(_mapping_list(summary, 'models'))}."
         )
 
+    ssl_v2_claims = _ssl_v2_claim_statuses(data)
+    ssl_v2_scope = _ssl_v2_scope_text(data.ssl_v2_analysis.summary or {})
     not_claimed_bullets = [
         "- No overall SSL improvement is supported: first-generation SSL and the "
         "matched full grid do not support broad improvement; SSL-v2 predictive "
-        "improvement is scoped to the exact stored seed-0 slice.",
-        "- No SSL calibration improvement; SSL-v2 ECE and Brier deltas do not "
-        "jointly support that claim.",
+        f"improvement is scoped to the exact stored {ssl_v2_scope}.",
         "- No profitability, tradability, live-trading, PnL, SOTA, "
         "foundation-model or production-execution-simulator claim.",
         "- No true event-level order flow or queue position is observed from FI-2010 snapshots.",
     ]
+    if ssl_v2_claims.get("ssl_v2_calibration_improvement") == "supported":
+        not_claimed_bullets.insert(
+            1,
+            "- SSL-v2 calibration improvement is supported only in the exact stored "
+            f"{ssl_v2_scope}; no broader calibration conclusion follows.",
+        )
+    else:
+        not_claimed_bullets.insert(
+            1,
+            "- No SSL-v2 calibration improvement is supported in the retained scope.",
+        )
     legacy_bullet = (
         f"- The earlier {legacy_epochs}-epoch reduced-scope supervised "
         "matrix-transformer benchmark (single seed, lookback 20) is reported "
@@ -1593,16 +1738,23 @@ def _render_evidence_pack_audit(data: _FinalReportData) -> list[str]:
             _first_markdown_bullets(pack.unsupported_claims, fallback="see claim audit"),
         ),
     ]
+    ssl_v2_claims = _ssl_v2_claim_statuses(data)
+    ssl_v2_scope = _ssl_v2_scope_text(data.ssl_v2_analysis.summary or {})
     caveats = [
         "",
         "Release caveats from the evidence pack:",
         "",
         "- Smoke diagnostics are not empirical evidence.",
-        "- Broad SSL improvement and SSL calibration improvement remain unsupported.",
-        "- SSL-v2 predictive improvement is scoped to the exact stored seed-0 scope.",
+        "- Broad SSL improvement remains unsupported.",
+        f"- SSL-v2 predictive improvement is scoped to the exact stored {ssl_v2_scope}.",
         "- Execution-v3 metrics remain offline proxy diagnostics.",
         "- FI-2010 snapshot features do not expose event-level order flow or queue position.",
     ]
+    if ssl_v2_claims.get("ssl_v2_calibration_improvement") == "supported":
+        caveats.insert(
+            5,
+            "- SSL-v2 calibration improvement is supported only in that exact stored scope.",
+        )
     return [*_markdown_table(("field", "value"), rows), *caveats]
 
 
@@ -2397,7 +2549,8 @@ def _render_ssl_failure_analysis(data: _FinalReportData) -> list[str]:
                 "neutral-to-negative and calibration does not improve uniformly.",
                 "- Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive "
                 "gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.",
-                "- No broad SSL improvement and no calibration improvement is claimed.",
+                "- No broad SSL improvement or broad calibration improvement is claimed "
+                "from the SSL-v1 and matched full-grid evidence.",
                 "- More evidence would require broader proper-training runs and/or "
                 "better SSL objective design rather than any success claim.",
             ]
@@ -2414,13 +2567,8 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
             "No second-generation SSL result is implied without stored analysis outputs.",
         ]
     summary = artefacts.summary
-    claim_payload = artefacts.json_payloads.get("ssl_v2_claim_assessment.json", {})
-    claims = claim_payload.get("claims", [])
-    claim_status = {
-        str(item.get("claim_id")): str(item.get("status"))
-        for item in claims
-        if isinstance(item, Mapping)
-    }
+    claim_status = _ssl_v2_claim_statuses(data)
+    compute_provenance = artefacts.json_payloads.get("hamilton_compute_provenance.json", {})
     horizon_rows = artefacts.csv_rows.get("ssl_v2_delta_by_horizon.csv", [])
     lines = [
         *_wrap_prose(
@@ -2432,8 +2580,9 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
         ),
         "",
         *_wrap_prose(
-            "The current SSL-v2 closure is complete-real for seed 0 only. The "
-            "multi-seed harness exists, but seeds 1 and 2 are deferred."
+            "The current SSL-v2 closure is "
+            f"{_mapping_str(summary, 'evidence_level')} for the exact stored "
+            f"{_ssl_v2_scope_text(summary)}."
         ),
         "",
         f"- evidence level: {_mapping_str(summary, 'evidence_level')}",
@@ -2442,6 +2591,22 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
         f"- failures: {_mapping_str(summary, 'failure_count')}",
         "",
     ]
+    if compute_provenance:
+        scope = _nested_mapping(compute_provenance, "benchmark_scope") or {}
+        environment = _nested_mapping(compute_provenance, "compute_environment") or {}
+        lines.extend(
+            [
+                *_wrap_prose(
+                    "Compute provenance: seeds "
+                    f"{_join_values(_mapping_list(scope, 'new_seeds_run_on_hamilton'))} "
+                    "were run as independent Slurm tasks on "
+                    f"{_mapping_str(environment, 'cluster')}. The retained aggregate "
+                    "also includes the pre-existing seed 0 runs. Large checkpoints, "
+                    "raw predictions and cluster logs are intentionally excluded."
+                ),
+                "",
+            ]
+        )
     if horizon_rows:
         rows = []
         for row in horizon_rows:
@@ -2475,10 +2640,12 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
     lines.extend(
         _wrap_bullets(
             [
-                "- SSL-v2 predictive improvement is reported only when matched macro-F1 "
-                "and MCC deltas support it in the exact stored seed-0 scope.",
-                "- SSL-v2 calibration improvement remains unsupported because ECE and "
-                "Brier deltas do not jointly support it.",
+                "- SSL-v2 predictive improvement is "
+                f"{claim_status.get('ssl_v2_predictive_improvement', 'not audited')} "
+                f"only in the exact stored {_ssl_v2_scope_text(summary)}.",
+                "- SSL-v2 calibration improvement is "
+                f"{claim_status.get('ssl_v2_calibration_improvement', 'not audited')} "
+                "only in that exact stored scope.",
                 "- Broad SSL improvement remains unsupported under the combined SSL-v1 "
                 "and SSL-v2 evidence.",
             ]
@@ -3476,10 +3643,10 @@ def _render_synthetic_extension(data: _FinalReportData) -> list[str]:
 
 
 def _render_binance_l2_extension(data: _FinalReportData) -> list[str]:
-    """Render the real event-level L2 replay extension section conservatively."""
+    """Render the Binance Spot aggregated L2 replay section conservatively."""
     boundary = [
         "",
-        "Binance L2 replay is scoped to real event-level aggregated depth-stream "
+        "Binance L2 replay is scoped to real captured aggregated depth-stream "
         "ingestion and replay when a local Binance capture is supplied.",
         "Fixture runs are engineering checks. It is crypto-market engineering "
         "evidence, not equity-market evidence.",
@@ -3491,7 +3658,7 @@ def _render_binance_l2_extension(data: _FinalReportData) -> list[str]:
     ]
     if data.binance_l2.directory is None or data.binance_l2.summary is None:
         return [
-            "Skipped: real event-level L2 replay extension artefacts were not supplied "
+            "Skipped: Binance Spot aggregated L2 replay artefacts were not supplied "
             "or were unavailable.",
             *boundary,
         ]
@@ -3553,12 +3720,23 @@ def _render_what_this_proves(data: _FinalReportData) -> list[str]:
             for item in claims
         )
         if predictive_supported:
+            calibration_supported = any(
+                isinstance(item, Mapping)
+                and item.get("claim_id") == "ssl_v2_calibration_improvement"
+                and item.get("status") == "supported"
+                for item in claims
+            )
+            scope = _ssl_v2_scope_text(data.ssl_v2_analysis.summary or {})
+            calibration_text = (
+                "calibration improvement is also supported in that exact scope"
+                if calibration_supported
+                else "calibration improvement remains unsupported"
+            )
             lines.extend(
                 _wrap_bullet(
                     "- SSL-v2 artefacts support a predictive-metric improvement "
-                    "only for the exact stored seed-0 folds 1-5, horizons 10/50, "
-                    "lookback-50 scope; calibration and broad SSL improvement "
-                    "remain unsupported."
+                    f"only for the exact stored {scope}; {calibration_text}, while "
+                    "broad SSL improvement remains unsupported."
                 )
             )
     if (
@@ -3593,10 +3771,11 @@ def _render_what_this_proves(data: _FinalReportData) -> list[str]:
 
 
 def _render_what_this_does_not_prove(data: _FinalReportData) -> list[str]:
+    ssl_v2_scope = _ssl_v2_scope_text(data.ssl_v2_analysis.summary or {})
     ssl_line = (
         "- Self-supervised superiority, broad SSL improvement or SOTA status; "
-        "SSL-v2 predictive evidence is scoped to the exact stored seed-0 slice."
-        if data.ssl.admitted
+        f"SSL-v2 predictive evidence is scoped to the exact stored {ssl_v2_scope}."
+        if data.ssl_v2_analysis.summary is not None
         else "- Broad SSL improvement, SSL calibration improvement or SOTA status."
     )
     return [
@@ -3635,8 +3814,8 @@ def _render_limitations(data: _FinalReportData) -> list[str]:
         ),
         (
             "ssl_v2_scope",
-            "complete-real only for folds 1-5, horizons 10/50, seed 0 and "
-            "lookback 50; seeds 1 and 2 are deferred",
+            f"{_mapping_str(data.ssl_v2_analysis.summary, 'evidence_level')}; exact stored "
+            f"{_ssl_v2_scope_text(data.ssl_v2_analysis.summary or {})}",
         ),
         (
             "external_scope",
@@ -3703,10 +3882,11 @@ def _render_reproduction_commands() -> list[str]:
         "python -m chronoslob.cli doctor",
         "python -m chronoslob.cli inspect-release-readiness",
         "python -m chronoslob.cli run-project-audit --strict",
-        "python -m pytest",
+        "python -m pytest -q",
         "python -m compileall -q chronoslob tests",
         "python -m ruff check .",
         "python -m mypy chronoslob",
+        "git diff --check",
         "```",
     ]
 

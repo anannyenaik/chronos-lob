@@ -4,8 +4,8 @@
     "forbidden": 18,
     "needs_real_evidence": 2,
     "partially_supported": 3,
-    "supported": 30,
-    "unsupported": 7
+    "supported": 31,
+    "unsupported": 6
   },
   "claims": [
     {
@@ -171,7 +171,7 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_improved_macro_f1",
       "claim_text": "SSL improved macro-F1",
-      "reason": "Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.",
+      "reason": "Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the retained matched deltas are mixed.",
       "required_artefacts": [
         "fi2010_neural_full_grid",
         "ssl_comparison.csv"
@@ -186,7 +186,7 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_improved_calibration",
       "claim_text": "SSL improved calibration",
-      "reason": "Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the stored evidence is mixed, partial, stale or not cleanly complete.",
+      "reason": "Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the retained matched deltas are mixed.",
       "required_artefacts": [
         "fi2010_neural_full_grid",
         "ssl_comparison.csv"
@@ -233,7 +233,7 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_evaluated",
       "claim_text": "SSL-v2 was evaluated in the exact stored FI-2010 scope.",
-      "reason": "10 matched supervised-vs-SSL-v2 row(s) are present.",
+      "reason": "30 matched supervised-vs-SSL-v2 row(s) are present.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
@@ -265,14 +265,17 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_v2_calibration_improvement",
       "claim_text": "SSL-v2 improved calibration in the exact stored scope.",
-      "reason": "ECE and Brier deltas do not jointly support calibration improvement.",
+      "reason": "Mean ECE and Brier deltas improve for matched SSL-v2 rows in the exact stored scope.",
       "required_artefacts": [
         "fi2010_ssl_v2_benchmark",
         "ssl_v2_analysis_report"
       ],
       "safe_rewording": "Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.",
-      "status": "unsupported",
-      "supporting_artefacts": []
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_ssl_v2_benchmark",
+        "ssl_v2_analysis_report"
+      ]
     },
     {
       "category": "empirical result",
@@ -612,8 +615,8 @@
     },
     {
       "category": "binance l2 extension",
-      "claim_id": "binance_l2.real_event_level_stream_path",
-      "claim_text": "ChronosLOB ingests and replays a real event-level aggregated L2 depth stream",
+      "claim_id": "binance_l2.real_captured_aggregated_l2_stream_path",
+      "claim_text": "ChronosLOB ingests and replays a real captured aggregated L2 depth stream",
       "reason": "The bundled artefact uses Binance-shaped synthetic fixtures; a local captured Binance Spot snapshot/diff stream was not supplied.",
       "required_artefacts": [
         "binance_l2_extension_report"
@@ -797,5 +800,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-06-01T15:46:58.673703+00:00"
+  "generated_at": "2026-06-07T18:08:48.554403+00:00"
 }

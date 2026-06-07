@@ -235,3 +235,17 @@ python -m chronoslob.cli run-project-audit --strict
 Expected output: `read-only CLI output`
 
 Compute and dependency caveat: Review unrelated or untracked worktree files before release.
+
+## Release Validation
+
+These checks do not launch training:
+
+```powershell
+python -m pytest -q
+python -m ruff check .
+python -m mypy chronoslob
+python -m chronoslob.cli doctor
+python -m chronoslob.cli inspect-release-readiness
+python -m chronoslob.cli run-project-audit --strict
+git diff --check
+```

@@ -158,15 +158,15 @@
     {
       "artefact_name": "fi2010_ssl_v2_benchmark",
       "artefact_type": "fi2010_ssl_v2_benchmark",
-      "completed_runs": 20,
+      "completed_runs": 60,
       "exists": true,
       "failed_runs": 0,
-      "freshness": "archived",
-      "generated_at": "2026-06-01T12:38:07.058283Z",
-      "git_commit": "07f47078ea0971aa394945cc555fef69f05b346e",
+      "freshness": "fresh",
+      "generated_at": "2026-06-07T17:51:47.245603Z",
+      "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
       "input_hashes_present": false,
       "limitations": "SSL-v2 benchmark claims are limited to the exact stored scope; imported baselines are disclosed in summary.json.",
-      "notes": "Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit.",
+      "notes": "Hash/commit staleness checks passed.",
       "output_hashes_present": false,
       "path": "experiments/fi2010_ssl_v2_benchmark",
       "required_files_missing": [],
@@ -183,6 +183,7 @@
         "experiments/fi2010_ssl_v2_benchmark/sha256_manifest.json"
       ],
       "supports_claims": [
+        "empirical.ssl_v2_calibration_improvement",
         "empirical.ssl_v2_evaluated",
         "empirical.ssl_v2_implemented",
         "empirical.ssl_v2_predictive_improvement"
@@ -195,8 +196,8 @@
       "exists": true,
       "failed_runs": 0,
       "freshness": "fresh",
-      "generated_at": "2026-06-01T15:45:37.970871+00:00",
-      "git_commit": "",
+      "generated_at": "2026-06-07T17:52:46.743248+00:00",
+      "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
       "input_hashes_present": false,
       "limitations": "The SSL-v2 analysis is scoped evidence only and does not alter broad SSL boundaries unless its stored deltas support that.",
       "notes": "Hash/commit staleness checks passed.",
@@ -213,9 +214,11 @@
         "reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv",
         "reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv",
         "reports/ssl_v2_analysis/ssl_v2_loss_components.csv",
-        "reports/ssl_v2_analysis/summary.json"
+        "reports/ssl_v2_analysis/summary.json",
+        "reports/ssl_v2_analysis/hamilton_compute_provenance.json"
       ],
       "supports_claims": [
+        "empirical.ssl_v2_calibration_improvement",
         "empirical.ssl_v2_evaluated",
         "empirical.ssl_v2_implemented",
         "empirical.ssl_v2_predictive_improvement"
@@ -475,8 +478,8 @@
       "exists": true,
       "failed_runs": null,
       "freshness": "fresh",
-      "generated_at": "2026-06-01T15:46:38.603136Z",
-      "git_commit": "7b8a35c1b5ebf57baab6e2e978dc7fa592ac2448",
+      "generated_at": "2026-06-07T18:08:38.202825Z",
+      "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Hash/commit staleness checks passed.",
@@ -532,12 +535,12 @@
       "completed_runs": 3,
       "exists": true,
       "failed_runs": null,
-      "freshness": "archived",
-      "generated_at": "2026-05-30T17:21:24.901650+00:00",
-      "git_commit": "8d69fbb00a10130a4781babe6de39ea81128613d",
+      "freshness": "fresh",
+      "generated_at": "2026-06-07T01:08:35.814319+00:00",
+      "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
       "input_hashes_present": true,
       "limitations": "Binance Spot L2 snapshot-plus-diff replay path for local captures; crypto-market data engineering evidence only when a non-fixture capture is supplied. Diff-depth updates are aggregated level updates, not individual orders. Not equity-market evidence, not live trading and not profitability or predictive evidence. Complements FI-2010 and synthetic evidence.",
-      "notes": "Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit.",
+      "notes": "Hash/commit staleness checks passed.",
       "output_hashes_present": false,
       "path": "reports/binance_l2_extension",
       "required_files_missing": [],
@@ -596,11 +599,11 @@
     "forbidden": 18,
     "needs_real_evidence": 2,
     "partially_supported": 3,
-    "supported": 30,
-    "unsupported": 7
+    "supported": 31,
+    "unsupported": 6
   },
-  "generated_at": "2026-06-01T15:46:58.563031+00:00",
-  "git_commit": "7b8a35c1b5ebf57baab6e2e978dc7fa592ac2448",
+  "generated_at": "2026-06-07T18:08:48.484415+00:00",
+  "git_commit": "4e8fd562280385ebc713b7b8a13593728e3a10f6",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "binance_l2_dir": "reports/binance_l2_extension",
@@ -633,7 +636,7 @@
     "supported_claims.md": "supported_claims.md",
     "unsupported_claims.md": "unsupported_claims.md"
   },
-  "package_version": "0.1.0",
+  "package_version": "0.2.0",
   "strict": true,
   "strict_violations": [],
   "warnings": [

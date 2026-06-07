@@ -29,7 +29,7 @@
 - Best classical result: gradient_boosting macro-F1 0.4654 from stored artefacts.
 - Best neural full-grid result: matrix_transformer macro-F1 0.4922 from stored artefacts.
 - SSL comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
-- SSL-v2: scoped predictive improvement is supported only for the exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 scope; calibration=unsupported and broad SSL remains unsupported.
+- SSL-v2: scoped predictive improvement is supported only for the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; calibration=supported and broad SSL remains unsupported.
 - Execution-v3: complete real artefacts retained (generated at an older commit).
 - Execution centrepiece: complete real artefacts retained (generated at an older commit).
 - Feature ablations: partial_real.
@@ -40,6 +40,6 @@
 - Smoke diagnostics are labelled as smoke diagnostics and are not empirical evidence.
 - Full-grid neural artefacts are present, but public wording must quote stored scope and metrics exactly.
 - SSL improvement language is blocked unless real aggregate deltas support it.
-- SSL-v2 predictive improvement is scoped to the exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 slice; seeds 1 and 2 are deferred.
+- SSL-v2 predictive and calibration claims are limited to the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; calibration=supported and broad SSL improvement remains unsupported.
 - Execution-v3 metrics are offline proxy diagnostics, not deployed execution results.
 - FI-2010 snapshot features do not expose event-level order flow or queue position.

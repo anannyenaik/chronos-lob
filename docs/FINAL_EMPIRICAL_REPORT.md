@@ -4,8 +4,27 @@ This document describes the generated final FI-2010 empirical report.
 
 ## Purpose
 
-`build-final-empirical-report` builds a concise Markdown report from stored
-artefacts. It does not train models, download data or infer missing metrics.
+`build-final-empirical-report` builds a coherent public Markdown report from
+stored artefacts. It does not train models, download data or infer missing
+metrics.
+
+## Public Report Structure
+
+The generated report is organised around:
+
+1. Executive summary
+2. Evidence map
+3. Main finding: forecasting versus signal-quality gap
+4. FI-2010 benchmark evidence
+5. Supervised and SSL evidence
+6. SSL-v2 scoped result
+7. Feature-stability analysis
+8. Execution-aware proxy diagnostics
+9. Synthetic event-level replay
+10. Binance L2 replay
+11. Limitations
+12. Reproducibility and artefacts
+13. Deferred work
 
 ## Inputs
 
@@ -76,9 +95,10 @@ It uses retained proxy tables only and does not read raw predictions or realised
 execution outcomes.
 
 When `--ssl-v2-analysis` is supplied, the report includes the scoped SSL-v2
-interpretation: predictive improvement is supported only for the exact stored
-seed-0 folds 1-5, horizons 10/50, lookback-50 scope. Seeds 1 and 2 are deferred,
-calibration improvement is unsupported and no broad SSL improvement follows.
+interpretation: mean predictive and calibration improvements are supported only
+for the exact stored folds 1-5, horizons 10/50, seeds 0-2, lookback-50 scope.
+The report also records mixed seed/horizon outcomes, and no broad SSL
+improvement follows.
 
 When `--feature-ablations` is supplied, the report includes feature registry
 status, unsupported FI-2010 groups, proxy warnings, aggregate ablation rows and
@@ -105,20 +125,22 @@ skipped or missing sections.
 The report states that classical results are multi-fold, neural results are
 split by scope: the one-epoch matched full grid is multi-fold and multi-seed,
 the proper-training subset is partial-real seed-0 evidence, and SSL-v2
-predictive improvement is limited to the exact stored seed-0 scope.
+predictive and calibration improvements are limited to the exact stored
+multi-seed scope.
 Execution-aware metrics are offline proxy diagnostics, external comparisons are
 protocol context only, feature-ablation results are interpreted only when
 matching non-smoke baselines exist, and full-grid neural results are claimed
 only when non-smoke aggregate artefacts exist. Smoke-test full-grid,
 execution-v3 and feature-ablation artefacts are labelled as code-path checks. No
-profitability, tradability, live-trading, broad SSL superiority, SSL calibration
-improvement, true order-flow imbalance, cancellation imbalance, trade imbalance,
-queue-position or SOTA claim is made.
+profitability, tradability, live-trading, broad SSL superiority, broad
+calibration improvement, true order-flow imbalance, cancellation imbalance,
+trade imbalance, queue-position or SOTA claim is made.
 
 ## Limitations
 
-The matched one-epoch full grid is multi-seed, but the proper-training and
-SSL-v2 predictive-result scopes are seed 0 only. SSL-v2 seeds 1 and 2 are
-deferred. Execution outputs do not model queue priority, market impact or venue
-mechanics. External benchmark papers are referenced for protocol context without
-importing external numeric metrics.
+The matched one-epoch full grid and SSL-v2 benchmark are multi-seed, while the
+proper-training subset remains seed-0 evidence. SSL-v2 results are mixed by seed
+and horizon and do not support broad SSL improvement. Execution outputs do not
+model queue priority, market impact or venue mechanics. External benchmark
+papers are referenced for protocol context without importing external numeric
+metrics. The manual paper is deferred.

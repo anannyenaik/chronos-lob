@@ -7,7 +7,7 @@
 
 ## Tests
 
-- [ ] Run `python -m pytest`.
+- [ ] Run `python -m pytest -q`.
 
 ## Lint And Types
 
@@ -19,6 +19,7 @@
 - [ ] Run `python -m chronoslob.cli doctor`.
 - [ ] Run `python -m chronoslob.cli inspect-release-readiness`.
 - [ ] Run `python -m chronoslob.cli run-project-audit --strict`.
+- [ ] Run `git diff --check`.
 
 ## Artefact Hashes
 

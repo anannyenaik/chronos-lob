@@ -2,18 +2,39 @@
 
 Generated from stored FI-2010 artefacts only. No model training is run by this builder.
 
-## Evidence Snapshot
+## Executive Summary
+
+ChronosLOB tests whether market-microstructure forecasts remain meaningful under leakage-safe validation, calibration checks, feature-stability analysis, event-level replay and execution-aware proxy
+diagnostics.
+
+The main finding is that forecasting metrics and signal-quality diagnostics can diverge. The retained execution centrepiece shows why predictive metrics must be read alongside confidence filtering,
+active fraction, turnover, cost, latency and adverse-selection proxy diagnostics.
+
+Supported: leakage-safe FI-2010 benchmark evidence, matched supervised/SSL comparisons, scoped feature-stability analysis, controlled synthetic event-level replay and an offline Binance Spot
+aggregated L2 replay path.
+
+Scoped result: SSL-v2 predictive improvement is supported in the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50. SSL-v2 calibration improvement is supported;
+broad SSL improvement remains unsupported.
+
+Deferred: a broader proper-training neural benchmark and the manual paper.
+
+Do not infer profitability, tradability, live-market execution quality, equity-market generalisation from Binance replay, causal feature importance or true event-level order flow from FI-2010
+snapshots.
+
+## Evidence Map
+
+### Stored Evidence Snapshot
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-06-01T15:46:38.603136+00:00 |
-| git_commit | 7b8a35c1b5ebf57baab6e2e978dc7fa592ac2448 |
+| generated_at | 2026-06-07T18:08:38.202825+00:00 |
+| git_commit | 4e8fd562280385ebc713b7b8a13593728e3a10f6 |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
 | proper_training_neural_scope | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50, objectives supervised, masked_reconstruction, next_field; max_epochs 25, patience 5; validation-only early stopping with best checkpoint restored before test |
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
-| ssl_v2_scope | complete_real; exact stored seed-0 scope; folds 1, 2, 3, 4, 5, horizons 10, 50, lookback 50; predictive=supported, calibration=unsupported; seeds 1 and 2 deferred |
+| ssl_v2_scope | complete_real; exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; predictive=supported, calibration=supported |
 | legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
 | best_legacy_reduced_scope_neural_test_macro_f1 | matrix_transformer: 0.7337 +/- 0.0280, lookback 20 (separate 25-epoch reduced-scope benchmark) |
 | execution_scope | proxy diagnostics loaded; metrics are proxy diagnostics |
@@ -23,7 +44,7 @@ Generated from stored FI-2010 artefacts only. No model training is run by this b
 | report_path | reports/chronoslob_final_empirical_report.md |
 | summary_path | reports/chronoslob_final_empirical_report_summary.json |
 
-## Evidence Status Summary
+### Evidence Status
 
 This summary uses the same status language as the README and the evidence pack. Its central interpretation is the forecasting-versus-signal-quality gap, not broad SSL success.
 
@@ -47,8 +68,9 @@ What is separate legacy / reduced-scope evidence:
 
 What is not claimed:
 
-- No overall SSL improvement is supported: first-generation SSL and the matched full grid do not support broad improvement; SSL-v2 predictive improvement is scoped to the exact stored seed-0 slice.
-- No SSL calibration improvement; SSL-v2 ECE and Brier deltas do not jointly support that claim.
+- No overall SSL improvement is supported: first-generation SSL and the matched full grid do not support broad improvement; SSL-v2 predictive improvement is scoped to the exact stored scope: folds 1,
+  2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50.
+- SSL-v2 calibration improvement is supported only in the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; no broader calibration conclusion follows.
 - No profitability, tradability, live-trading, PnL, SOTA, foundation-model or production-execution-simulator claim.
 - No true event-level order flow or queue position is observed from FI-2010 snapshots.
 
@@ -57,7 +79,28 @@ result.
 
 The earlier 25-epoch reduced-scope supervised matrix-transformer result is reported separately and is not used as matched SSL evidence.
 
-## Forecasting versus Signal-Quality Gap
+### Claim Audit
+
+| field | value |
+| --- | --- |
+| evidence_pack_status | loaded |
+| evidence_pack_dir | reports/evidence_pack |
+| artefact_status_counts | archived_valid=5, complete_real=7, obsolete_superseded=1, optional_missing=1, partial_real=4, unknown_staleness=1 |
+| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=31, unsupported=6 |
+| supported_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
+| unsupported_or_limited_claims | Model X achieved macro-F1 Y; SSL improved macro-F1; SSL improved calibration |
+
+Release caveats from the evidence pack:
+
+- Smoke diagnostics are not empirical evidence.
+- Broad SSL improvement remains unsupported.
+- SSL-v2 calibration improvement is supported only in that exact stored scope.
+- SSL-v2 predictive improvement is scoped to the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50.
+- Execution-v3 metrics remain offline proxy diagnostics.
+- FI-2010 snapshot features do not expose event-level order flow or queue position.
+
+
+## Main Finding: Forecasting versus Signal-Quality Gap
 
 The execution centrepiece is the compact bridge between forecast metrics and execution-aware signal-quality proxy diagnostics.
 This is the central public interpretation: forecasting quality and trading-signal quality are different evidence streams.
@@ -95,30 +138,13 @@ Explicitly unavailable fields:
 Conservative interpretation: the forecasting-versus-signal-quality gap does not establish profitability or tradability.
 It shows why macro-F1 and calibration must be read alongside confidence filtering, active fraction, turnover proxy, cost-adjusted proxy, latency sensitivity and adverse-selection proxy diagnostics.
 
-## Evidence Pack Audit
+## FI-2010 Benchmark Evidence
 
-| field | value |
-| --- | --- |
-| evidence_pack_status | loaded |
-| evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | archived_valid=5, complete_real=7, obsolete_superseded=1, optional_missing=1, partial_real=4, unknown_staleness=1 |
-| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=30, unsupported=7 |
-| supported_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
-| unsupported_or_limited_claims | Model X achieved macro-F1 Y; SSL improved macro-F1; SSL improved calibration |
-
-Release caveats from the evidence pack:
-
-- Smoke diagnostics are not empirical evidence.
-- Broad SSL improvement and SSL calibration improvement remain unsupported.
-- SSL-v2 predictive improvement is scoped to the exact stored seed-0 scope.
-- Execution-v3 metrics remain offline proxy diagnostics.
-- FI-2010 snapshot features do not expose event-level order flow or queue position.
-
-## Research Question
+### Research Question
 
 Can stored FI-2010 artefacts support a traceable assessment of predictive mid-price direction performance, uncertainty, robustness, execution-aware proxy diagnostics and external protocol context?
 
-## Dataset And Split Protocol
+### Dataset and Split Protocol
 
 | field | value |
 | --- | --- |
@@ -131,7 +157,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | classical_protocol | multi-fold; one stored classical seed across completed folds |
 | neural_protocol | matched one-epoch full grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field; separate earlier 25-epoch reduced-scope supervised benchmark (single seed, lookback 20) reported separately |
 
-## Model Families
+### Model Families
 
 | family | models | scope |
 | --- | --- | --- |
@@ -140,7 +166,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | neural proper-training subset | matrix_transformer | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50; validation-only early stopping |
 | neural legacy supervised | deeplob_style, matrix_transformer | separate earlier reduced-scope, single-seed, lookback 20 |
 
-## Main Result Table
+### Main Result Table
 
 Classical rows are multi-fold. Neural rows are reduced-scope, single-seed supervised results and are not used here to assert superiority over the classical family.
 
@@ -155,7 +181,64 @@ Classical rows are multi-fold. Neural rows are reduced-scope, single-seed superv
 | matrix_transformer | supervised neural | reduced-scope, single-seed | 0.7337 +/- 0.0280 | 0.8008 | 0.6288 | 5 | 1 | 20 |
 | deeplob_style | supervised neural | reduced-scope, single-seed | 0.4753 +/- 0.0274 | 0.4815 | 0.2932 | 5 | 1 | 20 |
 
-## Self-Supervised Pretraining
+### Uncertainty Summary
+
+Seed variance is not available in the stored evidence; intervals are fold-level diagnostics.
+
+| source | model | lookback | folds | seeds | mean | CI lower | CI upper | bootstrap lower | bootstrap upper |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| classical | gradient_boosting | n/a | 5 | 1 | 0.4654 | 0.4600 | 0.4708 | 0.4623 | 0.4692 |
+| neural | matrix_transformer | 20 | 5 | 1 | 0.7337 | 0.6948 | 0.7726 | 0.7074 | 0.7535 |
+
+### Ablation Summary
+
+Stored ablations are diagnostic stress checks; skipped ablations remain explicit.
+
+| family | stored rows | summary |
+| --- | --- | --- |
+| feature_groups | 180 | -0.0884 to 0.0000 test macro-F1 delta |
+| model_class | 180 | -0.2191 to 0.0000 test macro-F1 delta |
+| horizon | 90 | 0.0000 to 0.1454 test macro-F1 delta |
+| calibration | 225 | ECE diagnostics |
+| execution | 600 | cost/latency proxy diagnostics |
+
+| field | value |
+| --- | --- |
+| families_run | feature_groups, horizon, model_class, calibration, execution |
+| families_skipped | lookback |
+| checkpoints_written | False |
+
+| recorded skip |
+| --- |
+| ablation lookback_sweep: neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it |
+| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
+| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
+| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
+| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
+| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
+| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
+| execution_v3 regime_execution: volatility_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: spread_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: imbalance_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: liquidity_regime labels unavailable in prediction artefacts |
+| execution_v3 regime_execution: regime labels unavailable in prediction artefacts |
+
+### External Benchmark Context
+
+External comparisons are protocol context, not ranking claims. No external numeric metrics are imported into this report.
+
+| source | type | numeric metrics included |
+| --- | --- | --- |
+| Ntakaris et al. FI-2010 dataset and baselines | paper_and_dataset | False |
+| Tsantekidis et al. stationary-feature LOB forecasting | paper | False |
+| Zhang, Zohren and Roberts DeepLOB | paper | False |
+| Wallbridge TransLOB | paper | False |
+| Sangadiev et al. DeepFolio | paper | False |
+
+
+## Supervised and SSL Evidence
+
+### Self-Supervised Pretraining
 
 The standalone SSL runner artefact is not supplied, so no standalone `ssl_transformer` row is admitted here.
 
@@ -164,7 +247,7 @@ compared against the supervised baseline under identical fold, horizon, seed, lo
 
 That matched comparison is a one-epoch grid. No SSL improvement over the matched supervised baseline is supported; deltas are reported metric-by-metric in the Full Neural Grid section.
 
-## Full Neural Grid
+### Full Neural Grid
 
 Status: loaded.
 These artefacts are loaded as aggregate full-grid evidence, subject to the failures table below.
@@ -314,7 +397,7 @@ Interpretation:
 - next_field: mean deltas macro-F1 -0.0622, MCC -0.0651, ECE -0.0083; outcomes macro-F1 3 win/42 loss/0 tie, MCC 3 win/34 loss/0 tie, ECE 24 win/21 loss/0 tie.
   No overall SSL improvement is supported; report any deltas metric-by-metric.
 
-## Proper-Training Neural Subset
+### Proper-Training Neural Subset
 
 The one-epoch full grid is retained as matched comparison evidence. The proper-training subset is used to assess whether the neural models remain credible under a more realistic training budget.
 
@@ -380,7 +463,7 @@ Interpretation:
 - next_field: mean deltas macro-F1 0.0032, MCC 0.0204, ECE 0.0531; outcomes macro-F1 1 win/0 loss/1 tie, MCC 1 win/0 loss/1 tie, ECE 0 win/2 loss/0 tie.
   Under this longer-training budget no broad SSL improvement is claimed; deltas are reported metric-by-metric, fold-by-fold and seed-by-seed. Any improvement is scoped to exactly the rows above.
 
-## Legacy Reduced-Scope Benchmark
+### Legacy Reduced-Scope Benchmark
 
 This is the earlier 25-epoch reduced-scope supervised neural benchmark. It is reported separately from the one-epoch matched full grid and from the proper-training supervised-vs-SSL subset, and it is
 not used as matched SSL evidence.
@@ -392,7 +475,7 @@ Stored scope: seeds 0, lookbacks 20.
 | matrix_transformer | 0.7337 +/- 0.0280 | 0.8008 | 0.6288 | 5 | 1 | 20 |
 | deeplob_style | 0.4753 +/- 0.0274 | 0.4815 | 0.2932 | 5 | 1 | 20 |
 
-## SSL Interpretation
+### SSL Interpretation
 
 SSL evidence is interpreted only through matched supervised-vs-SSL rows. The one-epoch full grid remains comparison and infrastructure evidence; the proper-training subset is longer-training modelling
 evidence at its exact stored scope.
@@ -406,7 +489,7 @@ evidence at its exact stored scope.
 
 The longer-training subset does not support an SSL improvement claim.
 
-## SSL Failure Analysis
+### SSL Failure Analysis
 
 A dedicated SSL failure-analysis report at reports/ssl_failure_analysis/ssl_failure_analysis.md separates three distinct bodies of evidence and never merges them: the completed one-epoch matched full
 grid (folds 1-5, horizons 10/20/50, seeds 0-2), the longer-training proper-training subset v2 (fold 1, horizons 10 and 50, seed 0, partial_real) and a separate older reduced-scope supervised benchmark
@@ -419,28 +502,32 @@ used only for context.
 
 - Full-grid SSL does not improve overall: matched macro-F1 deltas are neutral-to-negative and calibration does not improve uniformly.
 - Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.
-- No broad SSL improvement and no calibration improvement is claimed.
+- No broad SSL improvement or broad calibration improvement is claimed from the SSL-v1 and matched full-grid evidence.
 - More evidence would require broader proper-training runs and/or better SSL objective design rather than any success claim.
 
-## Second-Generation SSL Objective
+
+## SSL-v2 Scoped Result
 
 A second-generation SSL objective was added after the SSL failure analysis showed that first-generation random field reconstruction and next-field prediction did not broadly improve predictive metrics
 or calibration. The SSL-v2 objective is market-state-aware and remains a scoped comparison, not a general representation or trading claim.
 
-The current SSL-v2 closure is complete-real for seed 0 only. The multi-seed harness exists, but seeds 1 and 2 are deferred.
+The current SSL-v2 closure is complete_real for the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50.
 
 - evidence level: complete_real
-- scope label: folds_1_2_3_4_5_h10_h50_complete_real
-- matched supervised-vs-SSL-v2 rows: 10
+- scope label: folds_1_2_3_4_5_h10_h50_seeds_0_1_2_complete_real
+- matched supervised-vs-SSL-v2 rows: 30
 - failures: 0
+
+Compute provenance: seeds 1, 2 were run as independent Slurm tasks on Durham University Hamilton 8 / NCC HPC. The retained aggregate also includes the pre-existing seed 0 runs. Large checkpoints, raw
+predictions and cluster logs are intentionally excluded.
 
 | horizon | matched rows | mean delta macro-F1 | mean delta MCC | mean delta ECE | mean delta Brier |
 | --- | --- | --- | --- | --- | --- |
-| 10 | 5 | 0.0859 | 0.1459 | -0.0140 | -0.0835 |
-| 50 | 5 | -0.0305 | -0.0327 | 0.0246 | 0.0233 |
+| 10 | 15 | 0.0559 | 0.0978 | -0.0182 | -0.0755 |
+| 50 | 15 | -0.0335 | -0.0460 | 0.0122 | 0.0284 |
 
-- SSL-v2 predictive improvement is reported only when matched macro-F1 and MCC deltas support it in the exact stored seed-0 scope.
-- SSL-v2 calibration improvement remains unsupported because ECE and Brier deltas do not jointly support it.
+- SSL-v2 predictive improvement is supported only in the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50.
+- SSL-v2 calibration improvement is supported only in that exact stored scope.
 - Broad SSL improvement remains unsupported under the combined SSL-v1 and SSL-v2 evidence.
 
 | claim | status |
@@ -448,83 +535,12 @@ The current SSL-v2 closure is complete-real for seed 0 only. The multi-seed harn
 | broad_ssl_improvement | unsupported |
 | foundation_model | forbidden |
 | sota | forbidden |
-| ssl_v2_calibration_improvement | unsupported |
+| ssl_v2_calibration_improvement | supported |
 | ssl_v2_evaluated | supported |
 | ssl_v2_objective_implemented | supported |
 | ssl_v2_predictive_improvement | supported |
 
-## Figure Index
-
-| figure | title | path | description |
-| --- | --- | --- | --- |
-| confusion_matrix_h10 | Confusion Matrix H10 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h10.png | canonical up/stationary/down confusion matrix |
-| confusion_matrix_h20 | Confusion Matrix H20 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h20.png | canonical up/stationary/down confusion matrix |
-| confusion_matrix_h50 | Confusion Matrix H50 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h50.png | canonical up/stationary/down confusion matrix |
-| reliability_curve | Reliability Curve | reports/figures/fi2010_neural_full_grid/reliability_curve.png | confidence calibration from stored predictions |
-| macro_f1_by_fold | Macro-F1 Across Folds | reports/figures/fi2010_neural_full_grid/macro_f1_by_fold.png | fold-level macro-F1 diagnostic |
-| macro_f1_by_horizon | Macro-F1 Across Horizons | reports/figures/fi2010_neural_full_grid/macro_f1_by_horizon.png | mean macro-F1 across horizons |
-| ece_by_horizon | ECE Across Horizons | reports/figures/fi2010_neural_full_grid/ece_by_horizon.png | mean calibration error across horizons |
-| ssl_matched_delta | Matched SSL Deltas | reports/figures/fi2010_neural_full_grid/ssl_matched_delta.png | matched supervised-vs-SSL deltas only |
-| confidence_threshold_eligible_fraction | Confidence Threshold Vs Eligible Fraction | reports/figures/fi2010_neural_full_grid/confidence_threshold_eligible_fraction.png | retained sample fraction by confidence |
-| confidence_threshold_macro_f1 | Confidence Threshold Vs Retained Macro-F1 | reports/figures/fi2010_neural_full_grid/confidence_threshold_macro_f1.png | macro-F1 on retained high-confidence samples |
-| cost_adjusted_proxy | Cost-Adjusted Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/cost_adjusted_proxy.png | proxy diagnostics only when artefacts exist |
-| execution_v3_confidence_active_fraction | Confidence Threshold Vs Active Trade Fraction Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_confidence_active_fraction.png | stored-artefact diagnostic figure |
-| execution_v3_confidence_net_proxy | Confidence Threshold Vs Net Cost-Adjusted Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_confidence_net_proxy.png | stored-artefact diagnostic figure |
-| execution_v3_cost_sensitivity | Cost Sensitivity Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_cost_sensitivity.png | stored-artefact diagnostic figure |
-| execution_v3_latency_sensitivity | Latency Sensitivity Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_latency_sensitivity.png | stored-artefact diagnostic figure |
-| execution_v3_fill_assumption_comparison | Fill Assumption Comparison Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_fill_assumption_comparison.png | stored-artefact diagnostic figure |
-| execution_v3_adverse_selection_by_confidence | Adverse Selection By Confidence Bucket Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_adverse_selection_by_confidence.png | stored-artefact diagnostic figure |
-
-Skipped plots:
-
-| figure | reason |
-| --- | --- |
-| execution_v3_regime_breakdown | regime_execution_summary.csv has no plottable execution-v3 rows |
-| regime_breakdown | regime labels not present in prediction artefacts |
-
-## Uncertainty Summary
-
-Seed variance is not available in the stored evidence; intervals are fold-level diagnostics.
-
-| source | model | lookback | folds | seeds | mean | CI lower | CI upper | bootstrap lower | bootstrap upper |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| classical | gradient_boosting | n/a | 5 | 1 | 0.4654 | 0.4600 | 0.4708 | 0.4623 | 0.4692 |
-| neural | matrix_transformer | 20 | 5 | 1 | 0.7337 | 0.6948 | 0.7726 | 0.7074 | 0.7535 |
-
-## Ablation Summary
-
-Stored ablations are diagnostic stress checks; skipped ablations remain explicit.
-
-| family | stored rows | summary |
-| --- | --- | --- |
-| feature_groups | 180 | -0.0884 to 0.0000 test macro-F1 delta |
-| model_class | 180 | -0.2191 to 0.0000 test macro-F1 delta |
-| horizon | 90 | 0.0000 to 0.1454 test macro-F1 delta |
-| calibration | 225 | ECE diagnostics |
-| execution | 600 | cost/latency proxy diagnostics |
-
-| field | value |
-| --- | --- |
-| families_run | feature_groups, horizon, model_class, calibration, execution |
-| families_skipped | lookback |
-| checkpoints_written | False |
-
-| recorded skip |
-| --- |
-| ablation lookback_sweep: neural lookback sweep not requested; this is CPU-expensive, so pass --neural-lookbacks (and --max-epochs) to execute it |
-| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
-| execution adverse_selection: neural runs ship no stored execution proxy rows, so an adverse-selection proxy cannot be computed |
-| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
-| execution fill_assumption: neural runs ship no stored execution proxy rows, so a fill-assumption proxy cannot be computed |
-| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
-| execution degradation: neural runs ship no stored execution proxy rows, so the execution side of the degradation cannot be computed |
-| execution_v3 regime_execution: volatility_regime labels unavailable in prediction artefacts |
-| execution_v3 regime_execution: spread_regime labels unavailable in prediction artefacts |
-| execution_v3 regime_execution: imbalance_regime labels unavailable in prediction artefacts |
-| execution_v3 regime_execution: liquidity_regime labels unavailable in prediction artefacts |
-| execution_v3 regime_execution: regime labels unavailable in prediction artefacts |
-
-## Feature Ablation and Stability Analysis
+## Feature-Stability Analysis
 
 Feature-ablation evidence is reported as a scoped feature-stability analysis over FI-2010 snapshot columns. Unsupported event-level groups remain explicit.
 `snapshot_order_flow_proxy` is a labelled snapshot proxy derived from FI-2010 matrices. It should not be interpreted as true event-level order-flow imbalance; it is not true event-level order-flow imbalance evidence.
@@ -616,7 +632,7 @@ Matched deltas versus all-features baseline:
 | 10 | logistic | remove_one_group | depth_imbalance | 0.0006 | 0.0003 | neutral |
 | 10 | logistic | remove_one_group | depth_slope | -0.0006 | -0.0016 | neutral |
 
-## Execution-Aware Proxy Summary
+## Execution-Aware Proxy Diagnostics
 
 Execution-aware sections are offline execution-aware proxy diagnostics only.
 They separate classification performance from confidence-filtered signal quality and cost-adjusted proxy diagnostics, and they do not support live-trading, profitability or PnL claims.
@@ -740,20 +756,37 @@ Skipped diagnostics:
 | regime_execution | regime | regime labels unavailable in prediction artefacts |
 
 Conservative interpretation: execution-v3 can show how stored FI-2010 signals respond to confidence filters, costs, latency and fill proxy assumptions. It does not establish deployable execution quality.
+### Figure Index
 
-## External Benchmark Context
+| figure | title | path | description |
+| --- | --- | --- | --- |
+| confusion_matrix_h10 | Confusion Matrix H10 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h10.png | canonical up/stationary/down confusion matrix |
+| confusion_matrix_h20 | Confusion Matrix H20 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h20.png | canonical up/stationary/down confusion matrix |
+| confusion_matrix_h50 | Confusion Matrix H50 | reports/figures/fi2010_neural_full_grid/confusion_matrix_h50.png | canonical up/stationary/down confusion matrix |
+| reliability_curve | Reliability Curve | reports/figures/fi2010_neural_full_grid/reliability_curve.png | confidence calibration from stored predictions |
+| macro_f1_by_fold | Macro-F1 Across Folds | reports/figures/fi2010_neural_full_grid/macro_f1_by_fold.png | fold-level macro-F1 diagnostic |
+| macro_f1_by_horizon | Macro-F1 Across Horizons | reports/figures/fi2010_neural_full_grid/macro_f1_by_horizon.png | mean macro-F1 across horizons |
+| ece_by_horizon | ECE Across Horizons | reports/figures/fi2010_neural_full_grid/ece_by_horizon.png | mean calibration error across horizons |
+| ssl_matched_delta | Matched SSL Deltas | reports/figures/fi2010_neural_full_grid/ssl_matched_delta.png | matched supervised-vs-SSL deltas only |
+| confidence_threshold_eligible_fraction | Confidence Threshold Vs Eligible Fraction | reports/figures/fi2010_neural_full_grid/confidence_threshold_eligible_fraction.png | retained sample fraction by confidence |
+| confidence_threshold_macro_f1 | Confidence Threshold Vs Retained Macro-F1 | reports/figures/fi2010_neural_full_grid/confidence_threshold_macro_f1.png | macro-F1 on retained high-confidence samples |
+| cost_adjusted_proxy | Cost-Adjusted Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/cost_adjusted_proxy.png | proxy diagnostics only when artefacts exist |
+| execution_v3_confidence_active_fraction | Confidence Threshold Vs Active Trade Fraction Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_confidence_active_fraction.png | stored-artefact diagnostic figure |
+| execution_v3_confidence_net_proxy | Confidence Threshold Vs Net Cost-Adjusted Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_confidence_net_proxy.png | stored-artefact diagnostic figure |
+| execution_v3_cost_sensitivity | Cost Sensitivity Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_cost_sensitivity.png | stored-artefact diagnostic figure |
+| execution_v3_latency_sensitivity | Latency Sensitivity Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_latency_sensitivity.png | stored-artefact diagnostic figure |
+| execution_v3_fill_assumption_comparison | Fill Assumption Comparison Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_fill_assumption_comparison.png | stored-artefact diagnostic figure |
+| execution_v3_adverse_selection_by_confidence | Adverse Selection By Confidence Bucket Proxy Diagnostic | reports/figures/fi2010_neural_full_grid/execution_v3_adverse_selection_by_confidence.png | stored-artefact diagnostic figure |
 
-External comparisons are protocol context, not ranking claims. No external numeric metrics are imported into this report.
+Skipped plots:
 
-| source | type | numeric metrics included |
-| --- | --- | --- |
-| Ntakaris et al. FI-2010 dataset and baselines | paper_and_dataset | False |
-| Tsantekidis et al. stationary-feature LOB forecasting | paper | False |
-| Zhang, Zohren and Roberts DeepLOB | paper | False |
-| Wallbridge TransLOB | paper | False |
-| Sangadiev et al. DeepFolio | paper | False |
+| figure | reason |
+| --- | --- |
+| execution_v3_regime_breakdown | regime_execution_summary.csv has no plottable execution-v3 rows |
+| regime_breakdown | regime labels not present in prediction artefacts |
 
-## Synthetic Event-Level Extension
+
+## Synthetic Event-Level Replay
 
 | field | value |
 | --- | --- |
@@ -769,7 +802,7 @@ External comparisons are protocol context, not ranking claims. No external numer
 This extension demonstrates event-level pipeline support under controlled synthetic regimes. It does not provide real-market evidence. It does not change FI-2010 limitations. It enables event-level
 feature validation that FI-2010 cannot support.
 
-## Real Event-Level L2 Replay Extension
+## Binance L2 Replay
 
 | field | value |
 | --- | --- |
@@ -783,37 +816,26 @@ feature validation that FI-2010 cannot support.
 | replay_ok | True |
 | crossed_count | 0 |
 
-Binance L2 replay is scoped to real event-level aggregated depth-stream ingestion and replay when a local Binance capture is supplied.
+Binance L2 replay is scoped to real captured aggregated depth-stream ingestion and replay when a local Binance capture is supplied.
 Fixture runs are engineering checks. It is crypto-market engineering evidence, not equity-market evidence.
 Binance diff-depth updates are aggregated level updates, not individual order-event data.
 It does not provide profitability, tradability or predictive-success evidence.
 It is not live-trading evidence. It complements the FI-2010 and synthetic evidence.
 
-## What This Supports
+## Limitations
 
-- The committed artefacts support a traceable multi-fold classical FI-2010 result.
-- A separate, earlier 25-epoch reduced-scope, single-seed supervised neural benchmark is reported on its own terms and is not used as matched-grid or SSL evidence.
-- The uncertainty, ablation and proxy-diagnostic layers are generated from stored tables.
-- External references are used only to document protocol context.
-- The one-epoch full neural grid artefacts compare supervised and SSL matrix-transformer variants under matched fold, horizon, seed, lookback, architecture and preprocessing keys; this is matched
-  comparison evidence and supports no SSL improvement claim.
-- SSL-v2 artefacts support a predictive-metric improvement only for the exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 scope; calibration and broad SSL improvement remain unsupported.
-- Execution-v3 artefacts support an offline execution-aware proxy diagnostic over stored FI-2010 full-grid predictions.
-- The execution centrepiece supports a forecasting-versus-signal-quality gap analysis using retained predictive, calibration and proxy diagnostic tables.
-- Feature-ablation artefacts support leakage-safe FI-2010 snapshot feature-family diagnostics with proxy features labelled as proxies.
-
-## What This Does Not Claim
+### What Should Not Be Inferred
 
 - Profitability or tradability in deployed markets.
 - Production execution quality or market-impact realism.
 - Unsupported live-trading claims from execution-v3 proxy diagnostics.
 - Foundation-model status.
-- Broad SSL improvement, SSL calibration improvement or SOTA status.
+- Self-supervised superiority, broad SSL improvement or SOTA status; SSL-v2 predictive evidence is scoped to the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50.
 - A full-grid SSL improvement claim when the full-grid directory is missing, smoke-only or contains failed matched runs.
 - True order-flow, cancellation, trade-imbalance or queue-position claims from FI-2010 feature ablations; absent event-level fields remain unsupported.
 - Neural superiority over the classical family.
 
-## Limitations
+### Scope Limitations
 
 | limitation | detail |
 | --- | --- |
@@ -822,13 +844,30 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | neural_scope | single seed and single lookback in stored reduced-scope artefacts |
 | execution_scope | offline execution-aware proxy diagnostics only; queue, impact and venue mechanics are not modelled |
 | execution_centrepiece_scope | forecasting-versus-signal-quality gap analysis over retained proxy tables; no raw predictions or realised execution outcomes are read |
-| ssl_v2_scope | complete-real only for folds 1-5, horizons 10/50, seed 0 and lookback 50; seeds 1 and 2 are deferred |
+| ssl_v2_scope | complete_real; exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50 |
 | external_scope | protocol context only; no external numeric metrics are copied |
 | prediction_checkpoint_policy | full predictions and checkpoints are not required by this report builder |
 | full_neural_grid_scope | reported only when aggregate artefacts are supplied; smoke artefacts are not empirical evidence |
 | feature_ablation_scope | snapshot-derived FI-2010 diagnostics only; snapshot-flow columns are proxies and unsupported event-level groups remain unavailable |
 
-## Artefact Traceability
+
+## Reproducibility and Artefacts
+
+### What the Artefacts Support
+
+- The committed artefacts support a traceable multi-fold classical FI-2010 result.
+- A separate, earlier 25-epoch reduced-scope, single-seed supervised neural benchmark is reported on its own terms and is not used as matched-grid or SSL evidence.
+- The uncertainty, ablation and proxy-diagnostic layers are generated from stored tables.
+- External references are used only to document protocol context.
+- The one-epoch full neural grid artefacts compare supervised and SSL matrix-transformer variants under matched fold, horizon, seed, lookback, architecture and preprocessing keys; this is matched
+  comparison evidence and supports no SSL improvement claim.
+- SSL-v2 artefacts support a predictive-metric improvement only for the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; calibration improvement is also supported
+  in that exact scope, while broad SSL improvement remains unsupported.
+- Execution-v3 artefacts support an offline execution-aware proxy diagnostic over stored FI-2010 full-grid predictions.
+- The execution centrepiece supports a forecasting-versus-signal-quality gap analysis using retained predictive, calibration and proxy diagnostic tables.
+- Feature-ablation artefacts support leakage-safe FI-2010 snapshot feature-family diagnostics with proxy features labelled as proxies.
+
+### Artefact Traceability
 
 | artefact | path | sha256 |
 | --- | --- | --- |
@@ -840,11 +879,11 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | ablations_model_class_ablation | experiments/fi2010_brutal_ablations/model_class_ablation.csv | d73a3dfdb2d2ae68a4a7348e8757973d88b666da72cf38417833185eabcc8328 |
 | ablations_skipped_ablations | experiments/fi2010_brutal_ablations/skipped_ablations.json | d3d4927131c2733e10c2efbcd77ea7e067439d4e26b9f389488daeb5cd9c0fd9 |
 | ablations_summary | experiments/fi2010_brutal_ablations/summary.json | b2ada55d9802da545dc67435bf30a93357203c23bb92c55ae4e847d45cc0716d |
-| binance_l2_binance_claim_assessment | reports/binance_l2_extension/binance_claim_assessment.json | 783da22e21d0271520a8fb6ee98ec48f2c28af68527eda9748e329e5a1b16376 |
+| binance_l2_binance_claim_assessment | reports/binance_l2_extension/binance_claim_assessment.json | 384c926091463d4b26902be9fd1ebdd41ab8742c5997e89f8b582fd4eaba1eff |
 | binance_l2_dir | reports/binance_l2_extension | directory |
 | binance_l2_feature_summary | reports/binance_l2_extension/feature_summary.csv | c61a0b01d44155e86be547c34fe932839225a88e1b3b6cdee4ad3b3e79f00a0d |
 | binance_l2_replay_quality | reports/binance_l2_extension/replay_quality.json | 69fff0aaece5acc5348b52b1664c3e112fa37af4086092ebc0ad2c7422ba655d |
-| binance_l2_summary | reports/binance_l2_extension/summary.json | 6862e2290211d3c6a242ee356b07dcfe4931323c3e0fbcde2c4e4ededb4da7dd |
+| binance_l2_summary | reports/binance_l2_extension/summary.json | b481c5cbf5bc954160f4d6b0ccda90103aa80e4e50236f9e97865c1f23703408 |
 | binance_l2_update_continuity_summary | reports/binance_l2_extension/update_continuity_summary.csv | 4a95823cd920d5ffdff7b79d80a40424688d0cfa0516d91acdec9808bd8d33f5 |
 | classical_dir | experiments/fi2010_multifold_classical | directory |
 | classical_results_summary | experiments/fi2010_multifold_classical/results_summary.csv | 7a4d3c042805ecb4d8735fe9ad95f1ccc9bf50a0d4a83acd646f4d6417a9e03e |
@@ -925,14 +964,15 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
 | proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
 | ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
-| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | 6841ef6d1a252435b6af800b1dfdeb82ab073610758e265b9f5644b6c921fcf7 |
-| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 59599c39849ddf3eef2d791590e6964c35122aed6b786847cdcd4466f3eeaad6 |
-| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | 526c639fffd60d71ffa7a0862d5d093891a41b8b2fa3069c3ae89977813b52aa |
-| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 48999fe3361c89ba7954727905a23c4e27b0ad8e620903231db71fd196974110 |
-| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | ecee3938b5eef85eed57d3707bcb75662dce5df691172a06ef5c3dba543a9b1a |
-| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 220aaf29b0744be35cd32c5fc95e3073abd5c085d5c8afadc3c8015cc2e8e882 |
-| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 8c33002c24bebe0adca89834c90271be4f749feede3ef1b07ba6375eba49be00 |
-| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | 37104de8aea10ea818b6d04f940417d04606fc7edc68688a7cb6333479957b8c |
+| ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | a56cc7bc5ff103745676b5630848095f97752d44425479f4d519bded62808cd1 |
+| ssl_v2_analysis_hamilton_compute_provenance | reports/ssl_v2_analysis/hamilton_compute_provenance.json | 2d05513d56980eb53a5a893460e5df7f2b6d78af3b6ee09a4d8165eb6f1b1939 |
+| ssl_v2_analysis_ssl_v2_analysis | reports/ssl_v2_analysis/ssl_v2_analysis.md | 35a497a60698637a0e3c6954e2a987a306408f5c294d89d6483b3c5bf6b4fccb |
+| ssl_v2_analysis_ssl_v2_claim_assessment | reports/ssl_v2_analysis/ssl_v2_claim_assessment.json | 8cce09ccaab228e1b3ede2b3ba4dfb95487aeac37d5789e5c0894c4bc9343fe8 |
+| ssl_v2_analysis_ssl_v2_delta_by_fold | reports/ssl_v2_analysis/ssl_v2_delta_by_fold.csv | 558167b022007dc97e9af2e02a617d8ab2a0d8babdd716e1e756be5b08ec488f |
+| ssl_v2_analysis_ssl_v2_delta_by_horizon | reports/ssl_v2_analysis/ssl_v2_delta_by_horizon.csv | 2c45222361f735fc840e61dc7c458e49cc3a8db832b6ed3c3df8327d903823c1 |
+| ssl_v2_analysis_ssl_v2_loss_components | reports/ssl_v2_analysis/ssl_v2_loss_components.csv | 6de90d592f441f7a79547cf6755b9cbb0ba9812a43347d1f78bc279be4bb484c |
+| ssl_v2_analysis_ssl_v2_metric_summary | reports/ssl_v2_analysis/ssl_v2_metric_summary.csv | 6f64043665ec64e01864ee0c5be1171c4ec07482ce0e1b7d71275a62dd1d100e |
+| ssl_v2_analysis_summary | reports/ssl_v2_analysis/summary.json | 39868f9fae230c64b9ad8a37d571a0e70dba374356cd0c30730a27bd3aca5de3 |
 | synthetic_lob_dir | reports/synthetic_lob_extension | directory |
 | synthetic_lob_summary | reports/synthetic_lob_extension/summary.json | 21878c3978aede98d066121f22dfb14f61b5cf3e56091fae7b7920720a8730ea |
 | synthetic_lob_synthetic_benchmark_summary | reports/synthetic_lob_extension/synthetic_benchmark_summary.csv | 6827367858c77070933a2c974e2021a64ddea79a8e18c1ce31277041c981f6ea |
@@ -944,7 +984,7 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | uncertainty_model_ranking | experiments/fi2010_uncertainty/model_ranking.csv | c1cb29fa431db19ade6167323902cacf8a2da4e385d369b9a92850338feee2ca |
 | uncertainty_summary | experiments/fi2010_uncertainty/summary.json | 942e016bd40af0ab73412036279f2067731fcfb76156ee8c935beebf7b2d5c34 |
 
-## Reproduction Commands
+### Reproduction Commands
 
 ```bash
 python -m chronoslob.cli build-final-empirical-report \
@@ -975,8 +1015,16 @@ python -m chronoslob.cli build-execution-centrepiece \
 python -m chronoslob.cli doctor
 python -m chronoslob.cli inspect-release-readiness
 python -m chronoslob.cli run-project-audit --strict
-python -m pytest
+python -m pytest -q
 python -m compileall -q chronoslob tests
 python -m ruff check .
 python -m mypy chronoslob
+git diff --check
 ```
+
+
+## Deferred Work
+
+- A broader proper-training neural benchmark across folds, seeds and lookbacks.
+- Broader non-linear feature-stability coverage.
+- A manual paper; generated reports remain artefact summaries.

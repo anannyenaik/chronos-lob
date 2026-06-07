@@ -649,7 +649,11 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
                 "ssl_v2_loss_components.csv",
                 "summary.json",
             ),
-            metadata_files=("summary.json", "ssl_v2_claim_assessment.json"),
+            metadata_files=(
+                "summary.json",
+                "ssl_v2_claim_assessment.json",
+                "hamilton_compute_provenance.json",
+            ),
             limitations=(
                 "The SSL-v2 analysis is scoped evidence only and does not alter "
                 "broad SSL boundaries unless its stored deltas support that."
@@ -1952,8 +1956,8 @@ def _audit_ssl_delta_claim(
         status = "unsupported"
         reason = (
             f"Some matched rows improved {metric_name}, but the broad SSL "
-            "improvement claim is not supported because the stored evidence is "
-            "mixed, partial, stale or not cleanly complete."
+            "improvement claim is not supported because the retained matched "
+            "deltas are mixed."
         )
     elif values:
         status = "unsupported"
@@ -2662,10 +2666,9 @@ def _audit_binance_l2_claims(
             "Binance L2 replay artefacts with passing continuity and invariant checks are present.",
         ),
         ClaimAuditEntry(
-            claim_id="binance_l2.real_event_level_stream_path",
+            claim_id="binance_l2.real_captured_aggregated_l2_stream_path",
             claim_text=(
-                "ChronosLOB ingests and replays a real event-level aggregated "
-                "L2 depth stream"
+                "ChronosLOB ingests and replays a real captured aggregated L2 depth stream"
             ),
             status=real_capture_support,
             supporting_artefacts=real_capture_supporting,
@@ -3360,8 +3363,7 @@ def _render_readme_snapshot(
         "- Smoke diagnostics are labelled as smoke diagnostics and are not empirical evidence.",
         _full_grid_limitation_line(grid),
         "- SSL improvement language is blocked unless real aggregate deltas support it.",
-        "- SSL-v2 predictive improvement is scoped to the exact stored seed-0 "
-        "folds 1-5, horizons 10/50, lookback-50 slice; seeds 1 and 2 are deferred.",
+        _ssl_v2_limitation_line(claim_by_id, ssl_v2),
         "- Execution-v3 metrics are offline proxy diagnostics, not deployed execution results.",
         "- FI-2010 snapshot features do not expose event-level order flow or queue position.",
         "",
@@ -3429,12 +3431,40 @@ def _ssl_v2_snapshot_line(
         calibration_status = calibration.status if calibration is not None else "not audited"
         return (
             "- SSL-v2: scoped predictive improvement is supported only for the "
-            "exact stored seed-0 folds 1-5, horizons 10/50, lookback-50 scope; "
+            f"exact stored {_ssl_v2_scope_text(record)}; "
             f"calibration={calibration_status} and broad SSL remains unsupported."
         )
     return (
         "- SSL-v2: implementation and scoped evaluation are recorded, but no "
         "predictive-improvement claim is supported."
+    )
+
+
+def _ssl_v2_limitation_line(
+    claims: Mapping[str, ClaimAuditEntry],
+    record: ArtefactInventoryRow | None,
+) -> str:
+    calibration = claims.get("empirical.ssl_v2_calibration_improvement")
+    calibration_status = calibration.status if calibration is not None else "not audited"
+    return (
+        "- SSL-v2 predictive and calibration claims are limited to the exact stored "
+        f"{_ssl_v2_scope_text(record)}; calibration={calibration_status} and broad "
+        "SSL improvement remains unsupported."
+    )
+
+
+def _ssl_v2_scope_text(record: ArtefactInventoryRow | None) -> str:
+    if record is None:
+        return "scope recorded in the SSL-v2 artefacts"
+    summary = record.payloads.get("summary", {})
+
+    def _values(key: str) -> str:
+        values = _list_payload(summary.get(key))
+        return ", ".join(str(value) for value in values) or "not available"
+
+    return (
+        f"scope: folds {_values('folds')}, horizons {_values('horizons')}, "
+        f"seeds {_values('seeds')}, lookbacks {_values('lookbacks')}"
     )
 
 
@@ -3677,6 +3707,24 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
                 "",
             ]
         )
+    lines.extend(
+        [
+            "## Release Validation",
+            "",
+            "These checks do not launch training:",
+            "",
+            "```powershell",
+            "python -m pytest -q",
+            "python -m ruff check .",
+            "python -m mypy chronoslob",
+            "python -m chronoslob.cli doctor",
+            "python -m chronoslob.cli inspect-release-readiness",
+            "python -m chronoslob.cli run-project-audit --strict",
+            "git diff --check",
+            "```",
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -3689,12 +3737,13 @@ def _render_release_checklist() -> str:
                 "reviewed before release. Do not automatically delete or stage them."
             ),
         ],
-        "Tests": ["Run `python -m pytest`."],
+        "Tests": ["Run `python -m pytest -q`."],
         "Lint And Types": ["Run `python -m ruff check .`.", "Run `python -m mypy chronoslob`."],
         "Project Audit": [
             "Run `python -m chronoslob.cli doctor`.",
             "Run `python -m chronoslob.cli inspect-release-readiness`.",
             "Run `python -m chronoslob.cli run-project-audit --strict`.",
+            "Run `git diff --check`.",
         ],
         "Artefact Hashes": [
             "Confirm input hashes are present where artefacts record source files.",

@@ -9,6 +9,12 @@ It does not train models, create new results or write a manual paper. Public
 reports remain generated artefact summaries until a paper scope is chosen
 separately.
 
+The pack audits the canonical public evidence spine: leakage-safe FI-2010
+benchmark evidence, supervised and SSL comparisons, calibration and confidence
+filtering, feature-stability analysis and execution-aware proxy diagnostics.
+Synthetic event-level replay and Binance Spot aggregated L2 replay are
+supporting engineering evidence.
+
 ## Build Command
 
 ```bash
@@ -162,11 +168,13 @@ SSL improvement and SSL calibration improvement remain unsupported.
 
 The SSL-v2 benchmark (`fi2010_ssl_v2_benchmark`) and analysis
 (`ssl_v2_analysis_report`) are inventoried separately from SSL-v1. The current
-stored scope is `complete_real`: folds 1-5, horizons 10/50, seed 0, lookback 50.
-Claim rows support SSL-v2 implementation, scoped evaluation and a predictive
-metric improvement only for that exact stored seed-0 scope. The multi-seed
-harness exists, but seeds 1 and 2 are deferred. SSL-v2 calibration improvement
-and broad SSL improvement remain unsupported.
+stored scope is `complete_real`: folds 1-5, horizons 10/50, seeds 0-2, lookback
+50. Claim rows support SSL-v2 implementation, scoped evaluation, mean predictive
+improvement and mean calibration improvement only for that exact stored scope.
+The result is mixed by seed and horizon, and broad SSL improvement remains
+unsupported. The seed-1 and seed-2 refresh was run as independent Slurm jobs on
+Durham University Hamilton/NCC HPC; large checkpoints and raw predictions are
+not retained in the public evidence pack.
 
 A dedicated execution-v3 analysis artefact (`execution_v3_analysis_report`, built
 by `analyse-fi2010-execution-v3` into `reports/execution_v3_analysis/`) is also
@@ -202,7 +210,9 @@ captured-stream claim is supported.
 The legacy standalone SSL runner path is `obsolete_superseded` because the
 matched neural full grid and SSL-v2 benchmark are the retained SSL evidence. The
 stored feature-audit path is `optional_missing`; no core public claim depends on
-that optional copy.
+that optional copy. The project-audit archive remains `unknown_staleness`
+because it has no retained hash or timestamp basis for a stronger freshness
+classification; no empirical result claim depends on that archive.
 
 ## Preparing A Release
 

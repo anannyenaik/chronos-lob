@@ -1,14 +1,26 @@
 # Project Status
 
-Current package version: `0.1.0`.
+Current package version: `0.2.0` (`Alpha`).
 
-ChronosLOB is a research-engineering platform for limit order book
-representation learning, short-horizon market-state forecasting, calibration
-and offline execution-aware proxy diagnostics.
+ChronosLOB tests whether market-microstructure forecasts remain meaningful
+under leakage-safe validation, calibration checks, feature-stability analysis,
+event-level replay and execution-aware proxy diagnostics.
 
 The central public interpretation is the forecasting-versus-signal-quality gap:
 predictive metrics and calibration have to be read separately from confidence,
 active-fraction, turnover, cost, latency and adverse-selection proxy diagnostics.
+
+The canonical evidence spine is:
+
+1. leakage-safe FI-2010 benchmark evidence;
+2. supervised and SSL comparisons;
+3. calibration and confidence filtering;
+4. feature-stability analysis;
+5. execution-aware proxy diagnostics.
+
+Synthetic event-level replay and Binance Spot aggregated L2 replay are
+supporting engineering evidence. A broader proper-training neural benchmark and
+the manual paper are deferred.
 
 ## Implemented
 
@@ -105,15 +117,17 @@ overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 
 The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a complete-real
 failure-analysis-motivated follow-up against a matched supervised baseline on
-folds 1-5, horizons 10/50, seed 0 and lookback 50 (20 runs, 0 failed, 10 matched
-comparison cells). Across the ten cells the mean macro-F1 (+0.028) and MCC
-(+0.057) deltas support scoped predictive improvement for exactly that stored
-seed-0 slice, driven mainly by fold 5 at horizon 10. The multi-seed harness
-exists, but SSL-v2 seeds 1 and 2 are deferred. Mean ECE still worsens (+0.005),
-while mean Brier improves (-0.030), so calibration improvement remains
-unsupported. The stored analysis in `reports/ssl_v2_analysis/` supports
-implementation, scoped evaluation and scoped predictive improvement only, not
-calibration improvement or broad SSL improvement.
+folds 1-5, horizons 10/50, seeds 0-2 and lookback 50 (60 runs, 0 failed, 30
+matched comparison cells). Across the matched cells, mean macro-F1 (+0.011),
+MCC (+0.026), ECE (-0.003) and Brier (-0.024) deltas support scoped predictive
+and calibration improvement for exactly that stored scope. The result is mixed:
+seed 1 has a negative mean macro-F1 delta (-0.010), and horizon 50 has negative
+mean macro-F1 and MCC deltas. Broad SSL improvement remains unsupported.
+
+The seed-1 and seed-2 refresh was executed as independent Slurm array jobs on
+Durham University Hamilton/NCC HPC. The retained provenance records the exact
+environment, job structure and a GPU determinism warning; bitwise GPU
+reproducibility is not claimed.
 
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
@@ -142,8 +156,10 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   not a performance-maximising neural benchmark.
 - The standalone SSL runner output is obsolete and superseded; the completed
   matched grid is the current SSL comparison evidence.
-- SSL-v2 evidence is complete_real for folds 1-5 and supports only a scoped
-  predictive improvement; calibration and broad SSL claims remain unsupported.
+- SSL-v2 evidence is complete_real for folds 1-5, horizons 10/50, seeds 0-2 and
+  lookback 50. Mean predictive and calibration improvements are supported only
+  in that scope; results are mixed by seed and horizon, and broad SSL improvement
+  remains unsupported.
 - Generalisation beyond FI-2010 requires additional documented experiment
   records.
 - The synthetic event-level extension is synthetic only. Its results do not
@@ -161,4 +177,5 @@ snapshot proxy, not true event-level OFI or causal feature importance.
 Future work is focused on broader non-linear feature-ablation coverage,
 additional limit order book dataset adapters where data access allows, richer
 execution modelling and genuine regime analysis when explicit regime labels are
-available.
+available. A broader proper-training neural benchmark and the manual paper remain
+explicitly deferred.

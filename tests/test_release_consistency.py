@@ -8,6 +8,7 @@ behaviour rather than a possibly stale committed file.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -58,6 +59,7 @@ def generated_report_text(tmp_path_factory: pytest.TempPathFactory) -> str:
         external_dir=_experiments_dir("fi2010_external_context"),
         neural_full_grid_dir=_experiments_dir("fi2010_neural_full_grid"),
         proper_training_dir=_experiments_dir("fi2010_neural_proper_training_subset_v2"),
+        ssl_v2_analysis_dir=project_root() / "reports" / "ssl_v2_analysis",
         evidence_pack_dir=project_root() / "reports" / "evidence_pack",
         out_path=out,
         overwrite=True,
@@ -71,8 +73,8 @@ def _readme_text() -> str:
 
 def _snapshot_block(report_text: str) -> str:
     """Return the text of the Evidence Snapshot section only."""
-    start = report_text.index("## Evidence Snapshot")
-    end = report_text.index("## ", start + 1)
+    start = report_text.index("### Stored Evidence Snapshot")
+    end = report_text.index("### ", start + 1)
     return report_text[start:end]
 
 
@@ -119,6 +121,27 @@ def test_report_separates_legacy_benchmark_from_matched_grid(
     assert "not a performance-maximising neural training result" in normalised
     # Explicit separation of the earlier reduced-scope benchmark.
     assert "reported separately and is not used as matched ssl evidence" in normalised
+
+
+def test_ssl_v2_scope_matches_stored_analysis(generated_report_text: str) -> None:
+    analysis_dir = project_root() / "reports" / "ssl_v2_analysis"
+    summary = json.loads((analysis_dir / "summary.json").read_text(encoding="utf-8"))
+    claims = json.loads(
+        (analysis_dir / "ssl_v2_claim_assessment.json").read_text(encoding="utf-8")
+    )
+    normalised = _normalised(generated_report_text)
+
+    assert "seeds 0, 1, 2" in normalised
+    assert "seeds 1 and 2 are deferred" not in normalised
+    assert "durham university hamilton" in normalised
+
+    calibration = next(
+        item for item in claims["claims"] if item["claim_id"] == "ssl_v2_calibration_improvement"
+    )
+    if calibration["status"] == "supported":
+        assert "ssl-v2 calibration improvement is supported" in normalised
+        assert "ssl-v2 calibration improvement remains unsupported" not in normalised
+    assert summary["seeds"] == [0, 1, 2]
 
 
 def test_readme_and_report_scope_proper_training_subset(
