@@ -130,4 +130,6 @@ single epoch. The full configured grid requires an explicit
 
 No neural superiority claim is made. This protocol does not establish
 deployment or live-market execution quality. SSL claims must be taken only from
-the separately retained matched artefacts and their exact recorded scopes.
+the separately retained matched artefacts and their exact recorded scopes. The
+full proper-training neural benchmark across folds, seeds, lookbacks and model
+families remains deferred until it is actually run.

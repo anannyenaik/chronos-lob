@@ -1,17 +1,18 @@
 # ChronosLOB: Forecasting Quality Is Not Trading-Signal Quality
 
-ChronosLOB is a leakage-safe research platform for limit order book forecasting,
-calibration, feature stability, event-level replay and execution-aware proxy
-diagnostics.
+ChronosLOB is a leakage-safe research platform for limit order book
+forecasting, calibration, feature stability, event-level replay and
+execution-aware proxy diagnostics.
 
 ChronosLOB is a research platform for limit order book representation learning,
 market-state forecasting, calibration and execution-aware validation.
 
 ## Main Finding
 
-Forecasting metrics and trading-signal diagnostics can diverge. ChronosLOB's
-central evidence joins retained predictive and calibration summaries to
-confidence filtering, active fraction, turnover, cost, latency and
+Forecasting metrics and trading-signal diagnostics can diverge.
+
+ChronosLOB's central evidence joins retained predictive and calibration
+summaries to confidence filtering, active fraction, turnover, cost, latency and
 adverse-selection proxy diagnostics.
 
 ![Forecasting versus signal quality](reports/execution_centrepiece/forecasting_vs_signal_quality.png)
@@ -33,10 +34,18 @@ execution quality or production execution realism.
 | Synthetic event-level replay | `archived_valid` | Controlled synthetic evidence only. |
 | Binance Spot aggregated L2 replay | `partial_real` | Crypto L2 replay engineering path; committed sample is fixture-backed, not equity or predictive-success evidence. |
 
-The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
-horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
-SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
-scoped predictive and calibration improvement for this exact retained scope.
+The repository is strong because its claims are audited against retained
+artefacts and explicit limitations, not because it claims profitability.
+
+## SSL-v2 Scope
+
+The SSL-v2 benchmark is complete for the stored FI-2010 scope:
+folds 1–5, horizons 10/50, seeds 0–2 and lookback 50.
+
+Across 30 matched comparison cells, SSL-v2 has positive mean deltas for
+macro-F1, MCC, ECE and Brier, supporting scoped predictive and calibration
+improvement for this exact retained scope.
+
 The evidence is mixed by seed and horizon, including negative mean macro-F1
 deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
 
@@ -45,14 +54,16 @@ performance-maximising neural benchmark. The proper-training neural subset
 remains partial, and a broader proper-training neural benchmark across folds,
 seeds, lookbacks and model families is deferred.
 
-The repository is strong because its claims are audited against retained
-artefacts and explicit limitations, not because it claims profitability.
+## Hamilton Compute Provenance
 
 The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
-jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
-claim assessments are committed; large checkpoints, raw predictions and cluster
-logs are intentionally excluded. GPU determinism warnings are documented, and
-bitwise reproducibility is not claimed. See
+jobs on Durham University Hamilton/NCC HPC.
+
+Retained summaries, provenance and claim assessments are committed; large
+checkpoints, raw predictions and cluster logs are intentionally excluded.
+
+GPU determinism warnings are documented, and bitwise reproducibility is not
+claimed. See
 [Hamilton compute provenance](reports/ssl_v2_analysis/hamilton_compute_provenance.json).
 
 ## What This Is Not
@@ -106,7 +117,25 @@ python -m chronoslob.cli doctor
 Build the public report from retained artefacts only:
 
 ```powershell
-python -m chronoslob.cli build-final-empirical-report --classical experiments/fi2010_multifold_classical --neural experiments/fi2010_multifold_neural --uncertainty experiments/fi2010_uncertainty --ablations experiments/fi2010_brutal_ablations --execution experiments/fi2010_execution_v2 --execution-v3 experiments/fi2010_execution_v3 --execution-centrepiece reports/execution_centrepiece --external experiments/fi2010_external_context --neural-full-grid experiments/fi2010_neural_full_grid --proper-training experiments/fi2010_neural_proper_training_subset_v2 --ssl-v2-analysis reports/ssl_v2_analysis --feature-ablations experiments/fi2010_feature_ablations --feature-ablation-analysis reports/feature_ablation_analysis --evidence-pack reports/evidence_pack --synthetic-lob reports/synthetic_lob_extension --binance-l2 reports/binance_l2_extension --out reports/chronoslob_final_empirical_report.md --overwrite
+python -m chronoslob.cli build-final-empirical-report `
+  --classical experiments/fi2010_multifold_classical `
+  --neural experiments/fi2010_multifold_neural `
+  --uncertainty experiments/fi2010_uncertainty `
+  --ablations experiments/fi2010_brutal_ablations `
+  --execution experiments/fi2010_execution_v2 `
+  --execution-v3 experiments/fi2010_execution_v3 `
+  --execution-centrepiece reports/execution_centrepiece `
+  --external experiments/fi2010_external_context `
+  --neural-full-grid experiments/fi2010_neural_full_grid `
+  --proper-training experiments/fi2010_neural_proper_training_subset_v2 `
+  --ssl-v2-analysis reports/ssl_v2_analysis `
+  --feature-ablations experiments/fi2010_feature_ablations `
+  --feature-ablation-analysis reports/feature_ablation_analysis `
+  --evidence-pack reports/evidence_pack `
+  --synthetic-lob reports/synthetic_lob_extension `
+  --binance-l2 reports/binance_l2_extension `
+  --out reports/chronoslob_final_empirical_report.md `
+  --overwrite
 ```
 
 Run the release gates:
@@ -134,6 +163,8 @@ reports/     public reports, evidence pack and generated figure artefacts
 experiments/ retained FI-2010 evidence artefacts
 tests/       deterministic tests and tiny synthetic fixtures
 ```
+
+## Data And Licence Notes
 
 No real exchange data, licensed data, private data, API keys or credentials are
 committed. Tiny files under [tests/fixtures](tests/fixtures/) are synthetic and

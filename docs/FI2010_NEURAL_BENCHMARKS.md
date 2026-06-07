@@ -40,7 +40,21 @@ lookbacks with the configured epoch budget. The full grid is guarded by
 - `deeplob_style`
 - `matrix_transformer`
 
-No SSL results are reported yet.
+This page documents the supervised neural benchmark runner. SSL results are not
+produced by this runner; retained SSL evidence is reported separately in the
+one-epoch matched neural grid, the proper-training subset where applicable, and
+the SSL-v2 benchmark analysis.
+
+## Relationship To SSL-v2
+
+The Hamilton SSL-v2 benchmark is a separate retained evidence stream. It covers
+the stored FI-2010 scope of folds 1–5, horizons 10/50, seeds 0–2 and lookback
+50. It supports scoped predictive and calibration improvement for that exact
+scope, while results remain mixed by seed and horizon and broad SSL improvement
+remains unsupported.
+
+This supervised neural benchmark page should not be read as overriding the
+SSL-v2 analysis, final empirical report or evidence pack.
 
 ## Split Handling
 
@@ -142,3 +156,7 @@ python -m chronoslob.cli run-fi2010-neural-benchmark \
 This is a reduced-scope local CPU run, not the full configured grid. Cross-seed
 and multi-lookback variance is not reported in this evidence. No neural
 superiority claim is made on this single-seed evidence.
+
+The reduced-scope supervised neural evidence is not a full performance-maximising
+neural benchmark. Cross-seed and multi-lookback variance for the proper-training
+neural benchmark remain deferred.
