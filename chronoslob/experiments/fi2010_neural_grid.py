@@ -109,6 +109,7 @@ _FAILURE_COLUMNS: tuple[str, ...] = (
     "fold",
     "horizon",
     "seed",
+    "model_family",
     "objective",
     "reason",
     "traceback",
@@ -1162,6 +1163,7 @@ def _build_aggregate_rows(
             failure_frame,
             horizon=int(horizon),
             lookback=int(lookback),
+            model_family=str(model_family),
             objective=str(objective),
         )
         row: dict[str, Any] = {
@@ -1186,14 +1188,21 @@ def _failed_count_for_group(
     *,
     horizon: int,
     lookback: int,
+    model_family: str,
     objective: str,
 ) -> int:
     if failure_frame.empty:
         return 0
     objective_token = "supervised" if objective == "none" else objective
+    model_matches = (
+        failure_frame["model_family"].astype(str) == model_family
+        if "model_family" in failure_frame
+        else pd.Series(True, index=failure_frame.index)
+    )
     subset = failure_frame[
         (pd.to_numeric(failure_frame["horizon"], errors="coerce") == horizon)
         & (pd.to_numeric(failure_frame.get("lookback", 0), errors="coerce") == lookback)
+        & model_matches
         & (failure_frame["objective"].astype(str) == objective_token)
         & (failure_frame["status"].astype(str) == "failed")
     ]
@@ -1357,6 +1366,7 @@ def _failure_row(
         "horizon": int(spec.horizon),
         "seed": int(spec.seed),
         "lookback": int(spec.lookback),
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "reason": reason,
         "traceback": traceback_text,

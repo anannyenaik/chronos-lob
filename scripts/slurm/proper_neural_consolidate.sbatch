@@ -8,7 +8,7 @@
 #SBATCH --error=logs/%x_%j.err
 
 # Consolidate the per-task proper-training neural runs into one canonical tree,
-# validate that all 90 expected matrix-transformer cells completed, then re-run
+# validate that all 180 expected two-model cells completed, then re-run
 # the CLI in consolidation mode (--resume) to regenerate aggregate artefacts.
 # CPU-only (no training happens here; completed runs are skipped). Modelled on
 # the working ssl_v2_consolidate.sbatch conventions.
@@ -44,6 +44,7 @@ required = ("status.txt", "metrics.json", "predictions.csv",
             "curves.csv", "curves.json", "config.json")
 success = {"completed", "skipped_existing"}
 
+models = ("matrix_transformer", "deeplob_style")
 folds = (1, 2, 3, 4, 5)
 seeds = (0, 1, 2)
 lookbacks = (20, 50, 100)
@@ -52,26 +53,29 @@ objective = "supervised"
 
 missing: list[str] = []
 expected = 0
-for seed in seeds:
-    for fold in folds:
-        for lookback in lookbacks:
-            for horizon in horizons:
-                expected += 1
-                run = (
-                    root
-                    / f"fold_{fold}"
-                    / f"horizon_{horizon}"
-                    / f"seed_{seed}"
-                    / f"lookback_{lookback}"
-                    / objective
-                )
-                absent = [name for name in required if not (run / name).is_file()]
-                if absent:
-                    missing.append(f"{run}: missing {','.join(absent)}")
-                    continue
-                status = (run / "status.txt").read_text(encoding="utf-8").strip()
-                if status not in success:
-                    missing.append(f"{run}: unsuccessful status {status!r}")
+for model in models:
+    for seed in seeds:
+        for fold in folds:
+            for lookback in lookbacks:
+                for horizon in horizons:
+                    expected += 1
+                    run = (
+                        root
+                        / f"fold_{fold}"
+                        / f"horizon_{horizon}"
+                        / f"seed_{seed}"
+                        / f"lookback_{lookback}"
+                    )
+                    if model == "deeplob_style":
+                        run = run / model
+                    run = run / objective
+                    absent = [name for name in required if not (run / name).is_file()]
+                    if absent:
+                        missing.append(f"{run}: missing {','.join(absent)}")
+                        continue
+                    status = (run / "status.txt").read_text(encoding="utf-8").strip()
+                    if status not in success:
+                        missing.append(f"{run}: unsuccessful status {status!r}")
 
 if missing:
     raise SystemExit(
@@ -83,7 +87,7 @@ PY
 
 # Regenerate aggregate artefacts over the full canonical grid. With --resume all
 # completed cells are skipped, so no training is repeated; only summaries are
-# rebuilt across the whole 90-cell grid.
+# rebuilt across the whole 180-cell grid.
 python -m chronoslob.cli run-fi2010-neural-proper-training-subset \
   --config configs/experiments/fi2010_neural_proper_training.yaml \
   --processed-root data/processed/fi2010 \
@@ -92,8 +96,11 @@ python -m chronoslob.cli run-fi2010-neural-proper-training-subset \
   --horizons 10,50 \
   --seeds 0,1,2 \
   --lookbacks 20,50,100 \
+  --models matrix_transformer,deeplob_style \
   --objectives supervised \
   --device cpu \
   --resume
+
+python -m chronoslob.analysis.proper_neural_analysis --source "$canonical"
 
 echo "done=$(date --iso-8601=seconds)"

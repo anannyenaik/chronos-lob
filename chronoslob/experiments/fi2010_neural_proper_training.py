@@ -40,6 +40,7 @@ import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chronoslob import __version__
+from chronoslob.experiments.fi2010_benchmark import PaperNeuralSettings
 from chronoslob.experiments.fi2010_neural_grid import (
     build_ssl_comparison_rows,
     write_neural_grid_aggregate_artifacts,
@@ -54,6 +55,7 @@ from chronoslob.experiments.manifests import sha256_file, stable_json_dumps
 from chronoslob.experiments.neural_adapters import (
     NeuralPaperModelResult,
     run_matrix_transformer_finetune,
+    run_neural_paper_model,
 )
 from chronoslob.experiments.neural_benchmarking import (
     NeuralBenchmarkConfig,
@@ -65,6 +67,7 @@ from chronoslob.utils.paths import project_root
 
 __all__ = [
     "FI2010_PROPER_TRAINING_VERSION",
+    "PROPER_TRAINING_MODEL_CHOICES",
     "PROPER_TRAINING_OBJECTIVE_CHOICES",
     "FI2010ProperTrainingRunSpec",
     "FI2010ProperTrainingSummary",
@@ -83,6 +86,10 @@ PROPER_TRAINING_OBJECTIVE_CHOICES: tuple[str, ...] = (
     "supervised",
     "masked_reconstruction",
     "next_field",
+)
+PROPER_TRAINING_MODEL_CHOICES: tuple[str, ...] = (
+    "matrix_transformer",
+    "deeplob_style",
 )
 
 _PRIMARY_TARGET_FOLDS = {1, 2, 3, 4, 5}
@@ -127,6 +134,7 @@ _FAILURE_COLUMNS: tuple[str, ...] = (
     "fold",
     "horizon",
     "seed",
+    "model_family",
     "objective",
     "reason",
     "traceback",
@@ -154,6 +162,7 @@ _TRAINING_SUMMARY_COLUMNS: tuple[str, ...] = (
     "horizon",
     "seed",
     "lookback",
+    "model_family",
     "objective",
     "pretraining_objective",
     "max_epochs",
@@ -203,6 +212,7 @@ class FI2010ProperTrainingSummary(BaseModel):
     horizons: list[int]
     seeds: list[int]
     lookbacks: list[int]
+    models: list[str]
     objectives: list[str]
     pretrain_epochs: int
     max_epochs: int
@@ -237,13 +247,14 @@ class FI2010ProperTrainingSummary(BaseModel):
 
 @dataclass(frozen=True)
 class FI2010ProperTrainingRunSpec:
-    """One fold/horizon/seed/lookback/objective proper-training run."""
+    """One fold/horizon/seed/lookback/model/objective proper-training run."""
 
     fold: int
     horizon: int
     seed: int
     lookback: int
     objective: str
+    model_name: str = "matrix_transformer"
 
     @property
     def fold_id(self) -> str:
@@ -251,29 +262,34 @@ class FI2010ProperTrainingRunSpec:
 
     @property
     def run_id(self) -> str:
+        model_token = (
+            "" if self.model_name == "matrix_transformer" else f"__{self.model_name}"
+        )
         return (
             f"{self.fold_id}__h{self.horizon}__seed_{self.seed}"
-            f"__lb{self.lookback}__{self.objective}"
+            f"__lb{self.lookback}{model_token}__{self.objective}"
         )
 
     @property
     def model_family(self) -> str:
-        return "matrix_transformer"
+        return self.model_name
 
     @property
     def pretraining_objective(self) -> str:
         return "none" if self.objective == "supervised" else self.objective
 
     def run_dir(self, out_dir: Path) -> Path:
-        return (
+        root = (
             Path(out_dir)
             / "runs"
             / self.fold_id
             / f"horizon_{self.horizon}"
             / f"seed_{self.seed}"
             / f"lookback_{self.lookback}"
-            / self.objective
         )
+        if self.model_name == "matrix_transformer":
+            return root / self.objective
+        return root / self.model_name / self.objective
 
 
 def expand_proper_training_specs(
@@ -282,6 +298,7 @@ def expand_proper_training_specs(
     horizons: Sequence[int] | str | None = None,
     seeds: Sequence[int] | str | None = None,
     lookbacks: Sequence[int] | str | None = None,
+    models: Sequence[str] | str | None = None,
     objectives: Sequence[str] | str | None = None,
     smoke_test: bool = False,
 ) -> tuple[FI2010ProperTrainingRunSpec, ...]:
@@ -296,7 +313,17 @@ def expand_proper_training_specs(
     selected_lookbacks = _normalise_ints(
         lookbacks, default=PT_DEFAULT_LOOKBACKS, field_name="lookbacks", positive=True
     )
+    selected_models = _normalise_models(models)
     selected_objectives = _normalise_objectives(objectives)
+    if any(
+        model != "matrix_transformer" and objective != "supervised"
+        for model in selected_models
+        for objective in selected_objectives
+    ):
+        raise ValueError(
+            "DeepLOB-style proper training supports the supervised objective only; "
+            "SSL objectives require matrix_transformer"
+        )
 
     if smoke_test:
         selected_folds = selected_folds[:1]
@@ -309,16 +336,18 @@ def expand_proper_training_specs(
         for horizon in selected_horizons:
             for seed in selected_seeds:
                 for lookback in selected_lookbacks:
-                    for objective in selected_objectives:
-                        specs.append(
-                            FI2010ProperTrainingRunSpec(
-                                fold=fold,
-                                horizon=horizon,
-                                seed=seed,
-                                lookback=lookback,
-                                objective=objective,
+                    for model_name in selected_models:
+                        for objective in selected_objectives:
+                            specs.append(
+                                FI2010ProperTrainingRunSpec(
+                                    fold=fold,
+                                    horizon=horizon,
+                                    seed=seed,
+                                    lookback=lookback,
+                                    model_name=model_name,
+                                    objective=objective,
+                                )
                             )
-                        )
     return tuple(specs)
 
 
@@ -331,6 +360,7 @@ def run_fi2010_neural_proper_training_subset(
     horizons: Sequence[int] | str | None = None,
     seeds: Sequence[int] | str | None = None,
     lookbacks: Sequence[int] | str | None = None,
+    models: Sequence[str] | str | None = None,
     objectives: Sequence[str] | str | None = None,
     pretrain_epochs: int = 10,
     max_epochs: int | None = None,
@@ -351,6 +381,15 @@ def run_fi2010_neural_proper_training_subset(
         raise ValueError(
             "the proper-training subset requires the 'matrix_transformer' model "
             "to be enabled so supervised and SSL architectures match"
+        )
+    selected_models = _normalise_models(models)
+    unavailable_models = [
+        model for model in selected_models if model not in base_config.enabled_model_names
+    ]
+    if unavailable_models:
+        raise ValueError(
+            "proper-training models are not enabled in the config: "
+            + ", ".join(unavailable_models)
         )
 
     resolved_out = Path(out_dir)
@@ -396,6 +435,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=horizons,
         seeds=seeds,
         lookbacks=lookbacks,
+        models=selected_models,
         objectives=objectives,
         smoke_test=smoke_test,
     )
@@ -411,6 +451,7 @@ def run_fi2010_neural_proper_training_subset(
     selected_horizons = tuple(dict.fromkeys(spec.horizon for spec in specs))
     selected_seeds = tuple(dict.fromkeys(spec.seed for spec in specs))
     selected_lookbacks = tuple(dict.fromkeys(spec.lookback for spec in specs))
+    selected_models = tuple(dict.fromkeys(spec.model_name for spec in specs))
     selected_objectives = tuple(dict.fromkeys(spec.objective for spec in specs))
 
     git_commit = get_git_commit()
@@ -584,6 +625,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=selected_horizons,
         seeds=selected_seeds,
         lookbacks=selected_lookbacks,
+        models=selected_models,
         objectives=selected_objectives,
         max_epochs=resolved_max_epochs,
         patience=resolved_patience,
@@ -601,6 +643,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=selected_horizons,
         seeds=selected_seeds,
         lookbacks=selected_lookbacks,
+        models=selected_models,
         objectives=selected_objectives,
         max_epochs=resolved_max_epochs,
         patience=resolved_patience,
@@ -637,6 +680,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=list(selected_horizons),
         seeds=list(selected_seeds),
         lookbacks=list(selected_lookbacks),
+        models=list(selected_models),
         objectives=list(selected_objectives),
         pretrain_epochs=int(pretrain_epochs),
         max_epochs=resolved_max_epochs,
@@ -794,7 +838,7 @@ def _expected_reuse_signature(
     mask_probability: float,
     bucket_count: int,
 ) -> dict[str, Any]:
-    model_spec = config.neural_models["matrix_transformer"]
+    model_spec = config.neural_models[spec.model_name]
     dropout = config.training.dropout if model_spec.dropout is None else float(model_spec.dropout)
     signature: dict[str, Any] = {
         "runner_version": FI2010_PROPER_TRAINING_VERSION,
@@ -803,6 +847,7 @@ def _expected_reuse_signature(
         "horizon": spec.horizon,
         "seed": spec.seed,
         "lookback": spec.lookback,
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "pretraining_objective": spec.pretraining_objective,
         "max_epochs": int(max_epochs),
@@ -812,18 +857,67 @@ def _expected_reuse_signature(
         "weight_decay": float(config.training.weight_decay),
         "dropout": float(dropout),
         "batch_size": int(batch_size),
-        "transformer_model_dim": int(model_spec.model_dim or 16),
-        "transformer_num_heads": int(model_spec.num_heads or 2),
-        "transformer_num_layers": int(model_spec.num_layers or 1),
-        "transformer_feedforward_dim": int(model_spec.feedforward_dim or 32),
         "pretrain_epochs": 0 if spec.objective == "supervised" else int(pretrain_epochs),
         "device": str(device),
         "smoke_test": bool(smoke_test),
     }
+    if spec.model_name == "matrix_transformer":
+        signature.update(
+            {
+                "transformer_model_dim": int(model_spec.model_dim or 16),
+                "transformer_num_heads": int(model_spec.num_heads or 2),
+                "transformer_num_layers": int(model_spec.num_layers or 1),
+                "transformer_feedforward_dim": int(model_spec.feedforward_dim or 32),
+            }
+        )
+    else:
+        signature.update(
+            {
+                "deeplob_conv_channels": int(model_spec.conv_channels or 16),
+                "deeplob_lstm_hidden_size": int(model_spec.lstm_hidden_size or 32),
+                "deeplob_use_batch_norm": bool(model_spec.use_batch_norm),
+            }
+        )
     if spec.objective != "supervised":
         signature["mask_probability"] = float(mask_probability)
         signature["next_field_bucket_count"] = int(bucket_count)
     return signature
+
+
+def _proper_training_settings(
+    *,
+    config: NeuralBenchmarkConfig,
+    model_name: str,
+    lookback: int,
+    max_epochs: int,
+    batch_size: int,
+    device: str,
+) -> PaperNeuralSettings:
+    spec = config.neural_models[model_name]
+    dropout = config.training.dropout if spec.dropout is None else float(spec.dropout)
+    return PaperNeuralSettings(
+        supported_models=PROPER_TRAINING_MODEL_CHOICES,
+        planned_models=(),
+        lookback=lookback,
+        transformer_window_length=lookback,
+        batch_size=batch_size,
+        max_epochs=max_epochs,
+        early_stopping_patience=config.training.early_stopping_patience,
+        early_stopping_metric=config.training.early_stopping_metric,
+        learning_rate=config.training.learning_rate,
+        weight_decay=config.training.weight_decay,
+        gradient_clip_norm=config.training.gradient_clip_norm,
+        device=device,
+        deterministic=config.deterministic_seed_handling.enabled,
+        dropout=dropout,
+        deeplob_conv_channels=int(spec.conv_channels or 16),
+        deeplob_lstm_hidden_size=int(spec.lstm_hidden_size or 32),
+        deeplob_use_batch_norm=bool(spec.use_batch_norm),
+        transformer_model_dim=int(spec.model_dim or 16),
+        transformer_num_heads=int(spec.num_heads or 2),
+        transformer_num_layers=int(spec.num_layers or 1),
+        transformer_feedforward_dim=int(spec.feedforward_dim or 32),
+    )
 
 
 def _execute_run_spec(
@@ -857,20 +951,39 @@ def _execute_run_spec(
         lookback=spec.lookback,
         out_dir=run_dir,
     )
-    settings = build_ssl_finetune_settings(
-        config=config,
-        lookback=spec.lookback,
-        max_epochs=max_epochs,
-        batch_size=batch_size,
-        device=device,
+    settings = (
+        build_ssl_finetune_settings(
+            config=config,
+            lookback=spec.lookback,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+        )
+        if spec.model_name == "matrix_transformer"
+        else _proper_training_settings(
+            config=config,
+            model_name=spec.model_name,
+            lookback=spec.lookback,
+            max_epochs=max_epochs,
+            batch_size=batch_size,
+            device=device,
+        )
     )
 
     pretrain_payload: dict[str, Any] | None = None
     encoder_state = None
     checkpoint_hash = None
+    if spec.model_name != "matrix_transformer" and spec.objective != "supervised":
+        raise ValueError(
+            "DeepLOB-style proper training supports the supervised objective only"
+        )
     if spec.objective == "supervised":
         init_source = "random_init"
-        model_type = "normalised_matrix_transformer"
+        model_type = (
+            "normalised_matrix_transformer"
+            if spec.model_name == "matrix_transformer"
+            else "deeplob_style"
+        )
     else:
         flags = ssl_objective_flags(_ssl_runner_objective(spec.objective))
         pretrain = pretrain_matrix_ssl_encoder(
@@ -905,21 +1018,36 @@ def _execute_run_spec(
         init_source = "ssl_pretrained"
         model_type = "ssl_finetuned_matrix_transformer"
 
-    result = run_matrix_transformer_finetune(
-        model_name=spec.objective,
-        frame=frame,
-        config=inputs.config,
-        split=inputs.split,
-        feature_columns=inputs.feature_columns,
-        all_labels=inputs.all_labels,
-        class_count_train=inputs.class_count_train,
-        class_count_test=inputs.class_count_test,
-        test_timestamps=None,
-        settings=settings,
-        pretrained_encoder_state=encoder_state,
-        init_source=init_source,
-        model_type=model_type,
-    )
+    if spec.model_name == "matrix_transformer":
+        result = run_matrix_transformer_finetune(
+            model_name=spec.objective,
+            frame=frame,
+            config=inputs.config,
+            split=inputs.split,
+            feature_columns=inputs.feature_columns,
+            all_labels=inputs.all_labels,
+            class_count_train=inputs.class_count_train,
+            class_count_test=inputs.class_count_test,
+            test_timestamps=None,
+            settings=settings,
+            pretrained_encoder_state=encoder_state,
+            init_source=init_source,
+            model_type=model_type,
+        )
+    else:
+        result = run_neural_paper_model(
+            model_name=spec.model_name,
+            frame=frame,
+            config=inputs.config,
+            data_path=fold_path,
+            split=inputs.split,
+            feature_columns=inputs.feature_columns,
+            all_labels=inputs.all_labels,
+            class_count_train=inputs.class_count_train,
+            class_count_test=inputs.class_count_test,
+            test_timestamps=None,
+            settings=settings,
+        )
 
     predictions = _canonical_prediction_rows(result, spec=spec)
     _write_csv(predictions, run_dir / "predictions.csv", _PREDICTION_COLUMNS)
@@ -931,17 +1059,29 @@ def _execute_run_spec(
     )
 
     metrics = _resolve_metrics(result.metrics, predictions)
-    architecture_hash = _hash_payload(
-        {
-            "model_family": spec.model_family,
-            "model_dim": int(settings.transformer_model_dim),
-            "num_heads": int(settings.transformer_num_heads),
-            "num_layers": int(settings.transformer_num_layers),
-            "feedforward_dim": int(settings.transformer_feedforward_dim),
-            "dropout": float(settings.dropout),
-            "effective_window": int(inputs.effective_window),
-        }
-    )
+    architecture = {
+        "model_family": spec.model_family,
+        "dropout": float(settings.dropout),
+        "effective_window": int(inputs.effective_window),
+    }
+    if spec.model_name == "matrix_transformer":
+        architecture.update(
+            {
+                "model_dim": int(settings.transformer_model_dim),
+                "num_heads": int(settings.transformer_num_heads),
+                "num_layers": int(settings.transformer_num_layers),
+                "feedforward_dim": int(settings.transformer_feedforward_dim),
+            }
+        )
+    else:
+        architecture.update(
+            {
+                "conv_channels": int(settings.deeplob_conv_channels),
+                "lstm_hidden_size": int(settings.deeplob_lstm_hidden_size),
+                "use_batch_norm": bool(settings.deeplob_use_batch_norm),
+            }
+        )
+    architecture_hash = _hash_payload(architecture)
     preprocessing_hash = _hash_payload(
         {
             "split": "official_column",
@@ -980,6 +1120,7 @@ def _execute_run_spec(
         "horizon": spec.horizon,
         "seed": spec.seed,
         "lookback": spec.lookback,
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "init_source": init_source,
         "model_type": model_type,
@@ -991,15 +1132,12 @@ def _execute_run_spec(
         "dropout": float(settings.dropout),
         "batch_size": int(batch_size),
         "effective_window": int(inputs.effective_window),
-        "transformer_model_dim": int(settings.transformer_model_dim),
-        "transformer_num_heads": int(settings.transformer_num_heads),
-        "transformer_num_layers": int(settings.transformer_num_layers),
-        "transformer_feedforward_dim": int(settings.transformer_feedforward_dim),
         "pretrain_epochs": int(pretrain_epochs) if pretrain_payload else 0,
         "device": device,
         "smoke_test": bool(smoke_test),
         "split_summary": inputs.split_summary,
     }
+    config_snapshot.update(architecture)
     (run_dir / "config.json").write_text(stable_json_dumps(config_snapshot), encoding="utf-8")
     (run_dir / "git_commit.txt").write_text(git_commit or "", encoding="utf-8")
 
@@ -1108,6 +1246,7 @@ def _training_row_from_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
         "horizon": int(payload["horizon"]),
         "seed": int(payload["seed"]),
         "lookback": int(payload["lookback"]),
+        "model_family": str(payload["model_family"]),
         "objective": str(payload["objective"]),
         "pretraining_objective": str(payload["pretraining_objective"]),
         "max_epochs": training.get("max_epochs"),
@@ -1176,7 +1315,7 @@ def _canonical_prediction_rows(
             }
         )
     if not rows:
-        raise ValueError("matrix transformer produced no test predictions")
+        raise ValueError(f"{spec.model_family} produced no test predictions")
     return rows
 
 
@@ -1328,6 +1467,7 @@ def _write_failure_artefacts(
         "horizon": spec.horizon,
         "seed": spec.seed,
         "lookback": spec.lookback,
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "pretraining_objective": spec.pretraining_objective,
         "error": reason,
@@ -1360,6 +1500,7 @@ def _failure_row(
         "fold": int(spec.fold),
         "horizon": int(spec.horizon),
         "seed": int(spec.seed),
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "reason": reason,
         "traceback": traceback_text,
@@ -1423,6 +1564,7 @@ def _write_root_config_snapshot(
     horizons: Sequence[int],
     seeds: Sequence[int],
     lookbacks: Sequence[int],
+    models: Sequence[str],
     objectives: Sequence[str],
     max_epochs: int,
     patience: int,
@@ -1443,6 +1585,7 @@ def _write_root_config_snapshot(
         "horizons": list(horizons),
         "seeds": list(seeds),
         "lookbacks": list(lookbacks),
+        "models": list(models),
         "objectives": list(objectives),
         "max_epochs": int(max_epochs),
         "early_stopping_patience": int(patience),
@@ -1628,6 +1771,7 @@ def _run_plan_row(
         "horizon": spec.horizon,
         "seed": spec.seed,
         "lookback": spec.lookback,
+        "model_family": spec.model_family,
         "objective": spec.objective,
         "pretraining_objective": spec.pretraining_objective,
         "run_dir": _relative_path(spec.run_dir(out_dir), out_dir),
@@ -1641,6 +1785,7 @@ def _write_subset_readme(
     horizons: Sequence[int],
     seeds: Sequence[int],
     lookbacks: Sequence[int],
+    models: Sequence[str],
     objectives: Sequence[str],
     max_epochs: int,
     patience: int,
@@ -1679,6 +1824,7 @@ def _write_subset_readme(
         f"- horizons: {', '.join(str(item) for item in horizons)}",
         f"- seeds: {', '.join(str(item) for item in seeds)}",
         f"- lookbacks: {', '.join(str(item) for item in lookbacks)}",
+        f"- models: {', '.join(models)}",
         f"- objectives: {', '.join(objectives)}",
         f"- smoke test: {'yes' if smoke_test else 'no'}",
         f"- evidence level: {evidence_level}",
@@ -1796,6 +1942,31 @@ def _normalise_objectives(value: Sequence[str] | str | None) -> tuple[str, ...]:
             cleaned.append(objective)
     if not cleaned:
         raise ValueError("objectives selection must not be empty")
+    return tuple(cleaned)
+
+
+def _normalise_models(value: Sequence[str] | str | None) -> tuple[str, ...]:
+    if value is None:
+        return ("matrix_transformer",)
+    if isinstance(value, str):
+        text = value.strip()
+        if not text or text.lower() == "all":
+            return PROPER_TRAINING_MODEL_CHOICES
+        tokens = [token.strip() for token in text.split(",")]
+    else:
+        tokens = [str(token).strip() for token in value]
+    cleaned: list[str] = []
+    for token in tokens:
+        model_name = token.lower()
+        if model_name not in PROPER_TRAINING_MODEL_CHOICES:
+            raise ValueError(
+                f"unsupported proper-training model {token!r}; supported: "
+                f"{list(PROPER_TRAINING_MODEL_CHOICES)}"
+            )
+        if model_name not in cleaned:
+            cleaned.append(model_name)
+    if not cleaned:
+        raise ValueError("models selection must not be empty")
     return tuple(cleaned)
 
 

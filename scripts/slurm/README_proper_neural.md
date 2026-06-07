@@ -2,21 +2,17 @@
 
 Handoff runbook for executing the broader proper-training neural benchmark on
 Durham University Hamilton/NCC HPC. Everything here is Slurm-driven; nothing runs
-on a laptop. This benchmark is **matrix-transformer only** (90 cells). See the
-"Scope and honesty boundaries" section before changing that.
+on a laptop. This benchmark covers the requested two-model supervised grid.
 
 ## What this benchmark is (and is not)
 
-- **Is:** the matrix transformer trained with validation-only early stopping and
-  best-checkpoint restore, across 5 folds x 3 seeds x 3 lookbacks (20/50/100) x
-  2 horizons (10/50) = **90 cells**, supervised objective, under the benchmark
-  config `configs/experiments/fi2010_neural_proper_training.yaml`.
-- **Is not:** a two-model (DeepLOB + transformer) grid. DeepLOB-style training
-  has full protocol parity (same `fit_torch_classifier` core with best-checkpoint
-  restore) **but no proper-training entrypoint** — it is only reachable via the
-  one-epoch full-grid runner, which clamps `max_epochs` to 1. A two-model proper
-  grid needs new code (loop `_run_deeplob_style` through the proper-training
-  harness + unit tests + leakage re-check) and is deliberately out of scope here.
+- **Is:** DeepLOB-style and matrix-transformer models trained with validation-only
+  early stopping and best-checkpoint restore, across 5 folds x 3 seeds x 3
+  lookbacks (20/50/100) x 2 horizons (10/50) x 2 models = **180 cells**,
+  supervised objective, under
+  `configs/experiments/fi2010_neural_proper_training.yaml`.
+- **Is not:** an SSL comparison grid. SSL objectives remain matrix-transformer
+  only and are reported in their existing, separate evidence streams.
 - **Is not** the published `experiments/fi2010_neural_proper_training_subset_v2`
   directory. That tree is the SSL-v2 baseline source and stays untouched. This
   benchmark writes to a **separate** `experiments/fi2010_neural_proper_training_broader`.
@@ -25,10 +21,10 @@ on a laptop. This benchmark is **matrix-transformer only** (90 cells). See the
 
 | File | Purpose |
 |---|---|
-| `proper_neural_jobs.csv` | 90 grid cells, columns `fold,seed,lookback,horizon`. |
+| `proper_neural_jobs.csv` | 180 grid cells, columns `model,fold,seed,lookback,horizon`. |
 | `proper_neural_timing.sbatch` | Single-cell timing smoke test (feasibility gate). |
 | `proper_neural_array.sbatch` | Job array, one task per cell, `%1` throttle. |
-| `proper_neural_consolidate.sbatch` | Merge + validate 90 runs + regenerate aggregates (CPU). |
+| `proper_neural_consolidate.sbatch` | Merge + validate 180 runs + regenerate aggregates (CPU). |
 
 ## Prerequisites (Phases 2-3)
 
@@ -69,7 +65,7 @@ Record from the timing run: wall-clock, max RSS, GPU name + memory used
 `status.txt=completed`, `metrics.json`, `curves.csv/json`, `config.json`.
 
 **Decision rule (do not skip):**
-- Full grid walltime estimate = single-cell walltime x 90 / (array concurrency).
+- Initial full-grid walltime estimate = single-cell walltime x 180 / (array concurrency).
 - Proceed only if the full grid fits in a few days AND queue limits allow AND
   GPU memory comfortably holds one cell. Otherwise STOP and report that Hamilton
   timing makes the full benchmark impractical. Do not force it.
@@ -89,26 +85,26 @@ sinfo -p cuda -o "%P %a %l %D %t %G"
 - Edit `#SBATCH --array` / `#SBATCH --time` in `proper_neural_array.sbatch`, or
   override per submission with `sbatch --array=... --time=...`.
 
-## Phase 6 — staged run (do NOT launch all 90 at once)
+## Phase 6 — staged run (do NOT launch all 180 at once)
 
 ```bash
-# Stage 1: a small spread of cells.
-sbatch --array=1-4%1 scripts/slurm/proper_neural_array.sbatch
+# Stage 1: a small spread across both model families.
+sbatch --array=1,31,61,91,121,151%2 scripts/slurm/proper_neural_array.sbatch
 squeue -u "$USER"
 # Verify stage 1 before widening:
-for t in 1 2 3 4; do
-  echo "== task $t =="; cat experiments/fi2010_proper_neural_hamilton_tasks/task_$t/runs/*/*/*/*/supervised/status.txt 2>/dev/null
+for t in 1 31 61 91 121 151; do
+  echo "== task $t =="; find experiments/fi2010_proper_neural_hamilton_tasks/task_$t/runs -name status.txt -print -exec cat {} \;
 done
 sacct -j <JOBID> --format=JobID,State,Elapsed,MaxRSS,ReqMem
 
-# Stage 2 (if stable): one seed family, e.g. seed 0 = tasks 1-30.
-sbatch --array=1-30%1 scripts/slurm/proper_neural_array.sbatch
-# Stage 3: remaining cells.
-sbatch --array=31-90%1 scripts/slurm/proper_neural_array.sbatch
+# Stage 2 (if stable): complete the matrix-transformer family.
+sbatch --array=1-90%4 scripts/slurm/proper_neural_array.sbatch
+# Stage 3: complete the DeepLOB-style family.
+sbatch --array=91-180%4 scripts/slurm/proper_neural_array.sbatch
 ```
 
-`--resume` means re-submitting an already-completed task is a cheap skip, so
-overlapping ranges are safe. After each stage check: failures (`sacct` State),
+Completed tasks are detected and skipped, so overlapping ranges are safe. After
+each stage check: failures (`sacct` State),
 that summaries exist, disk usage (`du -sh experiments/fi2010_proper_neural_hamilton_tasks`),
 and logs for any sign of data leakage, broken early stopping, or output
 corruption. Stop and report if any appear.
@@ -117,7 +113,7 @@ corruption. Stop and report if any appear.
 
 ```bash
 sbatch scripts/slurm/proper_neural_consolidate.sbatch
-# on success the log prints validated_completed_runs=90 and writes aggregates to:
+# on success the log prints validated_completed_runs=180 and writes aggregates to:
 #   experiments/fi2010_neural_proper_training_broader/{aggregate_summary.json,
 #   results_summary.csv, summary.json, ssl_comparison.csv, ...}
 ```

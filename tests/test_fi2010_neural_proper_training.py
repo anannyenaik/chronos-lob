@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import pytest
 
 from chronoslob.experiments import fi2010_neural_proper_training as proper
 from chronoslob.experiments.fi2010_neural_proper_training import (
@@ -199,6 +200,91 @@ def test_expand_proper_training_specs_smoke_keeps_ssl_objectives() -> None:
         "masked_reconstruction",
         "next_field",
     }
+
+
+def test_expand_proper_training_specs_supports_two_supervised_models(
+    tmp_path: Path,
+) -> None:
+    specs = expand_proper_training_specs(
+        folds=[1],
+        horizons=[10],
+        seeds=[0],
+        lookbacks=[50],
+        models=["matrix_transformer", "deeplob_style"],
+        objectives=["supervised"],
+    )
+
+    assert len(specs) == 2
+    assert {spec.model_family for spec in specs} == {
+        "matrix_transformer",
+        "deeplob_style",
+    }
+    run_dirs = {spec.model_family: spec.run_dir(tmp_path) for spec in specs}
+    assert run_dirs["matrix_transformer"].parts[-1] == "supervised"
+    assert run_dirs["deeplob_style"].parts[-2:] == ("deeplob_style", "supervised")
+    assert len({spec.run_id for spec in specs}) == 2
+
+
+def test_deeplob_proper_training_rejects_ssl_objectives() -> None:
+    with pytest.raises(ValueError, match="supports the supervised objective only"):
+        expand_proper_training_specs(
+            folds=[1],
+            horizons=[10],
+            seeds=[0],
+            lookbacks=[50],
+            models=["deeplob_style"],
+            objectives=["masked_reconstruction"],
+        )
+
+
+def test_proper_training_two_model_supervised_slice_is_collision_free(
+    tmp_path: Path,
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setattr(proper, "_execute_run_spec", _fake_execute_run_spec)
+    out_dir = tmp_path / "proper_two_model"
+
+    summary = run_fi2010_neural_proper_training_subset(
+        config_path=_write_tiny_neural_config(tmp_path),
+        processed_root=tmp_path / "processed",
+        out_dir=out_dir,
+        folds=[1],
+        horizons=[10],
+        seeds=[0],
+        lookbacks=[2],
+        models=["matrix_transformer", "deeplob_style"],
+        objectives=["supervised"],
+        pretrain_epochs=1,
+        max_epochs=2,
+        patience=1,
+        batch_size=4,
+    )
+
+    results = pd.read_csv(out_dir / "results_summary.csv")
+    assert summary.models == ["matrix_transformer", "deeplob_style"]
+    assert summary.completed_run_count == 2
+    assert set(results["model_family"]) == {"matrix_transformer", "deeplob_style"}
+    assert (
+        out_dir
+        / "runs"
+        / "fold_1"
+        / "horizon_10"
+        / "seed_0"
+        / "lookback_2"
+        / "supervised"
+        / "metrics.json"
+    ).is_file()
+    assert (
+        out_dir
+        / "runs"
+        / "fold_1"
+        / "horizon_10"
+        / "seed_0"
+        / "lookback_2"
+        / "deeplob_style"
+        / "supervised"
+        / "metrics.json"
+    ).is_file()
 
 
 def test_proper_training_runner_writes_matched_partial_artefacts(

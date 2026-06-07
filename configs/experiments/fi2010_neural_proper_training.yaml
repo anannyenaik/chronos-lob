@@ -52,6 +52,14 @@ target:
   label_column: label_10
 
 neural_models:
+  deeplob_style:
+    enabled: true
+    architecture: DeepLOB-style CNN-LSTM over train-standardised FI-2010 windows
+    hidden_sizes: [64]
+    conv_channels: 32
+    lstm_hidden_size: 64
+    use_batch_norm: true
+    dropout: 0.10
   matrix_transformer:
     enabled: true
     architecture: transformer encoder over normalised matrix windows, shared by SSL and baseline

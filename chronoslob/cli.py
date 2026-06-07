@@ -872,6 +872,7 @@ def _run_fi2010_neural_proper_training_subset_impl(
     horizons: Sequence[int] | None,
     seeds: Sequence[int] | None,
     lookbacks: Sequence[int] | None,
+    models: Sequence[str] | None,
     objectives: Sequence[str] | None,
     pretrain_epochs: int,
     max_epochs: int | None,
@@ -883,6 +884,7 @@ def _run_fi2010_neural_proper_training_subset_impl(
 ) -> int:
     """Run the FI-2010 proper-training (longer-training) neural subset."""
     from chronoslob.experiments.fi2010_neural_proper_training import (
+        PROPER_TRAINING_MODEL_CHOICES,
         PROPER_TRAINING_OBJECTIVE_CHOICES,
         run_fi2010_neural_proper_training_subset,
     )
@@ -896,6 +898,7 @@ def _run_fi2010_neural_proper_training_subset_impl(
             horizons=horizons,
             seeds=seeds,
             lookbacks=lookbacks,
+            models=models,
             objectives=objectives,
             pretrain_epochs=pretrain_epochs,
             max_epochs=max_epochs,
@@ -914,6 +917,10 @@ def _run_fi2010_neural_proper_training_subset_impl(
             "  supported objectives: " + ", ".join(PROPER_TRAINING_OBJECTIVE_CHOICES),
             file=sys.stderr,
         )
+        print(
+            "  supported models: " + ", ".join(PROPER_TRAINING_MODEL_CHOICES),
+            file=sys.stderr,
+        )
         return 1
 
     print("ChronosLOB FI-2010 proper-training neural subset runner")
@@ -927,6 +934,7 @@ def _run_fi2010_neural_proper_training_subset_impl(
     print(f"  horizons:              {summary.horizons}")
     print(f"  seeds:                 {summary.seeds}")
     print(f"  lookbacks:             {summary.lookbacks}")
+    print(f"  models:                {', '.join(summary.models)}")
     print(f"  objectives:            {', '.join(summary.objectives)}")
     print(f"  pretrain epochs:       {summary.pretrain_epochs}")
     print(f"  max epochs:            {summary.max_epochs}")
@@ -5241,6 +5249,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument("--horizons", type=str, default="10,50")
         parser.add_argument("--seeds", type=str, default="0")
         parser.add_argument("--lookbacks", type=str, default="50")
+        parser.add_argument("--models", type=str, default="matrix_transformer")
         parser.add_argument(
             "--objectives",
             type=str,
@@ -5454,6 +5463,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             pt_lookbacks = _parse_int_selection(
                 parsed.lookbacks, option_name="--lookbacks", positive=True
             )
+            pt_models = _parse_model_selection(parsed.models)
             pt_objectives = _parse_model_selection(parsed.objectives)
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
@@ -5466,6 +5476,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
             horizons=pt_horizons,
             seeds=pt_seeds,
             lookbacks=pt_lookbacks,
+            models=pt_models,
             objectives=pt_objectives,
             pretrain_epochs=parsed.pretrain_epochs,
             max_epochs=parsed.max_epochs,
@@ -7435,6 +7446,11 @@ if typer is not None:
         "--lookbacks",
         help="Comma-separated positive lookbacks.",
     )
+    _RUN_PT_MODELS_OPTION = typer.Option(
+        "matrix_transformer",
+        "--models",
+        help="matrix_transformer and/or deeplob_style.",
+    )
     _RUN_PT_OBJECTIVES_OPTION = typer.Option(
         "supervised,masked_reconstruction,next_field",
         "--objectives",
@@ -8773,6 +8789,7 @@ if typer is not None:
         horizons: str = _RUN_PT_HORIZONS_OPTION,
         seeds: str = _RUN_PT_SEEDS_OPTION,
         lookbacks: str = _RUN_PT_LOOKBACKS_OPTION,
+        models: str = _RUN_PT_MODELS_OPTION,
         objectives: str = _RUN_PT_OBJECTIVES_OPTION,
         pretrain_epochs: int = _RUN_PT_PRETRAIN_EPOCHS_OPTION,
         max_epochs: int = _RUN_PT_MAX_EPOCHS_OPTION,
@@ -8790,6 +8807,7 @@ if typer is not None:
             lookback_tokens = _parse_int_selection(
                 lookbacks, option_name="--lookbacks", positive=True
             )
+            model_tokens = _parse_model_selection(models)
             objective_tokens = _parse_model_selection(objectives)
         except ValueError as exc:
             print(str(exc), file=sys.stderr)
@@ -8802,6 +8820,7 @@ if typer is not None:
             horizons=horizon_tokens,
             seeds=seed_tokens,
             lookbacks=lookback_tokens,
+            models=model_tokens,
             objectives=objective_tokens,
             pretrain_epochs=pretrain_epochs,
             max_epochs=max_epochs,

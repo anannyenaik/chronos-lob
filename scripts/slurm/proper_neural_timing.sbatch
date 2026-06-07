@@ -39,6 +39,7 @@ nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
   --horizons 10 \
   --seeds 0 \
   --lookbacks 50 \
+  --models matrix_transformer \
   --objectives supervised \
   --device cuda \
   --no-resume
