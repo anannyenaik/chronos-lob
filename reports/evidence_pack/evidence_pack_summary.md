@@ -16,6 +16,23 @@ Status vocabulary:
 
 The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent` independently of completeness.
 
+## Release Interpretation
+
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5, horizons 10/50, seeds 0–2 and lookback
+50. Across 30 matched comparison cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier,
+supporting scoped predictive and calibration improvement for this exact retained scope. The evidence is mixed by
+seed and horizon, including negative mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL improvement
+remains unsupported.
+
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array jobs on Durham University
+Hamilton/NCC HPC. Retained summaries, provenance and claim assessments are committed; large checkpoints, raw
+predictions and cluster logs are intentionally excluded. GPU determinism warnings are documented, and bitwise
+reproducibility is not claimed.
+
+The one-epoch neural full grid is matched comparison evidence, not a performance-maximising neural benchmark.
+The proper-training neural subset remains partial, and a broader proper-training neural benchmark across folds,
+seeds, lookbacks and model families is deferred.
+
 | artefact | status | freshness | smoke | completed | failed | notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | fi2010_classical_benchmarks | archived_valid | archived | no | 60 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
@@ -23,7 +40,7 @@ The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`
 | fi2010_neural_full_grid | archived_valid | archived | no | 135 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_proper_training_subset | partial_real | archived | no | 6 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_failure_analysis_report | complete_real | fresh | no | 4 |  | Hash/commit staleness checks passed. |
-| fi2010_ssl_v2_benchmark | complete_real | fresh | no | 60 | 0 | Hash/commit staleness checks passed. |
+| fi2010_ssl_v2_benchmark | complete_real | archived | no | 60 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_v2_analysis_report | complete_real | fresh | no |  | 0 | Hash/commit staleness checks passed. |
 | fi2010_figures | partial_real | fresh | no | 17 |  | Hash/commit staleness checks passed. |
 | execution_v3_outputs | archived_valid | archived | no | 4800519 | 0 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
@@ -35,7 +52,7 @@ The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent`
 | ablation_figures | complete_real | fresh | no | 6 |  | Hash/commit staleness checks passed. |
 | final_empirical_report | complete_real | fresh | no |  |  | Hash/commit staleness checks passed. |
 | synthetic_lob_extension_report | archived_valid | archived | no | 12 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
-| binance_l2_extension_report | partial_real | fresh | no | 3 |  | Hash/commit staleness checks passed. |
+| binance_l2_extension_report | partial_real | archived | no | 3 |  | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | project_audit_archive | unknown_staleness | unknown | no |  |  | No commit, input-hash or timestamp evidence was available for staleness. |
 
 ## Archived or summary-valid artefacts
@@ -55,10 +72,12 @@ Recomputation commands for each artefact are listed in `reproduction_commands.md
 | fi2010_classical_benchmarks | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_full_grid | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_proper_training_subset | partial_real | ef0724fb55e5 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| fi2010_ssl_v2_benchmark | complete_real | 4e8fd5622803 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | execution_v3_outputs | archived_valid | a72d46f0a1d7 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
 | execution_centrepiece_report | archived_valid | 597b3599a3a4 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | feature_ablation_outputs | partial_real | 21807a9b9217 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | synthetic_lob_extension_report | archived_valid | 4377803a3d0d | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| binance_l2_extension_report | partial_real | 4e8fd5622803 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 
 ## Optional or superseded artefacts
 

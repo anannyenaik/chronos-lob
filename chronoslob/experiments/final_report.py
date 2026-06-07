@@ -26,6 +26,29 @@ __all__ = [
 
 FINAL_EMPIRICAL_REPORT_BUILDER_VERSION = "phase-k/final-empirical-report/v1"
 
+_CANONICAL_SSL_V2_PARAGRAPH = (
+    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1\N{EN DASH}5, "
+    "horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. Across 30 matched comparison "
+    "cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, "
+    "supporting scoped predictive and calibration improvement for this exact "
+    "retained scope. The evidence is mixed by seed and horizon, including negative "
+    "mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL improvement "
+    "remains unsupported."
+)
+_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH = (
+    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array "
+    "jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and "
+    "claim assessments are committed; large checkpoints, raw predictions and "
+    "cluster logs are intentionally excluded. GPU determinism warnings are "
+    "documented, and bitwise reproducibility is not claimed."
+)
+_CANONICAL_NEURAL_LIMITATION_PARAGRAPH = (
+    "The one-epoch neural full grid is matched comparison evidence, not a "
+    "performance-maximising neural benchmark. The proper-training neural subset "
+    "remains partial, and a broader proper-training neural benchmark across folds, "
+    "seeds, lookbacks and model families is deferred."
+)
+
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
 _SECTION_TITLES: tuple[str, ...] = (
@@ -1367,19 +1390,31 @@ def _render_executive_summary(data: _FinalReportData) -> list[str]:
         ),
     ]
     if ssl_v2_available:
+        ssl_v2_text = (
+            _CANONICAL_SSL_V2_PARAGRAPH
+            if _release_ssl_v2_scope_supported(data)
+            else (
+                "Scoped result: SSL-v2 predictive improvement is "
+                f"{ssl_v2_claims.get('ssl_v2_predictive_improvement', 'not audited')} "
+                f"in the exact stored {_ssl_v2_scope_text(ssl_v2_summary)}. "
+                "SSL-v2 calibration improvement is "
+                f"{ssl_v2_claims.get('ssl_v2_calibration_improvement', 'not audited')}; "
+                "broad SSL improvement remains unsupported."
+            )
+        )
         lines.extend(
             [
                 "",
-                *_wrap_prose(
-                    "Scoped result: SSL-v2 predictive improvement is "
-                    f"{ssl_v2_claims.get('ssl_v2_predictive_improvement', 'not audited')} "
-                    f"in the exact stored {_ssl_v2_scope_text(ssl_v2_summary)}. "
-                    "SSL-v2 calibration improvement is "
-                    f"{ssl_v2_claims.get('ssl_v2_calibration_improvement', 'not audited')}; "
-                    "broad SSL improvement remains unsupported."
-                ),
+                *_wrap_prose(ssl_v2_text),
             ]
         )
+    if (
+        data.full_grid.available
+        and data.full_grid.evidence_level != "smoke_test_only"
+        and data.proper_training.available
+        and data.proper_training.evidence_level == "partial_real"
+    ):
+        lines.extend(["", *_wrap_prose(_CANONICAL_NEURAL_LIMITATION_PARAGRAPH)])
     deferred = "a broader proper-training neural benchmark and the manual paper"
     if not _ssl_v2_is_multiseed(data):
         deferred = f"multi-seed SSL-v2, {deferred}"
@@ -1547,6 +1582,20 @@ def _ssl_v2_scope_text(summary: Mapping[str, Any]) -> str:
 
 def _ssl_v2_is_multiseed(data: _FinalReportData) -> bool:
     return len(_mapping_list(data.ssl_v2_analysis.summary, "seeds")) > 1
+
+
+def _release_ssl_v2_scope_supported(data: _FinalReportData) -> bool:
+    summary = data.ssl_v2_analysis.summary or {}
+    claims = _ssl_v2_claim_statuses(data)
+    return (
+        _mapping_list(summary, "folds") == [1, 2, 3, 4, 5]
+        and _mapping_list(summary, "horizons") == [10, 50]
+        and _mapping_list(summary, "seeds") == [0, 1, 2]
+        and _mapping_list(summary, "lookbacks") == [50]
+        and str(summary.get("ssl_v2_matched_rows")) == "30"
+        and claims.get("ssl_v2_predictive_improvement") == "supported"
+        and claims.get("ssl_v2_calibration_improvement") == "supported"
+    )
 
 
 def _proper_training_snapshot(data: _FinalReportData) -> str:
@@ -2592,18 +2641,9 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
         "",
     ]
     if compute_provenance:
-        scope = _nested_mapping(compute_provenance, "benchmark_scope") or {}
-        environment = _nested_mapping(compute_provenance, "compute_environment") or {}
         lines.extend(
             [
-                *_wrap_prose(
-                    "Compute provenance: seeds "
-                    f"{_join_values(_mapping_list(scope, 'new_seeds_run_on_hamilton'))} "
-                    "were run as independent Slurm tasks on "
-                    f"{_mapping_str(environment, 'cluster')}. The retained aggregate "
-                    "also includes the pre-existing seed 0 runs. Large checkpoints, "
-                    "raw predictions and cluster logs are intentionally excluded."
-                ),
+                *_wrap_prose(_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH),
                 "",
             ]
         )
@@ -3161,6 +3201,10 @@ def _render_execution(data: _FinalReportData) -> list[str]:
             "A richer reviewer-facing breakdown of active fraction, turnover proxy, "
             "latency sensitivity, cost sensitivity, fill-assumption sensitivity and "
             "the adverse-selection proxy is generated by `analyse-fi2010-execution-v3`."
+        ),
+        (
+            "The validity boundary is documented in "
+            "[docs/EXECUTION_PROXY_VALIDITY.md](../docs/EXECUTION_PROXY_VALIDITY.md)."
         ),
         (
             "It explicitly skips regime diagnostics and is stored under "

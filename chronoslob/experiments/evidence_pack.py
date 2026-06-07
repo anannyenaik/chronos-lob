@@ -2938,7 +2938,12 @@ def _write_pack_outputs(
         ),
     }
     files.append(_write_text(out_dir / "evidence_pack_manifest.json", stable_json_dumps(manifest)))
-    files.append(_write_text(out_dir / "evidence_pack_summary.md", _render_summary(inventory)))
+    files.append(
+        _write_text(
+            out_dir / "evidence_pack_summary.md",
+            _render_summary(inventory, claim_audit),
+        )
+    )
     files.append(_write_inventory_csv(out_dir / "artefact_inventory.csv", inventory))
     files.append(
         _write_text(
@@ -2985,7 +2990,10 @@ def _write_pack_outputs(
     return files
 
 
-def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
+def _render_summary(
+    inventory: Sequence[ArtefactInventoryRow],
+    claims: Sequence[ClaimAuditEntry],
+) -> str:
     rows = [
         (
             record.artefact_name,
@@ -3025,6 +3033,7 @@ def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
         "The freshness column records `fresh`, `archived`, `stale`, `unknown` or `absent` "
         "independently of completeness.",
         "",
+        *_render_release_interpretation(inventory, claims),
         *_markdown_table(
             ("artefact", "status", "freshness", "smoke", "completed", "failed", "notes"),
             rows,
@@ -3038,6 +3047,84 @@ def _render_summary(inventory: Sequence[ArtefactInventoryRow]) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def _render_release_interpretation(
+    inventory: Sequence[ArtefactInventoryRow],
+    claims: Sequence[ClaimAuditEntry],
+) -> list[str]:
+    by_name = {record.artefact_name: record for record in inventory}
+    by_id = {claim.claim_id: claim for claim in claims}
+    ssl_v2 = by_name.get("fi2010_ssl_v2_benchmark")
+    analysis = by_name.get("ssl_v2_analysis_report")
+    grid = by_name.get("fi2010_neural_full_grid")
+    proper = by_name.get("fi2010_neural_proper_training_subset")
+    ssl_summary = ssl_v2.payloads.get("summary", {}) if ssl_v2 is not None else {}
+    release_scope = (
+        ssl_summary.get("folds") == [1, 2, 3, 4, 5]
+        and ssl_summary.get("horizons") == [10, 50]
+        and ssl_summary.get("seeds") == [0, 1, 2]
+        and ssl_summary.get("lookbacks") == [50]
+        and ssl_summary.get("comparison_rows") == 30
+        and by_id.get("empirical.ssl_v2_predictive_improvement") is not None
+        and by_id["empirical.ssl_v2_predictive_improvement"].status == "supported"
+        and by_id.get("empirical.ssl_v2_calibration_improvement") is not None
+        and by_id["empirical.ssl_v2_calibration_improvement"].status == "supported"
+    )
+    lines = ["## Release Interpretation", ""]
+    if release_scope:
+        lines.extend(
+            [
+                *_wrapped_paragraph(
+                    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds "
+                    "1\N{EN DASH}5, horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. "
+                    "Across 30 matched comparison cells, SSL-v2 has positive mean deltas "
+                    "for macro-F1, MCC, ECE and Brier, supporting scoped predictive and "
+                    "calibration improvement for this exact retained scope. The evidence "
+                    "is mixed by seed and horizon, including negative mean macro-F1 deltas "
+                    "for seed 1 and horizon 50, so broad SSL improvement remains unsupported."
+                ),
+                "",
+            ]
+        )
+    if (
+        analysis is not None
+        and "hamilton_compute_provenance" in analysis.payloads
+        and analysis.status in _CLEAN_COMPLETE_STATUSES
+    ):
+        lines.extend(
+            [
+                *_wrapped_paragraph(
+                    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm "
+                    "array jobs on Durham University Hamilton/NCC HPC. Retained summaries, "
+                    "provenance and claim assessments are committed; large checkpoints, raw "
+                    "predictions and cluster logs are intentionally excluded. GPU "
+                    "determinism warnings are documented, and bitwise reproducibility is "
+                    "not claimed."
+                ),
+                "",
+            ]
+        )
+    if (
+        grid is not None
+        and grid.status in _CLEAN_COMPLETE_STATUSES
+        and proper is not None
+        and proper.status == "partial_real"
+    ):
+        lines.extend(
+            [
+                *_wrapped_paragraph(
+                    "The one-epoch neural full grid is matched comparison evidence, not a "
+                    "performance-maximising neural benchmark. The proper-training neural "
+                    "subset remains partial, and a broader proper-training neural benchmark "
+                    "across folds, seeds, lookbacks and model families is deferred."
+                ),
+                "",
+            ]
+        )
+    if len(lines) == 2:
+        lines.extend(["No release-wide result wording is inferred beyond the claim audit.", ""])
+    return lines
 
 
 def _render_archived_section(inventory: Sequence[ArtefactInventoryRow]) -> list[str]:
@@ -3111,6 +3198,15 @@ def _wrapped_markdown_bullet(label: str, text: str, *, width: int = 112) -> list
         break_on_hyphens=False,
     )
     return wrapped or [bullet.rstrip()]
+
+
+def _wrapped_paragraph(text: str, *, width: int = 112) -> list[str]:
+    return textwrap.wrap(
+        text,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [""]
 
 
 def _render_claim_audit(claims: Sequence[ClaimAuditEntry]) -> str:
@@ -3412,7 +3508,8 @@ def _ssl_snapshot_line(claims: Mapping[str, ClaimAuditEntry]) -> str:
     if macro.status == "smoke_only" or calibration.status == "smoke_only":
         return "- SSL comparison: smoke diagnostics only; no SSL improvement claimed."
     return (
-        "- SSL comparison: no broad SSL improvement claim; see claim_audit.md for "
+        "- SSL-v1 matched full-grid comparison: no broad SSL improvement claim; "
+        "see claim_audit.md for "
         f"macro-F1={macro.status}, calibration={calibration.status}."
     )
 

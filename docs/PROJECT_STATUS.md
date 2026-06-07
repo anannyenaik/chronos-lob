@@ -73,6 +73,8 @@ The execution centrepiece in
 the forecasting-versus-signal-quality gap under confidence filtering, active
 fraction, turnover proxy, cost-adjusted proxy, latency sensitivity and
 adverse-selection proxy diagnostics.
+Its validity boundary is documented in
+[EXECUTION_PROXY_VALIDITY.md](EXECUTION_PROXY_VALIDITY.md).
 The release evidence-pack workflow is documented in
 [EVIDENCE_PACK.md](EVIDENCE_PACK.md). Its current taxonomy separates
 completeness from freshness: valid retained summaries generated at older commits
@@ -115,19 +117,23 @@ and records why SSL is not a broad success: the completed grid does not improve
 overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 50 in the partial proper-training subset, and calibration worsened there.
 
-The SSL-v2 benchmark (`experiments/fi2010_ssl_v2_benchmark/`) is a complete-real
-failure-analysis-motivated follow-up against a matched supervised baseline on
-folds 1-5, horizons 10/50, seeds 0-2 and lookback 50 (60 runs, 0 failed, 30
-matched comparison cells). Across the matched cells, mean macro-F1 (+0.011),
-MCC (+0.026), ECE (-0.003) and Brier (-0.024) deltas support scoped predictive
-and calibration improvement for exactly that stored scope. The result is mixed:
-seed 1 has a negative mean macro-F1 delta (-0.010), and horizon 50 has negative
-mean macro-F1 and MCC deltas. Broad SSL improvement remains unsupported.
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
+horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
+scoped predictive and calibration improvement for this exact retained scope.
+The evidence is mixed by seed and horizon, including negative mean macro-F1
+deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
 
-The seed-1 and seed-2 refresh was executed as independent Slurm array jobs on
-Durham University Hamilton/NCC HPC. The retained provenance records the exact
-environment, job structure and a GPU determinism warning; bitwise GPU
-reproducibility is not claimed.
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
+jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
+claim assessments are committed; large checkpoints, raw predictions and cluster
+logs are intentionally excluded. GPU determinism warnings are documented, and
+bitwise reproducibility is not claimed.
+
+The one-epoch neural full grid is matched comparison evidence, not a
+performance-maximising neural benchmark. The proper-training neural subset
+remains partial, and a broader proper-training neural benchmark across folds,
+seeds, lookbacks and model families is deferred.
 
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
@@ -170,7 +176,8 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   or market impact, and crypto venue replay does not establish equity-market
   generalisation.
 - See [SAFETY_AND_LIMITATIONS.md](SAFETY_AND_LIMITATIONS.md) for the
-  full scope statement.
+  full scope statement and [EXECUTION_PROXY_VALIDITY.md](EXECUTION_PROXY_VALIDITY.md)
+  for the execution-diagnostic validity boundary.
 
 ## Next
 

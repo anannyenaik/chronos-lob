@@ -101,11 +101,11 @@ partially_supported=3, unsupported=7, forbidden=18, needs_real_evidence=2.
 
 The repair does not weaken any boundary:
 
-- broad SSL improvement and SSL calibration improvement stay unsupported (matched
-  deltas are mixed or negative);
-- SSL-v2 predictive improvement is supported only for the exact stored seed-0
-  folds 1-5, horizons 10/50, lookback-50 scope; SSL-v2 calibration improvement
-  remains unsupported;
+- broad SSL improvement remains unsupported; the matched SSL-v1 full-grid
+  predictive and calibration deltas remain mixed;
+- the SSL-v2 benchmark is complete for folds 1-5, horizons 10/50, seeds 0-2 and
+  lookback 50. Its mean predictive and calibration improvements are supported
+  only for that exact stored scope, and the result is mixed by seed and horizon;
 - synthetic real-market generalisation and Binance equity-market generalisation
   stay unsupported;
 - profitability, tradable alpha, live trading, production execution simulation,

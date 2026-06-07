@@ -458,6 +458,10 @@ def test_ssl_v2_analysis_computes_deltas_and_claims(tmp_path: Path) -> None:
     assert summary.claim_statuses["ssl_v2_calibration_improvement"] == "supported"
     assert (out / "ssl_v2_analysis.md").is_file()
     assert (out / "ssl_v2_delta_by_horizon.csv").is_file()
+    retained_summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    assert retained_summary["git_commit"]
+    assert retained_summary["ssl_v2_dir"] == source.as_posix()
+    assert retained_summary["out_dir"] == out.as_posix()
 
 
 def _write_ssl_v2_analysis_source(

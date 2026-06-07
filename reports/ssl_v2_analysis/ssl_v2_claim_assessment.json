@@ -51,7 +51,8 @@
       "status": "forbidden"
     }
   ],
-  "created_at": "2026-06-07T17:52:46.743248+00:00",
+  "created_at": "2026-06-07T18:54:13.369847+00:00",
   "evidence_level": "complete_real",
+  "git_commit": "cc17cc9cec83143f0d8fb9489f06f6efe639d335",
   "ssl_v2_dir": "experiments/fi2010_ssl_v2_benchmark"
 }

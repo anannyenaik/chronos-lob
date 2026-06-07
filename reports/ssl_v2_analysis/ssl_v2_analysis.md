@@ -15,6 +15,17 @@ Analysis version: `fi2010-ssl-v2-analysis/v1`.
 SSL-v2 was added because the first-generation SSL analysis found that random field reconstruction and next-field prediction did not broadly improve downstream predictive or calibration metrics.
 The current closure covers the exact stored folds, horizons, seeds and lookbacks listed above.
 
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5, horizons 10/50, seeds 0–2 and
+lookback 50. Across 30 matched comparison cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and
+Brier, supporting scoped predictive and calibration improvement for this exact retained scope. The evidence is
+mixed by seed and horizon, including negative mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL
+improvement remains unsupported.
+
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array jobs on Durham University
+Hamilton/NCC HPC. Retained summaries, provenance and claim assessments are committed; large checkpoints, raw
+predictions and cluster logs are intentionally excluded. GPU determinism warnings are documented, and bitwise
+reproducibility is not claimed.
+
 ## Predictive Metrics
 
 | horizon | fold | delta_macro_f1 | delta_mcc | delta_ece | delta_brier_score |
@@ -58,7 +69,8 @@ Canonical grouped summaries: `ssl_v2_delta_overall.csv`, `ssl_v2_delta_by_seed.c
 | --- | --- | --- | --- | --- |
 | 30 | 0.011218 | 0.025925 | -0.003000 | -0.023541 |
 
-Aggregate support is not uniform across strata: negative mean macro-F1 for seed 1 and horizon 50.
+Aggregate support is not uniform across strata: negative mean macro-F1 for seed(s) 1; negative mean macro-F1
+for horizon(s) 50.
 
 ## Confidence-Filtered Diagnostics
 

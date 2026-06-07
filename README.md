@@ -33,13 +33,26 @@ execution quality or production execution realism.
 | Synthetic event-level replay | `archived_valid` | Controlled synthetic evidence only. |
 | Binance Spot aggregated L2 replay | `partial_real` | Crypto L2 replay engineering path; committed sample is fixture-backed, not equity or predictive-success evidence. |
 
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
+horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
+scoped predictive and calibration improvement for this exact retained scope.
+The evidence is mixed by seed and horizon, including negative mean macro-F1
+deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
+
+The one-epoch neural full grid is matched comparison evidence, not a
+performance-maximising neural benchmark. The proper-training neural subset
+remains partial, and a broader proper-training neural benchmark across folds,
+seeds, lookbacks and model families is deferred.
+
 The repository is strong because its claims are audited against retained
 artefacts and explicit limitations, not because it claims profitability.
 
-The seed-1 and seed-2 SSL-v2 refresh was run with Slurm on Durham University
-Hamilton/NCC HPC. Array jobs were independent by fold, horizon and seed; retained
-summaries are committed while large checkpoints, raw predictions and cluster logs
-are excluded. See
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
+jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
+claim assessments are committed; large checkpoints, raw predictions and cluster
+logs are intentionally excluded. GPU determinism warnings are documented, and
+bitwise reproducibility is not claimed. See
 [Hamilton compute provenance](reports/ssl_v2_analysis/hamilton_compute_provenance.json).
 
 ## What This Is Not
@@ -71,6 +84,7 @@ are excluded. See
 | Evidence pack | [reports/evidence_pack/evidence_pack_summary.md](reports/evidence_pack/evidence_pack_summary.md) |
 | Claim audit | [reports/evidence_pack/claim_audit.md](reports/evidence_pack/claim_audit.md) |
 | Execution centrepiece | [reports/execution_centrepiece/execution_centrepiece.md](reports/execution_centrepiece/execution_centrepiece.md) |
+| Execution proxy validity | [docs/EXECUTION_PROXY_VALIDITY.md](docs/EXECUTION_PROXY_VALIDITY.md) |
 | Safety and limitations | [docs/SAFETY_AND_LIMITATIONS.md](docs/SAFETY_AND_LIMITATIONS.md) |
 | Project status | [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) |
 | Reproducibility guide | [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) |

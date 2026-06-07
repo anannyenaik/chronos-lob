@@ -42,10 +42,10 @@ This plan groups the public-release changes for review before commit/push.
 - Exclude: legacy evidence-pack bullet files with old naming; the generator now writes `public_bullets_*.md`.
 - Large artefact concerns: minimal.
 - Generated files: commit as a coherent generated bundle after strict rebuild.
-- Review notes: broad SSL improvement and SSL calibration improvement remain
-  unsupported; SSL-v2 predictive improvement is supported only for the exact
-  stored seed-0 scope. SSL execution improvement still needs real matched proxy
-  evidence.
+- Review notes: broad SSL improvement remains unsupported. SSL-v2 mean
+  predictive and calibration improvements are supported only for the exact
+  stored folds 1-5, horizons 10/50, seeds 0-2, lookback-50 scope. SSL execution
+  improvement still needs real matched proxy evidence.
 
 ## 6. Real Empirical Artefacts
 

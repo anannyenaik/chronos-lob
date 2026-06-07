@@ -37,10 +37,23 @@ evidence streams.
 - Benchmark metrics are run-specific and depend on the recorded dataset,
   split, config, seed and local environment.
 - Implemented self-supervised objectives are evaluated only within their stored
-  scopes. The current SSL-v1 and SSL-v2 evidence does not support a broad SSL
-  improvement or SSL calibration-improvement claim.
+  scopes. SSL-v1 does not support broad predictive or calibration improvement.
+  SSL-v2 supports scoped predictive and calibration improvement only for its
+  exact retained scope; broad SSL improvement remains unsupported.
 - Forecast accuracy, calibration error and confidence-filtering
   diagnostics do not in themselves characterise tradability.
+
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
+horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
+scoped predictive and calibration improvement for this exact retained scope.
+The evidence is mixed by seed and horizon, including negative mean macro-F1
+deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
+
+The one-epoch neural full grid is matched comparison evidence, not a
+performance-maximising neural benchmark. The proper-training neural subset
+remains partial, and a broader proper-training neural benchmark across folds,
+seeds, lookbacks and model families is deferred.
 
 ## Execution-Validation Limitations
 
@@ -53,6 +66,16 @@ It does not report realised returns or model live trading, broker or exchange
 integration, venue-specific queue priority, live partial fills, queue dynamics,
 market impact or portfolio optimisation.
 Any future execution-aware result must state these assumptions.
+See [EXECUTION_PROXY_VALIDITY.md](EXECUTION_PROXY_VALIDITY.md) for the dedicated
+validity statement.
+
+## Compute Provenance Boundary
+
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
+jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
+claim assessments are committed; large checkpoints, raw predictions and cluster
+logs are intentionally excluded. GPU determinism warnings are documented, and
+bitwise reproducibility is not claimed.
 
 ## Reporting Discipline
 

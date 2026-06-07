@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import shutil
+import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -13,6 +14,7 @@ from typing import Any
 import pandas as pd
 
 from chronoslob.experiments.manifests import stable_json_dumps
+from chronoslob.utils.paths import project_root
 
 __all__ = [
     "SSL_V2_ANALYSIS_VERSION",
@@ -21,6 +23,23 @@ __all__ = [
 ]
 
 SSL_V2_ANALYSIS_VERSION = "fi2010-ssl-v2-analysis/v1"
+
+_CANONICAL_SSL_V2_PARAGRAPH = (
+    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1\N{EN DASH}5, "
+    "horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. Across 30 matched comparison "
+    "cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, "
+    "supporting scoped predictive and calibration improvement for this exact "
+    "retained scope. The evidence is mixed by seed and horizon, including negative "
+    "mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL improvement "
+    "remains unsupported."
+)
+_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH = (
+    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array "
+    "jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and "
+    "claim assessments are committed; large checkpoints, raw predictions and "
+    "cluster logs are intentionally excluded. GPU determinism warnings are "
+    "documented, and bitwise reproducibility is not claimed."
+)
 
 # Confidence thresholds for selective-prediction (confidence-filtered) diagnostics.
 SSL_V2_CONFIDENCE_THRESHOLDS: tuple[float, ...] = (0.33, 0.50, 0.70, 0.85, 0.95)
@@ -102,10 +121,17 @@ def analyse_ssl_v2_results(
         loss_components=loss_components,
     )
     claim_statuses = {str(item["claim_id"]): str(item["status"]) for item in claims}
+    git_commit = _current_git_commit()
+    compute_provenance = (
+        _read_json(output / "hamilton_compute_provenance.json")
+        if (output / "hamilton_compute_provenance.json").is_file()
+        else None
+    )
     claim_payload = {
         "analysis_version": SSL_V2_ANALYSIS_VERSION,
         "created_at": datetime.now(UTC).isoformat(),
-        "ssl_v2_dir": str(source),
+        "git_commit": git_commit,
+        "ssl_v2_dir": source.as_posix(),
         "evidence_level": summary.get("evidence_level"),
         "claims": claims,
     }
@@ -135,6 +161,7 @@ def analyse_ssl_v2_results(
             confidence_status=confidence_status,
             execution_proxy=execution_proxy,
             claims=claims,
+            compute_provenance=compute_provenance,
         )
     )
     (output / "ssl_v2_analysis.md").write_text(report_text + "\n", encoding="utf-8")
@@ -174,8 +201,9 @@ def analyse_ssl_v2_results(
     analysis_summary = {
         "analysis_version": SSL_V2_ANALYSIS_VERSION,
         "created_at": datetime.now(UTC).isoformat(),
-        "ssl_v2_dir": str(source),
-        "out_dir": str(output),
+        "git_commit": git_commit,
+        "ssl_v2_dir": source.as_posix(),
+        "out_dir": output.as_posix(),
         "evidence_level": summary.get("evidence_level"),
         "scope_label": summary.get("scope_label"),
         "folds": summary.get("folds"),
@@ -194,8 +222,8 @@ def analyse_ssl_v2_results(
     }
     (output / "summary.json").write_text(stable_json_dumps(analysis_summary), encoding="utf-8")
     return SSLV2AnalysisSummary(
-        ssl_v2_dir=str(source),
-        out_dir=str(output),
+        ssl_v2_dir=source.as_posix(),
+        out_dir=output.as_posix(),
         evidence_level=str(summary.get("evidence_level", "missing")),
         matched_rows=matched_rows,
         ssl_v2_matched_rows=ssl_v2_matched_rows,
@@ -214,6 +242,24 @@ def _read_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"expected JSON object: {path}")
     return payload
+
+
+def _current_git_commit() -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=project_root(),
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    value = completed.stdout.strip()
+    return value or None
 
 
 def _read_optional_csv(path: Path) -> pd.DataFrame | None:
@@ -661,6 +707,7 @@ def _render_report(
     confidence_status: Mapping[str, Any],
     execution_proxy: Mapping[str, Any],
     claims: Sequence[Mapping[str, Any]],
+    compute_provenance: Mapping[str, Any] | None,
 ) -> list[str]:
     evidence_level = str(summary.get("evidence_level", "missing"))
     scope_label = str(summary.get("scope_label", "missing"))
@@ -689,9 +736,12 @@ def _render_report(
         "The current closure covers the exact stored folds, horizons, seeds and "
         "lookbacks listed above.",
         "",
-        "## Predictive Metrics",
-        "",
     ]
+    if _release_scope_supported(summary=summary, v2_rows=v2_rows, claims=claims):
+        lines += [*_wrap(_CANONICAL_SSL_V2_PARAGRAPH), ""]
+    if compute_provenance:
+        lines += [*_wrap(_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH), ""]
+    lines += ["## Predictive Metrics", ""]
     if v2_rows.empty:
         lines.append("No matched supervised-vs-SSL-v2 rows were available.")
     else:
@@ -777,6 +827,28 @@ def _render_report(
         lines.append("")
         lines.append("Grouped CSV deltas are available for exact numeric inspection.")
     return lines
+
+
+def _release_scope_supported(
+    *,
+    summary: Mapping[str, Any],
+    v2_rows: pd.DataFrame,
+    claims: Sequence[Mapping[str, Any]],
+) -> bool:
+    statuses = {
+        str(claim.get("claim_id")): str(claim.get("status"))
+        for claim in claims
+        if isinstance(claim, Mapping)
+    }
+    return (
+        summary.get("folds") == [1, 2, 3, 4, 5]
+        and summary.get("horizons") == [10, 50]
+        and summary.get("seeds") == [0, 1, 2]
+        and summary.get("lookbacks") == [50]
+        and len(v2_rows) == 30
+        and statuses.get("ssl_v2_predictive_improvement") == "supported"
+        and statuses.get("ssl_v2_calibration_improvement") == "supported"
+    )
 
 
 def _markdown_table(headers: Sequence[str], rows: Sequence[Sequence[str]]) -> list[str]:

@@ -220,6 +220,45 @@ def test_public_safety_and_limitations_remains_canonical() -> None:
     assert "evidence archive" in archive_readme
 
 
+def test_execution_proxy_validity_boundary_is_linked_and_conservative() -> None:
+    root = project_root()
+    validity_path = root / "docs" / "EXECUTION_PROXY_VALIDITY.md"
+    validity = validity_path.read_text(encoding="utf-8").lower()
+
+    for phrase in (
+        "confidence thresholds",
+        "active fraction",
+        "turnover proxy",
+        "cost sensitivity",
+        "latency sensitivity",
+        "adverse-selection proxy",
+        "normalised order-book snapshots",
+        "order-add, cancel, modify and trade events",
+        "deliberately not a trading claim",
+    ):
+        assert phrase in validity
+    for forbidden_claim in (
+        "pnl or realised profitability",
+        "tradability",
+        "live execution quality",
+        "production execution simulation",
+        "venue-specific queue priority",
+        "market impact",
+        "true fill modelling",
+    ):
+        assert forbidden_claim in validity
+
+    linked_files = (
+        root / "README.md",
+        root / "docs" / "SAFETY_AND_LIMITATIONS.md",
+        root / "docs" / "PROJECT_STATUS.md",
+        root / "docs" / "FINAL_EMPIRICAL_REPORT.md",
+        root / "reports" / "chronoslob_final_empirical_report.md",
+    )
+    for path in linked_files:
+        assert "EXECUTION_PROXY_VALIDITY.md" in path.read_text(encoding="utf-8")
+
+
 def test_public_markdown_files_do_not_collapse_into_single_long_lines() -> None:
     root = project_root()
     offenders: list[str] = []

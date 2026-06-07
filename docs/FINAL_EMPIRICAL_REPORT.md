@@ -92,13 +92,18 @@ report explicitly states that no execution-v3 claim is made.
 When `--execution-centrepiece` is supplied, the report includes the
 forecasting-versus-signal-quality gap section near the top-level interpretation.
 It uses retained proxy tables only and does not read raw predictions or realised
-execution outcomes.
+execution outcomes. See [EXECUTION_PROXY_VALIDITY.md](EXECUTION_PROXY_VALIDITY.md)
+for the validity boundary.
 
 When `--ssl-v2-analysis` is supplied, the report includes the scoped SSL-v2
-interpretation: mean predictive and calibration improvements are supported only
-for the exact stored folds 1-5, horizons 10/50, seeds 0-2, lookback-50 scope.
-The report also records mixed seed/horizon outcomes, and no broad SSL
-improvement follows.
+interpretation.
+
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
+horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
+scoped predictive and calibration improvement for this exact retained scope.
+The evidence is mixed by seed and horizon, including negative mean macro-F1
+deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
 
 When `--feature-ablations` is supplied, the report includes feature registry
 status, unsupported FI-2010 groups, proxy warnings, aggregate ablation rows and
@@ -138,9 +143,17 @@ trade imbalance, queue-position or SOTA claim is made.
 
 ## Limitations
 
-The matched one-epoch full grid and SSL-v2 benchmark are multi-seed, while the
-proper-training subset remains seed-0 evidence. SSL-v2 results are mixed by seed
-and horizon and do not support broad SSL improvement. Execution outputs do not
-model queue priority, market impact or venue mechanics. External benchmark
-papers are referenced for protocol context without importing external numeric
-metrics. The manual paper is deferred.
+The one-epoch neural full grid is matched comparison evidence, not a
+performance-maximising neural benchmark. The proper-training neural subset
+remains partial, and a broader proper-training neural benchmark across folds,
+seeds, lookbacks and model families is deferred.
+
+The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
+jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
+claim assessments are committed; large checkpoints, raw predictions and cluster
+logs are intentionally excluded. GPU determinism warnings are documented, and
+bitwise reproducibility is not claimed.
+
+Execution outputs do not model queue priority, market impact or venue mechanics.
+External benchmark papers are referenced for protocol context without importing
+external numeric metrics. The manual paper is deferred.

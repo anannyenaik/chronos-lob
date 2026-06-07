@@ -28,7 +28,7 @@
 
 - Best classical result: gradient_boosting macro-F1 0.4654 from stored artefacts.
 - Best neural full-grid result: matrix_transformer macro-F1 0.4922 from stored artefacts.
-- SSL comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
+- SSL-v1 matched full-grid comparison: no broad SSL improvement claim; see claim_audit.md for macro-F1=unsupported, calibration=unsupported.
 - SSL-v2: scoped predictive improvement is supported only for the exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; calibration=supported and broad SSL remains unsupported.
 - Execution-v3: complete real artefacts retained (generated at an older commit).
 - Execution centrepiece: complete real artefacts retained (generated at an older commit).
