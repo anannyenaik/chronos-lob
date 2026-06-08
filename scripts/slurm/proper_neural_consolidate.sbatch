@@ -1,17 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=chronos_proper_neural_merge
-#SBATCH --partition=test
+#SBATCH --partition=shared
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=4G
-#SBATCH --time=00:20:00
+#SBATCH --time=01:00:00
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
 
 # Consolidate the per-task proper-training neural runs into one canonical tree,
 # validate that all 180 expected two-model cells completed, then re-run
 # the CLI in consolidation mode (--resume) to regenerate aggregate artefacts.
-# CPU-only (no training happens here; completed runs are skipped). Modelled on
-# the working ssl_v2_consolidate.sbatch conventions.
+# CPU-only Slurm allocation: `--device cuda` below preserves the per-run reuse
+# signature, but no GPU work occurs because every validated completed run is
+# skipped. Modelled on the working ssl_v2_consolidate.sbatch conventions.
 #
 # Run this only after the array has finished and the staged checks passed.
 
@@ -98,7 +99,7 @@ python -m chronoslob.cli run-fi2010-neural-proper-training-subset \
   --lookbacks 20,50,100 \
   --models matrix_transformer,deeplob_style \
   --objectives supervised \
-  --device cpu \
+  --device cuda \
   --resume
 
 python -m chronoslob.analysis.proper_neural_analysis --source "$canonical"
