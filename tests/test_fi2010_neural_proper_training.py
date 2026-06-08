@@ -263,6 +263,7 @@ def test_proper_training_two_model_supervised_slice_is_collision_free(
     results = pd.read_csv(out_dir / "results_summary.csv")
     assert summary.models == ["matrix_transformer", "deeplob_style"]
     assert summary.completed_run_count == 2
+    assert summary.missing_pair_count == 0
     assert set(results["model_family"]) == {"matrix_transformer", "deeplob_style"}
     assert (
         out_dir
@@ -285,6 +286,37 @@ def test_proper_training_two_model_supervised_slice_is_collision_free(
         / "supervised"
         / "metrics.json"
     ).is_file()
+
+
+def test_broader_two_model_scope_is_complete_real() -> None:
+    primary = proper._primary_target_complete(
+        folds=[1, 2, 3, 4, 5],
+        horizons=[10, 50],
+        seeds=[0, 1, 2],
+        lookbacks=[20, 50, 100],
+        models=["matrix_transformer", "deeplob_style"],
+        objectives=["supervised"],
+        max_epochs=25,
+        patience=5,
+        planned_complete=True,
+        smoke_test=False,
+    )
+    label = proper._scope_label(
+        folds=[1, 2, 3, 4, 5],
+        horizons=[10, 50],
+        seeds=[0, 1, 2],
+        lookbacks=[20, 50, 100],
+        models=["matrix_transformer", "deeplob_style"],
+        objectives=["supervised"],
+        max_epochs=25,
+        patience=5,
+        planned_complete=True,
+        primary_complete=primary,
+        smoke_test=False,
+    )
+
+    assert primary is True
+    assert label == "broader_proper_training_complete"
 
 
 def test_proper_training_runner_writes_matched_partial_artefacts(

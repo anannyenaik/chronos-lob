@@ -91,6 +91,12 @@ PROPER_TRAINING_MODEL_CHOICES: tuple[str, ...] = (
     "matrix_transformer",
     "deeplob_style",
 )
+_BROADER_TARGET_FOLDS = {1, 2, 3, 4, 5}
+_BROADER_TARGET_HORIZONS = {10, 50}
+_BROADER_TARGET_SEEDS = {0, 1, 2}
+_BROADER_TARGET_LOOKBACKS = {20, 50, 100}
+_BROADER_TARGET_MODELS = set(PROPER_TRAINING_MODEL_CHOICES)
+_BROADER_TARGET_OBJECTIVES = {"supervised"}
 
 _PRIMARY_TARGET_FOLDS = {1, 2, 3, 4, 5}
 _PRIMARY_TARGET_HORIZONS = {10, 50}
@@ -565,6 +571,9 @@ def run_fi2010_neural_proper_training_subset(
         resolved_out,
         result_rows=result_rows,
         failure_rows=failure_rows,
+        expect_ssl_pairs=any(
+            objective != "supervised" for objective in selected_objectives
+        ),
     )
     _write_proper_aggregate_summary_json(
         resolved_out,
@@ -588,6 +597,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=selected_horizons,
         seeds=selected_seeds,
         lookbacks=selected_lookbacks,
+        models=selected_models,
         objectives=selected_objectives,
         max_epochs=resolved_max_epochs,
         patience=resolved_patience,
@@ -599,6 +609,7 @@ def run_fi2010_neural_proper_training_subset(
         horizons=selected_horizons,
         seeds=selected_seeds,
         lookbacks=selected_lookbacks,
+        models=selected_models,
         objectives=selected_objectives,
         max_epochs=resolved_max_epochs,
         patience=resolved_patience,
@@ -737,6 +748,7 @@ def _primary_target_complete(
     horizons: Sequence[int],
     seeds: Sequence[int],
     lookbacks: Sequence[int],
+    models: Sequence[str],
     objectives: Sequence[str],
     max_epochs: int,
     patience: int,
@@ -745,15 +757,27 @@ def _primary_target_complete(
 ) -> bool:
     if smoke_test or not planned_complete:
         return False
-    return (
+    legacy_primary = (
         set(folds).issuperset(_PRIMARY_TARGET_FOLDS)
         and set(horizons).issuperset(_PRIMARY_TARGET_HORIZONS)
         and set(seeds).issuperset(_PRIMARY_TARGET_SEEDS)
         and set(lookbacks).issuperset(_PRIMARY_TARGET_LOOKBACKS)
+        and "matrix_transformer" in set(models)
         and set(objectives).issuperset(_PRIMARY_TARGET_OBJECTIVES)
         and int(max_epochs) >= _PRIMARY_TARGET_MAX_EPOCHS
         and int(patience) >= _PRIMARY_TARGET_PATIENCE
     )
+    broader_primary = (
+        set(folds).issuperset(_BROADER_TARGET_FOLDS)
+        and set(horizons).issuperset(_BROADER_TARGET_HORIZONS)
+        and set(seeds).issuperset(_BROADER_TARGET_SEEDS)
+        and set(lookbacks).issuperset(_BROADER_TARGET_LOOKBACKS)
+        and set(models).issuperset(_BROADER_TARGET_MODELS)
+        and set(objectives) == _BROADER_TARGET_OBJECTIVES
+        and int(max_epochs) >= _PRIMARY_TARGET_MAX_EPOCHS
+        and int(patience) >= _PRIMARY_TARGET_PATIENCE
+    )
+    return legacy_primary or broader_primary
 
 
 def _scope_label(
@@ -762,6 +786,7 @@ def _scope_label(
     horizons: Sequence[int],
     seeds: Sequence[int],
     lookbacks: Sequence[int],
+    models: Sequence[str],
     objectives: Sequence[str],
     max_epochs: int,
     patience: int,
@@ -771,6 +796,12 @@ def _scope_label(
 ) -> str:
     if smoke_test:
         return "smoke_test_only"
+    if (
+        primary_complete
+        and set(models).issuperset(_BROADER_TARGET_MODELS)
+        and set(objectives) == _BROADER_TARGET_OBJECTIVES
+    ):
+        return "broader_proper_training_complete"
     if primary_complete:
         return "primary_credible_minimum"
     if (
@@ -810,6 +841,16 @@ def _scope_metadata(
             "seeds": sorted(_PRIMARY_TARGET_SEEDS),
             "lookbacks": sorted(_PRIMARY_TARGET_LOOKBACKS),
             "objectives": list(PROPER_TRAINING_OBJECTIVE_CHOICES),
+            "min_max_epochs": _PRIMARY_TARGET_MAX_EPOCHS,
+            "min_patience": _PRIMARY_TARGET_PATIENCE,
+        },
+        "broader_complete_real_target": {
+            "folds": sorted(_BROADER_TARGET_FOLDS),
+            "horizons": sorted(_BROADER_TARGET_HORIZONS),
+            "seeds": sorted(_BROADER_TARGET_SEEDS),
+            "lookbacks": sorted(_BROADER_TARGET_LOOKBACKS),
+            "models": sorted(_BROADER_TARGET_MODELS),
+            "objectives": sorted(_BROADER_TARGET_OBJECTIVES),
             "min_max_epochs": _PRIMARY_TARGET_MAX_EPOCHS,
             "min_patience": _PRIMARY_TARGET_PATIENCE,
         },

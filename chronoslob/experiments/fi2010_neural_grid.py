@@ -634,6 +634,7 @@ def write_neural_grid_aggregate_artifacts(
     *,
     result_rows: Sequence[Mapping[str, Any]],
     failure_rows: Sequence[Mapping[str, Any]],
+    expect_ssl_pairs: bool = True,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Write canonical result, aggregate, failure and comparison tables."""
     root = Path(out_dir)
@@ -645,7 +646,9 @@ def write_neural_grid_aggregate_artifacts(
     aggregate_rows = _build_aggregate_rows(result_payloads, failure_payloads)
     _write_csv(aggregate_rows, root / "aggregate_summary.csv", _AGGREGATE_COLUMNS)
 
-    comparison_rows, missing_rows = build_ssl_comparison_rows(result_payloads)
+    comparison_rows, missing_rows = (
+        build_ssl_comparison_rows(result_payloads) if expect_ssl_pairs else ([], [])
+    )
     _write_csv(comparison_rows, root / "ssl_comparison.csv", _COMPARISON_COLUMNS)
     _write_csv(missing_rows, root / "missing_pairs.csv", _COMPARISON_COLUMNS)
 
