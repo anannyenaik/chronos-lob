@@ -1,11 +1,11 @@
 {
   "allow_smoke_test": false,
   "artefact_status_counts": {
-    "archived_valid": 5,
-    "complete_real": 7,
+    "archived_valid": 7,
+    "complete_real": 6,
     "obsolete_superseded": 1,
     "optional_missing": 1,
-    "partial_real": 4,
+    "partial_real": 3,
     "unknown_staleness": 1
   },
   "artefacts": [
@@ -95,34 +95,38 @@
     {
       "artefact_name": "fi2010_neural_proper_training_subset",
       "artefact_type": "fi2010_neural_proper_training",
-      "completed_runs": 6,
+      "completed_runs": 180,
       "exists": true,
       "failed_runs": 0,
       "freshness": "archived",
-      "generated_at": "2026-05-29T23:05:47.747970Z",
-      "git_commit": "ef0724fb55e595fffb7af6e616ebb1789cfaaac6",
+      "generated_at": "2026-06-08T00:24:07.098012Z",
+      "git_commit": "660cfdce6a976c0307ad426a6040de89a41553f1",
       "input_hashes_present": false,
       "limitations": "Proper-training subset claims are limited to the exact folds, horizons, seeds, lookbacks and objectives stored in the artefacts.",
       "notes": "Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit.",
       "output_hashes_present": false,
-      "path": "experiments/fi2010_neural_proper_training_subset_v2",
+      "path": "experiments/fi2010_neural_proper_training_broader",
       "required_files_missing": [],
-      "skipped_runs": 6,
+      "skipped_runs": 180,
       "smoke_test": false,
-      "status": "partial_real",
+      "status": "archived_valid",
       "supporting_files": [
-        "experiments/fi2010_neural_proper_training_subset_v2/summary.json",
-        "experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json",
-        "experiments/fi2010_neural_proper_training_subset_v2/results_summary.csv",
-        "experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.csv",
-        "experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.json",
-        "experiments/fi2010_neural_proper_training_subset_v2/training_curves_summary.csv",
-        "experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv",
-        "experiments/fi2010_neural_proper_training_subset_v2/failures.csv",
-        "experiments/fi2010_neural_proper_training_subset_v2/sha256_manifest.json"
+        "experiments/fi2010_neural_proper_training_broader/summary.json",
+        "experiments/fi2010_neural_proper_training_broader/config_snapshot.json",
+        "experiments/fi2010_neural_proper_training_broader/results_summary.csv",
+        "experiments/fi2010_neural_proper_training_broader/aggregate_summary.csv",
+        "experiments/fi2010_neural_proper_training_broader/aggregate_summary.json",
+        "experiments/fi2010_neural_proper_training_broader/training_curves_summary.csv",
+        "experiments/fi2010_neural_proper_training_broader/ssl_comparison.csv",
+        "experiments/fi2010_neural_proper_training_broader/failures.csv",
+        "experiments/fi2010_neural_proper_training_broader/sha256_manifest.json",
+        "experiments/fi2010_neural_proper_training_broader/hamilton_compute_provenance.json",
+        "experiments/fi2010_neural_proper_training_broader/proper_neural_claim_assessment.json"
       ],
       "supports_claims": [
-        "empirical.ssl_proper_training_h50"
+        "empirical.proper_training_broader_complete",
+        "empirical.proper_training_confidence_filtering_tradeoff",
+        "empirical.proper_training_transformer_stronger_overall_means"
       ]
     },
     {
@@ -151,8 +155,7 @@
         "reports/ssl_failure_analysis/summary.json"
       ],
       "supports_claims": [
-        "empirical.ssl_implemented_evaluated",
-        "empirical.ssl_proper_training_h50"
+        "empirical.ssl_implemented_evaluated"
       ]
     },
     {
@@ -195,18 +198,18 @@
       "completed_runs": null,
       "exists": true,
       "failed_runs": 0,
-      "freshness": "fresh",
+      "freshness": "archived",
       "generated_at": "2026-06-07T18:54:13.369847+00:00",
       "git_commit": "cc17cc9cec83143f0d8fb9489f06f6efe639d335",
       "input_hashes_present": false,
       "limitations": "The SSL-v2 analysis is scoped evidence only and does not alter broad SSL boundaries unless its stored deltas support that.",
-      "notes": "Hash/commit staleness checks passed.",
+      "notes": "Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit.",
       "output_hashes_present": false,
       "path": "reports/ssl_v2_analysis",
       "required_files_missing": [],
       "skipped_runs": null,
       "smoke_test": false,
-      "status": "complete_real",
+      "status": "archived_valid",
       "supporting_files": [
         "reports/ssl_v2_analysis/ssl_v2_analysis.md",
         "reports/ssl_v2_analysis/ssl_v2_claim_assessment.json",
@@ -478,8 +481,8 @@
       "exists": true,
       "failed_runs": null,
       "freshness": "fresh",
-      "generated_at": "2026-06-07T18:54:20.448992Z",
-      "git_commit": "cc17cc9cec83143f0d8fb9489f06f6efe639d335",
+      "generated_at": "2026-06-08T01:20:39.815859Z",
+      "git_commit": "b169b6844d66687b235b8b3b72b8a39da3563960",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Hash/commit staleness checks passed.",
@@ -597,13 +600,13 @@
   "claim_boundary": "Smoke diagnostics are not empirical evidence. Execution metrics are offline proxies. FI-2010 snapshot features do not expose event-level order flow, cancellations, trades or queue position.",
   "claim_status_counts": {
     "forbidden": 18,
-    "needs_real_evidence": 2,
-    "partially_supported": 3,
-    "supported": 31,
-    "unsupported": 6
+    "needs_real_evidence": 3,
+    "partially_supported": 2,
+    "supported": 34,
+    "unsupported": 8
   },
-  "generated_at": "2026-06-07T18:54:30.483833+00:00",
-  "git_commit": "cc17cc9cec83143f0d8fb9489f06f6efe639d335",
+  "generated_at": "2026-06-08T01:20:51.746917+00:00",
+  "git_commit": "b169b6844d66687b235b8b3b72b8a39da3563960",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "binance_l2_dir": "reports/binance_l2_extension",
@@ -618,7 +621,7 @@
     "neural_full_grid_dir": "experiments/fi2010_neural_full_grid",
     "out_dir": "reports/evidence_pack",
     "project_audit_dir": "reports/report_archive",
-    "proper_training_dir": "experiments/fi2010_neural_proper_training_subset_v2",
+    "proper_training_dir": "experiments/fi2010_neural_proper_training_broader",
     "ssl_dir": "experiments/fi2010_ssl",
     "synthetic_lob_dir": "reports/synthetic_lob_extension"
   },

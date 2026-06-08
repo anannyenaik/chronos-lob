@@ -2,91 +2,133 @@
 
 - ChronosLOB is a reproducible LOB research platform
   - support: project_audit_archive
-  - safe wording: ChronosLOB includes local tooling and artefact inventories for reproducible LOB research workflows.
+  - safe wording: ChronosLOB includes local tooling and artefact inventories for reproducible LOB research
+    workflows.
 - ChronosLOB uses leakage-safe FI-2010 evaluation
   - support: fi2010_classical_benchmarks
-  - safe wording: ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and leakage-control documentation.
+  - safe wording: ChronosLOB stores FI-2010 evaluation artefacts with train/test protocol metadata and
+    leakage-control documentation.
 - ChronosLOB includes train-only SSL pretraining
   - support: fi2010_neural_full_grid
-  - safe wording: ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real non-smoke SSL artefacts.
+  - safe wording: ChronosLOB includes code paths for train-only SSL pretraining; empirical claims require real
+    non-smoke SSL artefacts.
 - ChronosLOB compares supervised and SSL transformers
   - support: fi2010_neural_full_grid
-  - safe wording: ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched FI-2010 settings.
+  - safe wording: ChronosLOB includes infrastructure to compare supervised and SSL transformers under matched
+    FI-2010 settings.
 - ChronosLOB includes execution-aware proxy diagnostics
   - support: execution_v3_outputs
   - safe wording: ChronosLOB includes offline execution-aware proxy diagnostics with explicit limitations.
 - ChronosLOB includes a richer execution-aware proxy analysis report
   - support: execution_v3_analysis_report
-  - safe wording: ChronosLOB includes a richer offline execution-aware proxy analysis covering confidence, turnover, cost, latency, fill and adverse-selection proxies; regime diagnostics are explicitly skipped.
+  - safe wording: ChronosLOB includes a richer offline execution-aware proxy analysis covering confidence,
+    turnover, cost, latency, fill and adverse-selection proxies; regime diagnostics are explicitly skipped.
 - ChronosLOB includes a forecasting-versus-signal-quality centrepiece
   - support: execution_centrepiece_report
-  - safe wording: ChronosLOB includes an execution centrepiece that summarises the forecasting-versus-signal-quality gap under confidence, cost, latency, turnover and adverse-selection proxy diagnostics.
+  - safe wording: ChronosLOB includes an execution centrepiece that summarises the
+    forecasting-versus-signal-quality gap under confidence, cost, latency, turnover and adverse-selection proxy
+    diagnostics.
 - ChronosLOB includes microstructure feature ablations
   - support: feature_ablation_outputs
-  - safe wording: ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported groups labelled.
+  - safe wording: ChronosLOB includes FI-2010 snapshot-feature ablation diagnostics with proxy and unsupported
+    groups labelled.
 - Feature-ablation infrastructure is available
   - support: feature_ablation_outputs
-  - safe wording: ChronosLOB includes FI-2010 feature-ablation evidence infrastructure with proxy and unsupported groups labelled.
+  - safe wording: ChronosLOB includes FI-2010 feature-ablation evidence infrastructure with proxy and
+    unsupported groups labelled.
 - SSL was implemented and evaluated under matched FI-2010 settings.
   - support: fi2010_neural_full_grid, ssl_failure_analysis_report
   - safe wording: SSL objectives were implemented and evaluated under matched settings.
+- The broader proper-training neural benchmark completed its target scope.
+  - support: fi2010_neural_proper_training_subset
+  - safe wording: The retained broader proper-training benchmark is complete_real for its exact 180-cell
+    supervised FI-2010 scope.
+- The matrix transformer has stronger overall mean metrics than the DeepLOB-style baseline in the exact stored
+  scope.
+  - support: fi2010_neural_proper_training_subset
+  - safe wording: In the exact retained 180-cell scope, the matrix transformer has stronger overall mean
+    predictive and calibration metrics, with substantially higher variability.
+- Confidence filtering raises retained-sample predictive metrics while reducing active fraction in the stored
+  benchmark.
+  - support: fi2010_neural_proper_training_subset
+  - safe wording: Confidence filtering is a selective-prediction trade-off in the retained summaries; active
+    fraction is a storage-light coverage proxy only.
 - SSL-v2 was implemented as a market-state-aware objective.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific
+    deltas and exact fold, horizon, seed and lookback scope.
 - SSL-v2 was evaluated in the exact stored FI-2010 scope.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific
+    deltas and exact fold, horizon, seed and lookback scope.
 - SSL-v2 improved predictive metrics in the exact stored scope.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific
+    deltas and exact fold, horizon, seed and lookback scope.
 - SSL-v2 improved calibration in the exact stored scope.
   - support: fi2010_ssl_v2_benchmark, ssl_v2_analysis_report
-  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific deltas and exact fold, horizon, seed and lookback scope.
+  - safe wording: Report SSL-v2 only as a scoped, failure-analysis-motivated objective with metric-specific
+    deltas and exact fold, horizon, seed and lookback scope.
 - Gradient boosting remained the strongest classical baseline
   - support: fi2010_classical_benchmarks
-  - safe wording: Name the best classical model from the stored result table and include the metric, split and scope.
+  - safe wording: Name the best classical model from the stored result table and include the metric, split and
+    scope.
 - snapshot_order_flow_proxy remains important at horizon 10 for logistic/ridge
   - support: feature_ablation_analysis_report, feature_ablation_outputs
-  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
+  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe
+    snapshot_order_flow_proxy as a labelled snapshot proxy.
 - snapshot_order_flow_proxy importance survives horizons 20 and 50
   - support: feature_ablation_analysis_report, feature_ablation_outputs
-  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
+  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe
+    snapshot_order_flow_proxy as a labelled snapshot proxy.
 - Feature-ablation effects appear in a non-linear model slice
   - support: feature_ablation_analysis_report, feature_ablation_outputs
-  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe snapshot_order_flow_proxy as a labelled snapshot proxy.
+  - safe wording: State the exact feature group, horizons, models, folds and seeds; describe
+    snapshot_order_flow_proxy as a labelled snapshot proxy.
 - Confidence filtering improved cost-adjusted proxy
   - support: execution_v3_outputs
-  - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and retained-sample fraction.
+  - safe wording: Report confidence-threshold proxy diagnostics with threshold, payoff mode, cost mode and
+    retained-sample fraction.
 - forecasting vs signal quality gap analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - confidence filtering tradeoff analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - active fraction analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - turnover proxy analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - latency cost gap analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - adverse selection confidence analysis
   - support: execution_centrepiece_report
-  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit limitations.
+  - safe wording: Report this as a retained-table offline execution-aware proxy diagnostic with explicit
+    limitations.
 - ChronosLOB supports a synthetic event-level LOB pipeline
   - support: synthetic_lob_extension_report
-  - safe wording: ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on controlled synthetic regimes; not real-market data.
+  - safe wording: ChronosLOB includes a synthetic event-level pipeline (generation, replay, features, labels) on
+    controlled synthetic regimes; not real-market data.
 - ChronosLOB computes true event-level features on synthetic event streams
   - support: synthetic_lob_extension_report
-  - safe wording: Event-level order-flow, cancellation and trade imbalance are computed on synthetic event streams only; FI-2010 still exposes snapshot proxies only.
+  - safe wording: Event-level order-flow, cancellation and trade imbalance are computed on synthetic event
+    streams only; FI-2010 still exposes snapshot proxies only.
 - ChronosLOB produces synthetic regime stress-test diagnostics
   - support: synthetic_lob_extension_report
-  - safe wording: Synthetic regime diagnostics are controlled stress tests on known regimes, not real-market execution evidence.
+  - safe wording: Synthetic regime diagnostics are controlled stress tests on known regimes, not real-market
+    execution evidence.
 - ChronosLOB supports a Binance L2 snapshot-plus-diff replay pipeline
   - support: binance_l2_extension_report
-  - safe wording: ChronosLOB reconstructs a Binance Spot book from a depth snapshot and aggregated diff-depth stream offline; not real-market predictive evidence.
+  - safe wording: ChronosLOB reconstructs a Binance Spot book from a depth snapshot and aggregated diff-depth
+    stream offline; not real-market predictive evidence.
 - ChronosLOB validates Binance update-id continuity during replay
   - support: binance_l2_extension_report
   - safe wording: Update-id bracketing, stale-event skipping and gap detection are enforced.

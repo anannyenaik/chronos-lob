@@ -29,19 +29,23 @@ Hamilton/NCC HPC. Retained summaries, provenance and claim assessments are commi
 predictions and cluster logs are intentionally excluded. GPU determinism warnings are documented, and bitwise
 reproducibility is not claimed.
 
-The one-epoch neural full grid is matched comparison evidence, not a performance-maximising neural benchmark.
-The proper-training neural subset remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+The broader proper-training neural benchmark completed all 180 supervised cells across folds 1-5, horizons
+10/50, seeds 0-2, lookbacks 20/50/100 and the DeepLOB-style and matrix-transformer model families. Results are
+mixed by model, lookback and horizon, so no broad neural superiority is claimed.
+
+The broader proper-training neural benchmark was executed as Slurm jobs on Durham University Hamilton/NCC HPC.
+Retained summaries and claim assessments are committed; large checkpoints, raw predictions and cluster logs are
+excluded.
 
 | artefact | status | freshness | smoke | completed | failed | notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | fi2010_classical_benchmarks | archived_valid | archived | no | 60 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_ssl_runner_outputs | obsolete_superseded | absent | no |  |  | Legacy standalone SSL runner output. The matched full-grid SSL comparison and the SSL-v2 benchmark supersede it; its absence does not weaken the retained SSL evidence. Superseded by fi2010_neural_full_grid, fi2010_ssl_v2_benchmark; legacy artefact intentionally not retained, so its absence does not weaken the matched evidence. |
 | fi2010_neural_full_grid | archived_valid | archived | no | 135 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
-| fi2010_neural_proper_training_subset | partial_real | archived | no | 6 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| fi2010_neural_proper_training_subset | archived_valid | archived | no | 180 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | ssl_failure_analysis_report | complete_real | fresh | no | 4 |  | Hash/commit staleness checks passed. |
 | fi2010_ssl_v2_benchmark | complete_real | archived | no | 60 | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
-| ssl_v2_analysis_report | complete_real | fresh | no |  | 0 | Hash/commit staleness checks passed. |
+| ssl_v2_analysis_report | archived_valid | archived | no |  | 0 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_figures | partial_real | fresh | no | 17 |  | Hash/commit staleness checks passed. |
 | execution_v3_outputs | archived_valid | archived | no | 4800519 | 0 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
 | execution_v3_analysis_report | complete_real | fresh | no | 6 |  | Hash/commit staleness checks passed. |
@@ -71,8 +75,9 @@ Recomputation commands for each artefact are listed in `reproduction_commands.md
 | --- | --- | --- | --- |
 | fi2010_classical_benchmarks | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_neural_full_grid | archived_valid | a72d46f0a1d7 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
-| fi2010_neural_proper_training_subset | partial_real | ef0724fb55e5 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| fi2010_neural_proper_training_subset | archived_valid | 660cfdce6a97 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | fi2010_ssl_v2_benchmark | complete_real | 4e8fd5622803 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
+| ssl_v2_analysis_report | archived_valid | cc17cc9cec83 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | execution_v3_outputs | archived_valid | a72d46f0a1d7 | 135 recorded input artefact(s) were intentionally removed (heavy raw predictions, checkpoints or ignored per-run details); retained summaries and manifests are consistent. Retained hashed files still match their recorded hashes. The generating commit also differs from the current repository commit. |
 | execution_centrepiece_report | archived_valid | 597b3599a3a4 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |
 | feature_ablation_outputs | partial_real | 21807a9b9217 | Recorded git commit is older than the current repository commit, but retained hashes, files and summaries are consistent; the artefact is summary-valid at its generating commit. |

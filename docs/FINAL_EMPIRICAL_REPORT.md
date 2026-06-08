@@ -37,7 +37,7 @@ The generated report is organised around:
 - optional `reports/execution_centrepiece/`
 - `experiments/fi2010_external_context/`
 - optional `experiments/fi2010_neural_full_grid/`
-- optional `experiments/fi2010_neural_proper_training_subset_v2/`
+- optional `experiments/fi2010_neural_proper_training_broader/`
 - optional `reports/ssl_v2_analysis/`
 - optional `experiments/fi2010_feature_ablations/`
 - optional `reports/feature_ablation_analysis/`
@@ -64,7 +64,7 @@ python -m chronoslob.cli build-final-empirical-report \
   --execution-centrepiece reports/execution_centrepiece \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
-  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --proper-training experiments/fi2010_neural_proper_training_broader \
   --ssl-v2-analysis reports/ssl_v2_analysis \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
@@ -127,11 +127,11 @@ skipped or missing sections.
 
 ## Claim Boundaries
 
-The report states that classical results are multi-fold, neural results are
-split by scope: the one-epoch matched full grid is multi-fold and multi-seed,
-the proper-training subset is partial-real seed-0 evidence, and SSL-v2
-predictive and calibration improvements are limited to the exact stored
-multi-seed scope.
+The report states that classical results are multi-fold and horizon-10, while
+neural results are split by scope: the one-epoch matched full grid is
+multi-fold and multi-seed, the broader proper-training benchmark is
+`complete_real` supervised evidence across 180 cells, and SSL-v2 predictive and
+calibration improvements are limited to the exact stored multi-seed scope.
 Execution-aware metrics are offline proxy diagnostics, external comparisons are
 protocol context only, feature-ablation results are interpreted only when
 matching non-smoke baselines exist, and full-grid neural results are claimed
@@ -144,9 +144,14 @@ trade imbalance, queue-position or SOTA claim is made.
 ## Limitations
 
 The one-epoch neural full grid is matched comparison evidence, not a
-performance-maximising neural benchmark. The proper-training neural subset
-remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+performance-maximising neural benchmark. The broader proper-training benchmark
+completed all 180 supervised cells. Results are mixed by model, lookback and
+horizon, so no broad neural superiority is claimed.
+
+The broader proper-training neural benchmark was executed as Slurm jobs on
+Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
+are committed; large checkpoints, raw predictions and cluster logs are
+excluded. GPU bitwise reproducibility is not claimed.
 
 The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
 jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and

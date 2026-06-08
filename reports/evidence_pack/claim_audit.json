@@ -2,10 +2,10 @@
   "builder_version": "release/evidence-pack/v1",
   "claim_status_counts": {
     "forbidden": 18,
-    "needs_real_evidence": 2,
-    "partially_supported": 3,
-    "supported": 31,
-    "unsupported": 6
+    "needs_real_evidence": 3,
+    "partially_supported": 2,
+    "supported": 34,
+    "unsupported": 8
   },
   "claims": [
     {
@@ -201,17 +201,80 @@
       "category": "empirical result",
       "claim_id": "empirical.ssl_proper_training_h50",
       "claim_text": "Masked SSL improved fold-1/horizon-50 predictive metrics in the proper-training subset.",
-      "reason": "Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.",
+      "reason": "Stored rows do not show a fold-1/horizon-50 predictive gain.",
       "required_artefacts": [
         "fi2010_neural_proper_training_subset",
         "ssl_failure_analysis_report"
       ],
-      "safe_rewording": "The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.",
-      "status": "partially_supported",
+      "safe_rewording": "Built infrastructure exists, but this result claim needs real aggregate artefacts.",
+      "status": "needs_real_evidence",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.proper_training_broader_complete",
+      "claim_text": "The broader proper-training neural benchmark completed its target scope.",
+      "reason": "All 180 planned supervised cells completed across five folds, three seeds, three lookbacks, two horizons and two model families, with zero failed runs.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ],
+      "safe_rewording": "The retained broader proper-training benchmark is complete_real for its exact 180-cell supervised FI-2010 scope.",
+      "status": "supported",
       "supporting_artefacts": [
-        "fi2010_neural_proper_training_subset",
-        "ssl_failure_analysis_report"
+        "fi2010_neural_proper_training_subset"
       ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.proper_training_transformer_stronger_overall_means",
+      "claim_text": "The matrix transformer has stronger overall mean metrics than the DeepLOB-style baseline in the exact stored scope.",
+      "reason": "Across 90 runs per model, the matrix transformer has higher mean macro-F1 and MCC and lower mean Brier score and ECE, but also substantially higher macro-F1 and MCC variability.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ],
+      "safe_rewording": "In the exact retained 180-cell scope, the matrix transformer has stronger overall mean predictive and calibration metrics, with substantially higher variability.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.proper_training_broad_neural_superiority",
+      "claim_text": "The broader proper-training benchmark supports a broad neural superiority claim.",
+      "reason": "Results are mixed by model, lookback and horizon. The matrix-transformer lookback-100 rows degrade sharply, and the model families have different stability profiles.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ],
+      "safe_rewording": "Report results by model, lookback and horizon; do not generalise the strongest rows into a broad neural superiority claim.",
+      "status": "unsupported",
+      "supporting_artefacts": []
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.proper_training_confidence_filtering_tradeoff",
+      "claim_text": "Confidence filtering raises retained-sample predictive metrics while reducing active fraction in the stored benchmark.",
+      "reason": "The confidence-filtered summaries show higher retained-sample macro-F1 and MCC at stricter thresholds alongside lower active fraction; some lookback-100 transformer cells have severe coverage collapse.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ],
+      "safe_rewording": "Confidence filtering is a selective-prediction trade-off in the retained summaries; active fraction is a storage-light coverage proxy only.",
+      "status": "supported",
+      "supporting_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ]
+    },
+    {
+      "category": "empirical result",
+      "claim_id": "empirical.proper_training_classical_comparison",
+      "claim_text": "The broader neural benchmark is uniformly stronger than the existing classical benchmark.",
+      "reason": "The classical benchmark is horizon-10, five-fold, single-seed evidence. In the comparable horizon-10/seed-0 directional slice, five of six neural model/lookback means exceed the strongest classical macro-F1 mean, while matrix-transformer lookback 100 does not. The protocols are not a matched prediction-level comparison.",
+      "required_artefacts": [
+        "fi2010_neural_proper_training_subset"
+      ],
+      "safe_rewording": "Use the classical benchmark as a scoped horizon-10 directional reference and report the mixed neural lookback result explicitly.",
+      "status": "unsupported",
+      "supporting_artefacts": []
     },
     {
       "category": "empirical result",
@@ -800,5 +863,5 @@
       "supporting_artefacts": []
     }
   ],
-  "generated_at": "2026-06-07T18:54:30.557811+00:00"
+  "generated_at": "2026-06-08T01:20:51.834237+00:00"
 }

@@ -2,28 +2,52 @@
 
 - Model X achieved macro-F1 Y
   - status: partially_supported
-  - reason: Stored result tables contain macro-F1 values, but this template claim requires the exact model, metric value, scope and artefact path.
-  - safe wording: Quote model, split, fold/seed scope and macro-F1 directly from artefact_inventory.csv and the referenced result table.
+  - reason: Stored result tables contain macro-F1 values, but this template claim requires the exact model,
+    metric value, scope and artefact path.
+  - safe wording: Quote model, split, fold/seed scope and macro-F1 directly from artefact_inventory.csv and the
+    referenced result table.
 - SSL improved macro-F1
   - status: unsupported
-  - reason: Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because the retained matched deltas are mixed.
-  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.
+  - reason: Some matched rows improved macro-F1, but the broad SSL improvement claim is not supported because
+    the retained matched deltas are mixed.
+  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed
+    or negative deltas explicitly.
 - SSL improved calibration
   - status: unsupported
-  - reason: Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported because the retained matched deltas are mixed.
-  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed or negative deltas explicitly.
+  - reason: Some matched rows improved ECE calibration, but the broad SSL improvement claim is not supported
+    because the retained matched deltas are mixed.
+  - safe wording: Report the stored supervised-vs-SSL deltas by objective, fold, horizon and seed; state mixed
+    or negative deltas explicitly.
 - Masked SSL improved fold-1/horizon-50 predictive metrics in the proper-training subset.
-  - status: partially_supported
-  - reason: Masked SSL improved macro-F1 and MCC at fold 1 / horizon 50 of the partial_real proper-training subset, but calibration worsened, so the scope is too small for a broad claim.
-  - safe wording: The proper-training subset shows a narrow fold-1/horizon-50 predictive-metric improvement, but calibration worsened and the scope is partial_real.
+  - status: needs_real_evidence
+  - reason: Stored rows do not show a fold-1/horizon-50 predictive gain.
+  - safe wording: Built infrastructure exists, but this result claim needs real aggregate artefacts.
+- The broader proper-training benchmark supports a broad neural superiority claim.
+  - status: unsupported
+  - reason: Results are mixed by model, lookback and horizon. The matrix-transformer lookback-100 rows degrade
+    sharply, and the model families have different stability profiles.
+  - safe wording: Report results by model, lookback and horizon; do not generalise the strongest rows into a
+    broad neural superiority claim.
+- The broader neural benchmark is uniformly stronger than the existing classical benchmark.
+  - status: unsupported
+  - reason: The classical benchmark is horizon-10, five-fold, single-seed evidence. In the comparable
+    horizon-10/seed-0 directional slice, five of six neural model/lookback means exceed the strongest classical
+    macro-F1 mean, while matrix-transformer lookback 100 does not. The protocols are not a matched
+    prediction-level comparison.
+  - safe wording: Use the classical benchmark as a scoped horizon-10 directional reference and report the mixed
+    neural lookback result explicitly.
 - SSL improved execution-aware proxy metrics
   - status: needs_real_evidence
-  - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution improvement claim is inferred automatically.
-  - safe wording: Report execution-v3 proxy rows descriptively and avoid SSL improvement language unless a real matched aggregate table explicitly supports it.
+  - reason: Execution-v3 proxy tables are present, but no canonical aggregate SSL-vs-supervised execution
+    improvement claim is inferred automatically.
+  - safe wording: Report execution-v3 proxy rows descriptively and avoid SSL improvement language unless a real
+    matched aggregate table explicitly supports it.
 - Feature group X improved performance
   - status: partially_supported
-  - reason: Some feature-delta rows are positive, but the placeholder claim must name the exact group, model, horizon, split and ablation mode.
-  - safe wording: Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored FI-2010 snapshot diagnostics.
+  - reason: Some feature-delta rows are positive, but the placeholder claim must name the exact group, model,
+    horizon, split and ablation mode.
+  - safe wording: Describe feature-ablation deltas by named group and scope; do not generalise beyond the stored
+    FI-2010 snapshot diagnostics.
 - The execution centrepiece establishes profitability or tradability
   - status: forbidden
   - reason: The centrepiece is an offline diagnostic and explicitly blocks this claim.
@@ -42,7 +66,8 @@
   - safe wording: Use feature-ablation evidence language with exact scope and proxy caveats.
 - snapshot_order_flow_proxy is true event-level OFI
   - status: forbidden
-  - reason: snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices and is not true event-level order-flow imbalance.
+  - reason: snapshot_order_flow_proxy is a labelled snapshot proxy derived from FI-2010 matrices and is not true
+    event-level order-flow imbalance.
   - safe wording: Use feature-ablation evidence language with exact scope and proxy caveats.
 - The synthetic extension generalises to real-market event-level data
   - status: unsupported
@@ -58,8 +83,10 @@
   - safe wording: Event-level order flow is available only on synthetic streams, not FI-2010.
 - ChronosLOB ingests and replays a real captured aggregated L2 depth stream
   - status: needs_real_evidence
-  - reason: The bundled artefact uses Binance-shaped synthetic fixtures; a local captured Binance Spot snapshot/diff stream was not supplied.
-  - safe wording: ChronosLOB includes an offline Binance Spot aggregated diff-depth replay path; fixture runs are engineering checks, while user-supplied local captures are crypto-market data only.
+  - reason: The bundled artefact uses Binance-shaped synthetic fixtures; a local captured Binance Spot
+    snapshot/diff stream was not supplied.
+  - safe wording: ChronosLOB includes an offline Binance Spot aggregated diff-depth replay path; fixture runs
+    are engineering checks, while user-supplied local captures are crypto-market data only.
 - The Binance L2 extension shows real-market predictive success
   - status: unsupported
   - reason: Replay produces no predictive or returns evidence.
@@ -83,7 +110,8 @@
 - profitable trading strategy
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.
-  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and
+    queue position are not observed.
 - live trading system
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.
@@ -103,11 +131,13 @@
 - true OFI on FI-2010
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.
-  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and
+    queue position are not observed.
 - queue-position modelling on FI-2010
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.
-  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and queue position are not observed.
+  - safe wording: Use FI-2010 snapshot-derived proxy language only and state that event-level order flow and
+    queue position are not observed.
 - tradable alpha
   - status: forbidden
   - reason: This claim is blocked by release policy for ChronosLOB artefacts.

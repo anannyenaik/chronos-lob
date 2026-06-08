@@ -7,10 +7,10 @@
 | fi2010_classical_benchmarks | archived_valid | no |
 | fi2010_ssl_runner_outputs | obsolete_superseded | no |
 | fi2010_neural_full_grid | archived_valid | no |
-| fi2010_neural_proper_training_subset | partial_real | no |
+| fi2010_neural_proper_training_subset | archived_valid | no |
 | ssl_failure_analysis_report | complete_real | no |
 | fi2010_ssl_v2_benchmark | complete_real | no |
-| ssl_v2_analysis_report | complete_real | no |
+| ssl_v2_analysis_report | archived_valid | no |
 | fi2010_figures | partial_real | no |
 | execution_v3_outputs | archived_valid | no |
 | execution_v3_analysis_report | complete_real | no |

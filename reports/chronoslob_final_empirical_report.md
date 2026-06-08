@@ -17,10 +17,10 @@ The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5, hori
 MCC, ECE and Brier, supporting scoped predictive and calibration improvement for this exact retained scope. The evidence is mixed by seed and horizon, including negative mean macro-F1 deltas for seed
 1 and horizon 50, so broad SSL improvement remains unsupported.
 
-The one-epoch neural full grid is matched comparison evidence, not a performance-maximising neural benchmark. The proper-training neural subset remains partial, and a broader proper-training neural
-benchmark across folds, seeds, lookbacks and model families is deferred.
+The broader proper-training neural benchmark completed all 180 supervised cells across folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and the DeepLOB-style and matrix-transformer model
+families. Results are mixed by model, lookback and horizon, so no broad neural superiority is claimed.
 
-Deferred: a broader proper-training neural benchmark and the manual paper.
+Deferred: the manual paper.
 
 Do not infer profitability, tradability, live-market execution quality, equity-market generalisation from Binance replay, causal feature importance or true event-level order flow from FI-2010
 snapshots.
@@ -31,12 +31,12 @@ snapshots.
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-06-07T18:54:20.448992+00:00 |
-| git_commit | cc17cc9cec83143f0d8fb9489f06f6efe639d335 |
+| generated_at | 2026-06-08T01:20:39.815859+00:00 |
+| git_commit | b169b6844d66687b235b8b3b72b8a39da3563960 |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |
-| proper_training_neural_scope | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50, objectives supervised, masked_reconstruction, next_field; max_epochs 25, patience 5; validation-only early stopping with best checkpoint restored before test |
+| proper_training_neural_scope | complete_real; folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 20, 50, 100, models matrix_transformer, deeplob_style, objectives supervised; max_epochs 25, patience 5; validation-only early stopping with best checkpoint restored before test |
 | ssl_comparison_scope | matched supervised-vs-SSL comparison present in the full grid (masked_reconstruction, next_field objectives); no SSL improvement is supported |
 | ssl_v2_scope | complete_real; exact stored scope: folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 50; predictive=supported, calibration=supported |
 | legacy_reduced_scope_neural_scope | separate earlier 25-epoch reduced-scope supervised benchmark, single-seed, lookback 20; reported separately, not used as matched-grid or SSL evidence |
@@ -59,11 +59,10 @@ What is complete or retained (`complete_real` / `archived_valid`):
 - One-epoch matched neural full grid across folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2 and objectives supervised, masked_reconstruction, next_field.
 - A matched supervised-vs-SSL comparison inside that grid.
 - Execution-v3 offline cost-adjusted proxy diagnostics.
+- Broader proper-training neural benchmark with validation-only early stopping and best-checkpoint restoration, reported separately from the one-epoch matched grid.
 
 What is partial (`partial_real`):
 
-- Proper-training neural subset: documented partial longer-training modelling evidence with validation-only early stopping; exact folds, horizons, seeds, lookbacks and objectives are listed in its
-  section.
 - FI-2010 snapshot feature-ablation evidence: partial_real; folds fold_1, fold_2, fold_3, fold_4, fold_5, horizons 10, 20, 50, seeds 0, 1, 2, models logistic, ridge.
 
 What is separate legacy / reduced-scope evidence:
@@ -89,8 +88,8 @@ The earlier 25-epoch reduced-scope supervised matrix-transformer result is repor
 | --- | --- |
 | evidence_pack_status | loaded |
 | evidence_pack_dir | reports/evidence_pack |
-| artefact_status_counts | archived_valid=6, complete_real=6, obsolete_superseded=1, optional_missing=1, partial_real=4, unknown_staleness=1 |
-| claim_status_counts | forbidden=18, needs_real_evidence=2, partially_supported=3, supported=31, unsupported=6 |
+| artefact_status_counts | archived_valid=7, complete_real=6, obsolete_superseded=1, optional_missing=1, partial_real=3, unknown_staleness=1 |
+| claim_status_counts | forbidden=18, needs_real_evidence=3, partially_supported=2, supported=34, unsupported=8 |
 | supported_claims | ChronosLOB is a reproducible LOB research platform; ChronosLOB uses leakage-safe FI-2010 evaluation; ChronosLOB includes train-only SSL pretraining |
 | unsupported_or_limited_claims | Model X achieved macro-F1 Y; SSL improved macro-F1; SSL improved calibration |
 
@@ -167,7 +166,7 @@ Can stored FI-2010 artefacts support a traceable assessment of predictive mid-pr
 | --- | --- | --- |
 | classical | majority, logistic, ridge, elastic_net, random_forest, gradient_boosting | multi-fold stored fold summaries |
 | neural matched grid | matrix_transformer | one-epoch matched supervised/SSL grid over folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2; comparison evidence |
-| neural proper-training subset | matrix_transformer | partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50; validation-only early stopping |
+| neural proper-training subset | matrix_transformer, deeplob_style | complete_real; folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, lookbacks 20, 50, 100; validation-only early stopping |
 | neural legacy supervised | deeplob_style, matrix_transformer | separate earlier reduced-scope, single-seed, lookback 20 |
 
 ### Main Result Table
@@ -263,6 +262,7 @@ These artefacts are loaded as aggregate full-grid evidence, subject to the failu
 | horizons | 10, 20, 50 |
 | seeds | 0, 1, 2 |
 | lookbacks | 20 |
+| models | not available |
 | objectives | supervised, masked_reconstruction, next_field |
 | pretrain_epochs | 1 |
 | fine_tune_epochs | 1 |
@@ -411,61 +411,63 @@ These artefacts are loaded as longer-training modelling evidence, subject to the
 | field | value |
 | --- | --- |
 | subset_kind | proper_training_subset |
-| evidence_level | partial_real |
-| scope_label | limited_partial_real_slice |
+| evidence_level | complete_real |
+| scope_label | broader_proper_training_complete |
 | execution_mode | benchmark |
-| folds | 1 |
+| folds | 1, 2, 3, 4, 5 |
 | horizons | 10, 50 |
-| seeds | 0 |
-| lookbacks | 50 |
-| objectives | supervised, masked_reconstruction, next_field |
+| seeds | 0, 1, 2 |
+| lookbacks | 20, 50, 100 |
+| models | matrix_transformer, deeplob_style |
+| objectives | supervised |
 | max_epochs | 25 |
 | early_stopping_metric | validation_macro_f1 |
 | early_stopping_patience | 5 |
-| pretrain_epochs | 5 |
-| completed_runs | 6 |
+| pretrain_epochs | 10 |
+| completed_runs | 180 |
 | failed_runs | 0 |
 | planned_scope_complete | True |
-| target_scope_complete | False |
+| target_scope_complete | True |
 | model_selection | validation-only early stopping; best checkpoint restored before test |
-
-Scope note: this is a documented partial subset (`partial_real`). It does not cover the full primary proper-training target (folds 1-5, horizons 10 and 50, seed 0, all three objectives, lookback 50,
-max_epochs 25, patience 5); the table above states exactly what was run.
 
 Training / early-stopping summary:
 
 | field | value |
 | --- | --- |
-| runs_with_curves | 6 |
-| best_epoch_range | 1 to 25 (mean 9.3) |
+| runs_with_curves | 180 |
+| best_epoch_range | 1 to 25 (mean 18.2) |
 | epochs_ran_range | 6 to 25 |
-| runs_early_stopped | 5 of 6 |
+| runs_early_stopped | 79 of 180 |
 | curve_files | per-run runs/**/curves.csv and curves.json (train/validation loss, validation macro-F1, accuracy, MCC) |
 
-Aggregate test metrics by objective:
+Aggregate test metrics by model and objective:
 
-| horizon | lookback | pretraining | completed | mean macro-F1 | std macro-F1 | mean MCC | mean ECE |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 10 | 50 | masked_reconstruction | 1 | 0.2477 | 0.0000 | 0.0000 | 0.1047 |
-| 10 | 50 | next_field | 1 | 0.2477 | 0.0000 | 0.0000 | 0.1618 |
-| 10 | 50 | none | 1 | 0.2477 | 0.0000 | 0.0000 | 0.0872 |
-| 50 | 50 | masked_reconstruction | 1 | 0.4774 | 0.0000 | 0.2155 | 0.0741 |
-| 50 | 50 | next_field | 1 | 0.3948 | 0.0000 | 0.1325 | 0.0813 |
-| 50 | 50 | none | 1 | 0.3883 | 0.0000 | 0.0917 | 0.0496 |
+| horizon | lookback | model | pretraining | completed | mean macro-F1 | std macro-F1 | mean MCC | mean ECE |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 10 | 20 | deeplob_style | none | 15 | 0.5310 | 0.0598 | 0.3610 | 0.1998 |
+| 10 | 20 | matrix_transformer | none | 15 | 0.7311 | 0.0258 | 0.6257 | 0.0323 |
+| 10 | 50 | deeplob_style | none | 15 | 0.5071 | 0.0604 | 0.3322 | 0.2350 |
+| 10 | 50 | matrix_transformer | none | 15 | 0.6539 | 0.1571 | 0.5228 | 0.0493 |
+| 10 | 100 | deeplob_style | none | 15 | 0.5050 | 0.0865 | 0.3338 | 0.2361 |
+| 10 | 100 | matrix_transformer | none | 15 | 0.2978 | 0.0741 | 0.0265 | 0.1162 |
+| 50 | 20 | deeplob_style | none | 15 | 0.5392 | 0.0647 | 0.3594 | 0.1760 |
+| 50 | 20 | matrix_transformer | none | 15 | 0.7515 | 0.0602 | 0.6287 | 0.0584 |
+| 50 | 50 | deeplob_style | none | 15 | 0.5051 | 0.0578 | 0.3184 | 0.2048 |
+| 50 | 50 | matrix_transformer | none | 15 | 0.7109 | 0.1224 | 0.5692 | 0.0550 |
+| 50 | 100 | deeplob_style | none | 15 | 0.4923 | 0.0530 | 0.3085 | 0.2822 |
+| 50 | 100 | matrix_transformer | none | 15 | 0.4627 | 0.1034 | 0.2037 | 0.0589 |
 
 Matched SSL deltas (longer training):
 
 | horizon | seed | SSL objective | delta macro-F1 | delta MCC | delta ECE | macro-F1 | MCC | ECE |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 10 | 0 | masked_reconstruction | 0.0000 | 0.0000 | 0.0175 | tie | tie | loss |
-| 10 | 0 | next_field | 0.0000 | 0.0000 | 0.0746 | tie | tie | loss |
-| 50 | 0 | masked_reconstruction | 0.0891 | 0.1238 | 0.0245 | win | win | loss |
-| 50 | 0 | next_field | 0.0065 | 0.0408 | 0.0317 | win | win | loss |
 
-Interpretation:
-- masked_reconstruction: mean deltas macro-F1 0.0445, MCC 0.0619, ECE 0.0210; outcomes macro-F1 1 win/0 loss/1 tie, MCC 1 win/0 loss/1 tie, ECE 0 win/2 loss/0 tie.
-- next_field: mean deltas macro-F1 0.0032, MCC 0.0204, ECE 0.0531; outcomes macro-F1 1 win/0 loss/1 tie, MCC 1 win/0 loss/1 tie, ECE 0 win/2 loss/0 tie.
-  Under this longer-training budget no broad SSL improvement is claimed; deltas are reported metric-by-metric, fold-by-fold and seed-by-seed. Any improvement is scoped to exactly the rows above.
+Interpretation: the broader supervised proper-training benchmark is complete. Results are mixed by model, lookback and horizon; the matrix transformer has stronger overall mean predictive and
+calibration metrics but substantially higher variance and weak lookback-100 rows. No broad neural superiority is claimed. This supervised-only benchmark contains no matched SSL pairs, so no SSL delta
+claim is made.
+
+The broader proper-training neural benchmark was executed as Slurm jobs on Durham University Hamilton/NCC HPC. Retained summaries and claim assessments are committed; large checkpoints, raw
+predictions and cluster logs are excluded. GPU bitwise reproducibility is not claimed.
 
 ### Legacy Reduced-Scope Benchmark
 
@@ -488,26 +490,21 @@ evidence at its exact stored scope.
 | --- | --- | --- | --- | --- | --- |
 | one-epoch full grid | masked_reconstruction | -0.0100 | -0.0199 | 0.0221 | 19 win/26 loss/0 tie |
 | one-epoch full grid | next_field | -0.0622 | -0.0651 | -0.0083 | 3 win/42 loss/0 tie |
-| proper-training subset | masked_reconstruction | 0.0445 | 0.0619 | 0.0210 | 1 win/0 loss/1 tie |
-| proper-training subset | next_field | 0.0032 | 0.0204 | 0.0531 | 1 win/0 loss/1 tie |
 
-The longer-training subset does not support an SSL improvement claim.
+No broad SSL improvement claim is made unless all matched aggregate deltas support it without metric-specific degradation.
 
 ### SSL Failure Analysis
 
-A dedicated SSL failure-analysis report at reports/ssl_failure_analysis/ssl_failure_analysis.md separates three distinct bodies of evidence and never merges them: the completed one-epoch matched full
-grid (folds 1-5, horizons 10/20/50, seeds 0-2), the longer-training proper-training subset v2 (fold 1, horizons 10 and 50, seed 0, partial_real) and a separate older reduced-scope supervised benchmark
-used only for context.
+A dedicated SSL failure-analysis report at reports/ssl_failure_analysis/ssl_failure_analysis.md keeps the completed one-epoch matched full grid (folds 1-5, horizons 10/20/50, seeds 0-2), the broader
+supervised proper-training benchmark, which contains no SSL comparison rows and the separate older reduced-scope supervised benchmark distinct.
 
 - Full grid masked_reconstruction: mean macro-F1 delta -0.0100, mean ECE delta 0.0221 (lower ECE is better).
 - Full grid next_field: mean macro-F1 delta -0.0622, mean ECE delta -0.0083 (lower ECE is better).
 
-- Proper-training masked SSL at fold 1 / horizon 50: macro-F1 delta 0.0891, MCC delta 0.1238, ECE delta 0.0245 (calibration worsened).
-
 - Full-grid SSL does not improve overall: matched macro-F1 deltas are neutral-to-negative and calibration does not improve uniformly.
 - Proper-training subset v2 shows a narrow fold-1/horizon-50 predictive gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.
 - No broad SSL improvement or broad calibration improvement is claimed from the SSL-v1 and matched full-grid evidence.
-- More evidence would require broader proper-training runs and/or better SSL objective design rather than any success claim.
+- More SSL evidence would require broader matched proper-training SSL runs and/or better objective design rather than any success claim.
 
 
 ## SSL-v2 Scoped Result
@@ -960,14 +957,16 @@ It is not live-trading evidence. It complements the FI-2010 and synthetic eviden
 | neural_full_grid_summary | experiments/fi2010_neural_full_grid/summary.json | 3f7f0abbb79974c3d84e0348858433bc49d26ea5f86fb1f6a556cf76e0758276 |
 | neural_results_summary | experiments/fi2010_multifold_neural/results_summary.csv | bd6c0a52a6ea5eb5e01a66b91671cd84ee79b316ed202a9eadd198604a7f1e0c |
 | neural_summary | experiments/fi2010_multifold_neural/summary.json | 9647aad87ff4bc8255d3971626850ff0c5b0eb76586a0e239141a64a9602b59e |
-| proper_training_aggregate_summary | experiments/fi2010_neural_proper_training_subset_v2/aggregate_summary.csv | 73967613c4807fb8e7f6b91da5df5342a711489bf48ff1d259d796a5ab7f0b47 |
-| proper_training_config_snapshot | experiments/fi2010_neural_proper_training_subset_v2/config_snapshot.json | d3a724cb6f57bd114a7a0b4ee28e78d305cd6fe2d4c04da7da28b52887539c91 |
-| proper_training_curves_summary | experiments/fi2010_neural_proper_training_subset_v2/training_curves_summary.csv | 55317ba970df6c72ad172a9f7e338827c583e1fd60f6667953926d86e4b11b30 |
-| proper_training_dir | experiments/fi2010_neural_proper_training_subset_v2 | directory |
-| proper_training_failures | experiments/fi2010_neural_proper_training_subset_v2/failures.csv | 867b0a5fdbc0208d4e5441c75470af61348d641c367d47fbb5e7fcad8a7e7446 |
-| proper_training_sha256_manifest | experiments/fi2010_neural_proper_training_subset_v2/sha256_manifest.json | 91ab967c9c45071a25bd6f2a68c90eb09370f96bcab78b1527ca2c757a9aa263 |
-| proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_subset_v2/ssl_comparison.csv | e3c2c7b72970c3d08d790d04bb1a9e94ef79210fd42b00cbe74743057c45c05f |
-| proper_training_summary | experiments/fi2010_neural_proper_training_subset_v2/summary.json | 6aa9abb4f675349da3e6aea13fe6961a0335c85345b6e5e367fc82dffbe61717 |
+| proper_training_aggregate_summary | experiments/fi2010_neural_proper_training_broader/aggregate_summary.csv | 0de98f4b69d63a5c7650579e6093325856129636b962983cdea647ad9f922429 |
+| proper_training_claim_assessment | experiments/fi2010_neural_proper_training_broader/proper_neural_claim_assessment.json | 45028118ba77f4f9295ebb0ec549380f2d9b97b708148be9779ba432950d4621 |
+| proper_training_config_snapshot | experiments/fi2010_neural_proper_training_broader/config_snapshot.json | 3ae6fa601e0362a5b753f2791729a24a478623efb132646fd5e6ecae6fc66fbb |
+| proper_training_curves_summary | experiments/fi2010_neural_proper_training_broader/training_curves_summary.csv | 4e01079a92488b43d38a87d67e11c797ad2556bb182756c4b4c148c571aa5822 |
+| proper_training_dir | experiments/fi2010_neural_proper_training_broader | directory |
+| proper_training_failures | experiments/fi2010_neural_proper_training_broader/failures.csv | 187e8bb76a3bc3449bb7fb8a1f087e3581191da98db6e970f9efbd666b51f4b9 |
+| proper_training_hamilton_compute_provenance | experiments/fi2010_neural_proper_training_broader/hamilton_compute_provenance.json | b8973f81917bbffc4a8925322b6c7f9b2140e73950cf98cf2c9544f83ee7ee24 |
+| proper_training_sha256_manifest | experiments/fi2010_neural_proper_training_broader/sha256_manifest.json | d0ee64ccd07e35f00cf8c9a7e62284c6e9c81752bf74e6de08396ad0ed64b9f4 |
+| proper_training_ssl_comparison | experiments/fi2010_neural_proper_training_broader/ssl_comparison.csv | 293871c291ed198c8d444af7181927096ac2c9f1f049d9bbba7fcd8fb615083c |
+| proper_training_summary | experiments/fi2010_neural_proper_training_broader/summary.json | d17d91044e5dc28c57052981ab1149bd98dafd0ee021cff98dc99c4d4be00c96 |
 | ssl_v2_analysis_dir | reports/ssl_v2_analysis | directory |
 | ssl_v2_analysis_figure_manifest | reports/ssl_v2_analysis/figure_manifest.json | 066fbef0f6cfceccf3669b53688496b5fb7c432aecfb6c823ab8252b78499996 |
 | ssl_v2_analysis_hamilton_compute_provenance | reports/ssl_v2_analysis/hamilton_compute_provenance.json | 2d05513d56980eb53a5a893460e5df7f2b6d78af3b6ee09a4d8165eb6f1b1939 |
@@ -1001,7 +1000,7 @@ python -m chronoslob.cli build-final-empirical-report \
   --execution-v3 experiments/fi2010_execution_v3 \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
-  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --proper-training experiments/fi2010_neural_proper_training_broader \
   --ssl-v2-analysis reports/ssl_v2_analysis \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
@@ -1030,6 +1029,5 @@ git diff --check
 
 ## Deferred Work
 
-- A broader proper-training neural benchmark across folds, seeds and lookbacks.
 - Broader non-linear feature-stability coverage.
 - A manual paper; generated reports remain artefact summaries.
