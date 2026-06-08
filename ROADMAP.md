@@ -39,6 +39,9 @@ with self-supervised results reported as scoped empirical diagnostics.
   full grid, covering fold 1, horizons 10 and 50, seed 0, lookback 50 and all
   three objectives with validation-only early stopping, best-checkpoint
   restoration and per-epoch curves.
+- A completed broader proper-training neural benchmark across folds 1-5,
+  horizons 10/50, seeds 0-2, lookbacks 20/50/100 and both supervised model
+  families, with storage-light confidence-filtered diagnostics.
 - A dedicated SSL failure-analysis report (`reports/ssl_failure_analysis/`, built
   by `analyse-fi2010-ssl-results`) generated from retained lightweight comparison
   tables only. It separates the completed one-epoch matched grid from the partial
@@ -102,9 +105,9 @@ logs are intentionally excluded. GPU determinism warnings are documented, and
 bitwise reproducibility is not claimed.
 
 The one-epoch neural full grid is matched comparison evidence, not a
-performance-maximising neural benchmark. The proper-training neural subset
-remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+performance-maximising neural benchmark. The broader proper-training benchmark
+is complete for its exact supervised 180-cell scope. Results remain mixed by
+model, lookback and horizon.
 
 ## In Progress and Next
 
@@ -130,7 +133,8 @@ seeds, lookbacks and model families is deferred.
 
 ## Deferred Work
 
-- A broader proper-training neural benchmark across folds, seeds and lookbacks.
+- Further proper-training analysis on additional datasets or architectures,
+  without broadening claims from the completed FI-2010 scope.
 - The manual paper; generated public reports remain artefact summaries until its
   scope is chosen explicitly.
 

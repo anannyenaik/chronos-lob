@@ -1,0 +1,39 @@
+{
+  "analysis": "broader proper-training neural benchmark",
+  "completed_run_count": 180,
+  "confidence_thresholds": [
+    0.0,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9
+  ],
+  "execution_proxy": "active fraction is retained as a selective-prediction coverage proxy; no live execution, profitability or tradability claim is made",
+  "folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "horizons": [
+    10,
+    50
+  ],
+  "lookbacks": [
+    20,
+    50,
+    100
+  ],
+  "models": [
+    "deeplob_style",
+    "matrix_transformer"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "storage_policy": "retained CSV/JSON summaries are storage-light; per-run predictions, checkpoints and cluster logs remain excluded"
+}

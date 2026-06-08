@@ -2,6 +2,28 @@
 
 All notable public-release changes are documented here.
 
+## Unreleased
+
+### Added
+
+- Completed the post-release broader proper-training neural benchmark as 180
+  staged Slurm cells on Durham University Hamilton/NCC HPC.
+- Added storage-light per-run, fold, seed, lookback, model, horizon and
+  confidence-filtered summaries, plus Hamilton provenance and a claim
+  assessment.
+
+### Evidence Boundaries
+
+- The matrix transformer has stronger overall mean predictive and calibration
+  metrics than the DeepLOB-style baseline in the exact retained scope, but its
+  variability is substantially higher and its lookback-100 rows are weak.
+- Results are mixed by model, lookback and horizon; no broad neural superiority
+  is claimed.
+- The existing classical benchmark is used only as a scoped horizon-10
+  directional reference, not as a matched prediction-level comparison.
+- This is post-`v0.2.0` work on `main`; the published `v0.2.0` release and tag
+  are unchanged. These notes may inform a future `v0.3.0` release.
+
 ## [0.2.0] - 2026-06-07
 
 ### Changed

@@ -153,10 +153,32 @@ python -m chronoslob.cli run-fi2010-neural-benchmark \
   --overwrite
 ```
 
-This is a reduced-scope local CPU run, not the full configured grid. Cross-seed
-and multi-lookback variance is not reported in this evidence. No neural
-superiority claim is made on this single-seed evidence.
+This remains a reduced-scope local CPU artefact and is reported separately from
+the completed broader proper-training benchmark.
 
-The reduced-scope supervised neural evidence is not a full performance-maximising
-neural benchmark. Cross-seed and multi-lookback variance for the proper-training
-neural benchmark remain deferred.
+## Broader Proper-Training Benchmark
+
+The retained broader proper-training evidence lives under
+`experiments/fi2010_neural_proper_training_broader/`. It completed 180
+supervised cells:
+
+```text
+5 folds x 3 seeds x 3 lookbacks x 2 horizons x 2 models
+```
+
+Both model families use validation-only early stopping and restore the best
+validation checkpoint before the single official test evaluation. The matrix
+transformer has stronger overall mean predictive and calibration metrics, but
+substantially higher variability and weak lookback-100 rows. DeepLOB-style is
+steadier but lower overall. Results are mixed by model, lookback and horizon,
+so no broad neural superiority is claimed.
+
+Confidence-filtered macro-F1 and MCC are retained with active fraction.
+Stricter thresholds improve retained-sample metrics while reducing coverage,
+with severe coverage collapse in some transformer lookback-100 cells.
+
+The broader proper-training neural benchmark was executed as Slurm jobs on
+Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
+are committed; large checkpoints, raw predictions and cluster logs are
+excluded. See `scripts/slurm/README_proper_neural.md` and the retained Hamilton
+provenance JSON.

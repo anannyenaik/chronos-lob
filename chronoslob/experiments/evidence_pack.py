@@ -171,7 +171,7 @@ class EvidencePackConfig:
 
     out_dir: Path = Path("reports/evidence_pack")
     neural_full_grid_dir: Path = Path("experiments/fi2010_neural_full_grid")
-    proper_training_dir: Path = Path("experiments/fi2010_neural_proper_training_subset_v2")
+    proper_training_dir: Path = Path("experiments/fi2010_neural_proper_training_broader")
     ssl_analysis_dir: Path = Path("reports/ssl_failure_analysis")
     ssl_v2_dir: Path = Path("experiments/fi2010_ssl_v2_benchmark")
     ssl_v2_analysis_dir: Path = Path("reports/ssl_v2_analysis")
@@ -477,6 +477,7 @@ def audit_claims(records: Sequence[ArtefactInventoryRow]) -> list[ClaimAuditEntr
             _audit_ssl_delta_claim(by_name, metric="macro_f1"),
             _audit_ssl_delta_claim(by_name, metric="calibration"),
             _audit_ssl_proper_training_claim(by_name),
+            *_audit_broader_proper_training_claims(by_name),
             *_audit_ssl_v2_claims(by_name),
             _audit_ssl_execution_claim(by_name),
             _audit_gradient_boosting_claim(by_name),
@@ -594,7 +595,12 @@ def _artefact_specs(config: EvidencePackConfig) -> tuple[_ArtefactSpec, ...]:
                 "failures.csv",
                 "sha256_manifest.json",
             ),
-            metadata_files=("summary.json", "aggregate_summary.json"),
+            metadata_files=(
+                "summary.json",
+                "aggregate_summary.json",
+                "hamilton_compute_provenance.json",
+                "proper_neural_claim_assessment.json",
+            ),
             limitations=(
                 "Proper-training subset claims are limited to the exact folds, "
                 "horizons, seeds, lookbacks and objectives stored in the artefacts."
@@ -1838,6 +1844,58 @@ def _audit_ssl_proper_training_claim(
         ),
         category="empirical result",
     )
+
+
+def _audit_broader_proper_training_claims(
+    by_name: Mapping[str, ArtefactInventoryRow],
+) -> list[ClaimAuditEntry]:
+    record = by_name.get("fi2010_neural_proper_training_subset")
+    required = ["fi2010_neural_proper_training_subset"]
+    if record is None or record.status in _BAD_STATUSES:
+        return [
+            _needs_real_evidence(
+                "empirical.proper_training_broader_complete",
+                "The broader proper-training neural benchmark completed its target scope.",
+                required,
+            )
+        ]
+    payload = record.payloads.get("proper_neural_claim_assessment", {})
+    raw_claims = payload.get("claims", [])
+    entries: list[ClaimAuditEntry] = []
+    if isinstance(raw_claims, list):
+        for item in raw_claims:
+            if not isinstance(item, Mapping):
+                continue
+            claim_id = str(item.get("claim_id", "")).strip()
+            claim_text = str(item.get("claim_text", "")).strip()
+            if not claim_id or not claim_text:
+                continue
+            status = _claim_status_from_analysis(str(item.get("status", "")))
+            entries.append(
+                ClaimAuditEntry(
+                    claim_id=claim_id,
+                    claim_text=claim_text,
+                    status=status,
+                    supporting_artefacts=(
+                        required if status in {"supported", "partially_supported"} else []
+                    ),
+                    required_artefacts=required,
+                    reason=str(item.get("reason", "")).strip() or "See retained claim assessment.",
+                    safe_rewording=str(item.get("safe_rewording", "")).strip()
+                    or "State the exact stored scope and metric-specific limitations.",
+                    category="empirical result",
+                )
+            )
+    if entries:
+        return entries
+    return [
+        _needs_real_evidence(
+            "empirical.proper_training_broader_complete",
+            "The broader proper-training neural benchmark completed its target scope.",
+            required,
+            reason="No retained broader proper-training claim assessment was found.",
+        )
+    ]
 
 
 def _audit_ssl_v2_claims(
@@ -3122,6 +3180,31 @@ def _render_release_interpretation(
                 "",
             ]
         )
+    if proper is not None and proper.status in _CLEAN_COMPLETE_STATUSES:
+        lines.extend(
+            [
+                *_wrapped_paragraph(
+                    "The broader proper-training neural benchmark completed all 180 "
+                    "supervised cells across folds 1-5, horizons 10/50, seeds 0-2, "
+                    "lookbacks 20/50/100 and the DeepLOB-style and matrix-transformer "
+                    "model families. Results are mixed by model, lookback and horizon, "
+                    "so no broad neural superiority is claimed."
+                ),
+                "",
+            ]
+        )
+        if "hamilton_compute_provenance" in proper.payloads:
+            lines.extend(
+                [
+                    *_wrapped_paragraph(
+                        "The broader proper-training neural benchmark was executed as "
+                        "Slurm jobs on Durham University Hamilton/NCC HPC. Retained "
+                        "summaries and claim assessments are committed; large checkpoints, "
+                        "raw predictions and cluster logs are excluded."
+                    ),
+                    "",
+                ]
+            )
     if len(lines) == 2:
         lines.extend(["No release-wide result wording is inferred beyond the claim audit.", ""])
     return lines
@@ -3209,6 +3292,23 @@ def _wrapped_paragraph(text: str, *, width: int = 112) -> list[str]:
     ) or [""]
 
 
+def _wrapped_list_item(
+    text: str,
+    *,
+    initial_indent: str = "- ",
+    subsequent_indent: str = "  ",
+    width: int = 112,
+) -> list[str]:
+    return textwrap.wrap(
+        text,
+        width=width,
+        initial_indent=initial_indent,
+        subsequent_indent=subsequent_indent,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [initial_indent.rstrip()]
+
+
 def _render_claim_audit(claims: Sequence[ClaimAuditEntry]) -> str:
     rows = [
         (
@@ -3248,12 +3348,20 @@ def _render_supported_claims(claims: Sequence[ClaimAuditEntry]) -> str:
         lines.append("")
         return "\n".join(lines)
     for entry in supported:
+        lines.extend(_wrapped_list_item(entry.claim_text))
         lines.extend(
-            [
-                f"- {entry.claim_text}",
-                f"  - support: {', '.join(entry.supporting_artefacts)}",
-                f"  - safe wording: {entry.safe_rewording}",
-            ]
+            _wrapped_list_item(
+                f"support: {', '.join(entry.supporting_artefacts)}",
+                initial_indent="  - ",
+                subsequent_indent="    ",
+            )
+        )
+        lines.extend(
+            _wrapped_list_item(
+                f"safe wording: {entry.safe_rewording}",
+                initial_indent="  - ",
+                subsequent_indent="    ",
+            )
         )
     lines.append("")
     return "\n".join(lines)
@@ -3263,14 +3371,19 @@ def _render_unsupported_claims(claims: Sequence[ClaimAuditEntry]) -> str:
     unsupported = [entry for entry in claims if entry.status != "supported"]
     lines = ["# Unsupported Or Limited Claims", ""]
     for entry in unsupported:
-        lines.extend(
-            [
-                f"- {entry.claim_text}",
-                f"  - status: {entry.status}",
-                f"  - reason: {entry.reason}",
-                f"  - safe wording: {entry.safe_rewording}",
-            ]
-        )
+        lines.extend(_wrapped_list_item(entry.claim_text))
+        for detail in (
+            f"status: {entry.status}",
+            f"reason: {entry.reason}",
+            f"safe wording: {entry.safe_rewording}",
+        ):
+            lines.extend(
+                _wrapped_list_item(
+                    detail,
+                    initial_indent="  - ",
+                    subsequent_indent="    ",
+                )
+            )
     lines.append("")
     return "\n".join(lines)
 
@@ -3631,13 +3744,13 @@ def _render_reproduction_commands(config: EvidencePackConfig) -> str:
             "python -m chronoslob.cli run-fi2010-neural-proper-training-subset "
             "--config configs/experiments/fi2010_neural_proper_training.yaml "
             "--processed-root data/processed/fi2010 "
-            f"--out {config.proper_training_dir.as_posix()} --folds 1,2,3 "
-            "--horizons 10,50 --seeds 0 --lookbacks 50 "
-            "--objectives supervised,masked_reconstruction,next_field "
-            "--pretrain-epochs 5 --max-epochs 25 --patience 5 --batch-size 1024 --device cpu",
+            f"--out {config.proper_training_dir.as_posix()} --folds 1,2,3,4,5 "
+            "--horizons 10,50 --seeds 0,1,2 --lookbacks 20,50,100 "
+            "--models matrix_transformer,deeplob_style --objectives supervised "
+            "--pretrain-epochs 10 --max-epochs 25 --patience 5 --batch-size 256 --device cuda",
             config.proper_training_dir.as_posix(),
-            "Fallback real evidence is partial_real; complete_real requires folds "
-            "1-5 at horizons 10 and 50 with the same longer-training protocol.",
+            "The retained complete_real evidence was executed through the staged "
+            "Hamilton Slurm workflow in scripts/slurm/README_proper_neural.md.",
         ),
         (
             "SSL Benchmark",

@@ -48,6 +48,12 @@ _CANONICAL_NEURAL_LIMITATION_PARAGRAPH = (
     "remains partial, and a broader proper-training neural benchmark across folds, "
     "seeds, lookbacks and model families is deferred."
 )
+_CANONICAL_BROADER_PROPER_TRAINING_PARAGRAPH = (
+    "The broader proper-training neural benchmark completed all 180 supervised cells "
+    "across folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and the "
+    "DeepLOB-style and matrix-transformer model families. Results are mixed by model, "
+    "lookback and horizon, so no broad neural superiority is claimed."
+)
 
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
@@ -1093,6 +1099,13 @@ def _load_proper_training_artefacts(
         input_paths,
         file_hashes,
     )
+    for filename, label in (
+        ("hamilton_compute_provenance.json", "proper_training_hamilton_compute_provenance"),
+        ("proper_neural_claim_assessment.json", "proper_training_claim_assessment"),
+    ):
+        optional_path = candidate / filename
+        if optional_path.is_file():
+            _read_json(optional_path, label, input_paths, file_hashes)
     input_paths["proper_training_dir"] = _display_path(candidate)
 
     smoke = (
@@ -1408,14 +1421,18 @@ def _render_executive_summary(data: _FinalReportData) -> list[str]:
                 *_wrap_prose(ssl_v2_text),
             ]
         )
-    if (
+    if _proper_training_is_broader_complete(data.proper_training):
+        lines.extend(["", *_wrap_prose(_CANONICAL_BROADER_PROPER_TRAINING_PARAGRAPH)])
+    elif (
         data.full_grid.available
         and data.full_grid.evidence_level != "smoke_test_only"
         and data.proper_training.available
         and data.proper_training.evidence_level == "partial_real"
     ):
         lines.extend(["", *_wrap_prose(_CANONICAL_NEURAL_LIMITATION_PARAGRAPH)])
-    deferred = "a broader proper-training neural benchmark and the manual paper"
+    deferred = "the manual paper"
+    if not _proper_training_is_broader_complete(data.proper_training):
+        deferred = f"a broader proper-training neural benchmark and {deferred}"
     if not _ssl_v2_is_multiseed(data):
         deferred = f"multi-seed SSL-v2, {deferred}"
     lines.extend(
@@ -1437,10 +1454,14 @@ def _render_executive_summary(data: _FinalReportData) -> list[str]:
 
 def _render_deferred_work(data: _FinalReportData) -> list[str]:
     lines = [
-        "- A broader proper-training neural benchmark across folds, seeds and lookbacks.",
         "- Broader non-linear feature-stability coverage.",
         "- A manual paper; generated reports remain artefact summaries.",
     ]
+    if not _proper_training_is_broader_complete(data.proper_training):
+        lines.insert(
+            0,
+            "- A broader proper-training neural benchmark across folds, seeds and lookbacks.",
+        )
     if not _ssl_v2_is_multiseed(data):
         lines.insert(0, "- Multi-seed SSL-v2 beyond the retained scope.")
     return lines
@@ -1598,6 +1619,24 @@ def _release_ssl_v2_scope_supported(data: _FinalReportData) -> bool:
     )
 
 
+def _proper_training_is_broader_complete(subset: _ProperTrainingArtefacts) -> bool:
+    summary = getattr(subset, "summary", None) or {}
+    return (
+        bool(getattr(subset, "available", False))
+        and getattr(subset, "evidence_level", "") == "complete_real"
+        and bool(summary.get("target_scope_complete"))
+        and _mapping_list(summary, "folds") == [1, 2, 3, 4, 5]
+        and _mapping_list(summary, "horizons") == [10, 50]
+        and _mapping_list(summary, "seeds") == [0, 1, 2]
+        and _mapping_list(summary, "lookbacks") == [20, 50, 100]
+        and sorted(_mapping_list(summary, "models"))
+        == ["deeplob_style", "matrix_transformer"]
+        and _mapping_list(summary, "objectives") == ["supervised"]
+        and summary.get("completed_run_count") == 180
+        and summary.get("failed_run_count") == 0
+    )
+
+
 def _proper_training_snapshot(data: _FinalReportData) -> str:
     """Describe the longer-training subset state without upgrading its scope."""
     subset = data.proper_training
@@ -1611,7 +1650,8 @@ def _proper_training_snapshot(data: _FinalReportData) -> str:
         f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
         f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
         f"{_join_values(_mapping_list(summary, 'seeds'))}, lookbacks "
-        f"{_join_values(_mapping_list(summary, 'lookbacks'))}, objectives "
+        f"{_join_values(_mapping_list(summary, 'lookbacks'))}, models "
+        f"{_join_values(_mapping_list(summary, 'models'))}, objectives "
         f"{_join_values(_mapping_list(summary, 'objectives'))}; "
         f"max_epochs {_mapping_str(summary, 'max_epochs')}, "
         f"patience {_mapping_str(summary, 'early_stopping_patience')}; "
@@ -1662,9 +1702,9 @@ def _render_evidence_status_summary(data: _FinalReportData) -> list[str]:
     proper = data.proper_training
     if proper.available and proper.evidence_level == "complete_real":
         complete_bullets.append(
-            "- Proper-training neural subset with validation-only early stopping "
-            "and best-checkpoint restoration, reported separately from the "
-            "one-epoch matched grid."
+            "- Broader proper-training neural benchmark with validation-only early "
+            "stopping and best-checkpoint restoration, reported separately from "
+            "the one-epoch matched grid."
         )
 
     partial_bullets = []
@@ -1902,7 +1942,7 @@ def _render_model_families(data: _FinalReportData) -> list[str]:
         rows.append(
             (
                 "neural proper-training subset",
-                "matrix_transformer",
+                _join_values(_mapping_list(summary, "models")) or "matrix_transformer",
                 f"{data.proper_training.evidence_level}; folds "
                 f"{_join_values(_mapping_list(summary, 'folds'))}, horizons "
                 f"{_join_values(_mapping_list(summary, 'horizons'))}, seeds "
@@ -2088,6 +2128,7 @@ def _render_full_grid(data: _FinalReportData) -> list[str]:
         ("horizons", _join_values(_mapping_list(summary, "horizons"))),
         ("seeds", _join_values(_mapping_list(summary, "seeds"))),
         ("lookbacks", _join_values(_mapping_list(summary, "lookbacks"))),
+        ("models", _join_values(_mapping_list(summary, "models"))),
         ("objectives", _join_values(_mapping_list(summary, "objectives"))),
         ("pretrain_epochs", _mapping_str(summary, "pretrain_epochs")),
         ("fine_tune_epochs", _mapping_str(summary, "max_epochs")),
@@ -2241,6 +2282,7 @@ def _render_proper_training(data: _FinalReportData) -> list[str]:
         ("horizons", _join_values(_mapping_list(summary, "horizons"))),
         ("seeds", _join_values(_mapping_list(summary, "seeds"))),
         ("lookbacks", _join_values(_mapping_list(summary, "lookbacks"))),
+        ("models", _join_values(_mapping_list(summary, "models"))),
         ("objectives", _join_values(_mapping_list(summary, "objectives"))),
         ("max_epochs", _mapping_str(summary, "max_epochs")),
         ("early_stopping_metric", _mapping_str(summary, "early_stopping_metric")),
@@ -2280,11 +2322,12 @@ def _render_proper_training(data: _FinalReportData) -> list[str]:
     lines.extend(["", "Training / early-stopping summary:", ""])
     lines.extend(_markdown_table(("field", "value"), _proper_training_curve_rows(subset)))
 
-    lines.extend(["", "Aggregate test metrics by objective:", ""])
+    lines.extend(["", "Aggregate test metrics by model and objective:", ""])
     aggregate_rows = [
         (
             row.get("horizon", ""),
             row.get("lookback", ""),
+            row.get("model_family", ""),
             row.get("pretraining_objective", ""),
             row.get("completed_run_count", ""),
             _format_float(_row_float(row, "mean_macro_f1")),
@@ -2299,6 +2342,7 @@ def _render_proper_training(data: _FinalReportData) -> list[str]:
             (
                 "horizon",
                 "lookback",
+                "model",
                 "pretraining",
                 "completed",
                 "mean macro-F1",
@@ -2343,6 +2387,19 @@ def _render_proper_training(data: _FinalReportData) -> list[str]:
         )
     )
     lines.extend(["", *_proper_training_interpretation(subset, matched_rows)])
+    if _proper_training_is_broader_complete(subset):
+        lines.extend(
+            [
+                "",
+                *_wrap_prose(
+                    "The broader proper-training neural benchmark was executed as "
+                    "Slurm jobs on Durham University Hamilton/NCC HPC. Retained summaries "
+                    "and claim assessments are committed; large checkpoints, raw "
+                    "predictions and cluster logs are excluded. GPU bitwise reproducibility "
+                    "is not claimed."
+                ),
+            ]
+        )
     return lines
 
 
@@ -2398,6 +2455,15 @@ def _proper_training_interpretation(
             "limited to completed runs and are not described as a complete subset."
         ]
     if not matched_rows:
+        if _proper_training_is_broader_complete(subset):
+            return _wrap_prose(
+                "Interpretation: the broader supervised proper-training benchmark is "
+                "complete. Results are mixed by model, lookback and horizon; the "
+                "matrix transformer has stronger overall mean predictive and calibration "
+                "metrics but substantially higher variance and weak lookback-100 rows. "
+                "No broad neural superiority is claimed. This supervised-only benchmark "
+                "contains no matched SSL pairs, so no SSL delta claim is made."
+            )
         return [
             "Interpretation: no matched supervised-vs-SSL pairs are available in the "
             "subset, so no SSL delta claim is made."
@@ -2550,15 +2616,22 @@ def _render_ssl_failure_analysis(data: _FinalReportData) -> list[str]:
     proper_rows = [
         row for row in data.proper_training.comparison_rows if row.get("status") == "matched"
     ]
+    proper_description = (
+        "the broader supervised proper-training benchmark, which contains no SSL "
+        "comparison rows"
+        if _proper_training_is_broader_complete(data.proper_training)
+        else (
+            "the longer-training proper-training subset v2 (fold 1, horizons 10 and "
+            "50, seed 0, partial_real)"
+        )
+    )
     lines = [
         *_wrap_prose(
             "A dedicated SSL failure-analysis report at "
-            "reports/ssl_failure_analysis/ssl_failure_analysis.md separates three "
-            "distinct bodies of evidence and never merges them: the completed "
+            "reports/ssl_failure_analysis/ssl_failure_analysis.md keeps the completed "
             "one-epoch matched full grid (folds 1-5, horizons 10/20/50, seeds 0-2), "
-            "the longer-training proper-training subset v2 (fold 1, horizons 10 and "
-            "50, seed 0, partial_real) and a separate older reduced-scope "
-            "supervised benchmark used only for context."
+            f"{proper_description} and the separate older reduced-scope supervised "
+            "benchmark distinct."
         ),
         "",
     ]
@@ -2600,8 +2673,8 @@ def _render_ssl_failure_analysis(data: _FinalReportData) -> list[str]:
                 "gain in macro-F1 and MCC, but ECE worsened in every matched SSL row.",
                 "- No broad SSL improvement or broad calibration improvement is claimed "
                 "from the SSL-v1 and matched full-grid evidence.",
-                "- More evidence would require broader proper-training runs and/or "
-                "better SSL objective design rather than any success claim.",
+                "- More SSL evidence would require broader matched proper-training SSL "
+                "runs and/or better objective design rather than any success claim.",
             ]
         )
     )
@@ -3907,7 +3980,7 @@ def _render_reproduction_commands() -> list[str]:
         "  --execution-v3 experiments/fi2010_execution_v3 \\",
         "  --external experiments/fi2010_external_context \\",
         "  --neural-full-grid experiments/fi2010_neural_full_grid \\",
-        "  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \\",
+        "  --proper-training experiments/fi2010_neural_proper_training_broader \\",
         "  --ssl-v2-analysis reports/ssl_v2_analysis \\",
         "  --feature-ablations experiments/fi2010_feature_ablations \\",
         "  --feature-ablation-analysis reports/feature_ablation_analysis \\",

@@ -51,9 +51,10 @@ The evidence is mixed by seed and horizon, including negative mean macro-F1
 deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
 
 The one-epoch neural full grid is matched comparison evidence, not a
-performance-maximising neural benchmark. The proper-training neural subset
-remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+performance-maximising neural benchmark. The broader proper-training benchmark
+completed its exact 180-cell supervised scope, but results are mixed by model,
+lookback and horizon. The matrix-transformer lookback-100 rows are weak, and no
+broad neural superiority is claimed.
 
 ## Execution-Validation Limitations
 
@@ -76,6 +77,12 @@ jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
 claim assessments are committed; large checkpoints, raw predictions and cluster
 logs are intentionally excluded. GPU determinism warnings are documented, and
 bitwise reproducibility is not claimed.
+
+The broader proper-training neural benchmark was also executed as staged Slurm
+jobs on Durham University Hamilton/NCC HPC. Retained storage-light summaries,
+provenance and claim assessment are committed; large checkpoints, raw
+predictions and cluster logs are excluded. GPU bitwise reproducibility is not
+claimed.
 
 ## Reporting Discipline
 

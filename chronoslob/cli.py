@@ -2865,7 +2865,7 @@ def _build_evidence_pack_impl(
     overwrite: bool,
     classical: Path = Path("experiments/fi2010_multifold_classical"),
     ssl: Path = Path("experiments/fi2010_ssl"),
-    proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
+    proper_training: Path = Path("experiments/fi2010_neural_proper_training_broader"),
     feature_audit: Path | None = Path("reports/feature_audit"),
     binance_l2: Path = Path("reports/binance_l2_extension"),
     project_audit: Path | None = Path("reports/report_archive"),
@@ -6322,7 +6322,7 @@ def _fallback_main(argv: Sequence[str] | None = None) -> int:
         parser.add_argument(
             "--proper-training",
             type=Path,
-            default=Path("experiments/fi2010_neural_proper_training_subset_v2"),
+            default=Path("experiments/fi2010_neural_proper_training_broader"),
             help="Path to FI-2010 proper-training neural subset artefacts.",
         )
         parser.add_argument(
@@ -8331,7 +8331,7 @@ if typer is not None:
         help="Path to SSL benchmark artefacts.",
     )
     _BUILD_EVIDENCE_PACK_PROPER_TRAINING_OPTION = typer.Option(
-        Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        Path("experiments/fi2010_neural_proper_training_broader"),
         "--proper-training",
         help="Path to proper-training neural subset artefacts.",
     )
@@ -10815,7 +10815,7 @@ else:
         final_report: Path = Path("reports/chronoslob_final_empirical_report.md"),
         classical: Path = Path("experiments/fi2010_multifold_classical"),
         ssl: Path = Path("experiments/fi2010_ssl"),
-        proper_training: Path = Path("experiments/fi2010_neural_proper_training_subset_v2"),
+        proper_training: Path = Path("experiments/fi2010_neural_proper_training_broader"),
         feature_audit: Path | None = Path("reports/feature_audit"),
         binance_l2: Path = Path("reports/binance_l2_extension"),
         project_audit: Path | None = Path("reports/report_archive"),

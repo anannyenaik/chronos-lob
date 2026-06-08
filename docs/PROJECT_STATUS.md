@@ -19,8 +19,8 @@ The canonical evidence spine is:
 5. execution-aware proxy diagnostics.
 
 Synthetic event-level replay and Binance Spot aggregated L2 replay are
-supporting engineering evidence. A broader proper-training neural benchmark and
-the manual paper are deferred.
+supporting engineering evidence. The broader proper-training neural benchmark
+is complete; the manual paper is deferred.
 
 ## Implemented
 
@@ -57,6 +57,7 @@ The current FI-2010 artefacts live under
 [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/),
 [`experiments/fi2010_brutal_ablations/`](../experiments/fi2010_brutal_ablations/),
 [`experiments/fi2010_neural_full_grid/`](../experiments/fi2010_neural_full_grid/),
+[`experiments/fi2010_neural_proper_training_broader/`](../experiments/fi2010_neural_proper_training_broader/),
 [`experiments/fi2010_ssl_v2_benchmark/`](../experiments/fi2010_ssl_v2_benchmark/),
 [`experiments/fi2010_execution_v3/`](../experiments/fi2010_execution_v3/),
 [`experiments/fi2010_feature_ablations/`](../experiments/fi2010_feature_ablations/),
@@ -105,10 +106,11 @@ It shows how forecast metrics can diverge from retained offline signal-quality
 proxy diagnostics under confidence, cost, latency, turnover and
 adverse-selection assumptions.
 
-The strongest stored classical row is `gradient_boosting`; the strongest stored
-reduced-scope supervised neural row is `matrix_transformer`. The completed
-neural full grid compares supervised, masked-reconstruction SSL and next-field
-SSL transformer variants across folds 1-5, horizons 10/20/50 and seeds 0-2.
+The strongest stored classical row is `gradient_boosting`; the broader
+proper-training benchmark's matrix transformer has the stronger overall model
+means. The completed neural full grid compares supervised,
+masked-reconstruction SSL and next-field SSL transformer variants across folds
+1-5, horizons 10/20/50 and seeds 0-2.
 That matched one-epoch grid does not support an SSL improvement claim and must
 not be conflated with the separate 25-epoch reduced-scope neural benchmark. A
 dedicated SSL analysis report (`reports/ssl_failure_analysis/`, built by
@@ -131,9 +133,19 @@ logs are intentionally excluded. GPU determinism warnings are documented, and
 bitwise reproducibility is not claimed.
 
 The one-epoch neural full grid is matched comparison evidence, not a
-performance-maximising neural benchmark. The proper-training neural subset
-remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+performance-maximising neural benchmark. The separate broader proper-training
+benchmark completed all 180 supervised cells across folds 1-5, horizons 10/50,
+seeds 0-2, lookbacks 20/50/100 and both model families. The matrix transformer
+has stronger overall mean predictive and calibration metrics, but substantially
+higher variability and weak lookback-100 rows. DeepLOB-style is steadier but
+lower overall. Results are mixed by model, lookback and horizon, so no broad
+neural superiority is claimed.
+
+The broader proper-training neural benchmark was executed as Slurm jobs on
+Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
+are committed; large checkpoints, raw predictions and cluster logs are
+excluded. Confidence-filtered metrics are reported with active fraction as a
+storage-light selective-prediction coverage proxy.
 
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
@@ -160,6 +172,9 @@ snapshot proxy, not true event-level OFI or causal feature importance.
   market impact or PnL.
 - The one-epoch matched neural full grid is complete for comparison, but it is
   not a performance-maximising neural benchmark.
+- The broader proper-training benchmark is complete for its exact supervised
+  180-cell scope, but results are mixed and GPU bitwise reproducibility is not
+  claimed.
 - The standalone SSL runner output is obsolete and superseded; the completed
   matched grid is the current SSL comparison evidence.
 - SSL-v2 evidence is complete_real for folds 1-5, horizons 10/50, seeds 0-2 and
@@ -184,5 +199,4 @@ snapshot proxy, not true event-level OFI or causal feature importance.
 Future work is focused on broader non-linear feature-ablation coverage,
 additional limit order book dataset adapters where data access allows, richer
 execution modelling and genuine regime analysis when explicit regime labels are
-available. A broader proper-training neural benchmark and the manual paper remain
-explicitly deferred.
+available. The manual paper remains explicitly deferred.

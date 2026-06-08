@@ -27,7 +27,7 @@ python -m chronoslob.cli build-evidence-pack \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
   --ablation-figures reports/figures/fi2010_feature_ablations \
-  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --proper-training experiments/fi2010_neural_proper_training_broader \
   --final-report reports/chronoslob_final_empirical_report.md \
   --strict \
   --overwrite

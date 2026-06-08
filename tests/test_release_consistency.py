@@ -38,7 +38,7 @@ def _have_release_artefacts() -> bool:
         "fi2010_multifold_neural",
         "fi2010_uncertainty",
         "fi2010_neural_full_grid",
-        "fi2010_neural_proper_training_subset_v2",
+        "fi2010_neural_proper_training_broader",
     )
     return all((_experiments_dir(name)).is_dir() for name in required)
 
@@ -58,7 +58,7 @@ def generated_report_text(tmp_path_factory: pytest.TempPathFactory) -> str:
         execution_v3_dir=_experiments_dir("fi2010_execution_v3"),
         external_dir=_experiments_dir("fi2010_external_context"),
         neural_full_grid_dir=_experiments_dir("fi2010_neural_full_grid"),
-        proper_training_dir=_experiments_dir("fi2010_neural_proper_training_subset_v2"),
+        proper_training_dir=_experiments_dir("fi2010_neural_proper_training_broader"),
         ssl_v2_analysis_dir=project_root() / "reports" / "ssl_v2_analysis",
         evidence_pack_dir=project_root() / "reports" / "evidence_pack",
         out_path=out,
@@ -148,14 +148,18 @@ def test_readme_and_report_scope_proper_training_subset(
     generated_report_text: str,
 ) -> None:
     readme = _readme_text()
-    assert "Proper-training neural subset" in readme
-    assert "`partial_real`" in readme
+    assert "Broader proper-training neural benchmark" in readme
+    assert "`complete_real`" in readme
 
     normalised = _normalised(generated_report_text)
     assert "proper_training_neural_scope" in generated_report_text
-    assert "partial_real; folds 1, horizons 10, 50, seeds 0, lookbacks 50" in normalised
+    assert (
+        "complete_real; folds 1, 2, 3, 4, 5, horizons 10, 50, seeds 0, 1, 2, "
+        "lookbacks 20, 50, 100" in normalised
+    )
     assert "validation-only early stopping with best checkpoint restored before test" in normalised
-    assert "the longer-training subset does not support an ssl improvement claim" in normalised
+    assert "no broad neural superiority is claimed" in normalised
+    assert "contains no matched ssl pairs" in normalised
 
 
 def test_execution_v3_is_described_as_proxy_not_pnl(

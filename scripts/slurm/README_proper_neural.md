@@ -4,6 +4,21 @@ Handoff runbook for executing the broader proper-training neural benchmark on
 Durham University Hamilton/NCC HPC. Everything here is Slurm-driven; nothing runs
 on a laptop. This benchmark covers the requested two-model supervised grid.
 
+## Completion Record
+
+The workflow completed on 7-8 June 2026:
+
+- timing gate job `17369606`: 30.34 seconds wall clock, 1,718,920 kB max RSS;
+- six-cell cross-model stage `17369607`: six completed, zero failed;
+- matrix-transformer array `17369614`: 90 completed, zero failed;
+- DeepLOB-style array `17369749`: 90 completed, zero failed;
+- final consolidation `17370311`: 180 validated completed runs, zero failed.
+
+The full arrays used a `%4` concurrency override after the timing and staged
+checks passed. Retained evidence and claim assessment live under
+`experiments/fi2010_neural_proper_training_broader/`; large per-run outputs and
+cluster logs remain excluded.
+
 ## What this benchmark is (and is not)
 
 - **Is:** DeepLOB-style and matrix-transformer models trained with validation-only
@@ -23,7 +38,7 @@ on a laptop. This benchmark covers the requested two-model supervised grid.
 |---|---|
 | `proper_neural_jobs.csv` | 180 grid cells, columns `model,fold,seed,lookback,horizon`. |
 | `proper_neural_timing.sbatch` | Single-cell timing smoke test (feasibility gate). |
-| `proper_neural_array.sbatch` | Job array, one task per cell, `%1` throttle. |
+| `proper_neural_array.sbatch` | Job array, one task per cell, conservative `%1` default; completed arrays used `%4` overrides. |
 | `proper_neural_consolidate.sbatch` | Merge + validate 180 runs + regenerate aggregates (CPU). |
 
 ## Prerequisites (Phases 2-3)

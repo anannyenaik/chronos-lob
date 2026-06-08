@@ -1,0 +1,109 @@
+{
+  "benchmark_scope": {
+    "cells": 180,
+    "folds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "horizons": [
+      10,
+      50
+    ],
+    "lookbacks": [
+      20,
+      50,
+      100
+    ],
+    "models": [
+      "deeplob_style",
+      "matrix_transformer"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "compute_environment": {
+    "cluster": "Durham University Hamilton 8 / NCC HPC",
+    "cuda_module": "cuda/12.4.1",
+    "gpu": "NVIDIA H200 NVL MIG 1g.18gb",
+    "python": "3.12.6",
+    "pytorch": "2.5.1+cu124",
+    "slurm_partitions": [
+      "cuda",
+      "shared"
+    ]
+  },
+  "git_commits": {
+    "compute_workflow": "8ee62ff",
+    "consolidation_reuse_fix": "1d86f69",
+    "final_scope_alignment": "660cfdc"
+  },
+  "jobs": {
+    "deep_lob_array": {
+      "completed_tasks": 90,
+      "concurrency_limit": 4,
+      "failed_tasks": 0,
+      "job_id": "17369749"
+    },
+    "final_consolidation": {
+      "failed_runs": 0,
+      "job_id": "17370311",
+      "validated_completed_runs": 180
+    },
+    "matrix_transformer_array": {
+      "completed_tasks": 90,
+      "concurrency_limit": 4,
+      "failed_tasks": 0,
+      "job_id": "17369614"
+    },
+    "staged_cross_model_check": {
+      "completed_tasks": 6,
+      "failed_tasks": 0,
+      "job_id": "17369607",
+      "task_ids": [
+        1,
+        31,
+        61,
+        91,
+        121,
+        151
+      ]
+    },
+    "timing_gate": {
+      "cell": {
+        "fold": 1,
+        "horizon": 10,
+        "lookback": 50,
+        "model": "matrix_transformer",
+        "seed": 0
+      },
+      "elapsed_seconds": 30.34,
+      "job_id": "17369606",
+      "max_rss_kb": 1718920,
+      "outputs_validated": true
+    },
+    "unused_attempts": [
+      {
+        "job_id": "17370256",
+        "reason": "The requested test-partition walltime exceeded that partition's limit.",
+        "used_for_evidence": false
+      },
+      {
+        "job_id": "17370268",
+        "reason": "A consolidation device-signature mismatch triggered unintended CPU retraining; the canonical output was discarded and the reuse bug was fixed.",
+        "used_for_evidence": false
+      }
+    ]
+  },
+  "reproducibility_note": "Array tasks were independent by model, fold, seed, lookback and horizon. PyTorch warned that memory-efficient attention used a non-deterministic algorithm under the repository's warn-only deterministic setting, so bitwise GPU reproducibility is not claimed.",
+  "run_dates": [
+    "2026-06-07",
+    "2026-06-08"
+  ],
+  "storage_policy": "Retained summaries, provenance and claim assessments are committed. Large checkpoints, raw predictions and cluster logs are excluded."
+}

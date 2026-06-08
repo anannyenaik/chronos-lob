@@ -1,6 +1,6 @@
 # DeepLOB-style under the proper-training neural protocol
 
-Status: **implemented on `main`; benchmark results pending.**
+Status: **implemented and completed on `main`.**
 
 The broader proper-training workflow can execute the requested 180-cell
 supervised grid:
@@ -12,8 +12,8 @@ supervised grid:
 - horizons: 10, 50
 - training: validation-only early stopping and best-checkpoint restore
 
-No benchmark result or broad neural-performance claim follows from the
-implementation alone.
+The retained benchmark completed all 180 cells with zero failed runs. Results
+remain mixed by model, lookback and horizon.
 
 ## Protocol parity
 
@@ -43,8 +43,8 @@ and claim boundaries.
 
 Tests cover model-axis expansion, collision-free run paths, DeepLOB supervised
 enforcement, reuse behaviour and retained artefact generation. The Hamilton
-workflow still requires a representative timing smoke test and staged launch
-before the complete array may run.
+workflow passed a representative timing gate, a six-cell cross-model stage,
+both 90-cell model-family arrays and final 180-cell consolidation.
 
 ## Scope guarantees
 
@@ -53,4 +53,4 @@ before the complete array may run.
 - The one-epoch matched comparison grid remains distinct from this
   performance-oriented proper-training benchmark.
 - DeepLOB-style and matrix-transformer results remain separately identifiable.
-- No profitability, tradability or state-of-the-art claim is implied.
+- No broad model-family ranking follows beyond the exact stored scope.

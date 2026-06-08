@@ -1,0 +1,65 @@
+{
+  "assessment": "broader proper-training neural benchmark",
+  "claims": [
+    {
+      "claim_id": "empirical.proper_training_broader_complete",
+      "claim_text": "The broader proper-training neural benchmark completed its target scope.",
+      "reason": "All 180 planned supervised cells completed across five folds, three seeds, three lookbacks, two horizons and two model families, with zero failed runs.",
+      "safe_rewording": "The retained broader proper-training benchmark is complete_real for its exact 180-cell supervised FI-2010 scope.",
+      "status": "supported"
+    },
+    {
+      "claim_id": "empirical.proper_training_transformer_stronger_overall_means",
+      "claim_text": "The matrix transformer has stronger overall mean metrics than the DeepLOB-style baseline in the exact stored scope.",
+      "reason": "Across 90 runs per model, the matrix transformer has higher mean macro-F1 and MCC and lower mean Brier score and ECE, but also substantially higher macro-F1 and MCC variability.",
+      "safe_rewording": "In the exact retained 180-cell scope, the matrix transformer has stronger overall mean predictive and calibration metrics, with substantially higher variability.",
+      "status": "supported"
+    },
+    {
+      "claim_id": "empirical.proper_training_broad_neural_superiority",
+      "claim_text": "The broader proper-training benchmark supports a broad neural superiority claim.",
+      "reason": "Results are mixed by model, lookback and horizon. The matrix-transformer lookback-100 rows degrade sharply, and the model families have different stability profiles.",
+      "safe_rewording": "Report results by model, lookback and horizon; do not generalise the strongest rows into a broad neural superiority claim.",
+      "status": "unsupported"
+    },
+    {
+      "claim_id": "empirical.proper_training_confidence_filtering_tradeoff",
+      "claim_text": "Confidence filtering raises retained-sample predictive metrics while reducing active fraction in the stored benchmark.",
+      "reason": "The confidence-filtered summaries show higher retained-sample macro-F1 and MCC at stricter thresholds alongside lower active fraction; some lookback-100 transformer cells have severe coverage collapse.",
+      "safe_rewording": "Confidence filtering is a selective-prediction trade-off in the retained summaries; active fraction is a storage-light coverage proxy only.",
+      "status": "supported"
+    },
+    {
+      "claim_id": "empirical.proper_training_classical_comparison",
+      "claim_text": "The broader neural benchmark is uniformly stronger than the existing classical benchmark.",
+      "reason": "The classical benchmark is horizon-10, five-fold, single-seed evidence. In the comparable horizon-10/seed-0 directional slice, five of six neural model/lookback means exceed the strongest classical macro-F1 mean, while matrix-transformer lookback 100 does not. The protocols are not a matched prediction-level comparison.",
+      "safe_rewording": "Use the classical benchmark as a scoped horizon-10 directional reference and report the mixed neural lookback result explicitly.",
+      "status": "unsupported"
+    }
+  ],
+  "classical_reference": {
+    "best_model": "gradient_boosting",
+    "horizon": 10,
+    "macro_f1_mean": 0.4653881257525262,
+    "mcc_mean": 0.2723530079601043,
+    "scope": "five folds, seed 0"
+  },
+  "model_summary": {
+    "deeplob_style": {
+      "brier_score_mean": 0.6644476848303474,
+      "ece_mean": 0.2223199117708157,
+      "macro_f1_mean": 0.5132598496155721,
+      "macro_f1_std": 0.06702058709019108,
+      "mcc_mean": 0.33556041474157733,
+      "run_count": 90
+    },
+    "matrix_transformer": {
+      "brier_score_mean": 0.4318182770730772,
+      "ece_mean": 0.06167770201601517,
+      "macro_f1_mean": 0.6013161783686662,
+      "macro_f1_std": 0.1950014564591787,
+      "mcc_mean": 0.4294106992391572,
+      "run_count": 90
+    }
+  }
+}

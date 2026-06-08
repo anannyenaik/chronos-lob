@@ -1,0 +1,128 @@
+{
+  "batch_size": 256,
+  "config_path": "configs/experiments/fi2010_neural_proper_training.yaml",
+  "device": "cuda",
+  "early_stopping_patience": 5,
+  "evidence_level": "complete_real",
+  "folds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "horizons": [
+    10,
+    50
+  ],
+  "lookbacks": [
+    20,
+    50,
+    100
+  ],
+  "max_epochs": 25,
+  "models": [
+    "matrix_transformer",
+    "deeplob_style"
+  ],
+  "objectives": [
+    "supervised"
+  ],
+  "pretrain_epochs": 10,
+  "processed_root": "data/processed/fi2010",
+  "runner_version": "fi2010-neural-proper-training-subset/v1",
+  "scope": {
+    "broader_complete_real_target": {
+      "folds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons": [
+        10,
+        50
+      ],
+      "lookbacks": [
+        20,
+        50,
+        100
+      ],
+      "min_max_epochs": 25,
+      "min_patience": 5,
+      "models": [
+        "deeplob_style",
+        "matrix_transformer"
+      ],
+      "objectives": [
+        "supervised"
+      ],
+      "seeds": [
+        0,
+        1,
+        2
+      ]
+    },
+    "evidence_level": "complete_real",
+    "fallback_partial_real_target": {
+      "folds": [
+        1,
+        2,
+        3
+      ],
+      "horizons": [
+        10,
+        50
+      ],
+      "lookbacks": [
+        50
+      ],
+      "min_max_epochs": 25,
+      "min_patience": 5,
+      "objectives": [
+        "supervised",
+        "masked_reconstruction",
+        "next_field"
+      ],
+      "seeds": [
+        0
+      ]
+    },
+    "planned_scope_complete": true,
+    "primary_complete_real_target": {
+      "folds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "horizons": [
+        10,
+        50
+      ],
+      "lookbacks": [
+        50
+      ],
+      "min_max_epochs": 25,
+      "min_patience": 5,
+      "objectives": [
+        "supervised",
+        "masked_reconstruction",
+        "next_field"
+      ],
+      "seeds": [
+        0
+      ]
+    },
+    "primary_scope_complete": true,
+    "scope_label": "broader_proper_training_complete"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "smoke_test": false
+}

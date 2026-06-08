@@ -27,7 +27,7 @@ execution quality or production execution realism.
 | --- | --- | --- |
 | Leakage-safe FI-2010 classical benchmark | `archived_valid` | Retained folds 1-5 aggregate evidence. |
 | Neural full grid (one-epoch matched) | `archived_valid` | Supervised/SSL comparison across folds 1-5, horizons 10/20/50 and seeds 0-2; not a performance-maximising neural benchmark. |
-| Proper-training neural subset | `partial_real` | Fold 1, horizons 10/50, seed 0, lookback 50; broader neural benchmarking is deferred. |
+| Broader proper-training neural benchmark | `complete_real` | 180 supervised cells across folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and two model families; results are mixed by model, lookback and horizon. |
 | SSL-v2 benchmark and analysis | `complete_real` | Mean predictive and calibration improvements are supported only for the exact stored folds 1-5, horizons 10/50, seeds 0-2, lookback-50 scope. Results are mixed by seed and horizon; broad SSL improvement is unsupported. |
 | Feature-stability analysis | `partial_real` plus `complete_real` analysis | Scoped FI-2010 snapshot-feature stability, not causal feature importance. |
 | Execution centrepiece and execution-v3 | `archived_valid` | Offline execution-aware proxy diagnostics only. |
@@ -50,9 +50,14 @@ The evidence is mixed by seed and horizon, including negative mean macro-F1
 deltas for seed 1 and horizon 50, so broad SSL improvement remains unsupported.
 
 The one-epoch neural full grid is matched comparison evidence, not a
-performance-maximising neural benchmark. The proper-training neural subset
-remains partial, and a broader proper-training neural benchmark across folds,
-seeds, lookbacks and model families is deferred.
+performance-maximising neural benchmark.
+
+The broader proper-training neural benchmark completed all 180 supervised
+cells. Across 90 runs per model, the matrix transformer has stronger overall
+mean predictive and calibration metrics than the DeepLOB-style baseline, but
+substantially higher variability and weak lookback-100 rows. DeepLOB-style is
+steadier but lower overall. Results are mixed by model, lookback and horizon,
+so no broad neural superiority is claimed.
 
 ## Hamilton Compute Provenance
 
@@ -65,6 +70,13 @@ checkpoints, raw predictions and cluster logs are intentionally excluded.
 GPU determinism warnings are documented, and bitwise reproducibility is not
 claimed. See
 [Hamilton compute provenance](reports/ssl_v2_analysis/hamilton_compute_provenance.json).
+
+The broader proper-training neural benchmark was executed as Slurm jobs on
+Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
+are committed; large checkpoints, raw predictions and cluster logs are
+excluded. Its timing gate, staged arrays, final consolidation and GPU
+determinism warning are recorded in
+[proper-training Hamilton provenance](experiments/fi2010_neural_proper_training_broader/hamilton_compute_provenance.json).
 
 ## What This Is Not
 
@@ -85,7 +97,7 @@ claimed. See
 - Synthetic replay is controlled synthetic evidence only.
 - Binance diff-depth updates are aggregated level updates, not individual-order
   events.
-- The manual paper and a broader proper-training neural benchmark are deferred.
+- The manual paper is deferred.
 
 ## Public Artefacts
 
@@ -127,7 +139,7 @@ python -m chronoslob.cli build-final-empirical-report `
   --execution-centrepiece reports/execution_centrepiece `
   --external experiments/fi2010_external_context `
   --neural-full-grid experiments/fi2010_neural_full_grid `
-  --proper-training experiments/fi2010_neural_proper_training_subset_v2 `
+  --proper-training experiments/fi2010_neural_proper_training_broader `
   --ssl-v2-analysis reports/ssl_v2_analysis `
   --feature-ablations experiments/fi2010_feature_ablations `
   --feature-ablation-analysis reports/feature_ablation_analysis `

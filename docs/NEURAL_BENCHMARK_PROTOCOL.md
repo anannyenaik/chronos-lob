@@ -1,8 +1,8 @@
 # FI-2010 Neural Benchmark Protocol
 
 This protocol defines the supervised neural benchmark infrastructure for
-FI-2010. It covers planning, selected supervised execution and metadata; no
-full multi-fold neural run is reported here.
+FI-2010. It covers planning, supervised execution and retained metadata,
+including the completed broader proper-training benchmark.
 
 ## Why This Exists
 
@@ -28,8 +28,8 @@ The serious config covers two supervised neural baselines:
 - `matrix_transformer`
 
 This supervised protocol does not itself run SSL. Retained matched SSL evidence
-is reported separately in the one-epoch neural full grid, the partial
-proper-training subset and the scoped SSL-v2 benchmark.
+is reported separately in the one-epoch neural full grid, the earlier partial
+proper-training SSL subset and the scoped SSL-v2 benchmark.
 
 ## Config
 
@@ -130,6 +130,21 @@ single epoch. The full configured grid requires an explicit
 
 No neural superiority claim is made. This protocol does not establish
 deployment or live-market execution quality. SSL claims must be taken only from
-the separately retained matched artefacts and their exact recorded scopes. The
-full proper-training neural benchmark across folds, seeds, lookbacks and model
-families remains deferred until it is actually run.
+the separately retained matched artefacts and their exact recorded scopes.
+
+## Completed Proper-Training Scope
+
+The broader supervised proper-training benchmark completed all 180 target
+cells: folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and the
+DeepLOB-style and matrix-transformer model families. It uses validation-only
+early stopping and best-checkpoint restore.
+
+The matrix transformer has stronger overall mean predictive and calibration
+metrics in the exact retained scope, but substantially higher variability and
+weak lookback-100 rows. Results are mixed by model, lookback and horizon, so no
+broad neural superiority is claimed. Active fraction is retained only as a
+selective-prediction coverage proxy alongside confidence-filtered metrics.
+
+Execution used staged Hamilton/NCC Slurm arrays after a representative timing
+gate. Large checkpoints, raw predictions and cluster logs are excluded from the
+retained repository evidence.

@@ -312,7 +312,7 @@ python -m chronoslob.cli build-final-empirical-report \
   --execution-centrepiece reports/execution_centrepiece \
   --external experiments/fi2010_external_context \
   --neural-full-grid experiments/fi2010_neural_full_grid \
-  --proper-training experiments/fi2010_neural_proper_training_subset_v2 \
+  --proper-training experiments/fi2010_neural_proper_training_broader \
   --ssl-v2-analysis reports/ssl_v2_analysis \
   --feature-ablations experiments/fi2010_feature_ablations \
   --feature-ablation-analysis reports/feature_ablation_analysis \
