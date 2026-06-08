@@ -109,6 +109,10 @@ performance-maximising neural benchmark. The broader proper-training benchmark
 is complete for its exact supervised 180-cell scope. Results remain mixed by
 model, lookback and horizon.
 
+The completed broader benchmark is post-`v0.2.0` evidence on `main`. The
+published `v0.2.0` release does not include it; no later release has been
+published.
+
 ## In Progress and Next
 
 - Broaden non-linear feature-ablation coverage beyond the current small

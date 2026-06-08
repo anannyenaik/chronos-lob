@@ -176,6 +176,11 @@ unsupported. The seed-1 and seed-2 refresh was run as independent Slurm jobs on
 Durham University Hamilton/NCC HPC; large checkpoints and raw predictions are
 not retained in the public evidence pack.
 
+The broader proper-training neural benchmark is also inventoried as completed
+post-`v0.2.0` evidence. It covers 180 Hamilton cells across folds 1-5, seeds
+0-2, lookbacks 20/50/100, horizons 10/50 and both supervised model families.
+The published `v0.2.0` release does not include this post-release benchmark.
+
 A dedicated execution-v3 analysis artefact (`execution_v3_analysis_report`, built
 by `analyse-fi2010-execution-v3` into `reports/execution_v3_analysis/`) is also
 recorded in the inventory and reads only the retained execution-v3 output tables.

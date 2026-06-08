@@ -23,6 +23,8 @@ All notable public-release changes are documented here.
   directional reference, not as a matched prediction-level comparison.
 - This is post-`v0.2.0` work on `main`; the published `v0.2.0` release and tag
   are unchanged. These notes may inform a future `v0.3.0` release.
+- Draft candidate notes are in `docs/RELEASE_NOTES_v0.3.0.md`; no `v0.3.0`
+  release or tag has been published.
 
 ## [0.2.0] - 2026-06-07
 

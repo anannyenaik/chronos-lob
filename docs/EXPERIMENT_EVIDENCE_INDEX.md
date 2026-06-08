@@ -30,6 +30,8 @@ or reproducing the platform.
   [`experiments/fi2010_multifold_classical/`](../experiments/fi2010_multifold_classical/)
 - Reduced-scope supervised neural evidence:
   [`experiments/fi2010_multifold_neural/`](../experiments/fi2010_multifold_neural/)
+- Broader proper-training neural evidence:
+  [`experiments/fi2010_neural_proper_training_broader/`](../experiments/fi2010_neural_proper_training_broader/)
 - Statistical uncertainty:
   [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/)
 - Brutal ablations:
@@ -411,8 +413,16 @@ or reproducing the platform.
   single seed (`0`), single lookback (`20`) and `max_epochs=25`. Scope is
   reduced from the configured grid because the full grid is impractical
   on CPU. All ten planned runs completed; zero failures. Full predictions
-  and checkpoints are not written. The full configured grid is not yet
-  reported here.
+  and checkpoints are not written. This older reduced-scope artefact is
+  reported separately from the completed Hamilton proper-training benchmark.
+- Real broader proper-training neural evidence:
+  [`experiments/fi2010_neural_proper_training_broader/`](../experiments/fi2010_neural_proper_training_broader/)
+  contains the completed post-`v0.2.0` supervised benchmark across folds 1-5,
+  seeds 0-2, lookbacks 20/50/100, horizons 10/50 and both model families.
+  All 180 Hamilton cells completed with zero failures. Retained summaries,
+  provenance and claim assessment are committed; large per-run outputs are
+  excluded. `v0.2.0` remains the published release and does not include this
+  benchmark.
 - Statistical uncertainty layer:
   [STATISTICAL_UNCERTAINTY](STATISTICAL_UNCERTAINTY.md) and
   [`experiments/fi2010_uncertainty/`](../experiments/fi2010_uncertainty/)

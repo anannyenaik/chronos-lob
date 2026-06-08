@@ -59,6 +59,10 @@ substantially higher variability and weak lookback-100 rows. DeepLOB-style is
 steadier but lower overall. Results are mixed by model, lookback and horizon,
 so no broad neural superiority is claimed.
 
+This benchmark is post-`v0.2.0` work on `main`. `v0.2.0` remains the published
+release and does not include the broader proper-training benchmark; a later
+release would be required to publish it.
+
 ## Hamilton Compute Provenance
 
 The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
@@ -110,6 +114,7 @@ determinism warning are recorded in
 | Execution proxy validity | [docs/EXECUTION_PROXY_VALIDITY.md](docs/EXECUTION_PROXY_VALIDITY.md) |
 | Safety and limitations | [docs/SAFETY_AND_LIMITATIONS.md](docs/SAFETY_AND_LIMITATIONS.md) |
 | Project status | [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) |
+| v0.3.0 Alpha Candidate notes | [docs/RELEASE_NOTES_v0.3.0.md](docs/RELEASE_NOTES_v0.3.0.md) |
 | Reproducibility guide | [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md) |
 | CLI reference | [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md) |
 | Roadmap | [ROADMAP.md](ROADMAP.md) |

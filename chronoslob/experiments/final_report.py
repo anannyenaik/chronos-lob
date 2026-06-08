@@ -49,10 +49,15 @@ _CANONICAL_NEURAL_LIMITATION_PARAGRAPH = (
     "seeds, lookbacks and model families is deferred."
 )
 _CANONICAL_BROADER_PROPER_TRAINING_PARAGRAPH = (
-    "The broader proper-training neural benchmark completed all 180 supervised cells "
-    "across folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and the "
-    "DeepLOB-style and matrix-transformer model families. Results are mixed by model, "
-    "lookback and horizon, so no broad neural superiority is claimed."
+    "The broader proper-training neural benchmark is now complete as post-v0.2.0 work. "
+    "It covers 180 Hamilton Slurm cells across folds 1-5, seeds 0-2, lookbacks "
+    "20/50/100, horizons 10/50, and matrix-transformer plus DeepLOB-style model "
+    "families. The matrix transformer has stronger mean macro-F1 and MCC than the "
+    "DeepLOB-style model in the retained benchmark, but with substantially higher "
+    "variability and weak lookback-100 behaviour. Confidence filtering improves "
+    "retained-sample metrics while reducing active fraction. The result supports a "
+    "scoped benchmark comparison, not a broad neural-superiority claim. v0.2.0 remains "
+    "the published release and does not include this post-release benchmark."
 )
 
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)

@@ -1,7 +1,7 @@
 {
   "builder_version": "phase-k/final-empirical-report/v1",
-  "generated_at": "2026-06-08T01:20:39.815859Z",
-  "git_commit": "b169b6844d66687b235b8b3b72b8a39da3563960",
+  "generated_at": "2026-06-08T01:29:05.138059Z",
+  "git_commit": "4b8a1973d191ca43a93e2c1689b4d0424b327266",
   "headline_metrics": {
     "best_classical": {
       "accuracy_mean": 0.640951393883556,

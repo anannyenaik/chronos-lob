@@ -182,3 +182,6 @@ Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
 are committed; large checkpoints, raw predictions and cluster logs are
 excluded. See `scripts/slurm/README_proper_neural.md` and the retained Hamilton
 provenance JSON.
+
+The benchmark is post-`v0.2.0` work on `main`. `v0.2.0` remains the published
+release and does not include these 180-cell results.

@@ -147,6 +147,10 @@ are committed; large checkpoints, raw predictions and cluster logs are
 excluded. Confidence-filtered metrics are reported with active fraction as a
 storage-light selective-prediction coverage proxy.
 
+This is post-`v0.2.0` work on `main`. `v0.2.0` remains the published release and
+does not include the broader proper-training benchmark; no `v0.3.0` release has
+been published.
+
 Execution-v3 is `archived_valid` as an offline cost-adjusted proxy diagnostic,
 not PnL or live-trading evidence. Feature ablations are `partial_real`: the
 current feature-ablation evidence covers logistic/ridge folds 1-5, horizons

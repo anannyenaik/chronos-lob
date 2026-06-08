@@ -17,8 +17,10 @@ The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5, hori
 MCC, ECE and Brier, supporting scoped predictive and calibration improvement for this exact retained scope. The evidence is mixed by seed and horizon, including negative mean macro-F1 deltas for seed
 1 and horizon 50, so broad SSL improvement remains unsupported.
 
-The broader proper-training neural benchmark completed all 180 supervised cells across folds 1-5, horizons 10/50, seeds 0-2, lookbacks 20/50/100 and the DeepLOB-style and matrix-transformer model
-families. Results are mixed by model, lookback and horizon, so no broad neural superiority is claimed.
+The broader proper-training neural benchmark is now complete as post-v0.2.0 work. It covers 180 Hamilton Slurm cells across folds 1-5, seeds 0-2, lookbacks 20/50/100, horizons 10/50, and
+matrix-transformer plus DeepLOB-style model families. The matrix transformer has stronger mean macro-F1 and MCC than the DeepLOB-style model in the retained benchmark, but with substantially higher
+variability and weak lookback-100 behaviour. Confidence filtering improves retained-sample metrics while reducing active fraction. The result supports a scoped benchmark comparison, not a broad
+neural-superiority claim. v0.2.0 remains the published release and does not include this post-release benchmark.
 
 Deferred: the manual paper.
 
@@ -31,8 +33,8 @@ snapshots.
 
 | field | value |
 | --- | --- |
-| generated_at | 2026-06-08T01:20:39.815859+00:00 |
-| git_commit | b169b6844d66687b235b8b3b72b8a39da3563960 |
+| generated_at | 2026-06-08T01:29:05.138059+00:00 |
+| git_commit | 4b8a1973d191ca43a93e2c1689b4d0424b327266 |
 | classical_scope | multi-fold classical results |
 | best_classical_test_macro_f1 | gradient_boosting: 0.4654 +/- 0.0039 |
 | neural_full_grid_scope | completed one-epoch matched comparison grid; folds 1, 2, 3, 4, 5, horizons 10, 20, 50, seeds 0, 1, 2, objectives supervised, masked_reconstruction, next_field; pretrain_epochs 1, fine_tune_epochs 1; 135 completed, 0 failed; matched comparison and pipeline evidence, not a performance-maximising neural benchmark |

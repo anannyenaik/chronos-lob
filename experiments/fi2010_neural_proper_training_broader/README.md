@@ -53,6 +53,9 @@ Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
 are committed; large checkpoints, raw predictions and cluster logs are
 excluded.
 
+This retained benchmark is post-`v0.2.0` evidence on `main`. `v0.2.0` remains
+the published release and does not include it.
+
 See `hamilton_compute_provenance.json` and
 `proper_neural_claim_assessment.json`.
 

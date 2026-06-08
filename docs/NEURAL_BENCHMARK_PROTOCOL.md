@@ -148,3 +148,6 @@ selective-prediction coverage proxy alongside confidence-filtered metrics.
 Execution used staged Hamilton/NCC Slurm arrays after a representative timing
 gate. Large checkpoints, raw predictions and cluster logs are excluded from the
 retained repository evidence.
+
+The completed 180-cell benchmark is post-`v0.2.0` work. `v0.2.0` remains the
+published release and does not include it.

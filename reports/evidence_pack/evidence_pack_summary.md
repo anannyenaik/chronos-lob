@@ -29,9 +29,12 @@ Hamilton/NCC HPC. Retained summaries, provenance and claim assessments are commi
 predictions and cluster logs are intentionally excluded. GPU determinism warnings are documented, and bitwise
 reproducibility is not claimed.
 
-The broader proper-training neural benchmark completed all 180 supervised cells across folds 1-5, horizons
-10/50, seeds 0-2, lookbacks 20/50/100 and the DeepLOB-style and matrix-transformer model families. Results are
-mixed by model, lookback and horizon, so no broad neural superiority is claimed.
+The broader proper-training neural benchmark is now complete as post-v0.2.0 work. It covers 180 Hamilton Slurm
+cells across folds 1-5, seeds 0-2, lookbacks 20/50/100, horizons 10/50, and matrix-transformer plus
+DeepLOB-style model families. The matrix transformer has stronger mean macro-F1 and MCC, but substantially
+higher variability and weak lookback-100 behaviour. Confidence filtering improves retained-sample metrics while
+reducing active fraction. No broad neural-superiority claim is supported. v0.2.0 remains the published release
+and does not include this benchmark.
 
 The broader proper-training neural benchmark was executed as Slurm jobs on Durham University Hamilton/NCC HPC.
 Retained summaries and claim assessments are committed; large checkpoints, raw predictions and cluster logs are

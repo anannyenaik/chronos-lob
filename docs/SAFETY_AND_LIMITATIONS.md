@@ -84,6 +84,10 @@ provenance and claim assessment are committed; large checkpoints, raw
 predictions and cluster logs are excluded. GPU bitwise reproducibility is not
 claimed.
 
+This benchmark is post-`v0.2.0` work on `main`. `v0.2.0` remains the published
+release and does not include it. No later release is implied by the retained
+evidence.
+
 ## Reporting Discipline
 
 Any reported metric must trace to a versioned config, data source,

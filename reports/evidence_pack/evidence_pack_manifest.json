@@ -481,8 +481,8 @@
       "exists": true,
       "failed_runs": null,
       "freshness": "fresh",
-      "generated_at": "2026-06-08T01:20:39.815859Z",
-      "git_commit": "b169b6844d66687b235b8b3b72b8a39da3563960",
+      "generated_at": "2026-06-08T01:29:05.138059Z",
+      "git_commit": "4b8a1973d191ca43a93e2c1689b4d0424b327266",
       "input_hashes_present": true,
       "limitations": "The generated report is a stored-artefact summary, not a manual paper.",
       "notes": "Hash/commit staleness checks passed.",
@@ -605,8 +605,8 @@
     "supported": 34,
     "unsupported": 8
   },
-  "generated_at": "2026-06-08T01:20:51.746917+00:00",
-  "git_commit": "b169b6844d66687b235b8b3b72b8a39da3563960",
+  "generated_at": "2026-06-08T01:29:16.608664+00:00",
+  "git_commit": "4b8a1973d191ca43a93e2c1689b4d0424b327266",
   "input_paths": {
     "ablation_figures_dir": "reports/figures/fi2010_feature_ablations",
     "binance_l2_dir": "reports/binance_l2_extension",

@@ -153,6 +153,9 @@ Durham University Hamilton/NCC HPC. Retained summaries and claim assessments
 are committed; large checkpoints, raw predictions and cluster logs are
 excluded. GPU bitwise reproducibility is not claimed.
 
+The benchmark is post-`v0.2.0` work on `main`. `v0.2.0` remains the published
+release and does not include it; no `v0.3.0` release has been published.
+
 The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array
 jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and
 claim assessments are committed; large checkpoints, raw predictions and cluster
