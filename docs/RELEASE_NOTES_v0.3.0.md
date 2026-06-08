@@ -1,9 +1,11 @@
-# ChronosLOB v0.3.0 Alpha Candidate
+# ChronosLOB v0.3.0 Alpha
 
-Status: draft only. This candidate has not been published or tagged.
+This release adds the completed 180-cell Hamilton proper-training neural
+benchmark as post-`v0.2.0` work on `main`. It preserves all prior claim
+boundaries and makes no PnL, profitability, live-trading, tradable-alpha, SOTA
+or foundation-model claims.
 
-`v0.2.0` remains the published release. These notes describe proposed release
-content from post-`v0.2.0` work on `main`.
+`v0.2.0` remains unchanged and continues to point at its original commit.
 
 ## Central Finding
 
@@ -92,5 +94,7 @@ git diff --check
 
 ## Release Decision
 
-Do not tag or publish `v0.3.0` from this draft. Publication requires explicit
-approval after the documentation and retained evidence are reviewed.
+`v0.3.0` Alpha is published as an annotated tag from `main`. It adds the
+completed 180-cell Hamilton proper-training neural benchmark, preserves every
+prior claim boundary, and makes no PnL, profitability, live-trading,
+tradable-alpha, SOTA or foundation-model claim.
