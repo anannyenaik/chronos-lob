@@ -52,9 +52,9 @@ generating commit is older than the current repository commit.
 - `complete_real`: required non-smoke artefacts are present and completion checks
   pass; freshness is tracked separately.
 - `archived_valid`: complete retained summaries/manifests remain content-valid,
-  but the generating commit is older or heavy raw predictions/checkpoints were
-  intentionally removed. This carries the same evidential weight as
-  `complete_real`.
+  but the generating commit is older or ignored datasets, raw predictions or
+  checkpoints were intentionally removed. This carries the same evidential
+  weight as `complete_real`.
 - `partial_real`: real non-smoke artefacts exist, but the scope is incomplete,
   mixed or has explicit skipped diagnostics.
 - `optional_missing`: an optional artefact was never stored; no core public

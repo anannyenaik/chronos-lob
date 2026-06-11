@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from chronoslob.experiments import evidence_pack as evidence_pack_module
 from chronoslob.experiments.evidence_pack import (
     EvidencePackConfig,
     EvidencePackError,
@@ -683,6 +684,40 @@ def test_deleted_raw_prediction_hashes_are_archived_not_missing(
     assert "intentionally removed" in grid.notes.lower()
 
 
+def test_windows_recorded_project_path_resolves_portably(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(evidence_pack_module, "project_root", lambda: tmp_path)
+
+    resolved = evidence_pack_module._resolve_recorded_path(
+        r"configs\experiments\benchmark.yaml",
+        base_path=tmp_path / "experiments" / "benchmark",
+    )
+
+    assert resolved == tmp_path / "configs" / "experiments" / "benchmark.yaml"
+
+
+def test_missing_ignored_dataset_input_is_archived(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    monkeypatch.setattr(evidence_pack_module, "project_root", lambda: tmp_path)
+    config = _minimal_config(tmp_path)
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(
+        config.neural_full_grid_dir,
+        input_file_hashes={
+            r"data\processed\fi2010\fold1_combined.csv": "a" * 64,
+        },
+    )
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "archived_valid"
+    assert grid.freshness == "archived"
+    assert "ignored datasets" in grid.notes.lower()
+
+
 def test_missing_non_heavy_hashed_input_is_stale(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -717,6 +752,27 @@ def test_changed_retained_content_is_still_stale(
     grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
 
     assert grid.status == "stale"
+
+
+def test_text_hashes_accept_cross_platform_newlines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_GIT_COMMIT_PATH, lambda: None)
+    config = _minimal_config(tmp_path)
+    retained = tmp_path / "retained.csv"
+    retained.write_bytes(b"column\r\nvalue\r\n")
+    expected_hash = sha256_file(retained)
+    retained.write_bytes(b"column\nvalue\n")
+    _write_complete_grid(config.neural_full_grid_dir)
+    _set_summary_field(
+        config.neural_full_grid_dir,
+        input_file_hashes={str(retained): expected_hash},
+    )
+
+    grid = _record(discover_artefacts(config), "fi2010_neural_full_grid")
+
+    assert grid.status == "complete_real"
+    assert grid.freshness == "fresh"
 
 
 def test_missing_legacy_ssl_runner_is_obsolete_superseded(tmp_path: Path) -> None:

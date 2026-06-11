@@ -9,6 +9,7 @@ stronger language than the stored evidence supports.
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import subprocess
@@ -119,6 +120,24 @@ _ABSENT_OPTIONAL_STATUSES: set[ArtefactStatus] = {"optional_missing", "obsolete_
 # Completion statuses that are content-complete (clean) regardless of whether the
 # generating commit matches the current repository commit.
 _CLEAN_COMPLETE_STATUSES: set[ArtefactStatus] = {"complete_real", "archived_valid"}
+_PROJECT_ROOT_PATH_PREFIXES = {
+    "configs",
+    "data",
+    "experiments",
+    "reports",
+    "runs",
+}
+_PORTABLE_TEXT_HASH_SUFFIXES = {
+    ".csv",
+    ".json",
+    ".jsonl",
+    ".md",
+    ".py",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
 
 _EXPANDED_FEATURE_ABLATION_FOLDS = {"fold_1", "fold_2", "fold_3", "fold_4", "fold_5"}
 _EXPANDED_FEATURE_ABLATION_HORIZONS = {10, 20, 50}
@@ -1275,9 +1294,9 @@ def _assess_staleness(
     verified = False
     for reference in [*input_refs, *output_refs]:
         if not reference.path.is_file():
-            # Heavy raw predictions, checkpoints and ignored per-run details are
-            # intentionally removed to keep the repository light. Other missing
-            # hashed inputs remain genuine staleness.
+            # Ignored datasets, raw predictions, checkpoints and per-run details
+            # are intentionally omitted from the repository. Other missing hashed
+            # inputs remain genuine staleness.
             if _is_intentionally_removed_hash_reference(reference):
                 removed_paths.append(reference)
                 continue
@@ -1286,8 +1305,7 @@ def _assess_staleness(
                 reason=f"Recorded {reference.kind} hash path is missing: "
                 f"{_display_path(reference.path)}.",
             )
-        actual = sha256_file(reference.path)
-        if actual != reference.expected_sha256:
+        if not _hash_matches_reference(reference):
             return _StalenessResult(
                 state="stale",
                 reason="Recorded "
@@ -1297,7 +1315,7 @@ def _assess_staleness(
         verified = True
 
     output_mtime = _artefact_output_mtime(artefact_path, loaded)
-    if input_refs and output_mtime is not None:
+    if input_refs and output_mtime is not None and not commit_differs:
         for reference in input_refs:
             if reference.path.is_file() and reference.path.stat().st_mtime > output_mtime:
                 return _StalenessResult(
@@ -1320,9 +1338,9 @@ def _assess_staleness(
             state="archived",
             reason=(
                 f"{len(removed_paths)} recorded {kind_text} artefact(s) were "
-                "intentionally removed (heavy raw predictions, checkpoints or "
-                "ignored per-run details); retained summaries and manifests are "
-                f"consistent.{verified_text}{commit_text}"
+                "intentionally removed (ignored datasets, raw predictions, "
+                "checkpoints or per-run details); retained summaries and "
+                f"manifests are consistent.{verified_text}{commit_text}"
             ),
         )
 
@@ -1349,6 +1367,10 @@ def _is_intentionally_removed_hash_reference(reference: _HashReference) -> bool:
     name = path.name.lower()
     parts = {part.lower() for part in path.parts}
     suffix = path.suffix.lower()
+    if "data" in parts and parts.intersection({"raw", "processed", "external"}):
+        return True
+    if ".local_data" in parts:
+        return True
     if "runs" in parts and "experiments" in parts:
         return True
     if suffix in {".pt", ".pth", ".ckpt", ".parquet", ".npy", ".npz"}:
@@ -1362,6 +1384,21 @@ def _is_intentionally_removed_hash_reference(reference: _HashReference) -> bool:
         "predictions.csv",
         "predictions.parquet",
     }
+
+
+def _hash_matches_reference(reference: _HashReference) -> bool:
+    if sha256_file(reference.path) == reference.expected_sha256:
+        return True
+    if reference.path.suffix.lower() not in _PORTABLE_TEXT_HASH_SUFFIXES:
+        return False
+
+    content = reference.path.read_bytes()
+    lf_content = content.replace(b"\r\n", b"\n")
+    newline_variants = (lf_content, lf_content.replace(b"\n", b"\r\n"))
+    return any(
+        hashlib.sha256(variant).hexdigest() == reference.expected_sha256
+        for variant in newline_variants
+    )
 
 
 def _artefact_output_mtime(artefact_path: Path, loaded: _LoadedArtefact) -> float | None:
@@ -4211,11 +4248,12 @@ def _is_sha256(value: Any) -> bool:
 
 
 def _resolve_recorded_path(raw_path: str, *, base_path: Path) -> Path:
-    candidate = Path(raw_path)
+    candidate = Path(raw_path.replace("\\", "/"))
     if candidate.is_absolute():
         return candidate
     root_candidate = project_root() / candidate
-    if root_candidate.exists():
+    first_part = candidate.parts[0].lower() if candidate.parts else ""
+    if root_candidate.exists() or first_part in _PROJECT_ROOT_PATH_PREFIXES:
         return root_candidate
     if base_path.is_file():
         return base_path.parent / candidate
