@@ -67,9 +67,9 @@ report rather than silently ignored.
 
 Computed on synthetic event streams only:
 
-- `event_order_flow_imbalance` — signed order flow from adds and cancels
-- `cancellation_imbalance` — bid-versus-ask cancellation pressure
-- `trade_imbalance` — buyer- versus seller-initiated executed volume
+- `event_order_flow_imbalance`: signed order flow from adds and cancels
+- `cancellation_imbalance`: bid-versus-ask cancellation pressure
+- `trade_imbalance`: buyer- versus seller-initiated executed volume
 - `event_intensity` and add/cancel/trade rates
 - `spread`, `relative_spread`, `microprice_offset`
 - `depth_imbalance_l1`, `depth_imbalance_l5`

@@ -2,7 +2,7 @@
 #
 # This file documents the configurable hyperparameters of the
 # DeepLOB-style supervised neural baseline. It is not an exact
-# reproduction of the original DeepLOB paper — see
+# reproduction of the original DeepLOB paper; see
 # reports/deeplob_baseline.md for the caveat and intended future work.
 # This file contains configuration only; it does not contain results.
 

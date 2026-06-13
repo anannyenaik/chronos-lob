@@ -1,11 +1,10 @@
 # ChronosLOB: Forecasting Quality Is Not Trading-Signal Quality
 
-ChronosLOB is a leakage-safe research platform for limit order book
-forecasting, calibration, feature stability, event-level replay and
-execution-aware proxy diagnostics.
-
 ChronosLOB is a research platform for limit order book representation learning,
-market-state forecasting, calibration and execution-aware validation.
+market-state forecasting, calibration and execution-aware validation. Every
+layer is leakage-safe by construction, and forecasting, calibration,
+feature-stability, event-level replay and execution-aware proxy diagnostics are
+reported as separate, auditable evidence streams.
 
 ## Main Finding
 

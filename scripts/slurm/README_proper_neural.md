@@ -1,4 +1,4 @@
-# Broader proper-training neural benchmark — Hamilton runbook
+# Broader proper-training neural benchmark: Hamilton runbook
 
 Handoff runbook for executing the broader proper-training neural benchmark on
 Durham University Hamilton/NCC HPC. Everything here is Slurm-driven; nothing runs
@@ -64,7 +64,7 @@ find data/processed/fi2010 -maxdepth 2 -type f | head
 only appears inside a Slurm job. If processed FI-2010 data is missing, transfer
 only the processed tree (it is gitignored; never commit it).
 
-## Phase 4 — timing smoke test (the gate)
+## Phase 4: timing smoke test (the gate)
 
 ```bash
 sbatch scripts/slurm/proper_neural_timing.sbatch
@@ -85,7 +85,7 @@ Record from the timing run: wall-clock, max RSS, GPU name + memory used
   GPU memory comfortably holds one cell. Otherwise STOP and report that Hamilton
   timing makes the full benchmark impractical. Do not force it.
 
-## Phase 5 — set array concurrency and walltime
+## Phase 5: set array concurrency and walltime
 
 Before the array, confirm GPU reality:
 
@@ -100,7 +100,7 @@ sinfo -p cuda -o "%P %a %l %D %t %G"
 - Edit `#SBATCH --array` / `#SBATCH --time` in `proper_neural_array.sbatch`, or
   override per submission with `sbatch --array=... --time=...`.
 
-## Phase 6 — staged run (do NOT launch all 180 at once)
+## Phase 6: staged run (do NOT launch all 180 at once)
 
 ```bash
 # Stage 1: a small spread across both model families.
@@ -124,7 +124,7 @@ that summaries exist, disk usage (`du -sh experiments/fi2010_proper_neural_hamil
 and logs for any sign of data leakage, broken early stopping, or output
 corruption. Stop and report if any appear.
 
-## Phase 7 — consolidate
+## Phase 7: consolidate
 
 ```bash
 sbatch scripts/slurm/proper_neural_consolidate.sbatch
@@ -137,7 +137,7 @@ sbatch scripts/slurm/proper_neural_consolidate.sbatch
 
 - **Committed (storage-light):** top-level aggregate summaries under
   `experiments/fi2010_neural_proper_training_broader/` (CSV/JSON), the Slurm
-  scripts, and the CSV — exactly as for the existing subset_v2 directory.
+  scripts, and the CSV, exactly as for the existing subset_v2 directory.
 - **Ignored (gitignored, never committed):** `…_broader/runs/`, the per-task
   tree `…_hamilton_tasks/`, the timing tree `…_hamilton_timing/`, all
   `predictions.csv`, checkpoints (`*.pt`), and cluster logs (`logs/`).

@@ -17,7 +17,7 @@ artefact* used to move a research-style LOB model into Asterion's deterministic
 inference path and to validate a richer model contract. It is:
 
 * trained only on a small, compact, **recorded public Binance L2 depth** window
-  sample (BTCUSDT, public REST ``/api/v3/depth`` snapshots) — no authenticated
+  sample (BTCUSDT, public REST ``/api/v3/depth`` snapshots), no authenticated
   connectivity, no API keys, no account/order endpoints, no private data;
 * a deliberately **tiny** DeepLOB-style baseline, not a SOTA model;
 * **not** evidence of predictive quality, trading profitability, alpha, live

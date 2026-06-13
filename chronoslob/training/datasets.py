@@ -130,7 +130,7 @@ class SequenceWindowConfig:
     between candidate target indices. ``drop_incomplete`` keeps the
     indexer from emitting samples whose window starts before row zero.
     ``require_contiguous_indices`` forces every row in a sample's window to
-    lie inside the ``allowed_target_indices`` set when one is supplied —
+    lie inside the ``allowed_target_indices`` set when one is supplied;
     this prevents a validation sample from pulling training rows into its
     window unless the caller has explicitly authorised it.
     """
@@ -172,7 +172,7 @@ def build_sequence_indices(
 
     If ``allowed_target_indices`` is supplied, only target indices in that
     set are emitted. When ``require_contiguous_indices`` is true, the
-    entire window must also lie inside that set — this guards against
+    entire window must also lie inside that set; this guards against
     validation/test windows pulling training rows by accident.
     """
     rows = _validate_non_negative_int(n_rows, name="n_rows")
@@ -495,7 +495,7 @@ class TorchSequenceStandardiser:
     """Train-only mean/std standardiser for sequence feature tensors.
 
     Statistics are fitted from training data supplied explicitly by the
-    caller — either a pandas feature frame or a stacked sequence tensor.
+    caller, either a pandas feature frame or a stacked sequence tensor.
     The transform always operates on a copy. ``fit`` must be called before
     ``transform``; calling ``transform`` first raises ``ValueError``. Zero
     standard deviations are replaced with ``1.0`` to avoid division by zero

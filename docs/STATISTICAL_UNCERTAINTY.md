@@ -29,18 +29,18 @@ Either input may be omitted. At least one must be present.
 The analyser writes the following artefacts under the chosen `--out`
 directory. All artefacts are small and committable.
 
-- `summary.json` — inputs, parameters, models, folds and artefact
+- `summary.json`: inputs, parameters, models, folds and artefact
   paths used by the run.
-- `metric_confidence_intervals.csv` — per-model, per-split, per-metric
+- `metric_confidence_intervals.csv`: per-model, per-split, per-metric
   mean, std, standard error and confidence intervals.
-- `paired_model_comparisons.csv` — paired fold-level mean differences
+- `paired_model_comparisons.csv`: paired fold-level mean differences
   between every candidate model and the baseline.
-- `rank_stability.csv` — how often each model is best per fold and the
+- `rank_stability.csv`: how often each model is best per fold and the
   per-model mean rank across folds.
-- `model_ranking.csv` — the combined classical+neural ranking on the
+- `model_ranking.csv`: the combined classical+neural ranking on the
   test split for macro-F1, ordered by mean, with the same confidence
   interval as the per-metric table.
-- `uncertainty_notes.md` — human-readable notes that record the
+- `uncertainty_notes.md`: human-readable notes that record the
   variance caveats below.
 
 ## Confidence interval method

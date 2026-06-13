@@ -3,7 +3,7 @@
 This module provides a small, in-memory limit order book that can be
 loaded from a Binance-style depth snapshot and updated with subsequent
 diff-depth events. It is deliberately ignorant of the Binance
-update-id continuity rules — full reconstruction continuity lives in
+update-id continuity rules; full reconstruction continuity lives in
 :mod:`chronoslob.book.reconstruction`.
 
 The class is intended for offline replay of locally captured fixtures

@@ -48,12 +48,12 @@ first-class artefacts rather than ad-hoc notebook cells.
 
 Regime labels can be assigned in three ways:
 
-1. **Explicit labels already on the record** — preferred when upstream
+1. **Explicit labels already on the record**: preferred when upstream
    experiments emit a regime label directly.
-2. **Threshold-based assignment** — uses explicit thresholds supplied via
+2. **Threshold-based assignment**: uses explicit thresholds supplied via
    config or function arguments. Thresholds are not derived from
    evaluation data inside assignment functions.
-3. **Fitted boundaries** — implemented in a separate
+3. **Fitted boundaries**: implemented in a separate
    `fit_regime_boundaries` function that the caller must drive with
    training or calibration values only. This separation prevents
    accidental data snooping on evaluation data.

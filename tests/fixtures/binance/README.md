@@ -14,15 +14,15 @@ files remain easy to audit by eye.
 
 ## Files
 
-- `synthetic_snapshot.json` — a small depth snapshot for the
+- `synthetic_snapshot.json`: a small depth snapshot for the
   fictional `TESTUSDT` symbol. The `lastUpdateId` is 100.
-- `synthetic_diff_updates.jsonl` — a short, valid sequence of diff
+- `synthetic_diff_updates.jsonl`: a short, valid sequence of diff
   updates (`U`, `u`, `pu`) that exercises a quantity change, a
   zero-quantity deletion and a new price level.
-- `synthetic_gap_updates.jsonl` — the same shape as the valid
+- `synthetic_gap_updates.jsonl`: the same shape as the valid
   sequence but with a deliberate update-id gap so reconstruction
   records a `GAP_DETECTED` issue.
-- `synthetic_crossed_updates.jsonl` — a single diff update whose
+- `synthetic_crossed_updates.jsonl`: a single diff update whose
   ask quantity moves below the best bid so the reconstruction code
   records a `CROSSED_BOOK` issue.
 

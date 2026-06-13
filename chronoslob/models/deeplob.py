@@ -62,7 +62,7 @@ class DeepLOBConfig:
     """Configuration for the DeepLOB-style CNN-LSTM baseline.
 
     The defaults are deliberately small to keep CPU smoke tests fast. They
-    do not target benchmark performance — see ``reports/deeplob_baseline.md``
+    do not target benchmark performance; see ``reports/deeplob_baseline.md``
     for why this is a baseline rather than a full DeepLOB replica.
     """
 

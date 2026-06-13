@@ -512,7 +512,7 @@ def run_deeplob_smoke_from_fi2010_fixture(
 
     The fixture is synthetic and intentionally small. The result is a
     pipeline smoke test only and must never be reported as benchmark
-    performance — the returned dictionary carries a ``notes`` field that
+    performance; the returned dictionary carries a ``notes`` field that
     states this explicitly.
     """
     _require_torch()

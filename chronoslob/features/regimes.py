@@ -6,7 +6,7 @@ manually (e.g. for unit tests) or estimated from a feature DataFrame
 via :func:`compute_regime_thresholds_from_frame`. The estimates are
 quantile-based and are *not* a calibrated regime model.
 
-Regime labels here are coarse, interpretable hints — they are not
+Regime labels here are coarse, interpretable hints; they are not
 trading signals.
 """
 
@@ -152,7 +152,7 @@ def compute_regime_thresholds_from_frame(
       are present.
 
     Quantiles are taken from the configured ``thresholds`` object.
-    Missing columns are silently skipped — the caller can decide which
+    Missing columns are silently skipped; the caller can decide which
     regimes to compute.
     """
     if not isinstance(frame, pd.DataFrame):

@@ -4,7 +4,7 @@ This module replays Binance-style snapshot and diff-depth fixtures
 against a :class:`LocalOrderBook` while explicitly checking update-id
 continuity. It surfaces gaps, stale events and crossed-book conditions
 as :class:`ReconstructionIssue` records rather than silently repairing
-them. All inputs are local objects — no network access is performed.
+them. All inputs are local objects; no network access is performed.
 """
 
 from __future__ import annotations

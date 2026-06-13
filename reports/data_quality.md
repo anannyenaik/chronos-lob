@@ -24,7 +24,7 @@ The FI-2010-specific `validate_fi2010_dataset` helper additionally checks:
 - presence and absence-of-missing-values for the split column when one is
   configured;
 - parseability of the timestamp column when one is configured;
-- pairing consistency across each LOB level — bid price, bid quantity, ask
+- pairing consistency across each LOB level: bid price, bid quantity, ask
   price and ask quantity must be all present or all absent at a given
   level, with `bid_size_i` / `ask_size_i` accepted as aliases for the
   quantity columns when the default prefixes are configured.

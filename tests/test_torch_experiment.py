@@ -198,7 +198,7 @@ def test_train_only_standardisation_uses_training_rows_only() -> None:
     expected_mean_f1 = float(train_values_f1.mean())
     assert standardisation["mean"][0] == pytest.approx(expected_mean_f0)
     assert standardisation["mean"][1] == pytest.approx(expected_mean_f1)
-    # The full-frame mean would be 5.5 — verify the runner did not use it.
+    # The full-frame mean would be 5.5, verify the runner did not use it.
     full_mean = float(feature_frame["f0"].to_numpy(dtype=float).mean())
     assert standardisation["mean"][0] != pytest.approx(full_mean)
 

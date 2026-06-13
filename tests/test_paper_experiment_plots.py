@@ -186,7 +186,7 @@ def test_regime_breakdown_emitted_when_genuine_regime_data_present(
 
     predictions_path = output_dir / "predictions.csv"
     frame = pd.read_csv(predictions_path)
-    # Use stored predictions only — add a 'regime' column derived from the
+    # Use stored predictions only; add a 'regime' column derived from the
     # actual stored model identity to keep this a genuine, not-fabricated
     # regime label rather than a row-number fiction.
     frame["regime"] = frame["model_name"].astype(str)

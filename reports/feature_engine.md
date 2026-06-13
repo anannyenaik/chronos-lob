@@ -54,7 +54,7 @@ explicitly. Crossed books are never silently re-ordered.
 
 Per-depth keys are always named after the *requested* depth. When the
 snapshot has fewer levels than requested, the available levels are used
-but the key still reflects the request — this keeps column names stable
+but the key still reflects the request, which keeps column names stable
 across snapshots with varying numbers of levels.
 
 ### Order-flow features (`chronoslob.features.order_flow`)
@@ -107,7 +107,7 @@ estimated from a feature frame's quantiles via
 - `classify_liquidity_regime` → `low_liquidity` / `normal_liquidity`.
 - `classify_imbalance_regime` → `bid_heavy` / `ask_heavy` / `balanced`.
 
-These are coarse, interpretable hints — they are **not** trading
+These are coarse, interpretable hints; they are **not** trading
 signals.
 
 ## Pipeline

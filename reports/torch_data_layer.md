@@ -10,9 +10,9 @@ format, and it explicitly states what is **not** yet implemented.
 A supervised sequence sample is described by a `SequenceSampleIndex` with
 three integer fields:
 
-- `window_start` — inclusive row index of the first feature row.
-- `window_end` — inclusive row index of the last feature row.
-- `target_index` — row index that supplies the label.
+- `window_start`: inclusive row index of the first feature row.
+- `window_end`: inclusive row index of the last feature row.
+- `target_index`: row index that supplies the label.
 
 For past-only supervised windows the dataset enforces
 `window_end == target_index`. This invariant is the load-bearing guarantee
@@ -53,7 +53,7 @@ Three guards combine to keep windows past-only:
 using `allowed_target_indices` from `SplitIndices`. By default the helper
 also enforces `require_contiguous_indices=True`, so each partition's
 samples consume only that partition's rows. This is more conservative
-than strictly required — a future configuration option could let a
+than strictly required: a future configuration option could let a
 validation window draw training rows as priming context, but the default
 keeps partitions cleanly separated.
 
@@ -130,7 +130,7 @@ required by future supervised sequence models.
 
 Most leakage bugs in financial machine learning are introduced at the
 data layer. Building and reviewing the indexing, alignment and
-partition-containment rules in isolation — without a model architecture
-to distract from them — keeps the audit surface small and the
+partition-containment rules in isolation, without a model architecture
+to distract from them, keeps the audit surface small and the
 guarantees inspectable. Subsequent phases can then add models against a
 data layer whose invariants are already tested.

@@ -20,7 +20,7 @@ This artefact is **a tiny ChronosLOB research-model artefact exported into
 Asterion for systems-integration and inference-latency evaluation.** It is:
 
 * trained only on **synthetic toy data** (seeded, standardised, O(1) features
-  positionally aligned to Asterion's L2 feature ordering) — not FI-2010 and not
+  positionally aligned to Asterion's L2 feature ordering), not FI-2010 and not
   any private/market dataset;
 * a deliberately **reduced** 4-feature, single-timestep (`lookback == 1`)
   simplification of DeepLOB, chosen so the four caller-owned Asterion L2

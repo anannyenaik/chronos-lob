@@ -547,7 +547,7 @@ def load_binance_snapshot_json(
 ) -> BinanceDepthSnapshot:
     """Load a Binance-style depth snapshot from a local JSON file.
 
-    The file is read with UTF-8 encoding from disk only — no network
+    The file is read with UTF-8 encoding from disk only; no network
     access. ``symbol`` may be passed explicitly when the JSON payload
     does not carry it.
     """

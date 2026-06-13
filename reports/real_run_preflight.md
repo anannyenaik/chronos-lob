@@ -43,9 +43,9 @@ FI-2010 NoAuction Z-score, local-only (gitignored), under
 | Fold | Combined CSV | Rows | Train rows | Test rows |
 | --- | --- | --- | --- | --- |
 | 1 | `fold1_combined.csv` | 77,909 | 39,512 | 38,397 |
-| 2 | `fold2_combined.csv` | present | — | — |
-| 3 | `fold3_combined.csv` | present | — | — |
-| 4 | `fold4_combined.csv` | present | — | — |
+| 2 | `fold2_combined.csv` | present | n/a | n/a |
+| 3 | `fold3_combined.csv` | present | n/a | n/a |
+| 4 | `fold4_combined.csv` | present | n/a | n/a |
 | 5 | `fold5_combined.csv` | 217,404 | 178,252 | 39,152 |
 
 - All five per-fold combined CSVs exist and load.
@@ -71,7 +71,7 @@ Horizons 10/20/50 and folds 1-5 are therefore supported by the prepared data.
 ## Environment
 
 - Python 3.11.9.
-- PyTorch 2.12.0+cpu — **CPU only, CUDA not available.**
+- PyTorch 2.12.0+cpu: **CPU only, CUDA not available.**
 - numpy 1.26.4, pandas 3.0.3, scikit-learn 1.8.0.
 
 ### Compute note (material to scope)

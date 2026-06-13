@@ -10,8 +10,8 @@ original DeepLOB paper, and no benchmark performance is claimed.
 A serious deep learning project should clear two bars before adding
 transformers or self-supervised learning. First, the classical
 baselines from Phase 6 establish a reproducible floor under temporal
-validation. Second, a canonical supervised neural baseline — the
-DeepLOB-style CNN-LSTM — establishes whether a deep model can move
+validation. Second, a canonical supervised neural baseline, the
+DeepLOB-style CNN-LSTM, establishes whether a deep model can move
 above that floor under the same leakage-safe protocol. Phase 7B
 delivers the second bar.
 
@@ -24,16 +24,16 @@ smoke tests on the bundled synthetic fixture.
 
 The model lives in `chronoslob/models/deeplob.py` and ships:
 
-- `DeepLOBConfig` — frozen dataclass with `input_features`, `n_classes`,
+- `DeepLOBConfig`: frozen dataclass with `input_features`, `n_classes`,
   `conv_channels` (default 16), `conv_kernel_size` (default 3),
   `lstm_hidden_size` (default 32), `lstm_layers` (default 1),
   `dropout` (default 0.1) and `use_batch_norm` (default `True`).
-- `DeepLOBModel` — `torch.nn.Module` that applies two padded 1D
+- `DeepLOBModel`: `torch.nn.Module` that applies two padded 1D
   convolutions over the feature-as-channel layout, optionally wraps
   each convolution in `BatchNorm1d`, applies ReLU and dropout, then
   feeds the per-time-step representation to an LSTM. The final
   time-step output is projected to class logits.
-- `create_deeplob_model(config)` — factory that returns a configured
+- `create_deeplob_model(config)`: factory that returns a configured
   model.
 
 The forward pass expects input tensors of shape
@@ -127,7 +127,7 @@ notice to that effect, and the experiment result dictionary carries a
 No FI-2010 benchmark numbers are reported by this repository. A future
 phase may match the original DeepLOB architecture exactly, run it
 against user-supplied benchmark data and publish the resulting metrics
-under the same leakage-safe protocol — until then, no such numbers
+under the same leakage-safe protocol; until then, no such numbers
 exist in the code, configs, reports or tests.
 
 ## Future work
