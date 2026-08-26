@@ -14,7 +14,6 @@ import math
 import os
 import platform
 import shutil
-import sys
 import time
 import tracemalloc
 from collections.abc import Callable, Mapping, Sequence
@@ -1115,10 +1114,8 @@ def _build_environment_payload(
         "created_at": created_at.isoformat().replace("+00:00", "Z"),
         "platform": platform.platform(),
         "python_version": platform.python_version(),
-        "python_executable": sys.executable,
         "package_version": __version__,
         "cpu_count": os.cpu_count(),
-        "process_id": os.getpid(),
         "code_commit": code_commit,
         "config_path": str(config_path),
         "data_source_path": str(data_path),

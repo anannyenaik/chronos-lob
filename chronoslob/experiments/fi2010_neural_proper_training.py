@@ -1,4 +1,4 @@
-﻿"""FI-2010 proper-training neural subset: longer training with early stopping.
+"""FI-2010 proper-training neural subset: longer training with early stopping.
 
 This runner produces longer-training neural modelling evidence that is reported
 **separately** from the one-epoch matched full grid. It is not a replacement for
@@ -1080,7 +1080,6 @@ def _execute_run_spec(
             model_name=spec.model_name,
             frame=frame,
             config=inputs.config,
-            data_path=fold_path,
             split=inputs.split,
             feature_columns=inputs.feature_columns,
             all_labels=inputs.all_labels,

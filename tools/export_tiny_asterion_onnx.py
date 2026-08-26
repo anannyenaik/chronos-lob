@@ -160,7 +160,7 @@ def _build_synthetic_toy_dataset() -> tuple[np.ndarray, np.ndarray]:
     labels[signal < -0.5] = 0  # down
     labels[signal > 0.5] = 2  # up
 
-    # [N, lookback, features]
+    # DeepLOB expects [N, lookback, features]; lookback is 1 for this export.
     return features.reshape(N_SAMPLES, LOOKBACK, INPUT_FEATURES), labels
 
 

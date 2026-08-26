@@ -7,6 +7,7 @@ Public modules grouped by package area.
 - `chronoslob.data.binance`
 - `chronoslob.data.event_store`
 - `chronoslob.data.fi2010`
+- `chronoslob.data.fi2010_official`
 - `chronoslob.data.manifests`
 - `chronoslob.data.schemas`
 - `chronoslob.data.validation`
@@ -23,9 +24,11 @@ Public modules grouped by package area.
 
 - `chronoslob.features.imbalance`
 - `chronoslob.features.microprice`
+- `chronoslob.features.microstructure_fi2010`
 - `chronoslob.features.order_flow`
 - `chronoslob.features.pipeline`
 - `chronoslob.features.regimes`
+- `chronoslob.features.registry`
 - `chronoslob.features.volatility`
 
 ## `labels`
@@ -49,6 +52,10 @@ Public modules grouped by package area.
 - `chronoslob.training.datasets`
 - `chronoslob.training.evaluate`
 - `chronoslob.training.experiment`
+- `chronoslob.training.matrix_ssl_datasets`
+- `chronoslob.training.matrix_ssl_experiment`
+- `chronoslob.training.matrix_ssl_v2_datasets`
+- `chronoslob.training.matrix_ssl_v2_experiment`
 - `chronoslob.training.metrics`
 - `chronoslob.training.multitask_datasets`
 - `chronoslob.training.multitask_experiment`
@@ -66,6 +73,9 @@ Public modules grouped by package area.
 - `chronoslob.models.baselines`
 - `chronoslob.models.calibration`
 - `chronoslob.models.deeplob`
+- `chronoslob.models.matrix_ssl`
+- `chronoslob.models.matrix_ssl_v2`
+- `chronoslob.models.matrix_transformer`
 - `chronoslob.models.multitask`
 - `chronoslob.models.preprocessing`
 - `chronoslob.models.ssl`
@@ -84,8 +94,18 @@ Public modules grouped by package area.
 ## `analysis`
 
 - `chronoslob.analysis.ablations`
+- `chronoslob.analysis.execution_centrepiece`
+- `chronoslob.analysis.execution_v3`
+- `chronoslob.analysis.execution_v3_analysis`
+- `chronoslob.analysis.fi2010_ablation_figures`
+- `chronoslob.analysis.fi2010_feature_ablation_analysis`
+- `chronoslob.analysis.fi2010_figures`
+- `chronoslob.analysis.fi2010_label_mapping`
+- `chronoslob.analysis.proper_neural_analysis`
 - `chronoslob.analysis.regimes`
 - `chronoslob.analysis.sensitivity`
+- `chronoslob.analysis.ssl_failure_analysis`
+- `chronoslob.analysis.ssl_v2_analysis`
 - `chronoslob.analysis.summary`
 - `chronoslob.analysis.transfer`
 
@@ -94,5 +114,6 @@ Public modules grouped by package area.
 - `chronoslob.utils.audit`
 - `chronoslob.utils.logging`
 - `chronoslob.utils.paths`
+- `chronoslob.utils.release_text`
 - `chronoslob.utils.report_archive`
 - `chronoslob.utils.seeding`

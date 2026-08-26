@@ -1,4 +1,4 @@
-﻿"""Tests for the FI-2010 proper-training neural subset runner."""
+"""Tests for the FI-2010 proper-training neural subset runner."""
 
 from __future__ import annotations
 

@@ -152,8 +152,8 @@ profile copy.
 At the current public-release point, the neural full grid and execution-v3 are
 `archived_valid`, feature ablations are `partial_real`, feature-ablation
 analysis is `complete_real`, figure outputs are real with unsupported regime
-plots skipped, and the manual paper has not yet been written. The strongest
-public hook is the execution centrepiece: forecasting quality and
+plots skipped, and the manual paper has not yet been written. The primary
+public result is the execution centrepiece: forecasting quality and
 trading-signal quality diverge under confidence, cost, latency, turnover and
 adverse-selection proxy diagnostics. The matched full grid supports the
 existence of a supervised-vs-SSL comparison, but it does not support broad SSL

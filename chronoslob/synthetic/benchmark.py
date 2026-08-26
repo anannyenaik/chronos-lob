@@ -119,7 +119,7 @@ def run_synthetic_benchmark(
         features, targets, train_end, val_end, class_labels, seed, warnings
     )
     regime_holdout = _run_regime_holdout(
-        merged, features, targets, regimes, class_labels, seed, holdout_regimes, warnings
+        features, targets, regimes, class_labels, seed, holdout_regimes, warnings
     )
 
     return BenchmarkResult(
@@ -252,7 +252,6 @@ def _run_chronological(
 
 
 def _run_regime_holdout(
-    merged: pd.DataFrame,
     features: np.ndarray,
     targets: np.ndarray,
     regimes: np.ndarray,

@@ -105,6 +105,11 @@ def _process_doc_terms() -> tuple[str, ...]:
     )
 
 
+def _flag_tokens() -> tuple[str, ...]:
+    """CLI flag spellings that collide with a forbidden prose term."""
+    return ("--no-" + _compact("res", "ume"), "--" + _compact("res", "ume"))
+
+
 def _iter_public_text_files(root: Path) -> list[Path]:
     files: list[Path] = []
     for path in root.rglob("*"):
@@ -150,6 +155,8 @@ def test_public_text_has_no_internal_workflow_or_positioning_terms() -> None:
 
     for path in _iter_public_text_files(root):
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
+        for token in _flag_tokens():
+            text = text.replace(token, "")
         for term in terms:
             if term.lower() in text:
                 issues.append(f"{path.relative_to(root)}: {term}")

@@ -1,13 +1,13 @@
 # Recorded-public-L2 ChronosLOB → Asterion ONNX export
 
-`tools/export_asterion_public_l2_onnx.py` trains and exports a **tiny, real-data**
+`tools/export_asterion_public_l2_onnx.py` trains and exports a tiny, real-data
 ChronosLOB DeepLOB model to ONNX for the [Asterion](https://github.com/krakxn)
 order-book engine's optional ONNX Runtime inference backend.
 
 It supersedes the synthetic-toy `tools/export_tiny_asterion_onnx.py`
-(`chronoslob_tiny_real`, 4-feature single-timestep) **for model-contract
-evidence**: it consumes a compact, committed **recorded public Binance crypto L2
-depth** sample, builds a genuine multi-timestep window, applies deterministic
+(`chronoslob_tiny_real`, 4-feature single-timestep) for model-contract
+evidence: it consumes a compact, committed recorded public Binance crypto L2
+depth sample, builds a genuine multi-timestep window, applies deterministic
 normalisation, trains a small DeepLOB-style CNN-LSTM and emits a richer windowed
 model contract plus expected-fixture and checksum artefacts.
 
@@ -18,7 +18,7 @@ Into Asterion's `data/models/` (paths overridable):
 * `chronoslob_public_l2_tiny.onnx`: windowed `[1, 16, 40] → [1, 3]` DeepLOB
   artefact (a few KB), trained on recorded public L2 depth.
 * `chronoslob_public_l2_tiny.metadata.json`: model contract: shapes, per-timestep
-  feature count, **window length**, feature schema, **normalisation metadata**
+  feature count, window length, feature schema, normalisation metadata
   (mid-relative + per-feature z-score mean/std), expected input/output, training
   summary (diagnostic only), source-data + model checksums, ChronosLOB source
   commit and explicit claim boundary.
@@ -29,19 +29,19 @@ Into Asterion's `data/models/` (paths overridable):
 
 ## Claim boundary
 
-This artefact is **recorded-public-data model-contract evidence for moving a
-research-style LOB model into Asterion's deterministic inference path.** It is:
+This artefact is recorded-public-data model-contract evidence for moving a
+research-style LOB model into Asterion's deterministic inference path. It is:
 
-* trained only on a compact **recorded public Binance crypto L2 depth** window
+* trained only on a compact recorded public Binance crypto L2 depth window
   sample (BTCUSDT, public REST `/api/v3/depth` snapshots), no API keys, no
   account/order endpoints, no authenticated connectivity, no private data;
-* a deliberately **tiny** DeepLOB-style baseline on a small, heavily-overlapping
+* a deliberately tiny DeepLOB-style baseline on a small, heavily-overlapping
   window set: a systems/integration artefact, not a research result.
 
-It is **not** evidence of predictive quality, profitability, alpha, live trading,
+It is not evidence of predictive quality, profitability, alpha, live trading,
 production model-serving, production HFT, portable latency, equities-market
 realism or L3 exchange-feed realism. Any accuracy/loss in the metadata is
-**diagnostic context only**, with no trading significance.
+diagnostic context only, with no trading significance.
 
 ## Architecture / contract
 

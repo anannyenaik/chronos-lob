@@ -1,6 +1,6 @@
 # Tiny ChronosLOB → Asterion ONNX export
 
-`tools/export_tiny_asterion_onnx.py` trains and exports a **tiny, real**
+`tools/export_tiny_asterion_onnx.py` trains and exports a tiny, real
 ChronosLOB DeepLOB model to ONNX for the [Asterion](https://github.com/krakxn)
 order-book engine's optional ONNX Runtime inference backend.
 
@@ -16,22 +16,22 @@ order-book engine's optional ONNX Runtime inference backend.
 
 ## Claim boundary
 
-This artefact is **a tiny ChronosLOB research-model artefact exported into
-Asterion for systems-integration and inference-latency evaluation.** It is:
+This artefact is a tiny ChronosLOB research-model artefact exported into
+Asterion for systems-integration and inference-latency evaluation. It is:
 
-* trained only on **synthetic toy data** (seeded, standardised, O(1) features
+* trained only on synthetic toy data (seeded, standardised, O(1) features
   positionally aligned to Asterion's L2 feature ordering), not FI-2010 and not
   any private/market dataset;
-* a deliberately **reduced** 4-feature, single-timestep (`lookback == 1`)
+* a deliberately reduced 4-feature, single-timestep (`lookback == 1`)
   simplification of DeepLOB, chosen so the four caller-owned Asterion L2
   features map 1:1 to the model input.
 
-It is **not** evidence of predictive quality, trading profitability, live
+It is not evidence of predictive quality, trading profitability, live
 trading, production model-serving, production HFT or SOTA modelling. The smoke
 run reduces a cross-entropy loss so the network is genuinely *trained* rather
 than random, but the learned relationship is an artificial synthetic rule with
 no market meaning. The exported logits are consumed by Asterion as a
-deterministic **integration-check score**, not an alpha signal.
+deterministic integration-check score, not an alpha signal.
 
 ## Architecture / contract
 

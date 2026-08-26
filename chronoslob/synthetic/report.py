@@ -48,7 +48,7 @@ def render_report_markdown(
     lines.extend(_feature_section())
     lines.extend(_label_section(label_summary_rows))
     lines.extend(_benchmark_section(benchmark))
-    lines.extend(_diagnostics_section(regime_diagnostic_rows, benchmark))
+    lines.extend(_diagnostics_section(regime_diagnostic_rows))
     lines.extend(_claim_section(claim_assessment))
     lines.extend(_limitations_section())
     return "\n".join(lines).rstrip() + "\n"
@@ -189,10 +189,7 @@ def _benchmark_section(benchmark: BenchmarkResult) -> list[str]:
     ]
 
 
-def _diagnostics_section(
-    rows: Sequence[Mapping[str, Any]],
-    benchmark: BenchmarkResult,
-) -> list[str]:
+def _diagnostics_section(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     header = (
         "regime_name",
         "n_samples",
@@ -256,7 +253,6 @@ def write_figures(
     *,
     feature_summary_rows: Sequence[Mapping[str, Any]],
     benchmark: BenchmarkResult,
-    regime_diagnostic_rows: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
     """Write compact figures if matplotlib is available; otherwise skip."""
     try:

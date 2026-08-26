@@ -15,6 +15,10 @@ import pandas as pd
 
 from chronoslob.experiments.manifests import stable_json_dumps
 from chronoslob.utils.paths import project_root
+from chronoslob.utils.release_text import (
+    HAMILTON_PROVENANCE_PARAGRAPH,
+    SSL_V2_SCOPE_PARAGRAPH,
+)
 
 __all__ = [
     "SSL_V2_ANALYSIS_VERSION",
@@ -23,23 +27,6 @@ __all__ = [
 ]
 
 SSL_V2_ANALYSIS_VERSION = "fi2010-ssl-v2-analysis/v1"
-
-_CANONICAL_SSL_V2_PARAGRAPH = (
-    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1\N{EN DASH}5, "
-    "horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. Across 30 matched comparison "
-    "cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, "
-    "supporting scoped predictive and calibration improvement for this exact "
-    "retained scope. The evidence is mixed by seed and horizon, including negative "
-    "mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL improvement "
-    "remains unsupported."
-)
-_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH = (
-    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array "
-    "jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and "
-    "claim assessments are committed; large checkpoints, raw predictions and "
-    "cluster logs are intentionally excluded. GPU determinism warnings are "
-    "documented, and bitwise reproducibility is not claimed."
-)
 
 # Confidence thresholds for selective-prediction (confidence-filtered) diagnostics.
 SSL_V2_CONFIDENCE_THRESHOLDS: tuple[float, ...] = (0.33, 0.50, 0.70, 0.85, 0.95)
@@ -738,9 +725,9 @@ def _render_report(
         "",
     ]
     if _release_scope_supported(summary=summary, v2_rows=v2_rows, claims=claims):
-        lines += [*_wrap(_CANONICAL_SSL_V2_PARAGRAPH), ""]
+        lines += [*_wrap(SSL_V2_SCOPE_PARAGRAPH), ""]
     if compute_provenance:
-        lines += [*_wrap(_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH), ""]
+        lines += [*_wrap(HAMILTON_PROVENANCE_PARAGRAPH), ""]
     lines += ["## Predictive Metrics", ""]
     if v2_rows.empty:
         lines.append("No matched supervised-vs-SSL-v2 rows were available.")

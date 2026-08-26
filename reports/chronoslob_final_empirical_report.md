@@ -13,7 +13,7 @@ active fraction, turnover, cost, latency and adverse-selection proxy diagnostics
 Supported: leakage-safe FI-2010 benchmark evidence, matched supervised/SSL comparisons, scoped feature-stability analysis, controlled synthetic event-level replay and an offline Binance Spot
 aggregated L2 replay path.
 
-The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5, horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells, SSL-v2 has positive mean deltas for macro-F1,
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1-5, horizons 10/50, seeds 0-2 and lookback 50. Across 30 matched comparison cells, SSL-v2 has positive mean deltas for macro-F1,
 MCC, ECE and Brier, supporting scoped predictive and calibration improvement for this exact retained scope. The evidence is mixed by seed and horizon, including negative mean macro-F1 deltas for seed
 1 and horizon 50, so broad SSL improvement remains unsupported.
 

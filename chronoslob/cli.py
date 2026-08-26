@@ -1,4 +1,19 @@
-"""Command-line interface for ChronosLOB."""
+"""Command-line interface for ChronosLOB.
+
+The module is laid out in three consecutive layers, in this order:
+
+1. ``_<command>_impl`` functions holding the actual behaviour. They take
+   keyword arguments, print to stdout and return a process exit code, so they
+   are directly callable from tests without going through a parser.
+2. :func:`_fallback_main`, an argparse dispatcher used when Typer is not
+   installed. Typer is a declared dependency, but ``doctor`` and the smoke
+   commands must still work in a bare environment before the extras are
+   installed.
+3. The Typer application, which registers one thin wrapper per command.
+
+Both parsers delegate to the same ``_impl`` functions, so command behaviour is
+defined once and only the argument surface is described twice.
+"""
 
 from __future__ import annotations
 
@@ -25,8 +40,8 @@ KEY_FOLDERS = (
     "notebooks",
     "reports",
 )
-_REUSE_COMPLETED_FLAG = "--" + "res" + "ume"
-_NO_REUSE_COMPLETED_FLAG = "--no-" + "res" + "ume"
+_REUSE_COMPLETED_FLAG = "--resume"
+_NO_REUSE_COMPLETED_FLAG = "--no-resume"
 
 
 def _print(message: Any) -> None:
@@ -4514,7 +4529,6 @@ def _inspect_binance_replay_impl(
         replay_binance_jsonl,
         summarise_replay_result,
     )
-    from chronoslob.data.schemas import Side
 
     snapshot_path = Path(snapshot_path)
     updates_path = Path(updates_path)
@@ -4560,8 +4574,6 @@ def _inspect_binance_replay_impl(
         bid_levels = len(final_snapshot.bids)
         ask_levels = len(final_snapshot.asks)
         print(f"  depth counts:     bids={bid_levels}, asks={ask_levels}")
-        # Reference Side to keep the import meaningful even when no levels.
-        _ = Side.BID
     else:
         print("  best bid:         not available (no snapshots emitted)")
         print("  best ask:         not available (no snapshots emitted)")

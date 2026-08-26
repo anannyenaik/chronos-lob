@@ -216,7 +216,7 @@ def test_labels_have_no_lookahead() -> None:
     features = build_event_feature_frame(result.events, replay.snapshots, window_events=30)
     labels = build_label_frame(features, horizon=10)
     assert not labels.empty
-    leakage = validate_no_lookahead_frames(features, labels)
+    leakage = validate_no_lookahead_frames(labels)
     assert leakage.ok
     # Every label must reference a strictly future snapshot.
     for _, row in labels.iterrows():

@@ -20,7 +20,13 @@ Local YAML configs grouped by directory. Files containing `smoke` in the name us
 - `configs/experiments/feature_audit_fi2010.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
 - `configs/experiments/fi2010_baseline_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
 - `configs/experiments/fi2010_deeplob_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
+- `configs/experiments/fi2010_midprice_h10.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
+- `configs/experiments/fi2010_multifold.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
+- `configs/experiments/fi2010_neural_proper_training.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
+- `configs/experiments/fi2010_neural_proper_training_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
+- `configs/experiments/fi2010_neural_serious.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
 - `configs/experiments/fi2010_split_audit.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.
+- `configs/experiments/fi2010_ssl_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
 - `configs/experiments/fi2010_torch_dataset_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
 - `configs/experiments/full_audit_smoke.yaml` - Synthetic-fixture configuration. Uses synthetic fixture: `yes`.
 - `configs/experiments/label_audit_fi2010.yaml` - Experiment or audit configuration. Uses synthetic fixture: `no`.

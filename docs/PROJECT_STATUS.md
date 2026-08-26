@@ -101,7 +101,7 @@ crypto-market depth-stream engineering evidence only: not equity-market
 evidence, not live trading, not profitability evidence and not predictive
 success evidence. See [BINANCE_L2_EXTENSION.md](BINANCE_L2_EXTENSION.md).
 
-The strongest project hook is the execution centrepiece, not broad SSL success.
+The primary result is the execution centrepiece, not broad SSL success.
 It shows how forecast metrics can diverge from retained offline signal-quality
 proxy diagnostics under confidence, cost, latency, turnover and
 adverse-selection assumptions.
@@ -119,8 +119,8 @@ and records why SSL is not a broad success: the completed grid does not improve
 overall, the only positive predictive-metric signal is narrow to fold 1, horizon
 50 in the partial proper-training subset, and calibration worsened there.
 
-The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
-horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1-5,
+horizons 10/50, seeds 0-2 and lookback 50. Across 30 matched comparison cells,
 SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
 scoped predictive and calibration improvement for this exact retained scope.
 The evidence is mixed by seed and horizon, including negative mean macro-F1

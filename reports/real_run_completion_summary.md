@@ -5,7 +5,6 @@ Honest status of the end-to-end real FI-2010 evidence run.
 - Date: 2026-05-28
 - Repository commit: `a72d46f0a1d7e0ccb62853eee6004375f7b5358c`
 - Compute: CPU-only (PyTorch 2.12.0+cpu, CUDA unavailable)
-- Preflight: see [reports/real_run_preflight.md](real_run_preflight.md)
 
 This run produced real, reproducible artefacts. Every reported number comes from
 a stored real artefact, and no smoke-test artefact was treated as empirical
@@ -636,7 +635,7 @@ python -m chronoslob.cli run-fi2010-feature-ablations \
   --feature-groups all \
   --ablation-modes all \
   --out experiments/fi2010_feature_ablations \
-  --res<!-- -->ume \
+  --resume \
   --strict
 
 python -m chronoslob.cli run-fi2010-feature-ablations \
@@ -649,7 +648,7 @@ python -m chronoslob.cli run-fi2010-feature-ablations \
   --feature-groups all \
   --ablation-modes all \
   --out experiments/fi2010_feature_ablations \
-  --res<!-- -->ume \
+  --resume \
   --strict
 ```
 
@@ -823,7 +822,7 @@ python -m chronoslob.cli run-fi2010-feature-ablations \
   --feature-groups all \
   --ablation-modes all \
   --out experiments/fi2010_feature_ablations \
-  --res<!-- -->ume \
+  --resume \
   --strict
 
 python -m chronoslob.cli run-fi2010-feature-ablations \
@@ -836,6 +835,6 @@ python -m chronoslob.cli run-fi2010-feature-ablations \
   --feature-groups all \
   --ablation-modes all \
   --out experiments/fi2010_feature_ablations \
-  --res<!-- -->ume \
+  --resume \
   --strict
 ```

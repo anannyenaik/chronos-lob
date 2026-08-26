@@ -24,6 +24,10 @@ from typing import Any, Literal
 from chronoslob import __version__
 from chronoslob.experiments.manifests import sha256_file, stable_json_dumps
 from chronoslob.utils.paths import project_root
+from chronoslob.utils.release_text import (
+    HAMILTON_PROVENANCE_PARAGRAPH,
+    SSL_V2_SCOPE_PARAGRAPH,
+)
 
 __all__ = [
     "ARTEFACT_INVENTORY_COLUMNS",
@@ -3170,15 +3174,7 @@ def _render_release_interpretation(
     if release_scope:
         lines.extend(
             [
-                *_wrapped_paragraph(
-                    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds "
-                    "1\N{EN DASH}5, horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. "
-                    "Across 30 matched comparison cells, SSL-v2 has positive mean deltas "
-                    "for macro-F1, MCC, ECE and Brier, supporting scoped predictive and "
-                    "calibration improvement for this exact retained scope. The evidence "
-                    "is mixed by seed and horizon, including negative mean macro-F1 deltas "
-                    "for seed 1 and horizon 50, so broad SSL improvement remains unsupported."
-                ),
+                *_wrapped_paragraph(SSL_V2_SCOPE_PARAGRAPH),
                 "",
             ]
         )
@@ -3189,14 +3185,7 @@ def _render_release_interpretation(
     ):
         lines.extend(
             [
-                *_wrapped_paragraph(
-                    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm "
-                    "array jobs on Durham University Hamilton/NCC HPC. Retained summaries, "
-                    "provenance and claim assessments are committed; large checkpoints, raw "
-                    "predictions and cluster logs are intentionally excluded. GPU "
-                    "determinism warnings are documented, and bitwise reproducibility is "
-                    "not claimed."
-                ),
+                *_wrapped_paragraph(HAMILTON_PROVENANCE_PARAGRAPH),
                 "",
             ]
         )

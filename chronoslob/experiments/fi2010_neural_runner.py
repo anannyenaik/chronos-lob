@@ -1024,7 +1024,6 @@ def run_fi2010_neural_benchmark(
                 model_name=item.model_name,
                 frame=frame,
                 config=context.benchmark_config,
-                data_path=fold_input.path,
                 split=context.split,
                 feature_columns=context.feature_columns,
                 all_labels=context.all_labels,

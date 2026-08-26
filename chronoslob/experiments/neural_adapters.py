@@ -1392,7 +1392,6 @@ def run_neural_paper_model(
     model_name: str,
     frame: pd.DataFrame,
     config: FI2010BenchmarkConfig,
-    data_path: Path,
     split: SplitIndices,
     feature_columns: Sequence[str],
     all_labels: Sequence[Any],

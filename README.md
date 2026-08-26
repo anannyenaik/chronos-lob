@@ -33,13 +33,10 @@ execution quality or production execution realism.
 | Synthetic event-level replay | `archived_valid` | Controlled synthetic evidence only. |
 | Binance Spot aggregated L2 replay | `partial_real` | Crypto L2 replay engineering path; committed sample is fixture-backed, not equity or predictive-success evidence. |
 
-The repository is strong because its claims are audited against retained
-artefacts and explicit limitations, not because it claims profitability.
-
 ## SSL-v2 Scope
 
 The SSL-v2 benchmark is complete for the stored FI-2010 scope:
-folds 1–5, horizons 10/50, seeds 0–2 and lookback 50.
+folds 1-5, horizons 10/50, seeds 0-2 and lookback 50.
 
 Across 30 matched comparison cells, SSL-v2 has positive mean deltas for
 macro-F1, MCC, ECE and Brier, supporting scoped predictive and calibration

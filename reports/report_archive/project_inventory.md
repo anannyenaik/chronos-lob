@@ -2,11 +2,11 @@
 
 Snapshot of repository structure for reproducibility and review.
 
-- Package version: `0.1.0`
-- Config files: `25`
-- Report files, excluding this generated archive: `22`
-- Test files: `74`
-- CLI commands: `32`
+- Package version: `0.2.0`
+- Config files: `31`
+- Report files, excluding this generated archive: `49`
+- Test files: `113`
+- CLI commands: `69`
 
 ## Major Package Areas
 
@@ -28,6 +28,7 @@ Snapshot of repository structure for reproducibility and review.
 - `inspect-release-readiness`
 - `build-report-archive`
 - `inspect-report-archive`
+- `inspect-experiment-artifacts`
 - `inspect-event-log`
 - `inspect-event-tokens`
 - `event-log-to-features`
@@ -54,6 +55,42 @@ Snapshot of repository structure for reproducibility and review.
 - `inspect-analysis`
 - `run-robustness-analysis-smoke`
 - `inspect-binance-replay`
+- `prepare-fi2010-benchmark`
+- `verify-fi2010-local`
+- `convert-fi2010-official`
+- `inspect-fi2010-multifold`
+- `prepare-fi2010-multifold`
+- `run-fi2010-multifold-classical`
+- `inspect-fi2010-neural-plan`
+- `run-fi2010-neural-benchmark`
+- `run-fi2010-ssl-neural-benchmark`
+- `run-fi2010-ssl-v2-benchmark`
+- `run-fi2010-neural-full-grid`
+- `build-fi2010-figures`
+- `audit-fi2010-features`
+- `run-fi2010-feature-ablations`
+- `build-fi2010-ablation-figures`
+- `analyse-fi2010-feature-ablations`
+- `analyse-fi2010-uncertainty`
+- `analyse-fi2010-ssl-results`
+- `analyse-fi2010-ssl-v2-results`
+- `analyse-fi2010-execution-v3`
+- `build-execution-centrepiece`
+- `run-fi2010-brutal-ablations`
+- `run-fi2010-execution-v2`
+- `build-fi2010-execution-v3`
+- `run-paper-experiment`
+- `run-paper-ablations`
+- `run-system-benchmarks`
+- `inspect-system-benchmarks`
+- `build-paper-plots`
+- `inspect-paper-experiment`
+- `build-paper-report`
+- `build-final-empirical-report`
+- `build-evidence-pack`
+- `run-synthetic-lob-benchmark`
+- `replay-binance-l2-sample`
+- `inspect-paper-report`
 
 ## Validation Command List
 

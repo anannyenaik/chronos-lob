@@ -164,6 +164,9 @@ class ProjectAuditResult:
         return self.status == AuditStatus.PASS
 
 
+# The scanners below read every tracked file, including this one. Spelling each
+# pattern as fragments joined at import time keeps the pattern table from
+# matching itself and reporting the audit's own source as a violation.
 def _words(*parts: str) -> str:
     return " ".join(parts)
 
@@ -308,6 +311,13 @@ _PUBLIC_RELEASE_WORDING_GROUPS: Mapping[str, tuple[str, ...]] = {
         _words(_compact("mas", "ter"), _compact("pro", "mpt")),
     ),
 }
+# Command-line flag tokens whose spelling collides with a forbidden prose term.
+# They are stripped before scanning so a real flag can be documented plainly;
+# the surrounding prose is still checked.
+_WORDING_SCAN_EXEMPT_TOKENS: tuple[str, ...] = (
+    "--no-" + _compact("res", "ume"),
+    "--" + _compact("res", "ume"),
+)
 _README_REQUIRED_LINK_TARGETS = (
     "docs/REPRODUCIBILITY.md",
     "docs/CLI_REFERENCE.md",
@@ -786,6 +796,8 @@ def check_public_release_wording(
         relative = _relative_to_root(resolved_root, file_path)
         for line_index, line in enumerate(text.splitlines()):
             lowered_line = line.lower()
+            for token in _WORDING_SCAN_EXEMPT_TOKENS:
+                lowered_line = lowered_line.replace(token, "")
             for group, phrase, lowered_phrase in phrase_entries:
                 if group == "public_doc_process" and file_path.suffix.lower() not in {
                     ".md",

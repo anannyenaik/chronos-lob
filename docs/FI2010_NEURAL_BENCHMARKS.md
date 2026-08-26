@@ -48,7 +48,7 @@ the SSL-v2 benchmark analysis.
 ## Relationship To SSL-v2
 
 The Hamilton SSL-v2 benchmark is a separate retained evidence stream. It covers
-the stored FI-2010 scope of folds 1–5, horizons 10/50, seeds 0–2 and lookback
+the stored FI-2010 scope of folds 1-5, horizons 10/50, seeds 0-2 and lookback
 50. It supports scoped predictive and calibration improvement for that exact
 scope, while results remain mixed by seed and horizon and broad SSL improvement
 remains unsupported.

@@ -16,8 +16,6 @@
   ],
   "package_version": "0.1.0",
   "platform": "Windows-10-10.0.19045-SP0",
-  "process_id": 14964,
-  "python_executable": "C:\\Users\\Lenovo\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\\python.exe",
   "python_version": "3.11.9",
   "runner_version": "phase-i/system-benchmark-runner/v1"
 }

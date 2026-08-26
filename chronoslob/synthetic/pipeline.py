@@ -144,7 +144,7 @@ def run_synthetic_lob_pipeline(
         window_events=config.window_events,
     )
     label_frame = build_label_frame(feature_frame, horizon=config.horizon)
-    leakage = validate_no_lookahead_frames(feature_frame, label_frame)
+    leakage = validate_no_lookahead_frames(label_frame)
     benchmark = run_synthetic_benchmark(
         feature_frame,
         label_frame,
@@ -196,7 +196,6 @@ def run_synthetic_lob_pipeline(
         regime_diag=regime_diag,
         claim_assessment=claim_assessment,
         summary=summary,
-        tick_size=config.event_config.tick_size,
         make_figures=make_figures,
     )
 
@@ -226,7 +225,6 @@ def _write_artefacts(
     regime_diag: pd.DataFrame,
     claim_assessment: Mapping[str, Any],
     summary: Mapping[str, Any],
-    tick_size: float,
     make_figures: bool,
 ) -> list[Path]:
     written: list[Path] = []
@@ -269,9 +267,7 @@ def _write_artefacts(
         _write_events_sample(out_dir / "synthetic_events_sample.csv", generation_events)
     )
     written.append(
-        _write_snapshots_sample(
-            out_dir / "synthetic_snapshots_sample.csv", snapshots, tick_size
-        )
+        _write_snapshots_sample(out_dir / "synthetic_snapshots_sample.csv", snapshots)
     )
 
     figure_entries: list[dict[str, Any]] = []
@@ -280,7 +276,6 @@ def _write_artefacts(
             out_dir,
             feature_summary_rows=feature_summary.to_dict("records"),
             benchmark=benchmark,
-            regime_diagnostic_rows=regime_diag.to_dict("records"),
         )
     written.append(
         _write_json(
@@ -472,7 +467,7 @@ def _write_events_sample(path: Path, events: Sequence[Any]) -> Path:
     return _write_rows(path, header, rows)
 
 
-def _write_snapshots_sample(path: Path, snapshots: Sequence[Any], tick_size: float) -> Path:
+def _write_snapshots_sample(path: Path, snapshots: Sequence[Any]) -> Path:
     header = (
         "sequence_id",
         "regime_name",

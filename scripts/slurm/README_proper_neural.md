@@ -138,8 +138,8 @@ sbatch scripts/slurm/proper_neural_consolidate.sbatch
 - **Committed (storage-light):** top-level aggregate summaries under
   `experiments/fi2010_neural_proper_training_broader/` (CSV/JSON), the Slurm
   scripts, and the CSV, exactly as for the existing subset_v2 directory.
-- **Ignored (gitignored, never committed):** `…_broader/runs/`, the per-task
-  tree `…_hamilton_tasks/`, the timing tree `…_hamilton_timing/`, all
+- **Ignored (gitignored, never committed):** `..._broader/runs/`, the per-task
+  tree `..._hamilton_tasks/`, the timing tree `..._hamilton_timing/`, all
   `predictions.csv`, checkpoints (`*.pt`), and cluster logs (`logs/`).
 
 Bring the lightweight aggregates back to the laptop for analysis, doc updates,

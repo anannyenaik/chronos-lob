@@ -43,8 +43,8 @@ evidence streams.
 - Forecast accuracy, calibration error and confidence-filtering
   diagnostics do not in themselves characterise tradability.
 
-The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1–5,
-horizons 10/50, seeds 0–2 and lookback 50. Across 30 matched comparison cells,
+The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1-5,
+horizons 10/50, seeds 0-2 and lookback 50. Across 30 matched comparison cells,
 SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, supporting
 scoped predictive and calibration improvement for this exact retained scope.
 The evidence is mixed by seed and horizon, including negative mean macro-F1

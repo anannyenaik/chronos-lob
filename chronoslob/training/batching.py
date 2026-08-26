@@ -36,7 +36,7 @@ def _require_torch() -> Any:
     return torch
 
 
-def _stack_index_tensor(values: Sequence[Any], *, name: str) -> Any:
+def _stack_index_tensor(values: Sequence[Any]) -> Any:
     torch_module = _require_torch()
     return torch_module.tensor([int(value) for value in values], dtype=torch_module.long)
 
@@ -103,9 +103,9 @@ def collate_fixed_length_batch(
     return {
         "x": x_batch,
         "y": y_batch,
-        "target_index": _stack_index_tensor(target_indices, name="target_index"),
-        "window_start": _stack_index_tensor(window_starts, name="window_start"),
-        "window_end": _stack_index_tensor(window_ends, name="window_end"),
+        "target_index": _stack_index_tensor(target_indices),
+        "window_start": _stack_index_tensor(window_starts),
+        "window_end": _stack_index_tensor(window_ends),
     }
 
 
@@ -211,7 +211,7 @@ def collate_variable_length_batch(
         "x": padded,
         "mask": mask,
         "y": torch_module.stack(y_values, dim=0),
-        "target_index": _stack_index_tensor(target_indices, name="target_index"),
-        "window_start": _stack_index_tensor(window_starts, name="window_start"),
-        "window_end": _stack_index_tensor(window_ends, name="window_end"),
+        "target_index": _stack_index_tensor(target_indices),
+        "window_start": _stack_index_tensor(window_starts),
+        "window_end": _stack_index_tensor(window_ends),
     }

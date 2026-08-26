@@ -21,19 +21,19 @@ python -m chronoslob.cli doctor
 Stdout:
 
 ```text
-ChronosLOB Doctor                             
-+-------------------------------------------------------------------------+
-| Check              | Value                                              |
-|--------------------+----------------------------------------------------|
-| Python             | 3.11.9                                             |
-| Package import     | chronoslob 0.1.0                                   |
-| Project root       | C:\Users\Lenovo\Programming\ChronosLOB\chronos-lob |
-| Folder: configs    | present                                            |
-| Folder: chronoslob | present                                            |
-| Folder: tests      | present                                            |
-| Folder: notebooks  | present                                            |
-| Folder: reports    | present                                            |
-+-------------------------------------------------------------------------+
+ChronosLOB Doctor
++------------------------------------------------+
+| Check              | Value                     |
+|--------------------+---------------------------|
+| Python             | 3.11.9                    |
+| Package import     | chronoslob 0.2.0          |
+| Project root       | <project-root>            |
+| Folder: configs    | present                   |
+| Folder: chronoslob | present                   |
+| Folder: tests      | present                   |
+| Folder: notebooks  | present                   |
+| Folder: reports    | present                   |
++------------------------------------------------+
 ```
 
 Stderr:
@@ -59,11 +59,11 @@ Stdout:
 
 ```text
 ChronosLOB project audit
-  root:                         C:\Users\Lenovo\Programming\ChronosLOB\chronos-lob
-  configs:                      25
-  reports:                      31
-  tests:                        74
-  CLI commands:                 32
+  root:                         <project-root>
+  configs:                      31
+  reports:                      58
+  tests:                        113
+  CLI commands:                 69
   required paths status:        pass
   forbidden-claim issue count:  0
   synthetic-labelling issues:   0

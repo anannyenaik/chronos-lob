@@ -65,7 +65,7 @@ variance, then reports:
 Per metric and per split, candidate models are aligned with the
 baseline by `fold_id`. For each candidate, the analyser records:
 
-- The fold-level mean difference (`candidate − baseline`).
+- The fold-level mean difference (`candidate - baseline`).
 - The sample standard deviation of differences (`ddof=1`) and the
   matching Student-t confidence interval on the mean difference.
 - Wins, losses and ties counts across the paired folds. Wins count

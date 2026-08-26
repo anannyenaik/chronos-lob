@@ -146,10 +146,7 @@ def _tercile_bucket(values: np.ndarray) -> np.ndarray:
     return bucket
 
 
-def validate_no_lookahead_frames(
-    feature_frame: pd.DataFrame,
-    label_frame: pd.DataFrame,
-) -> LeakageResult:
+def validate_no_lookahead_frames(label_frame: pd.DataFrame) -> LeakageResult:
     """Verify every label references a strictly future snapshot.
 
     The check confirms that, for each label row, the ``future_timestamp`` used to

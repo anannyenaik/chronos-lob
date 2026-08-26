@@ -63,6 +63,7 @@ EXPECTED_ARCHIVE_FILES: tuple[Path, ...] = (
 )
 
 _CAPTURE_LIMIT_CHARS = 8_000
+_ROOT_PLACEHOLDER = "project-root"
 _PACKAGE_AREAS = (
     "data",
     "book",
@@ -196,6 +197,36 @@ def _truncate_capture(text: str) -> str:
     if len(stripped) <= _CAPTURE_LIMIT_CHARS:
         return stripped
     return f"{stripped[:_CAPTURE_LIMIT_CHARS].rstrip()}\n...[truncated]..."
+
+
+def _redact_root(text: str, root: Path) -> str:
+    """Replace the absolute checkout path with a placeholder.
+
+    Several CLI commands echo the resolved project root. The archive is
+    committed, so leaving the real path in would publish the operator's home
+    directory. The placeholder is padded back to the width of the path it
+    replaces because ``doctor`` renders its output as a box-drawn table sized
+    to that path, and an unpadded substitution would leave the borders ragged.
+    """
+    placeholder = f"<{_ROOT_PLACEHOLDER}>"
+    absolute = str(root)
+    for variant in (absolute, absolute.replace("\\", "/"), root.as_posix()):
+        text = text.replace(variant, placeholder.ljust(len(variant)))
+    return text
+
+
+def _strip_line_ends(text: str) -> str:
+    """Drop trailing spaces so the committed archive passes ``git diff --check``.
+
+    Console renderers pad rows out to the terminal width, which shows up as
+    trailing whitespace once the capture is written to a file.
+    """
+    return "\n".join(line.rstrip() for line in text.split("\n"))
+
+
+def _capture_stream(value: str | bytes | None, *, root: Path) -> str:
+    redacted = _redact_root(_normalise_text(value), root)
+    return _truncate_capture(_strip_line_ends(redacted))
 
 
 def _ensure_trailing_newline(text: str) -> str:
@@ -484,8 +515,8 @@ def capture_command(
             check=False,
         )
     except subprocess.TimeoutExpired as exc:
-        stdout = _truncate_capture(_normalise_text(exc.stdout))
-        stderr = _truncate_capture(_normalise_text(exc.stderr))
+        stdout = _capture_stream(exc.stdout, root=resolved_root)
+        stderr = _capture_stream(exc.stderr, root=resolved_root)
         timeout_note = f"Command timed out after {timeout_seconds} seconds."
         stderr = f"{stderr}\n{timeout_note}".strip()
         return CommandCapture(
@@ -503,8 +534,8 @@ def capture_command(
         display_command=spec.display_command,
         description=spec.description,
         exit_code=completed.returncode,
-        stdout=_truncate_capture(_normalise_text(completed.stdout)),
-        stderr=_truncate_capture(_normalise_text(completed.stderr)),
+        stdout=_capture_stream(completed.stdout, root=resolved_root),
+        stderr=_capture_stream(completed.stderr, root=resolved_root),
         synthetic=spec.synthetic,
         optional=spec.optional,
     )

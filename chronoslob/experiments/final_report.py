@@ -17,6 +17,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from chronoslob.experiments.manifests import sha256_file, stable_json_dumps
 from chronoslob.utils.paths import project_root
+from chronoslob.utils.release_text import (
+    BROADER_PROPER_TRAINING_PARAGRAPH,
+    HAMILTON_PROVENANCE_PARAGRAPH,
+    NEURAL_LIMITATION_PARAGRAPH,
+    SSL_V2_SCOPE_PARAGRAPH,
+)
 
 __all__ = [
     "FINAL_EMPIRICAL_REPORT_BUILDER_VERSION",
@@ -25,40 +31,6 @@ __all__ = [
 ]
 
 FINAL_EMPIRICAL_REPORT_BUILDER_VERSION = "phase-k/final-empirical-report/v1"
-
-_CANONICAL_SSL_V2_PARAGRAPH = (
-    "The SSL-v2 benchmark is complete for the stored FI-2010 scope: folds 1\N{EN DASH}5, "
-    "horizons 10/50, seeds 0\N{EN DASH}2 and lookback 50. Across 30 matched comparison "
-    "cells, SSL-v2 has positive mean deltas for macro-F1, MCC, ECE and Brier, "
-    "supporting scoped predictive and calibration improvement for this exact "
-    "retained scope. The evidence is mixed by seed and horizon, including negative "
-    "mean macro-F1 deltas for seed 1 and horizon 50, so broad SSL improvement "
-    "remains unsupported."
-)
-_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH = (
-    "The seed-1 and seed-2 SSL-v2 refresh was executed as independent Slurm array "
-    "jobs on Durham University Hamilton/NCC HPC. Retained summaries, provenance and "
-    "claim assessments are committed; large checkpoints, raw predictions and "
-    "cluster logs are intentionally excluded. GPU determinism warnings are "
-    "documented, and bitwise reproducibility is not claimed."
-)
-_CANONICAL_NEURAL_LIMITATION_PARAGRAPH = (
-    "The one-epoch neural full grid is matched comparison evidence, not a "
-    "performance-maximising neural benchmark. The proper-training neural subset "
-    "remains partial, and a broader proper-training neural benchmark across folds, "
-    "seeds, lookbacks and model families is deferred."
-)
-_CANONICAL_BROADER_PROPER_TRAINING_PARAGRAPH = (
-    "The broader proper-training neural benchmark is now complete as post-v0.2.0 work. "
-    "It covers 180 Hamilton Slurm cells across folds 1-5, seeds 0-2, lookbacks "
-    "20/50/100, horizons 10/50, and matrix-transformer plus DeepLOB-style model "
-    "families. The matrix transformer has stronger mean macro-F1 and MCC than the "
-    "DeepLOB-style model in the retained benchmark, but with substantially higher "
-    "variability and weak lookback-100 behaviour. Confidence filtering improves "
-    "retained-sample metrics while reducing active fraction. The result supports a "
-    "scoped benchmark comparison, not a broad neural-superiority claim. v0.2.0 remains "
-    "the published release and does not include this post-release benchmark."
-)
 
 _MODEL_CONFIG = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
@@ -725,7 +697,6 @@ def _load_final_report_data(
     evidence_pack = _load_evidence_pack_artefacts(
         directory=evidence_pack_dir,
         input_paths=input_paths,
-        file_hashes=file_hashes,
         warnings=warnings,
         skipped_sections=skipped_sections,
         missing_sections=missing_sections,
@@ -1196,7 +1167,6 @@ def _load_evidence_pack_artefacts(
     *,
     directory: Path | None,
     input_paths: dict[str, str],
-    file_hashes: dict[str, str],
     warnings: list[str],
     skipped_sections: list[str],
     missing_sections: list[str],
@@ -1409,7 +1379,7 @@ def _render_executive_summary(data: _FinalReportData) -> list[str]:
     ]
     if ssl_v2_available:
         ssl_v2_text = (
-            _CANONICAL_SSL_V2_PARAGRAPH
+            SSL_V2_SCOPE_PARAGRAPH
             if _release_ssl_v2_scope_supported(data)
             else (
                 "Scoped result: SSL-v2 predictive improvement is "
@@ -1427,14 +1397,14 @@ def _render_executive_summary(data: _FinalReportData) -> list[str]:
             ]
         )
     if _proper_training_is_broader_complete(data.proper_training):
-        lines.extend(["", *_wrap_prose(_CANONICAL_BROADER_PROPER_TRAINING_PARAGRAPH)])
+        lines.extend(["", *_wrap_prose(BROADER_PROPER_TRAINING_PARAGRAPH)])
     elif (
         data.full_grid.available
         and data.full_grid.evidence_level != "smoke_test_only"
         and data.proper_training.available
         and data.proper_training.evidence_level == "partial_real"
     ):
-        lines.extend(["", *_wrap_prose(_CANONICAL_NEURAL_LIMITATION_PARAGRAPH)])
+        lines.extend(["", *_wrap_prose(NEURAL_LIMITATION_PARAGRAPH)])
     deferred = "the manual paper"
     if not _proper_training_is_broader_complete(data.proper_training):
         deferred = f"a broader proper-training neural benchmark and {deferred}"
@@ -2721,7 +2691,7 @@ def _render_ssl_v2_analysis(data: _FinalReportData) -> list[str]:
     if compute_provenance:
         lines.extend(
             [
-                *_wrap_prose(_CANONICAL_HAMILTON_PROVENANCE_PARAGRAPH),
+                *_wrap_prose(HAMILTON_PROVENANCE_PARAGRAPH),
                 "",
             ]
         )
