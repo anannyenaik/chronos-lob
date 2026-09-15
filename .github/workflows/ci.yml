@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install package with development, torch and plot extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,torch,plots]"
+
+      - name: Import package
+        run: python -c "import chronoslob; print(chronoslob.__version__)"
+
+      - name: Doctor
+        run: python -m chronoslob.cli doctor
+
+      - name: Test
+        run: python -m pytest
+
+      - name: Compile
+        run: python -m compileall -q chronoslob tests
+
+      - name: Ruff
+        run: python -m ruff check .
+
+      - name: Mypy
+        run: python -m mypy chronoslob

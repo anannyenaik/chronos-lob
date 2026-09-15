@@ -1,0 +1,18 @@
+# ChronosLOB canonical event-log configuration.
+#
+# Local files only. Do not commit real venue data, private data or large
+# generated logs. Synthetic fixtures under tests/fixtures are for storage and
+# replay tests only.
+
+event_log:
+  path: "tests/fixtures/event_logs/synthetic_snapshots.jsonl"
+  schema_version: "1.0"
+  sort_records: false
+  symbol: "TESTUSDT"
+
+notes:
+  - "Canonical records wrap BookEvent or OrderBookSnapshot payloads."
+  - "Reading preserves file order unless sort_records is explicitly enabled."
+  - "Features generated from replay use past-only snapshot state."
+  - "Labels generated from replay retain explicit future horizons."
+  - "No live ingestion, download, training, backtest or PnL code is configured here."

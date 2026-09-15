@@ -1,0 +1,71 @@
+# Python caches and test artefacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+.venv-*/
+venv/
+env/
+ENV/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+.ipynb_checkpoints/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Local datasets
+data/raw/
+data/processed/
+data/external/
+data/binance_l2_captures/
+.local_data/
+BenchmarkDatasets*.zip
+
+# Generated experiment artefacts
+runs/
+outputs/
+reports/
+logs/
+checkpoints/
+wandb/
+mlruns/
+experiments/**/runs/
+experiments/**/*_tasks/
+experiments/**/*_timing/
+experiments/**/features/
+experiments/**/predictions.csv
+experiments/**/predictions.parquet
+
+# Model artefacts
+*.ckpt
+*.joblib
+*.onnx
+*.pkl
+*.pt
+*.pth

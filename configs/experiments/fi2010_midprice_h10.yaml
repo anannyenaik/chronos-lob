@@ -1,0 +1,118 @@
+# FI-2010 mid-price direction benchmark preparation configuration.
+
+experiment_name: fi2010_midprice_h10
+dataset_name: FI-2010
+task_name: midprice_direction
+horizon: 10
+split_name: official_column
+seed: 0
+
+# Supply the real file with --data-path or replace this placeholder locally.
+local_data_path: <path-to-local-fi2010-file>
+output_dir: runs/fi2010_midprice_h10
+
+label_name: label_10
+label_columns:
+  - label_10
+  - label_50
+  - label_100
+timestamp_column: null
+split_column: split
+price_level_count: 10
+
+train_fraction: 0.7
+validation_fraction: 0.15
+test_fraction: 0.15
+
+split:
+  method: official_column
+  split_column: split
+  validation_fraction_within_train: 0.15
+  train_value: train
+  test_value: test
+
+classical_models_supported:
+  - majority
+  - logistic
+  - ridge
+  - elastic_net
+  - random_forest
+  - gradient_boosting
+
+neural_settings:
+  supported_models:
+    - deeplob_style
+    - transformer
+    - matrix_transformer
+  planned_models:
+    - ssl_transformer
+  lookback: 1
+  transformer_window_length: 4
+  batch_size: 4
+  max_epochs: 1
+  learning_rate: 0.001
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  device: cpu
+  deterministic: true
+  dropout: 0.0
+  deeplob_conv_channels: 4
+  deeplob_lstm_hidden_size: 8
+  deeplob_use_batch_norm: false
+  transformer_field_embedding_dim: 4
+  transformer_model_dim: 16
+  transformer_num_heads: 2
+  transformer_num_layers: 1
+  transformer_feedforward_dim: 32
+  transformer_max_levels_per_side: 2
+
+models_planned:
+  - majority
+  - logistic
+  - ridge
+  - elastic_net
+  - random_forest
+  - gradient_boosting
+  - deeplob_style
+  - transformer
+  - matrix_transformer
+  - ssl_transformer
+
+metrics_planned:
+  - macro_f1
+  - accuracy
+  - brier_score
+  - expected_calibration_error
+  - mean_confidence
+  - log_loss
+  - turnover
+  - cost_aware_signal
+
+execution_assumptions_planned:
+  fee_bps: 0.5
+  spread_cost_bps: 0.5
+  execution_mode: passive_hybrid
+  latency_rows: 1
+
+calibration:
+  enabled: true
+  n_bins: 10
+
+# This is a diagnostic proxy under explicit cost assumptions, not a backtest.
+execution_sensitivity:
+  enabled: true
+  confidence_thresholds: [0.0, 0.5, 0.6, 0.7]
+  cost_bps: [0.0, 1.0, 5.0]
+  latency_steps: [0]
+  class_direction_map:
+    "1": 1
+    "2": -1
+    "3": 0
+  return_proxy:
+    kind: mid_forward_return
+    bid_price_column: bid_price_1
+    ask_price_column: ask_price_1
+
+notes: |
+  Preparation is local-only. The repository does not download or ship
+  FI-2010 data. The tiny test fixture validates only the preparation path.

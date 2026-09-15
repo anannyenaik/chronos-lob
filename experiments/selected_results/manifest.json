@@ -1,0 +1,196 @@
+{
+  "manifest_version": 1,
+  "source_repository_at_selection": "anannyenaik/chronos-lob",
+  "source_archive": "anannyenaik/chronos-lob-archive",
+  "source_branch": "main",
+  "source_commit": "beed52603a25d231c6576f7d6e0610c6c5cc6685",
+  "copy_policy": "Each selected result file was copied byte-for-byte from the source revision.",
+  "file_count": 37,
+  "files": [
+    {
+      "source_path": "experiments\\fi2010_multifold_classical\\summary.json",
+      "path": "experiments\\selected_results\\classical\\summary.json",
+      "sha256": "397ffca3f61fd5dbda61afbef930637933c56bef15732dfebc4b8a3d0adeec8f"
+    },
+    {
+      "source_path": "experiments\\fi2010_multifold_classical\\results_by_fold.csv",
+      "path": "experiments\\selected_results\\classical\\results_by_fold.csv",
+      "sha256": "49654876bd1d2b9e1da839fc054fc43aaa5bb0a7e6bc01a07ad487abca19c42d"
+    },
+    {
+      "source_path": "experiments\\fi2010_multifold_classical\\results_summary.csv",
+      "path": "experiments\\selected_results\\classical\\results_summary.csv",
+      "sha256": "b3ecd723dce636ca46885ff037d7c3b9f505a1fdaf9e1c57d9407f85388c9fad"
+    },
+    {
+      "source_path": "experiments\\fi2010_multifold_classical\\calibration_summary.csv",
+      "path": "experiments\\selected_results\\classical\\calibration_summary.csv",
+      "sha256": "fec83ed0ab2834bd0cf1a7d023a148e80720058f37184d374608db3c12652634"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\summary.json",
+      "path": "experiments\\selected_results\\proper_training\\summary.json",
+      "sha256": "d17d91044e5dc28c57052981ab1149bd98dafd0ee021cff98dc99c4d4be00c96"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\config_snapshot.json",
+      "path": "experiments\\selected_results\\proper_training\\config_snapshot.json",
+      "sha256": "3ae6fa601e0362a5b753f2791729a24a478623efb132646fd5e6ecae6fc66fbb"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\results_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\results_summary.csv",
+      "sha256": "b017765ee42dedb5c3b29daa1c8db4e19f1b5221cb6571115deaa912692c70cc"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\model_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\model_summary.csv",
+      "sha256": "ba1ce830a5358b9c45b28ad6a0bda050b1855e8f9b1990c7d202b48586a54f2f"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\fold_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\fold_summary.csv",
+      "sha256": "42cebabe358c9e2abf0052e09fdfb3c59288fedf9fc560aeced48126054b181d"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\horizon_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\horizon_summary.csv",
+      "sha256": "7afe812bc17ec4a3d918529754873c2927c020822768ccd641af4cbd8d0d96ce"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\lookback_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\lookback_summary.csv",
+      "sha256": "6a68fe029d5de5b24479225937cd02da5329485b29a987e6869bf47ce3d06816"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\seed_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\seed_summary.csv",
+      "sha256": "e5d90111debed259182fe2e3d3c0aac92c21de52f43023230f868bfab56d56b1"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\training_curves_summary.csv",
+      "path": "experiments\\selected_results\\proper_training\\training_curves_summary.csv",
+      "sha256": "4e01079a92488b43d38a87d67e11c797ad2556bb182756c4b4c148c571aa5822"
+    },
+    {
+      "source_path": "experiments\\fi2010_neural_proper_training_broader\\hamilton_compute_provenance.json",
+      "path": "experiments\\selected_results\\proper_training\\hamilton_compute_provenance.json",
+      "sha256": "b8973f81917bbffc4a8925322b6c7f9b2140e73950cf98cf2c9544f83ee7ee24"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\summary.json",
+      "path": "experiments\\selected_results\\ssl_v2\\benchmark_summary.json",
+      "sha256": "268d699af90a40ca6cfa2e93aafb38ffc1f2b956bdf08e0123a9c37bd7173810"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\config_snapshot.json",
+      "path": "experiments\\selected_results\\ssl_v2\\config_snapshot.json",
+      "sha256": "f63ff07f08c05bf6beeadcd048ef6e0d1d1207fd577c8b94179e7eefac35f77c"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\results_summary.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\results_summary.csv",
+      "sha256": "14b5b0c2ab179ac8ca88726b18c3319c6068abe23c83068af56fbb30b9a64e59"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\aggregate_summary.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\aggregate_summary.csv",
+      "sha256": "55545321f3dc37e73a60a72620756a34a49b57617f6b318f0410bb80f5fded84"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\ssl_v2_comparison.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\ssl_v2_comparison.csv",
+      "sha256": "fde6c202c62082e52268fac4af795104b85fc10e3e1538756d2f28d65e211a4d"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\ssl_v2_loss_components.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\ssl_v2_loss_components.csv",
+      "sha256": "6de90d592f441f7a79547cf6755b9cbb0ba9812a43347d1f78bc279be4bb484c"
+    },
+    {
+      "source_path": "experiments\\fi2010_ssl_v2_benchmark\\training_curves_summary.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\training_curves_summary.csv",
+      "sha256": "bf503ef9f1c27882f90a30fa6860352ce9147413a93a37306d1bcd31de3f14a6"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\summary.json",
+      "path": "experiments\\selected_results\\ssl_v2\\analysis_summary.json",
+      "sha256": "00c8f3e8ad35b6ca57021e2c8ea8a5e8369a8b4dbbf277def0e022863dd7c37b"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\ssl_v2_metric_summary.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\metric_summary.csv",
+      "sha256": "6f64043665ec64e01864ee0c5be1171c4ec07482ce0e1b7d71275a62dd1d100e"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\ssl_v2_delta_overall.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\delta_overall.csv",
+      "sha256": "41deeecf528266792778f9a83d9167a762717228d139361ea05c409c16626c53"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\ssl_v2_delta_by_horizon.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\delta_by_horizon.csv",
+      "sha256": "2c45222361f735fc840e61dc7c458e49cc3a8db832b6ed3c3df8327d903823c1"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\ssl_v2_delta_by_seed.csv",
+      "path": "experiments\\selected_results\\ssl_v2\\delta_by_seed.csv",
+      "sha256": "36e2953afd7137407a57fb77e4d1ed8adba055992e8b25429d5fead68ed86833"
+    },
+    {
+      "source_path": "reports\\ssl_v2_analysis\\hamilton_compute_provenance.json",
+      "path": "experiments\\selected_results\\ssl_v2\\hamilton_compute_provenance.json",
+      "sha256": "2d05513d56980eb53a5a893460e5df7f2b6d78af3b6ee09a4d8165eb6f1b1939"
+    },
+    {
+      "source_path": "experiments\\fi2010_feature_ablations\\summary.json",
+      "path": "experiments\\selected_results\\feature_ablation\\summary.json",
+      "sha256": "2d60af78f422eecb263e4f51cce41a28b23e0404a24c7d2d055625636c052272"
+    },
+    {
+      "source_path": "experiments\\fi2010_feature_ablations\\aggregate_summary.csv",
+      "path": "experiments\\selected_results\\feature_ablation\\aggregate_summary.csv",
+      "sha256": "e2a51197cd6e16993ee7ae0a7c06462de1c9738228858610943cbc62fb01a511"
+    },
+    {
+      "source_path": "reports\\feature_ablation_analysis\\feature_group_stability.csv",
+      "path": "experiments\\selected_results\\feature_ablation\\feature_group_stability.csv",
+      "sha256": "d1ba3f5fdb833a37c7068d3559761f353764f0af831df8cc8d7edbb5c5e21323"
+    },
+    {
+      "source_path": "reports\\feature_ablation_analysis\\feature_delta_by_horizon.csv",
+      "path": "experiments\\selected_results\\feature_ablation\\feature_delta_by_horizon.csv",
+      "sha256": "f7a4e23b5e837d4c2160a62c7faaea66e44e52f2dfe8f70ebc5db643f52926ef"
+    },
+    {
+      "source_path": "reports\\feature_ablation_analysis\\feature_delta_by_model.csv",
+      "path": "experiments\\selected_results\\feature_ablation\\feature_delta_by_model.csv",
+      "sha256": "e2c17f07c7cdcc16dcd4673c3ce362d851d0b6c7d7e8e047c5252d2b9a9807f4"
+    },
+    {
+      "source_path": "reports\\execution_centrepiece\\centrepiece_summary.json",
+      "path": "experiments\\selected_results\\execution\\centrepiece_summary.json",
+      "sha256": "fbbb30e4a36bc68a44182f837854847424bce9a928f13630850801942ab34937"
+    },
+    {
+      "source_path": "reports\\execution_centrepiece\\forecasting_vs_signal_quality.csv",
+      "path": "experiments\\selected_results\\execution\\forecasting_vs_signal_quality.csv",
+      "sha256": "ad5b1c569d1a8ede7dfe8ba084ff54dc535e24285f707488d2b82ce7c5e9f0ec"
+    },
+    {
+      "source_path": "reports\\execution_centrepiece\\confidence_threshold_tradeoff.csv",
+      "path": "experiments\\selected_results\\execution\\confidence_threshold_tradeoff.csv",
+      "sha256": "dcf67215e0e92d00d4515f66865644f54cc0e5fe4595519333075e05edd0dfde"
+    },
+    {
+      "source_path": "reports\\execution_centrepiece\\latency_cost_gap.csv",
+      "path": "experiments\\selected_results\\execution\\latency_cost_gap.csv",
+      "sha256": "793f82f03c712680f772593702d24133d427b5b41326b0bacdb008e9768635bd"
+    },
+    {
+      "source_path": "reports\\execution_centrepiece\\metric_to_proxy_gap.csv",
+      "path": "experiments\\selected_results\\execution\\metric_to_proxy_gap.csv",
+      "sha256": "f0ab16bf76d0e38527befc70d345ddebc78ce0cff037f92131dc320f9dfacf7a"
+    }
+  ]
+}

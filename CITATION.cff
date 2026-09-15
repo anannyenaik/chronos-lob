@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use ChronosLOB, please cite the software and accompanying paper."
+title: ChronosLOB
+type: software
+authors:
+  - family-names: Naik
+    given-names: Anannye
+version: 0.2.0
+date-released: 2026-09-10
+repository-code: "https://github.com/anannyenaik/chronos-lob"
+license: MIT
+preferred-citation:
+  type: article
+  title: "ChronosLOB: Leakage-Safe Limit Order Book Forecasting with Execution-Aware Diagnostics"
+  authors:
+    - family-names: Naik
+      given-names: Anannye
+  year: 2026

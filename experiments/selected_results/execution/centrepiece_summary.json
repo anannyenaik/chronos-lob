@@ -1,0 +1,104 @@
+{
+  "artefacts": {
+    "adverse_selection_by_confidence": "adverse_selection_by_confidence.csv",
+    "claim_assessment": "execution_centrepiece_claim_assessment.json",
+    "confidence_threshold_tradeoff": "confidence_threshold_tradeoff.csv",
+    "figure_manifest": "figure_manifest.json",
+    "forecasting_vs_signal_quality": "forecasting_vs_signal_quality.csv",
+    "latency_cost_gap": "latency_cost_gap.csv",
+    "metric_to_proxy_gap": "metric_to_proxy_gap.csv",
+    "report": "execution_centrepiece.md",
+    "summary": "centrepiece_summary.json"
+  },
+  "builder_version": "execution-centrepiece/v1",
+  "claim_statuses": {
+    "PnL": "forbidden",
+    "active_fraction_analysis": "supported",
+    "adverse_selection_confidence_analysis": "supported",
+    "confidence_filtering_tradeoff_analysis": "supported",
+    "forecasting_vs_signal_quality_gap_analysis": "supported",
+    "latency_cost_gap_analysis": "supported",
+    "live_trading": "forbidden",
+    "profitability_or_tradability": "forbidden",
+    "turnover_proxy_analysis": "supported"
+  },
+  "cost_mode": "unit_proxy",
+  "created_at": "2026-05-30T22:59:59.997393+00:00",
+  "execution_aware_proxy_diagnostic": true,
+  "figures_generated": [
+    "forecasting_vs_signal_quality"
+  ],
+  "git_commit": "597b3599a3a437ec06224f2ae1f8e5a91d81041f",
+  "input_artefact_paths": {
+    "execution_analysis_adverse_selection_proxy_summary": "reports\\execution_v3_analysis\\adverse_selection_proxy_summary.csv",
+    "execution_analysis_confidence_filtering_summary": "reports\\execution_v3_analysis\\confidence_filtering_summary.csv",
+    "execution_analysis_cost_sensitivity_summary": "reports\\execution_v3_analysis\\cost_sensitivity_summary.csv",
+    "execution_analysis_execution_claim_assessment": "reports\\execution_v3_analysis\\execution_claim_assessment.json",
+    "execution_analysis_figure_manifest": "reports\\execution_v3_analysis\\figure_manifest.json",
+    "execution_analysis_fill_assumption_summary": "reports\\execution_v3_analysis\\fill_assumption_summary.csv",
+    "execution_analysis_latency_sensitivity_summary": "reports\\execution_v3_analysis\\latency_sensitivity_summary.csv",
+    "execution_analysis_skipped_regime_diagnostics": "reports\\execution_v3_analysis\\skipped_regime_diagnostics.json",
+    "execution_analysis_summary": "reports\\execution_v3_analysis\\summary.json",
+    "execution_analysis_turnover_proxy_summary": "reports\\execution_v3_analysis\\turnover_proxy_summary.csv",
+    "execution_v3_execution_v3_manifest": "experiments\\fi2010_execution_v3\\execution_v3_manifest.json",
+    "execution_v3_summary": "experiments\\fi2010_execution_v3\\summary.json",
+    "neural_full_grid_aggregate_summary": "experiments\\fi2010_neural_full_grid\\aggregate_summary.csv",
+    "neural_full_grid_summary": "experiments\\fi2010_neural_full_grid\\summary.json"
+  },
+  "input_file_hashes": {
+    "execution_analysis_adverse_selection_proxy_summary": "062e9aca45ed76c9da747df386d843c744240a4b105fdb0461d2f509b12941c2",
+    "execution_analysis_confidence_filtering_summary": "d98dab251919e3ead0270256a1d7ec1f19a7620ff56e4b1a569eacd6283ca180",
+    "execution_analysis_cost_sensitivity_summary": "2253cb993b9a21d13df56783622c14435b872255da053467478b08dfe018307c",
+    "execution_analysis_execution_claim_assessment": "ce3cf8c8df0518f4c939a4be77a468c5ae204c330adeb7fe83d606420f2f6398",
+    "execution_analysis_figure_manifest": "218ed38ea2715ea47f2998e3e0b82c40e2270168cb61ccc1907f0c8052bb4872",
+    "execution_analysis_fill_assumption_summary": "e9fd556e64d9aeae3a12cfa6ae4ab8680684b922fa1ee0f88c8fb9b3b5681990",
+    "execution_analysis_latency_sensitivity_summary": "e9e7143c4d61385ae7ad5e22bc854da3c1ebe14350eccc9b2228eab76beb3d1f",
+    "execution_analysis_skipped_regime_diagnostics": "383848465d87dab73b373fb294f7a06e5d4d927660925d497831231d760e49ef",
+    "execution_analysis_summary": "87573806205e45379c2bea410dcb5d0289533f7e2f2abc86e0840d4bdf7b61d0",
+    "execution_analysis_turnover_proxy_summary": "c1cd1724333787b677b22f35fe3cf570c48c51239804c56ee218a09a80f2c9b5",
+    "execution_v3_execution_v3_manifest": "b6ebe05a8bf888b212842375e8edddf018da01b7dcaba987be37cbaf3cc1d71f",
+    "execution_v3_summary": "89d6b8d2ae5e1d96f9f15be4f0ba3852b98d51fa9b2542595aeaa1f07567f6be",
+    "neural_full_grid_aggregate_summary": "40dbe7f03d3aa2cd700341ba9a4ebef17011bdacfaa500e933c7c1ac45e8f452",
+    "neural_full_grid_summary": "3f7f0abbb79974c3d84e0348858433bc49d26ea5f86fb1f6a556cf76e0758276"
+  },
+  "offline_diagnostic": true,
+  "output_file_hashes": {
+    "adverse_selection_by_confidence": "fbb342e097dcd772ad385308a4639c342e290e84c613b50e2cd6d04699f91732",
+    "claim_assessment": "20bef013ef9a80dd548ed9221b4edb3d1160edfbe21ba45eb382a55a88695487",
+    "confidence_threshold_tradeoff": "e6a5b149987c6c8ff9f885aa078ed3842488281475c5e6346b0aa6525a160fcd",
+    "figure_manifest": "85a1adf2b2bb1bacf1a8dce29653b0f30584515c315b0bb3be47feb82fa1c064",
+    "forecasting_vs_signal_quality": "6fe3aa0728066b4e323694ce4f290d6348da61f69767c1301b497f65e5d24d8f",
+    "latency_cost_gap": "4c6c35aa76b3ed823cc511d38932ad55ad0cb8692eab5decbe81e6d1e84e6b43",
+    "metric_to_proxy_gap": "127c2ae682c17817c193df8f54e824cd167929b1da5071b3a80531e883e036d5",
+    "report": "ddbafc89d186bf32c9de345aa40de43d67a9f94205a09fc1de22cd154c99b8f8"
+  },
+  "output_files": {
+    "adverse_selection_by_confidence": "reports\\execution_centrepiece\\adverse_selection_by_confidence.csv",
+    "claim_assessment": "reports\\execution_centrepiece\\execution_centrepiece_claim_assessment.json",
+    "confidence_threshold_tradeoff": "reports\\execution_centrepiece\\confidence_threshold_tradeoff.csv",
+    "figure_manifest": "reports\\execution_centrepiece\\figure_manifest.json",
+    "forecasting_vs_signal_quality": "reports\\execution_centrepiece\\forecasting_vs_signal_quality.csv",
+    "latency_cost_gap": "reports\\execution_centrepiece\\latency_cost_gap.csv",
+    "metric_to_proxy_gap": "reports\\execution_centrepiece\\metric_to_proxy_gap.csv",
+    "report": "reports\\execution_centrepiece\\execution_centrepiece.md"
+  },
+  "package_version": "0.1.0",
+  "payoff_mode": "unit_payoff",
+  "raw_predictions_required": false,
+  "representative_fee_bps": 2.0,
+  "representative_latency_step": 10,
+  "representative_spread_multiplier": 1.0,
+  "run_group_count": 135,
+  "selected_thresholds": [
+    0.5,
+    0.7,
+    0.85
+  ],
+  "smoke_test": false,
+  "unavailable_fields": {
+    "confidence_filtered_ece": "unavailable: retained confidence-threshold tables do not include ECE",
+    "raw_predictions": "not required and not read; deleted raw predictions are unavailable",
+    "realised_execution": "unavailable: offline diagnostic has no broker or venue fills",
+    "supported_regime_diagnostics": "unavailable: retained tables lack regime labels or snapshot context"
+  }
+}

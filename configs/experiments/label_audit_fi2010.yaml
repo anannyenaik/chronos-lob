@@ -1,0 +1,43 @@
+# ChronosLOB label audit configuration for a local FI-2010-style file.
+#
+# This file documents how to inspect labels from the bundled structural
+# fixture. It does not define a model, training run, backtest or result table.
+
+experiment:
+  name: label_audit_fi2010
+  phase: 4
+  purpose: Inspect generated and existing benchmark labels without training.
+
+data:
+  path: tests/fixtures/fi2010/tiny_fi2010_like.csv
+  timestamp_column: timestamp
+  split_column: split
+  label_columns:
+    - label_10
+    - label_50
+    - label_100
+  price_level_count: 2
+  source_note: Local synthetic FI-2010-like structural fixture.
+
+labels:
+  horizons:
+    - 1
+    - 2
+  return_threshold: 0.0
+  log_returns: true
+  include_direction: true
+  include_return: true
+  include_return_quantiles: true
+  include_volatility: true
+  include_spread_widening: true
+  include_fill_probability: true
+  include_adverse_selection: true
+  fill_horizon: 1
+  adverse_evaluation_horizon: 2
+  missing: drop
+
+leakage_controls:
+  require_feature_label_separation: true
+  require_timezone_aware_timestamps: true
+  require_explicit_horizon_bounds: true
+  note: Future splitters must still handle overlapping labels and purging.
